@@ -50,9 +50,13 @@ public:
     : _storage(detail::construct_mixed_storage_from_sizes_tag, dyn...)
   { }
 
-  template <class Integral>
+  template <class IndexType>
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(std::array<Integral, storage_type::size_dynamic> const& dyn)
+  constexpr extents(std::array<IndexType, storage_type::size_dynamic> const& dyn)
+    MDSPAN_CONDITIONAL_NOEXCEPT_REQUIRES(
+      noexcept(_storage(dyn)),
+      /* requires */ is_convertible_v<IndexType, index_type>
+    )
     : _storage(dyn)
   { }
 
