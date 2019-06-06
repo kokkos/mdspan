@@ -279,50 +279,57 @@ struct _assign_op_slice_handler<
   }
 };
 
+template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
+MDSPAN_INLINE_FUNCTION
+constexpr auto _subspan_impl(
+  std::integer_sequence<size_t, Idxs...>,
+  basic_mdspan<ET, std::extents<Exts...>, LP, AP> const& src,
+  SliceSpecs&&... slices
+) noexcept
+{
+  auto _handled = (
+    detail::_assign_op_slice_handler<
+      integer_sequence<ptrdiff_t>,
+      integer_sequence<ptrdiff_t>,
+      typename std::conditional<
+        std::is_same<LP, layout_right>::value,
+        std::detail::preserve_layout_right_analysis<>,
+        typename std::conditional<
+          std::is_same<LP, layout_left>::value,
+          std::detail::preserve_layout_left_analysis<>,
+          std::detail::ignore_layout_preservation
+        >::type
+      >::type
+    >{} = ... = detail::_wrap_slice<
+      Exts, decltype(src.mapping())::template __static_stride<Idxs>()
+    >(
+      slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
+    )
+  );   
+  
+  ptrdiff_t offset_size = std::apply(src.mapping(), _handled.offsets);
+  auto offset_ptr = src.accessor().offset(src.data(), offset_size);
+  auto map = _handled.make_layout_mapping(src.mapping());
+  auto acc_pol = typename AP::offset_policy(src.accessor());
+  return basic_mdspan<
+    ET, decltype(map.extents()), typename decltype(_handled)::layout_type, decltype(acc_pol)
+  >(
+    std::move(offset_ptr), std::move(map), std::move(acc_pol)
+  );
+
+}
+
   
 } // namespace detail
 
 // TODO constraints
 template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs>
 MDSPAN_INLINE_FUNCTION
-auto subspan(
+constexpr auto subspan(
   basic_mdspan<ET, std::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices
 ) noexcept
 {
-  return [&]<size_t... Idxs>(index_sequence<Idxs...>) {
-    auto _handled = (
-      detail::_assign_op_slice_handler<
-        integer_sequence<ptrdiff_t>,
-        integer_sequence<ptrdiff_t>,
-        typename std::conditional<
-          std::is_same<LP, layout_right>::value,
-          std::detail::preserve_layout_right_analysis<>,
-          typename std::conditional<
-            std::is_same<LP, layout_left>::value,
-            std::detail::preserve_layout_left_analysis<>,
-            std::detail::ignore_layout_preservation
-          >::type
-        >::type,
-        array<ptrdiff_t, 0>,
-        array<ptrdiff_t, 0>,
-        array<ptrdiff_t, 0>
-      >{} = ... = detail::_wrap_slice<
-        Exts, decltype(src.mapping())::template __static_stride<Idxs>()
-      >(
-        slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
-      )
-    );   
-    
-    ptrdiff_t offset_size = std::apply(src.mapping(), _handled.offsets);
-    auto offset_ptr = src.accessor().offset(src.data(), offset_size);
-    auto map = _handled.make_layout_mapping(src.mapping());
-    auto acc_pol = typename AP::offset_policy(src.accessor());
-    return basic_mdspan<
-      ET, decltype(map.extents()), typename decltype(_handled)::layout_type, decltype(acc_pol)
-    >(
-      std::move(offset_ptr), std::move(map), std::move(acc_pol)
-    );
-  }(index_sequence_for<SliceSpecs...>{});
+  return std::detail::_subspan_impl(std::index_sequence_for<SliceSpecs...>{}, src, slices...);
 }
         
 } // namespace std

@@ -12,16 +12,18 @@ namespace detail {
 
 inline constexpr struct construct_mixed_storage_from_sizes_tag_t { } construct_mixed_storage_from_sizes_tag = { };
 
-template <class, class>
+template <class SizesSeq, class, class=make_index_sequence<SizesSeq::size()>>
 class mixed_static_and_dynamic_size_storage;
 
 template <
   ptrdiff_t... Sizes,
-  ptrdiff_t... DynamicOffsets
+  ptrdiff_t... DynamicOffsets,
+  size_t... Idxs
 >
 class mixed_static_and_dynamic_size_storage<
   integer_sequence<ptrdiff_t, Sizes...>,
-  integer_sequence<ptrdiff_t, DynamicOffsets...>
+  integer_sequence<ptrdiff_t, DynamicOffsets...>,
+  integer_sequence<size_t, Idxs...>
 >
 {
 public:
@@ -81,9 +83,7 @@ public:
 
   template <size_t N>
   inline constexpr void set(ptrdiff_t value) noexcept {
-    [this, value]<size_t... Idxs>(integer_sequence<size_t, Idxs...>) {
-      (select_set<Sizes, DynamicOffsets, Idxs, N>(value), ...);  
-    }(make_index_sequence<sizeof...(Sizes)>{});
+    (select_set<Sizes, DynamicOffsets, Idxs, N>(value), ...);  
   }
 
   constexpr mixed_static_and_dynamic_size_storage() = default;
@@ -101,19 +101,27 @@ public:
 
 };
 
-template <class Sequence>
+template <size_t N, class, class> struct _make_mixed_impl_helper;
+template <size_t N, size_t... Idxs, ptrdiff_t... Sizes>
+struct _make_mixed_impl_helper<N, integer_sequence<size_t, Idxs...>, integer_sequence<ptrdiff_t, Sizes...>> {
+  static constexpr ptrdiff_t value = (int(Idxs < size_t(N) && Sizes == dynamic_extent) + ...); 
+};
+
+template <class Sequence, class=void>
 struct _make_mixed_impl;
 template <class T, T... Sizes>
-struct _make_mixed_impl<integer_sequence<T, Sizes...>> {
+struct _make_mixed_impl<integer_sequence<T, Sizes...>, void>
+  : _make_mixed_impl<integer_sequence<T, Sizes...>, std::make_index_sequence<sizeof...(Sizes)>>
+{ };
+template <class T, T... Sizes, size_t... Idxs>
+struct _make_mixed_impl<integer_sequence<T, Sizes...>, integer_sequence<size_t, Idxs...>> {
   using type = mixed_static_and_dynamic_size_storage<
       integer_sequence<ptrdiff_t, Sizes...>,
-      decltype(
-        []<size_t... Idxs>(integer_sequence<size_t, Idxs...>) {
-          return integer_sequence<ptrdiff_t,
-            [](ptrdiff_t N){ return (int(Idxs < size_t(N) && Sizes == dynamic_extent) + ...); }(Idxs)...
-          >{};
-        }(make_index_sequence<sizeof...(Sizes)>{})
-      )
+      integer_sequence<ptrdiff_t,
+        _make_mixed_impl_helper<
+          Idxs, std::index_sequence<Idxs...>, std::integer_sequence<ptrdiff_t, Sizes...>
+        >::value...
+      >
     >;
 };
 

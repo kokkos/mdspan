@@ -41,61 +41,10 @@ public:
 
 //==============================================================================================================
 
-template <class, class, class, bool> struct stride_storage_impl;
-
-#if defined(MDSPAN_ENABLE_EXTRA_STRIDE_STORAGE) && defined(MDSPAN_USE_LAMBDAS_IN_UNEVALUATED_CONTEXTS)
-template <ptrdiff_t... Exts, size_t... Idxs, class IdxConditional>
-struct stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional, true>
-  : extents_storage<std::extents<Exts...>>
-{
-private:
-
-  using base_t = extents_storage<std::extents<Exts...>>;  
-  using strides_sequence = integer_sequence<ptrdiff_t,
-    [](ptrdiff_t Stride){
-      return (Stride == 0) ? dynamic_extent : Stride;
-    }(
-      []<ptrdiff_t N>(integral_constant<ptrdiff_t, N>){ 
-        return (((IdxConditional{}(Idxs, size_t(N))) ? (Exts == dynamic_extent ? 0 : Exts) : 1) * ... * 1);
-      }(integral_constant<ptrdiff_t, Idxs>{})
-    )...
-  >;
-  using storage_type = typename _make_mixed_impl<strides_sequence>::type;
-  [[no_unique_address]] storage_type _strides_storage;
-
-public:
-
-  using base_t::extents;
-
-  template <size_t N>
-  inline constexpr ptrdiff_t get_stride() const noexcept {
-    return _strides_storage.template get<N>();
-  }
-
-  inline constexpr ptrdiff_t get_stride(size_t n) const noexcept {
-    return _strides_storage.get(n);
-  }
-
-  template <size_t N>
-  constexpr inline void _setup_stride() noexcept {
-    _strides_storage.template set<N>(
-      ((IdxConditional{}(Idxs, N) ? extents().template __extent<Idxs>() : 1) * ... * 1)
-    );  
-  }
-
-  constexpr inline
-  stride_storage_impl(typename base_t::extents_type const& exts)
-    : base_t(exts)
-  {
-    (_setup_stride<Idxs>(), ...); 
-  }
-};
-#endif // defined(MDSPAN_ENABLE_EXTRA_STRIDE_STORAGE) && defined(MDSPAN_USE_LAMBDAS_IN_UNEVALUATED_CONTEXTS)
-
-//--------------------------------------------------------------------------------------------------------------
+template <class, class, class> struct stride_storage_impl;
 
 template <ptrdiff_t... Exts, size_t... Idxs, class IdxConditional>
-struct stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional, false>
+struct stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
   : extents_storage<std::extents<Exts...>>
 {
 private:
@@ -104,7 +53,7 @@ public:
 
   using base_t::base_t;
 
-  MDSPAN_INLINE_FUNCTION constexpr base_t::extents_type extents() const noexcept { return this->base_t::_extents; };
+  MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept { return this->base_t::_extents; };
 
   template <size_t N>
   MDSPAN_INLINE_FUNCTION
@@ -121,16 +70,16 @@ public:
 
 //==============================================================================================================
 
-template <class, class, class, bool>
+template <class, class, class>
 class fixed_layout_common_impl;
 
-template <ptrdiff_t... Exts, size_t... Idxs, class IdxConditional, bool StoreStrides>
-class fixed_layout_common_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional, StoreStrides>
-  : protected stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional, StoreStrides>
+template <ptrdiff_t... Exts, size_t... Idxs, class IdxConditional>
+class fixed_layout_common_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
+  : protected stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
 {
 private:
 
-  using base_t = stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional, StoreStrides>;
+  using base_t = stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>;
 
 public:
 

@@ -6,8 +6,33 @@
 #include "layout_right.hpp"
 #include "extents.hpp"
 
+#include <utility> // make_index_sequence
+#include <tuple> // std::apply
 
 namespace std {
+
+namespace detail {
+
+template <class Derived, class ExtentsIdxs>
+struct _basic_mdspan_crtp_helper;
+
+// Workaround for not being able to give explicit template parameters to lambdas in older
+// versions of C++, thus making expanding parameter packs with indices more difficult
+template <class Derived, size_t... ExtIdxs>
+struct _basic_mdspan_crtp_helper<
+  Derived, std::index_sequence<ExtIdxs...>
+>
+{
+protected:
+  MDSPAN_FORCE_INLINE_FUNCTION Derived& __self() noexcept { return *static_cast<Derived*>(this); }
+  MDSPAN_FORCE_INLINE_FUNCTION Derived const& __self() const noexcept { return *static_cast<Derived const*>(this); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr auto __size() const noexcept {
+    return (__self().map_.__extents().extent(ExtIdxs) * ... * 1);
+  }
+};
+
+} // namespace detail
+
 
 template <
   class ElementType,
@@ -30,7 +55,16 @@ class basic_mdspan<
   LayoutPolicy,
   AccessorPolicy
 >
+  : detail::_basic_mdspan_crtp_helper<
+      basic_mdspan<ElementType, std::extents<Exts...>, LayoutPolicy, AccessorPolicy>,
+      std::make_index_sequence<sizeof...(Exts)>
+    >
 {
+private:
+  using _crtp_base_t = detail::_basic_mdspan_crtp_helper<
+      basic_mdspan<ElementType, std::extents<Exts...>, LayoutPolicy, AccessorPolicy>,
+      std::make_index_sequence<sizeof...(Exts)>
+    >;
 public:
   
   //--------------------------------------------------------------------------------
@@ -60,7 +94,7 @@ public:
   explicit constexpr basic_mdspan(pointer p, IndexType... dynamic_extents)
     requires (
       (is_convertible_v<IndexType, index_type> && ...)
-      && (sizeof...(dynamic_extents) == extents_type::rank_dynamic())
+      && (sizeof...(IndexType) == extents_type::rank_dynamic())
       && is_constructible_v<mapping_type, extents_type>
       && is_default_constructible_v<accessor_type>
     )
@@ -158,10 +192,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(const array<IndexType, N>& indices) const noexcept
   {
-    return
-      [&]<size_t... Idxs>(std::integer_sequence<size_t, Idxs...>) {
-        return acc_.access(ptr_, map_(std::get<Idxs>(indices)...));
-      }(std::make_index_sequence<sizeof...(Exts)>{});
+    return acc_.access(ptr_, std::apply(map_, indices));
   }
 
   MDSPAN_INLINE_FUNCTION
@@ -177,10 +208,7 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept { return map_.extents(); };
   MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return map_.extents().extent(r); };
   MDSPAN_INLINE_FUNCTION constexpr index_type size() const noexcept {
-    return
-      [&]<size_t... Idxs>(std::integer_sequence<size_t, Idxs...>) {
-        return (map_.__extents().extent(Idxs) * ... * 1);
-      }(std::make_index_sequence<sizeof...(Exts)>{});
+    return this->_crtp_base_t::__size();
   };
 
   MDSPAN_INLINE_FUNCTION constexpr index_type unique_size() const noexcept { return map_.required_span_size(); }
@@ -212,6 +240,9 @@ private:
 
   template <class, class, class, class>
   friend class basic_mdspan;
+
+  template <class, class>
+  friend struct detail::_basic_mdspan_crtp_helper;
 
 };
 

@@ -10,18 +10,26 @@ namespace std {
 
 template <ptrdiff_t... Extents>
 class extents {
+public:
+
+  using index_type = ptrdiff_t;
+
 private:
 
   using storage_type = typename detail::_make_mixed_impl<integer_sequence<ptrdiff_t, Extents...>>::type;
   [[no_unique_address]] storage_type _storage;
 
+  template <size_t... Idxs>
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr
+  index_type _static_extent_impl(size_t n, std::integer_sequence<size_t, Idxs...>) noexcept {
+    return (((Idxs == n) ? Extents : 0) + ... + 0); 
+  }
 
 public:
 
   //--------------------------------------------------------------------------------
   // Constructors, Destructors, and Assignment
-
-  using index_type = ptrdiff_t;
 
   MDSPAN_INLINE_FUNCTION constexpr extents() noexcept = default;
   MDSPAN_INLINE_FUNCTION constexpr extents(extents const&) noexcept = default;
@@ -54,9 +62,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   static constexpr
   index_type static_extent(size_t n) noexcept {
-    return [n]<size_t... Idxs>(index_sequence<Idxs...>){
-      return (((Idxs == n) ? Extents : 0) + ...); 
-    }(make_index_sequence<sizeof...(Extents)>());
+    return _static_extent_impl(n, std::make_index_sequence<rank()>{});
   }
 
   MDSPAN_INLINE_FUNCTION
