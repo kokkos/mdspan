@@ -34,10 +34,19 @@ private:
   template <class, class, class>
   friend class layout_stride_impl;
 
+public: // (but not really)
+
   template <size_t N>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t __stride() const noexcept {
     return _strides.template get<N>();
+  }
+
+  template <size_t N, ptrdiff_t Default=dynamic_extent>
+  MDSPAN_INLINE_FUNCTION
+  static constexpr ptrdiff_t __static_stride() noexcept
+  {
+    return stride_storage_t::template get_static<N, Default>();
   }
 
 public:
@@ -78,7 +87,18 @@ public:
   template <class... Integral>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t operator()(Integral... idxs) const noexcept {
-    return ((idxs * __stride<Idxs>()) + ...);
+    return ((idxs * __stride<Idxs>()) + ... + 0);
+  }
+
+  MDSPAN_INLINE_FUNCTION
+  constexpr ptrdiff_t stride(size_t r) const noexcept {
+    return _strides.get(r);
+  }
+
+  MDSPAN_INLINE_FUNCTION
+  constexpr ptrdiff_t required_span_size() const noexcept {
+    // assumes no negative strides; not sure if I'm allowed to assume that or not
+    return (*this)((base_t::extents().template __extent<Idxs>() - 1)...) + 1;
   }
 
   template <class OtherExtents, class OtherStaticStrides>
@@ -88,6 +108,7 @@ public:
   }
 
   template <class OtherExtents, class OtherStaticStrides>
+  MDSPAN_INLINE_FUNCTION
   constexpr bool operator!=(layout_stride_impl<OtherExtents, OtherStaticStrides, idx_seq> const& other) const noexcept {
     return (false || ... || (__stride<Idxs>() != other.template __stride<Idxs>())); 
   }

@@ -134,15 +134,16 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.mapping], basic_mdspan mapping domain multidimensional index to access codomain element
 
-  template <
-    class Index=index_type,
-    enable_if_t<
-      is_convertible_v<Index, index_type> && sizeof...(Exts) == 1,
-      int
-    > = 0
-  >
+  template <class Index>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator[](Index idx) const noexcept { return acc_.access(ptr_, map_(idx)); }
+  constexpr reference operator[](Index idx) const noexcept
+    requires (
+      is_convertible_v<Index, index_type>
+      && sizeof...(Exts) == 1
+    )
+  {
+    return acc_.access(ptr_, map_(idx));
+  }
 
   // TODO constraints
   template<class... IndexType>
@@ -205,7 +206,7 @@ public:
 
 private:
 
-  [[no_unique_address]] pointer ptr_;
+  pointer ptr_;
   [[no_unique_address]] mapping_type map_;
   [[no_unique_address]] accessor_type acc_;
 

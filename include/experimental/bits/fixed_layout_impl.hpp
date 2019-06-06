@@ -43,6 +43,7 @@ public:
 
 template <class, class, class, bool> struct stride_storage_impl;
 
+#if defined(MDSPAN_ENABLE_EXTRA_STRIDE_STORAGE) && defined(MDSPAN_USE_LAMBDAS_IN_UNEVALUATED_CONTEXTS)
 template <ptrdiff_t... Exts, size_t... Idxs, class IdxConditional>
 struct stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional, true>
   : extents_storage<std::extents<Exts...>>
@@ -88,8 +89,8 @@ public:
   {
     (_setup_stride<Idxs>(), ...); 
   }
-
 };
+#endif // defined(MDSPAN_ENABLE_EXTRA_STRIDE_STORAGE) && defined(MDSPAN_USE_LAMBDAS_IN_UNEVALUATED_CONTEXTS)
 
 //--------------------------------------------------------------------------------------------------------------
 
@@ -139,7 +140,7 @@ public:
   template <class... Integral>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t operator()(Integral... idxs) const noexcept {
-    return ((idxs * this->base_t::template get_stride<Idxs>()) + ...);
+    return ((idxs * this->base_t::template get_stride<Idxs>()) + ... + 0);
   }
 
   MDSPAN_INLINE_FUNCTION

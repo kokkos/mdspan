@@ -26,8 +26,6 @@ class mixed_static_and_dynamic_size_storage<
 {
 public:
 
-  static_assert(sizeof...(Sizes) > 0);
-
   static inline constexpr auto size_dynamic = (static_cast<int>((Sizes == dynamic_extent)) + ... + 0);
 
 private:
