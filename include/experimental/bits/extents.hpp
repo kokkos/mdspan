@@ -34,7 +34,7 @@ public:
   template <class... Integral>
   MDSPAN_INLINE_FUNCTION
   constexpr extents(Integral... dyn)
-    requires (std::is_integral_v<Integral> && ... && true)
+    requires (std::is_integral_v<Integral> && ...)
     : _storage(detail::construct_mixed_storage_from_sizes_tag, dyn...)
   { }
 

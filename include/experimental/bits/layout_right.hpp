@@ -55,12 +55,12 @@ public:
 
   template <class OtherExtents, bool OtherStoreStrides>
   constexpr bool operator==(layout_right_impl<OtherExtents, idx_seq, OtherStoreStrides> const& other) const noexcept {
-    return ((this->base_t::template __stride<Idxs>() == other.template __stride<Idxs>()) && ... && true); 
+    return ((this->base_t::template __stride<Idxs>() == other.template __stride<Idxs>()) && ...); 
   }
 
   template <class OtherExtents, bool OtherStoreStrides>
   constexpr bool operator!=(layout_right_impl<OtherExtents, idx_seq, OtherStoreStrides> const& other) const noexcept {
-    return ((this->base_t::template __stride<Idxs>() != other.template __stride<Idxs>()) || ... || false); 
+    return ((this->base_t::template __stride<Idxs>() != other.template __stride<Idxs>()) || ...); 
   }
 
   //--------------------------------------------------------------------------------

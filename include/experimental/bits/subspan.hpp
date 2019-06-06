@@ -42,9 +42,92 @@ _wrap_slice(std::pair<ptrdiff_t, ptrdiff_t> const& val, ptrdiff_t ext, ptrdiff_t
 
 //--------------------------------------------------------------------------------
 
+
 template <
-  class Extents, class StaticStrides,
-  class Offsets, class ExtentInitializers, class DynamicStrides,
+  bool result=true,
+  bool encountered_first_all=false,
+  bool encountered_first_pair=false
+>
+struct preserve_layout_right_analysis : std::integral_constant<bool, result> {
+  using layout_type_if_preserved = layout_right;
+  using encounter_pair = preserve_layout_right_analysis<
+    // If the pair isn't the right-most slice (i.e., if there was a previous pair),
+    // we can't preserve any contiguous layout.  Nothing else should matter
+    (encountered_first_pair ? false : result),
+    // Whether or not we've encountered the first all doesn't change, though it
+    // doesn't really matter, since anything to the right of this leads to a false
+    // result
+    encountered_first_all,
+    // This is a pair, so we've encountered at least one
+    true
+  >;
+  using encounter_all = preserve_layout_right_analysis<
+    // encountering an all changes nothing unless we've already encountered a pair
+    (encountered_first_pair ? false : result),
+    // This is an all, so we've encountered at least one
+    true,
+    // nothing changes about this last one
+    encountered_first_pair
+  >;
+  using encounter_scalar = preserve_layout_right_analysis<
+    // if there's a scalar to the right of any non-scalar slice, we can't preserve
+    // any contiguous layout:
+    (encountered_first_all || encountered_first_pair) ? false : result,
+    // nothing else changes (though if they're true, it doesn't matter)
+    encountered_first_all,
+    encountered_first_pair
+  >;  
+};
+
+template <
+  bool result=true,
+  bool encountered_first_scalar=false,
+  bool encountered_first_all=false,
+  bool encountered_first_pair=false
+>
+struct preserve_layout_left_analysis : std::integral_constant<bool, result> {
+  using layout_type_if_preserved = layout_left;
+  using encounter_pair = preserve_layout_left_analysis<
+    // Only the left-most slice can be a pair.  If we've encountered anything else, 
+    // we can't preserve any contiguous layout
+    (encountered_first_scalar || encountered_first_all || encountered_first_pair) ? false : result,
+    // These change in the expected ways
+    encountered_first_scalar,
+    encountered_first_all,
+    true
+  >;
+  using encounter_all = preserve_layout_left_analysis<
+    // If there's a scalar to the left of us, we can't preserve contiguous
+    encountered_first_scalar ? false : result,
+    // These change in the expected ways
+    encountered_first_scalar,
+    true,
+    encountered_first_pair
+  >;
+  using encounter_scalar = preserve_layout_left_analysis<
+    // If there's a scalar to the left of us, we can't preserve contiguous
+    result,
+    // These change in the expected ways
+    true,
+    encountered_first_all,
+    encountered_first_pair
+  >;
+};
+
+struct ignore_layout_preservation : std::integral_constant<bool, false> {
+  using layout_type_if_preserved = void;
+  using encounter_pair = ignore_layout_preservation;
+  using encounter_all = ignore_layout_preservation;
+  using encounter_scalar = ignore_layout_preservation;
+};
+
+//--------------------------------------------------------------------------------
+
+template <
+  class Extents, class StaticStrides, class PreserveLayoutAnalysis,
+  class Offsets = array<ptrdiff_t, 0>,
+  class ExtentInitializers = array<ptrdiff_t, 0>,
+  class DynamicStrides = array<ptrdiff_t, 0>,
   class=std::make_index_sequence<std::tuple_size<Offsets>::value>,
   class=std::make_index_sequence<std::tuple_size<ExtentInitializers>::value>,
   class=std::make_index_sequence<std::tuple_size<DynamicStrides>::value>
@@ -54,6 +137,7 @@ struct _assign_op_slice_handler;
 template <
   ptrdiff_t... Extents,
   ptrdiff_t... StaticStrides,
+  class PreserveLayoutAnalysis,
   size_t NOffsets,
   size_t NDynamicExtents,
   size_t NDynamicStrides,
@@ -64,6 +148,7 @@ template <
 struct _assign_op_slice_handler<
   integer_sequence<ptrdiff_t, Extents...>,
   integer_sequence<ptrdiff_t, StaticStrides...>,
+  PreserveLayoutAnalysis,
   array<ptrdiff_t, NOffsets>,
   array<ptrdiff_t, NDynamicExtents>,
   array<ptrdiff_t, NDynamicStrides>,
@@ -76,23 +161,38 @@ struct _assign_op_slice_handler<
   array<ptrdiff_t, NDynamicExtents> dynamic_extents;
   array<ptrdiff_t, NDynamicStrides> dynamic_strides;
   
-  //template <class _ignore=void, class=enable_if_t<is_void_v<_ignore>>> // avoid instantiating until necessary
-  //MDSPAN_INLINE_FUNCTION
-  //constexpr auto make_extents() {
-  //  return std::extents<Extents...>(dynamic_extents);
-  //}
+  // TODO defer instantiation of this?
+  using layout_type = std::conditional_t<
+    PreserveLayoutAnalysis::value,
+    typename PreserveLayoutAnalysis::layout_type_if_preserved,
+    layout_stride<StaticStrides...>
+  >;
 
-  using layout_type = layout_stride<StaticStrides...>;
-
-  // TODO return layout_left or layout_right if that info can be preserved
-  template <class OldLayoutMapping>
+  template <class NewLayout>
   MDSPAN_INLINE_FUNCTION
   constexpr auto
-  make_layout_mapping(OldLayoutMapping const&) {
+  _make_layout_mapping_impl(NewLayout) {
+    // not layout stride, so don't pass dynamic_strides
+    return typename NewLayout::template mapping<std::extents<Extents...>>(
+      std::extents<Extents...>(dynamic_extents)
+    );
+  }
+
+  MDSPAN_INLINE_FUNCTION
+  constexpr auto
+  _make_layout_mapping_impl(layout_stride<StaticStrides...>) {
+    // not layout stride, so don't pass dynamic_strides
     return typename layout_stride<StaticStrides...>::template mapping<std::extents<Extents...>>(
       std::extents<Extents...>(dynamic_extents),
       dynamic_strides
     );
+  }
+
+  template <class OldLayoutMapping> // mostly for deferred instantiation, but maybe we'll use this in the future
+  MDSPAN_INLINE_FUNCTION
+  constexpr auto
+  make_layout_mapping(OldLayoutMapping const&) {
+    return _make_layout_mapping_impl(layout_type{});
   }
 
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride, class T>
@@ -121,6 +221,7 @@ struct _assign_op_slice_handler<
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents...>,
          integer_sequence<ptrdiff_t, StaticStrides...>,
+         typename PreserveLayoutAnalysis::encounter_scalar,
          array<ptrdiff_t, NOffsets + 1>,
          array<ptrdiff_t, NDynamicExtents>,
          array<ptrdiff_t, NDynamicStrides>
@@ -139,6 +240,7 @@ struct _assign_op_slice_handler<
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents..., OldStaticExtent>,
          integer_sequence<ptrdiff_t, StaticStrides..., OldStaticStride>,
+         typename PreserveLayoutAnalysis::encounter_all,
          array<ptrdiff_t, NOffsets + 1>,
          decltype(fwd_extent(slice)),
          decltype(fwd_stride(slice))
@@ -157,6 +259,7 @@ struct _assign_op_slice_handler<
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents..., std::dynamic_extent>,
          integer_sequence<ptrdiff_t, StaticStrides..., OldStaticStride>,
+         typename PreserveLayoutAnalysis::encounter_pair,
          array<ptrdiff_t, NOffsets + 1>,
          array<ptrdiff_t, NDynamicExtents + 1>,
          decltype(fwd_stride(slice))
@@ -184,6 +287,15 @@ auto subspan(
       detail::_assign_op_slice_handler<
         integer_sequence<ptrdiff_t>,
         integer_sequence<ptrdiff_t>,
+        typename std::conditional<
+          std::is_same<LP, layout_right>::value,
+          std::detail::preserve_layout_right_analysis<>,
+          typename std::conditional<
+            std::is_same<LP, layout_left>::value,
+            std::detail::preserve_layout_left_analysis<>,
+            std::detail::ignore_layout_preservation
+          >::type
+        >::type,
         array<ptrdiff_t, 0>,
         array<ptrdiff_t, 0>,
         array<ptrdiff_t, 0>
