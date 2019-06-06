@@ -38,11 +38,15 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr extents& operator=(extents&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION ~extents() noexcept = default;
 
-  // TODO constrain 
   template <class... Integral>
   MDSPAN_INLINE_FUNCTION
   constexpr extents(Integral... dyn)
-    requires (std::is_integral_v<Integral> && ...)
+    MDSPAN_CONDITIONAL_NOEXCEPT_REQUIRES(
+      noexcept(
+        _storage(detail::construct_mixed_storage_from_sizes_tag, dyn...)
+      ),
+      /* requires */ (std::is_integral_v<Integral> && ...)
+    )
     : _storage(detail::construct_mixed_storage_from_sizes_tag, dyn...)
   { }
 

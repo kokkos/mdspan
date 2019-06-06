@@ -25,7 +25,7 @@ target_include_directories(mdspan INTERFACE
 )
 
 #target_compile_features(mdspan INTERFACE cxx_std_20)
-target_compile_options(mdspan INTERFACE -fconcepts)
+#target_compile_options(mdspan INTERFACE -fconcepts)
 
 ################################################################################
 
