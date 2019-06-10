@@ -25,9 +25,16 @@ struct extents_storage
 {
 public:
   using extents_type = Extents;
-protected:
-  [[no_unique_address]] extents_type _extents;
+private:
+  [[no_unique_address]] extents_type _extents = {};
 public:
+  constexpr extents_storage() noexcept = default;
+  constexpr extents_storage(extents_storage const&) noexcept = default;
+  constexpr extents_storage(extents_storage&&) noexcept = default;
+  constexpr extents_storage& operator=(extents_storage const&) noexcept = default;
+  constexpr extents_storage& operator=(extents_storage&&) noexcept = default;
+  ~extents_storage() noexcept = default;
+
   MDSPAN_INLINE_FUNCTION
   constexpr extents_storage(extents_type const& exts)
     : _extents(exts)
@@ -51,9 +58,16 @@ private:
   using base_t = extents_storage<std::extents<Exts...>>;  
 public:
 
+  constexpr stride_storage_impl() noexcept = default;
+  constexpr stride_storage_impl(stride_storage_impl const&) noexcept = default;
+  constexpr stride_storage_impl(stride_storage_impl&&) noexcept = default;
+  constexpr stride_storage_impl& operator=(stride_storage_impl const&) noexcept = default;
+  constexpr stride_storage_impl& operator=(stride_storage_impl&&) noexcept = default;
+  ~stride_storage_impl() noexcept = default;
+
   using base_t::base_t;
 
-  MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept { return this->base_t::_extents; };
+  MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept { return this->base_t::extents(); };
 
   template <size_t N>
   MDSPAN_INLINE_FUNCTION
@@ -82,6 +96,13 @@ private:
   using base_t = stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>;
 
 public:
+
+  constexpr fixed_layout_common_impl() noexcept = default;
+  constexpr fixed_layout_common_impl(fixed_layout_common_impl const&) noexcept = default;
+  constexpr fixed_layout_common_impl(fixed_layout_common_impl&&) noexcept = default;
+  constexpr fixed_layout_common_impl& operator=(fixed_layout_common_impl const&) noexcept = default;
+  constexpr fixed_layout_common_impl& operator=(fixed_layout_common_impl&&) noexcept = default;
+  ~fixed_layout_common_impl() noexcept = default;
 
   using base_t::base_t;
   using base_t::extents;

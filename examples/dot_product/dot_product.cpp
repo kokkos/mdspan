@@ -15,7 +15,7 @@ template <
 T dot_product(
   std::basic_mdspan<T, ExtsA, LayA, AccA> a,
   std::basic_mdspan<T, ExtsB, LayB, AccB> b
-) requires ExtsA::rank() == ExtsB::rank() && ExtsA::rank() == 2
+) //requires ExtsA::rank() == ExtsB::rank() && ExtsA::rank() == 2
 {
   T result = 0;
   for(int i = 0; i < a.extent(0); ++i) {
@@ -34,7 +34,7 @@ template <
 >
 void fill_in_order(
   std::basic_mdspan<T, ExtsA, LayA, AccA> a
-) requires ExtsA::rank() == 2
+) // requires ExtsA::rank() == 2
 {
   T count = 0;
   for(int i = 0; i < a.extent(0); ++i) {

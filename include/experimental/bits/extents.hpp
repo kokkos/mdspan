@@ -26,7 +26,13 @@ private:
     return (((Idxs == n) ? Extents : 0) + ... + 0); 
   }
 
+  template <ptrdiff_t...>
+  friend class extents;
+
 public:
+
+  static constexpr size_t rank() noexcept { return sizeof...(Extents); }
+  static constexpr size_t rank_dynamic() noexcept { return (int(Extents == dynamic_extent) + ...); }
 
   //--------------------------------------------------------------------------------
   // Constructors, Destructors, and Assignment
@@ -41,11 +47,8 @@ public:
   template <class... Integral>
   MDSPAN_INLINE_FUNCTION
   constexpr extents(Integral... dyn)
-    MDSPAN_CONDITIONAL_NOEXCEPT_REQUIRES(
-      noexcept(
-        _storage(detail::construct_mixed_storage_from_sizes_tag, dyn...)
-      ),
-      /* requires */ (std::is_integral_v<Integral> && ...)
+    MDSPAN_NOEXCEPT_REQUIRES(
+      (std::is_convertible_v<Integral, index_type> && ...) && sizeof...(Integral) == rank_dynamic()
     )
     : _storage(detail::construct_mixed_storage_from_sizes_tag, dyn...)
   { }
@@ -53,19 +56,28 @@ public:
   template <class IndexType>
   MDSPAN_INLINE_FUNCTION
   constexpr extents(std::array<IndexType, storage_type::size_dynamic> const& dyn)
-    MDSPAN_CONDITIONAL_NOEXCEPT_REQUIRES(
-      noexcept(_storage(dyn)),
-      /* requires */ is_convertible_v<IndexType, index_type>
+    MDSPAN_NOEXCEPT_REQUIRES(
+      is_convertible_v<IndexType, index_type>
     )
     : _storage(dyn)
   { }
 
-  // TODO convertible extents ctors
+  // TODO protect this from invalid pack expansion when sizes don't match?
+  template<ptrdiff_t... OtherExtents>
+  constexpr extents(const extents<OtherExtents...>& other)
+    MDSPAN_NOEXCEPT_REQUIRES(
+      (
+        (
+          Extents == dynamic_extent
+          || OtherExtents == dynamic_extent
+          || Extents == OtherExtents
+        ) && ...
+      )
+    )
+    : _storage(other._storage)
+  { }
 
   //--------------------------------------------------------------------------------
-
-  static constexpr size_t rank() noexcept { return sizeof...(Extents); }
-  static constexpr size_t rank_dynamic() noexcept { return (int(Extents == dynamic_extent) + ...); }
   
   MDSPAN_INLINE_FUNCTION
   static constexpr

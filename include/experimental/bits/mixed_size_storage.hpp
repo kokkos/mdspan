@@ -70,7 +70,7 @@ public:
     );
   }
 
-  template <size_t N, ptrdiff_t Default>
+  template <size_t N, ptrdiff_t Default=dynamic_extent>
   static inline constexpr ptrdiff_t get_static() noexcept {
     return std::get<N>(
       array<ptrdiff_t, sizeof...(Sizes)>{select_static<Sizes, DynamicOffsets, Default>()...}
@@ -93,6 +93,18 @@ public:
     : dynamic_sizes{dyn_sizes...}
   { }
 
+  template <ptrdiff_t... USizes, ptrdiff_t... UDynOffs, size_t... UIdxs>
+  constexpr mixed_static_and_dynamic_size_storage(
+    mixed_static_and_dynamic_size_storage<
+      std::integer_sequence<ptrdiff_t, USizes...>,
+      std::integer_sequence<ptrdiff_t, UDynOffs...>,
+      std::integer_sequence<size_t, UIdxs...>
+    > const& other
+  ) : dynamic_sizes{}
+  { 
+    (set<Idxs>(other.template get<Idxs>()), ...);
+  }
+
   template <class Integral>
   MDSPAN_INLINE_FUNCTION
   constexpr mixed_static_and_dynamic_size_storage(std::array<Integral, size_dynamic> const& dyn)
@@ -100,6 +112,8 @@ public:
   { }
 
 };
+
+//================================================================================
 
 template <size_t N, class, class> struct _make_mixed_impl_helper;
 template <size_t N, size_t... Idxs, ptrdiff_t... Sizes>

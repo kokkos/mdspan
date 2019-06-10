@@ -7,12 +7,13 @@ project(MDSpan
 
 ################################################################################
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 ################################################################################
 
-#option(MDSPAN_ENABLE_TESTING "Enable tests." Off)
+option(MDSPAN_ENABLE_TESTS "Enable tests." Off)
 option(MDSPAN_ENABLE_EXAMPLES "Build examples." Off)
+option(MDSPAN_ENABLE_BENCHMARKS "Enable benchmarks." Off)
 
 ################################################################################
 
@@ -23,9 +24,6 @@ target_include_directories(mdspan INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-
-#target_compile_features(mdspan INTERFACE cxx_std_20)
-#target_compile_options(mdspan INTERFACE -fconcepts)
 
 ################################################################################
 
@@ -61,10 +59,14 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfig.cmake ${CMAKE_CURRENT_BIN
 
 ################################################################################
 
-#if(MDSPAN_ENABLE_TESTING)
-  #add_subdirectory(tests)
-#endif()
-#
+if(MDSPAN_ENABLE_TESTS)
+  add_subdirectory(tests)
+endif()
+
 if(MDSPAN_ENABLE_EXAMPLES)
  add_subdirectory(examples)
+endif()
+
+if(MDSPAN_ENABLE_BENCHMARKS)
+ add_subdirectory(benchmarks)
 endif()
