@@ -4,6 +4,6 @@ function(mdspan_add_benchmark EXENAME)
   target_link_libraries(${EXENAME} mdspan benchmark::benchmark)
 endfunction(mdspan_add_benchmark)
 
-find_package(benchmark)
+find_package(benchmark REQUIRED)
 
 add_subdirectory(sum)

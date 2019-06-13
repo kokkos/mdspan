@@ -1,2 +1,4 @@
 
-mdspan_add_benchmark(sum)
+mdspan_add_benchmark(sum_3d_right)
+mdspan_add_benchmark(sum_3d_left)
+mdspan_add_benchmark(sum_subspan_right)

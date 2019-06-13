@@ -106,7 +106,7 @@ public:  // (but not really)
   MDSPAN_INLINE_FUNCTION
   static constexpr
   index_type __static_extent() noexcept {
-    return storage_type::template get_static<N, dynamic_extent>();
+    return storage_type::template get_static<N, Default>();
   }
 
 };

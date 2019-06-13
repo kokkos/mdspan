@@ -156,6 +156,11 @@ struct _assign_op_slice_handler<
   index_sequence<DynamicStrideIdxs...>
 >
 {
+  static_assert(
+    ((StaticStrides == dynamic_extent || StaticStrides > 0) && ...)
+  );
+
+
   array<ptrdiff_t, NOffsets> offsets;
   array<ptrdiff_t, NDynamicExtents> dynamic_extents;
   array<ptrdiff_t, NDynamicStrides> dynamic_strides;
@@ -196,32 +201,33 @@ struct _assign_op_slice_handler<
 
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
-  auto fwd_extent(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const {
+  constexpr auto fwd_extent(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const {
     return dynamic_extents;
   }
 
   template <ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
-  auto fwd_extent(_slice_wrap<dynamic_extent, OldStaticStride, T> const& slice) const {
+  constexpr auto fwd_extent(_slice_wrap<dynamic_extent, OldStaticStride, T> const& slice) const {
     return array{ std::get<ExtentInitIdxs>(dynamic_extents)..., slice.old_extent };
   }
 
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
-  auto fwd_stride(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const {
+  constexpr auto fwd_stride(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const {
     return dynamic_strides;
   }
 
   template <ptrdiff_t OldStaticExtent, class T>
   MDSPAN_INLINE_FUNCTION
-  auto fwd_stride(_slice_wrap<OldStaticExtent, dynamic_extent, T> const& slice) const {
+  constexpr auto fwd_stride(_slice_wrap<OldStaticExtent, dynamic_extent, T> const& slice) const {
     return array{ std::get<DynamicStrideIdxs>(dynamic_strides)..., slice.old_stride };
   }
 
   // For ptrdiff_t slice, skip the extent and stride, but add an offset corresponding to the value
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION
-  auto operator=(_slice_wrap<OldStaticExtent, OldStaticStride, ptrdiff_t> slice)
+  constexpr auto
+  operator=(_slice_wrap<OldStaticExtent, OldStaticStride, ptrdiff_t> slice)
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents...>,
          integer_sequence<ptrdiff_t, StaticStrides...>,
@@ -241,7 +247,8 @@ struct _assign_op_slice_handler<
   // For a std::all, offset 0 and old extent
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION
-  auto operator=(_slice_wrap<OldStaticExtent, OldStaticStride, all_type> slice)
+  constexpr auto
+  operator=(_slice_wrap<OldStaticExtent, OldStaticStride, all_type> slice)
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents..., OldStaticExtent>,
          integer_sequence<ptrdiff_t, StaticStrides..., OldStaticStride>,
@@ -261,7 +268,8 @@ struct _assign_op_slice_handler<
   // For a std::pair, add an offset and add a new dynamic extent (strides still preserved)
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION
-  auto operator=(_slice_wrap<OldStaticExtent, OldStaticStride, std::pair<ptrdiff_t, ptrdiff_t>> slice) 
+  constexpr auto
+  operator=(_slice_wrap<OldStaticExtent, OldStaticStride, std::pair<ptrdiff_t, ptrdiff_t>> slice)
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents..., std::dynamic_extent>,
          integer_sequence<ptrdiff_t, StaticStrides..., OldStaticStride>,
