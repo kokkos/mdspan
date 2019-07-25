@@ -324,10 +324,8 @@ constexpr auto _subspan_impl(
   >(
     std::move(offset_ptr), std::move(map), std::move(acc_pol)
   );
-
 }
 
-  
 } // namespace detail
 
 // TODO constraints

@@ -89,40 +89,47 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr basic_mdspan(basic_mdspan&&) noexcept = default;
 
   // TODO noexcept specification
-  template<class... IndexType>
-  MDSPAN_INLINE_FUNCTION 
-  explicit constexpr basic_mdspan(pointer p, IndexType... dynamic_extents)
-    MDSPAN_NOEXCEPT_REQUIRES(
-      (is_convertible_v<IndexType, index_type> && ...)
-      && (sizeof...(IndexType) == extents_type::rank_dynamic())
-      && is_constructible_v<mapping_type, extents_type>
-      && is_default_constructible_v<accessor_type>
+  MDSPAN_TEMPLATE_REQUIRES(
+    class... IndexType,
+    /* requires */ (
+      (is_convertible_v<IndexType, index_type> && ...) &&
+      (sizeof...(IndexType) == extents_type::rank_dynamic()) &&
+      is_constructible_v<mapping_type, extents_type> &&
+      is_default_constructible_v<accessor_type>
     )
+  )
+  MDSPAN_INLINE_FUNCTION
+  explicit constexpr basic_mdspan(pointer p, IndexType... dynamic_extents)
+    noexcept
     : ptr_(p),
       map_(extents_type(dynamic_extents...)),
       acc_()
   { }
 
   // TODO noexcept specification
-  template<class IndexType, size_t N>
-  MDSPAN_INLINE_FUNCTION 
-  explicit constexpr basic_mdspan(pointer p, const array<IndexType, N>& dynamic_extents)
-    MDSPAN_NOEXCEPT_REQUIRES(
-      is_convertible_v<IndexType, index_type>
-      && (N == extents_type::rank_dynamic())
-      && is_constructible_v<mapping_type, extents_type>
-      && is_default_constructible_v<accessor_type>
+  MDSPAN_TEMPLATE_REQUIRES(
+    class IndexType, size_t N,
+    /* requires */ (
+      is_convertible_v<IndexType, index_type> &&
+      (N == extents_type::rank_dynamic()) &&
+      is_constructible_v<mapping_type, extents_type> &&
+      is_default_constructible_v<accessor_type>
     )
+  )
+  MDSPAN_INLINE_FUNCTION
+  explicit constexpr basic_mdspan(pointer p, const array<IndexType, N>& dynamic_extents)
+    noexcept
     : ptr_(p),
       map_(extents_type(dynamic_extents)),
       acc_()
   { }
 
   // TODO noexcept specification
-  MDSPAN_INLINE_FUNCTION 
-  constexpr basic_mdspan(pointer p, const mapping_type& m)
-    MDSPAN_NOEXCEPT_REQUIRES(is_default_constructible_v<accessor_type>)
-    : ptr_(p),
+  MDSPAN_FUNCTION_REQUIRES(
+    (MDSPAN_INLINE_FUNCTION constexpr),
+    basic_mdspan, (pointer p, const mapping_type& m), noexcept,
+    /* requires */ (is_default_constructible_v<accessor_type>)
+  ) : ptr_(p),
       map_(m),
       acc_()
   { }
@@ -136,48 +143,50 @@ public:
   { }
 
   // TODO noexcept specification
-  template<class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor>
-  MDSPAN_INLINE_FUNCTION 
-  constexpr basic_mdspan(const basic_mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other)
-    MDSPAN_NOEXCEPT_REQUIRES(
-      is_convertible_v<typename OtherLayoutPolicy::template mapping<OtherExtents>, mapping_type>
-      && is_convertible_v<OtherAccessor, accessor_type>
-      && is_convertible_v<typename OtherAccessor::pointer, pointer>
-      && is_convertible_v<OtherExtents, extents_type>
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
+    /* requires */ (
+      is_convertible_v<typename OtherLayoutPolicy::template mapping<OtherExtents>, mapping_type> &&
+      is_convertible_v<OtherAccessor, accessor_type> &&
+      is_convertible_v<typename OtherAccessor::pointer, pointer> &&
+      is_convertible_v<OtherExtents, extents_type>
     )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr basic_mdspan(const basic_mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other)
     : ptr_(other.ptr_),
       map_(other.map_),
       acc_(other.acc_)
   { }
 
-  // TODO noexcept specification
-  ~basic_mdspan() = default;
+  ~basic_mdspan() noexcept = default;
 
   MDSPAN_INLINE_FUNCTION constexpr basic_mdspan& operator=(const basic_mdspan&) noexcept = default;
   MDSPAN_INLINE_FUNCTION constexpr basic_mdspan& operator=(basic_mdspan&&) noexcept = default;
 
-  // TODO constraints, noexcept specification
-  template<class OtherElementType, ptrdiff_t... OtherExtents, class OtherLayoutPolicy, class OtherAccessorPolicy>
-  MDSPAN_INLINE_FUNCTION
-  constexpr basic_mdspan& operator=(
-    const basic_mdspan<OtherElementType, std::extents<OtherExtents...>, OtherLayoutPolicy, OtherAccessorPolicy>& other
-  )
-    MDSPAN_NOEXCEPT_REQUIRES(
-      is_assignable_v<mapping_type, typename OtherLayoutPolicy::template mapping<std::extents<OtherExtents...>>>
-      && is_assignable_v<accessor_type, OtherAccessorPolicy>
-      && is_assignable_v<pointer, typename OtherAccessorPolicy::pointer>
-      && sizeof...(OtherExtents) == extents_type::rank()
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherElementType, ptrdiff_t... OtherExtents, class OtherLayoutPolicy, class OtherAccessorPolicy,
+    /* requires */ (
+      is_assignable_v<mapping_type, typename OtherLayoutPolicy::template mapping<std::extents<OtherExtents...>>> &&
+      is_assignable_v<accessor_type, OtherAccessorPolicy> &&
+      is_assignable_v<pointer, typename OtherAccessorPolicy::pointer> &&
+      sizeof...(OtherExtents) == extents_type::rank() &&
       // "For all r in the range [0, rank()), if other.static_extent(r) != dynamic_extent
       //   && static_extent(r) != dynamic_extent is true, then
       //   other.static_extent(r) == static_extent(r) is true."
-      && (
+      (
         (
           Exts == dynamic_extent
-          || OtherExtents == dynamic_extent
-          || Exts == OtherExtents
+            || OtherExtents == dynamic_extent
+            || Exts == OtherExtents
         ) && ...
       )
     )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr basic_mdspan& operator=(
+    const basic_mdspan<OtherElementType, std::extents<OtherExtents...>, OtherLayoutPolicy, OtherAccessorPolicy>& other
+  ) noexcept(/* TODO noexcept specification */ true)
   {
     ptr_ = other.ptr_;
     map_ = other.map_;
@@ -187,35 +196,41 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.mapping], basic_mdspan mapping domain multidimensional index to access codomain element
 
-  template <class Index>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator[](Index idx) const
-    MDSPAN_NOEXCEPT_REQUIRES(
-      is_convertible_v<Index, index_type>
-      && sizeof...(Exts) == 1
+  MDSPAN_TEMPLATE_REQUIRES(
+    class Index,
+    /* requires */ (
+      is_convertible_v<Index, index_type> &&
+      sizeof...(Exts) == 1
     )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference operator[](Index idx) const noexcept
   {
     return acc_.access(ptr_, map_(idx));
   }
 
-  template<class... IndexType>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator()(IndexType... indices) const
-    MDSPAN_NOEXCEPT_REQUIRES(
-      (is_convertible_v<IndexType, index_type> && ...)
-      && sizeof...(Exts) == extents_type::rank()
+  MDSPAN_TEMPLATE_REQUIRES(
+    class... IndexType,
+    /* requires */ (
+      (is_convertible_v<IndexType, index_type> && ...) &&
+      sizeof...(Exts) == extents_type::rank()
     )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference operator()(IndexType... indices) const noexcept
   {
     return acc_.access(ptr_, map_(indices...)); 
   }
 
-  template<class IndexType, size_t N>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator()(const array<IndexType, N>& indices) const
-    MDSPAN_NOEXCEPT_REQUIRES(
-      is_convertible_v<IndexType, index_type>
-      && N == extents_type::rank()
+  MDSPAN_TEMPLATE_REQUIRES(
+    class IndexType, size_t N,
+    /* requires */ (
+      is_convertible_v<IndexType, index_type> &&
+      N == extents_type::rank()
     )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference operator()(const array<IndexType, N>& indices) const noexcept
   {
     return acc_.access(ptr_, std::apply(map_, indices));
   }

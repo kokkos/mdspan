@@ -9,7 +9,8 @@
 namespace std {
 
 template <ptrdiff_t... Extents>
-class extents {
+class extents
+{
 public:
 
   using index_type = ptrdiff_t;
@@ -29,6 +30,22 @@ private:
   template <ptrdiff_t...>
   friend class extents;
 
+  template <ptrdiff_t... OtherExtents>
+  static std::false_type _check_compatible_extents(std::false_type);
+  template <ptrdiff_t... OtherExtents>
+  static std::integral_constant<
+    bool,
+    (
+      (
+        Extents == dynamic_extent
+          || OtherExtents == dynamic_extent
+          || Extents == OtherExtents
+      ) && ...
+    )
+  >
+  _check_compatible_extents(std::true_type);
+
+
 public:
 
   static constexpr size_t rank() noexcept { return sizeof...(Extents); }
@@ -44,36 +61,40 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr extents& operator=(extents&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION ~extents() noexcept = default;
 
-  template <class... Integral>
-  MDSPAN_INLINE_FUNCTION
-  constexpr extents(Integral... dyn)
-    MDSPAN_NOEXCEPT_REQUIRES(
+  MDSPAN_TEMPLATE_REQUIRES(
+    class... Integral,
+    /* requires */ (
       (std::is_convertible_v<Integral, index_type> && ...) && sizeof...(Integral) == rank_dynamic()
     )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr extents(Integral... dyn) noexcept
     : _storage(detail::construct_mixed_storage_from_sizes_tag, dyn...)
   { }
 
-  template <class IndexType>
-  MDSPAN_INLINE_FUNCTION
-  constexpr extents(std::array<IndexType, storage_type::size_dynamic> const& dyn)
-    MDSPAN_NOEXCEPT_REQUIRES(
+  MDSPAN_TEMPLATE_REQUIRES(
+    class IndexType,
+    /* requires */ (
       is_convertible_v<IndexType, index_type>
     )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr extents(std::array<IndexType, storage_type::size_dynamic> const& dyn) noexcept
     : _storage(dyn)
   { }
 
-  // TODO protect this from invalid pack expansion when sizes don't match?
-  template<ptrdiff_t... OtherExtents>
-  constexpr extents(const extents<OtherExtents...>& other)
-    MDSPAN_NOEXCEPT_REQUIRES(
-      (
-        (
-          Extents == dynamic_extent
-          || OtherExtents == dynamic_extent
-          || Extents == OtherExtents
-        ) && ...
-      )
+  MDSPAN_TEMPLATE_REQUIRES(
+    ptrdiff_t... OtherExtents,
+    /* requires */ (
+      /* multi-stage check to protect from invalid pack expansion when sizes don't match? */
+      decltype(extents<Extents...>::template _check_compatible_extents<OtherExtents...>(
+        std::integral_constant<bool, sizeof...(Extents) == sizeof...(OtherExtents)>{}
+      ))::value
     )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr extents(const extents<OtherExtents...>& other)
+    noexcept
     : _storage(other._storage)
   { }
 
@@ -82,7 +103,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   static constexpr
   index_type static_extent(size_t n) noexcept {
-    return _static_extent_impl(n, std::make_index_sequence<rank()>{});
+    return _static_extent_impl(n, std::make_integer_sequence<size_t, sizeof...(Extents)>{});
   }
 
   MDSPAN_INLINE_FUNCTION

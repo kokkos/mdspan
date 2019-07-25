@@ -54,14 +54,22 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return sizeof...(Exts) > 1; }
 
-  // TODO constraints
-  template <class OtherExtents, bool OtherStoreStrides>
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherExtents,
+    /* requires */ (
+      std::is_convertible_v<OtherExtents, std::extents<Exts...>>
+    )
+  )
   constexpr bool operator==(layout_right_impl<OtherExtents, idx_seq> const& other) const noexcept {
     return ((this->base_t::template __stride<Idxs>() == other.template __stride<Idxs>()) && ...); 
   }
 
-  // TODO constraints
-  template <class OtherExtents, bool OtherStoreStrides>
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherExtents,
+    /* requires */ (
+      std::is_convertible_v<OtherExtents, std::extents<Exts...>>
+    )
+  )
   constexpr bool operator!=(layout_right_impl<OtherExtents, idx_seq> const& other) const noexcept {
     return ((this->base_t::template __stride<Idxs>() != other.template __stride<Idxs>()) || ...); 
   }

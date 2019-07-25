@@ -61,6 +61,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfig.cmake ${CMAKE_CURRENT_BIN
 
 if(MDSPAN_ENABLE_TESTS)
   add_subdirectory(tests)
+  add_subdirectory(compilation_tests)
 endif()
 
 if(MDSPAN_ENABLE_EXAMPLES)
