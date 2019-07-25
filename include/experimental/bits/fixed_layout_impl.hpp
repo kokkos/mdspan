@@ -25,7 +25,7 @@ struct extents_storage
 {
 public:
   using extents_type = Extents;
-private:
+protected:
   [[no_unique_address]] extents_type _extents = {};
 public:
   constexpr extents_storage() noexcept = default;

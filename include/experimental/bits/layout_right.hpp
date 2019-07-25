@@ -51,10 +51,22 @@ public:
       is_convertible_v<OtherExtents, std::extents<Exts...>>
     )
   )
-  layout_right_impl(layout_right_impl<OtherExtents> const& other)
+  layout_right_impl(layout_right_impl<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
     : base_t(other.extents())
   { }
 
+  // TODO noexcept specification
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherExtents,
+      /* requires */ (
+      is_convertible_v<OtherExtents, std::extents<Exts...>>
+    )
+  )
+  layout_right_impl& operator=(layout_right_impl<OtherExtents> const& other)
+  {
+    this->_extents = other.extents();
+    return *this;
+  }
   //--------------------------------------------------------------------------------
 
   using base_t::extents;

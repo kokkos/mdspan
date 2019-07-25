@@ -18,7 +18,7 @@ template <ptrdiff_t... Exts, ptrdiff_t... Strides>
 class layout_stride_impl<
   std::extents<Exts...>, Strides...
 >
-  : extents_storage<std::extents<Exts...>>
+  : public extents_storage<std::extents<Exts...>>
 {
 private:
 
