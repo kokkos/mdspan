@@ -17,18 +17,18 @@ struct layout_right_idx_conditional {
   };
 };
 
-template <class, class> class layout_right_impl;
+template <class> class layout_right_impl;
 
-template <ptrdiff_t... Exts, size_t... Idxs>
-class layout_right_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>>
-  : public fixed_layout_common_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, layout_right_idx_conditional>
+template <ptrdiff_t... Exts>
+class layout_right_impl<std::extents<Exts...>>
+  : public fixed_layout_common_impl<std::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_right_idx_conditional>
 {
 private:
 
-  using base_t = fixed_layout_common_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, layout_right_idx_conditional>;
-  using idx_seq = integer_sequence<size_t, Idxs...>;
+  using idx_seq = make_index_sequence<sizeof...(Exts)>;
+  using base_t = fixed_layout_common_impl<std::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_right_idx_conditional>;
 
-  template <class, class>
+  template <class>
   friend class layout_right_impl;
 
 public:
@@ -44,7 +44,16 @@ public:
 
   using base_t::base_t;
 
-  // TODO conversion constructors and assignment
+  // TODO noexcept specification
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherExtents,
+    /* requires */ (
+      is_convertible_v<OtherExtents, std::extents<Exts...>>
+    )
+  )
+  layout_right_impl(layout_right_impl<OtherExtents> const& other)
+    : base_t(other.extents())
+  { }
 
   //--------------------------------------------------------------------------------
 
@@ -54,24 +63,17 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return sizeof...(Exts) > 1; }
 
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherExtents,
-    /* requires */ (
-      std::is_convertible_v<OtherExtents, std::extents<Exts...>>
-    )
-  )
-  constexpr bool operator==(layout_right_impl<OtherExtents, idx_seq> const& other) const noexcept {
-    return ((this->base_t::template __stride<Idxs>() == other.template __stride<Idxs>()) && ...); 
+  // TODO @proposal-bug these (and other analogous operators) should be non-member functions
+  template<class OtherExtents>
+  MDSPAN_INLINE_FUNCTION
+  constexpr bool operator==(layout_right_impl<OtherExtents> const& other) const noexcept {
+    return this->base_t::extents() == other.extents();
   }
 
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherExtents,
-    /* requires */ (
-      std::is_convertible_v<OtherExtents, std::extents<Exts...>>
-    )
-  )
-  constexpr bool operator!=(layout_right_impl<OtherExtents, idx_seq> const& other) const noexcept {
-    return ((this->base_t::template __stride<Idxs>() != other.template __stride<Idxs>()) || ...); 
+  template<class OtherExtents>
+  MDSPAN_INLINE_FUNCTION
+  constexpr bool operator!=(layout_right_impl<OtherExtents> const& other) const noexcept {
+    return this->base_t::extents() != other.extents();
   }
 
 };
@@ -80,12 +82,9 @@ public:
 
 //==============================================================================
 
-
 struct layout_right {
   template <class Extents>
-  using mapping = detail::layout_right_impl<
-    Extents,
-    make_index_sequence<Extents::rank()>
-  >;
+  using mapping = detail::layout_right_impl<Extents>;
 };
+
 } // end namespace std

@@ -7,4 +7,5 @@ endmacro()
 find_package(GTest REQUIRED)
 
 add_test(test_contiguous_layouts)
+add_test(test_layout_ctors)
 

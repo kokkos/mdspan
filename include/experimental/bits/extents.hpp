@@ -45,6 +45,29 @@ private:
   >
   _check_compatible_extents(std::true_type);
 
+  template <ptrdiff_t... OtherExtents, size_t... Idxs>
+  MDSPAN_INLINE_FUNCTION
+  constexpr bool _eq_impl(std::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return false; }
+  template <ptrdiff_t... OtherExtents, size_t... Idxs>
+  MDSPAN_INLINE_FUNCTION
+  constexpr bool _eq_impl(
+    std::extents<OtherExtents...> other,
+    true_type, index_sequence<Idxs...>
+  ) const noexcept {
+    return ((_storage.template get<Idxs>() == other._storage.template get<Idxs>()) && ...);
+  }
+
+  template <ptrdiff_t... OtherExtents, size_t... Idxs>
+  MDSPAN_INLINE_FUNCTION
+  constexpr bool _not_eq_impl(std::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return true; }
+  template <ptrdiff_t... OtherExtents, size_t... Idxs>
+  MDSPAN_INLINE_FUNCTION
+  constexpr bool _not_eq_impl(
+    std::extents<OtherExtents...> other,
+    true_type, index_sequence<Idxs...>
+  ) const noexcept {
+    return ((_storage.template get<Idxs>() != other._storage.template get<Idxs>()) || ...);
+  }
 
 public:
 
@@ -114,6 +137,24 @@ public:
 
   //--------------------------------------------------------------------------------
 
+  template<ptrdiff_t... RHS>
+  MDSPAN_INLINE_FUNCTION
+  friend constexpr bool operator==(extents const& lhs, extents<RHS...> const& rhs) noexcept {
+    return lhs._eq_impl(
+      rhs, std::integral_constant<bool, (sizeof...(Extents) == sizeof...(RHS))>{},
+      make_index_sequence<sizeof...(RHS)>{}
+    );
+  }
+
+  template<ptrdiff_t... RHS>
+  MDSPAN_INLINE_FUNCTION
+  friend constexpr bool operator!=(extents const& lhs, extents<RHS...> const& rhs) noexcept {
+    return lhs._not_eq_impl(
+      rhs, std::integral_constant<bool, (sizeof...(Extents) == sizeof...(RHS))>{},
+      make_index_sequence<sizeof...(RHS)>{}
+    );
+  }
+
 public:  // (but not really)
 
   template <size_t N>
@@ -130,6 +171,8 @@ public:  // (but not really)
     return storage_type::template get_static<N, Default>();
   }
 
+
 };
+
 
 } // namespace std

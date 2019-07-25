@@ -27,25 +27,6 @@ ptrdiff_t get_expected_mapping(
   return k + j*extents.extent(2) + i*extents.extent(1)*extents.extent(2);
 }
 
-#if 0
-// Because of inconsistent compiler behavior, the best way I can figure out to deduce the extents in this context is something like:
-MDSPAN_TEMPLATE_REQUIRES(
-  class LayoutRightMapping,
-/* requires */ (
-    std::is_same_v<LayoutRightMapping, std::layout_right::template mapping<decltype(std::declval<LayoutRightMapping>().extents())>>
-  )
-)
-ptrdiff_t get_expected_mapping(
-  LayoutRightMapping const& map,
-  ptrdiff_t i, ptrdiff_t j, ptrdiff_t k
-)
-{
-  auto const& extents = map.extents();
-  return k + j*extents.extent(2) + i*extents.extent(1)*extents.extent(2);
-}
-#endif
-
-
 template <class> struct TestLayout;
 
 template <class Mapping, ptrdiff_t... DynamicSizes>
@@ -61,14 +42,14 @@ struct TestLayout<std::tuple<
     map = Mapping(extents_type(DynamicSizes...));
   }
 
-  void SetUp() {
+  void SetUp() override {
     initialize_mapping();
   }
 
   template <class... Index>
   ptrdiff_t expected_mapping(Index... idxs) const {
     using extents_type = decltype(map.extents());
-    return get_expected_mapping<extents_type>(map, idxs...);
+    return get_expected_mapping(map, idxs...);
   }
 };
 
