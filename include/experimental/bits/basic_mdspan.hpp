@@ -174,13 +174,8 @@ public:
       // "For all r in the range [0, rank()), if other.static_extent(r) != dynamic_extent
       //   && static_extent(r) != dynamic_extent is true, then
       //   other.static_extent(r) == static_extent(r) is true."
-      (
-        (
-          Exts == dynamic_extent
-            || OtherExtents == dynamic_extent
-            || Exts == OtherExtents
-        ) && ...
-      )
+      // (this is just the convertiblity constraint on extents...)
+      is_convertible_v<std::extents<Exts...>, std::extents<OtherExtents...>>
     )
   )
   MDSPAN_INLINE_FUNCTION

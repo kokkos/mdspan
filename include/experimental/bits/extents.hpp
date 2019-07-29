@@ -8,6 +8,29 @@
 
 namespace std {
 
+namespace detail {
+
+template <ptrdiff_t... Extents, ptrdiff_t... OtherExtents>
+static constexpr std::false_type _check_compatible_extents(
+  std::false_type, std::integer_sequence<ptrdiff_t, Extents...>, std::integer_sequence<ptrdiff_t, OtherExtents...>
+) noexcept { return { }; }
+template <ptrdiff_t... Extents, ptrdiff_t... OtherExtents>
+static std::integral_constant<
+  bool,
+  (
+    (
+      Extents == dynamic_extent
+        || OtherExtents == dynamic_extent
+        || Extents == OtherExtents
+    ) && ...
+  )
+>
+_check_compatible_extents(
+  std::true_type, std::integer_sequence<ptrdiff_t, Extents...>, std::integer_sequence<ptrdiff_t, OtherExtents...>
+) noexcept { return { }; }
+
+} // end namespace detail
+
 template <ptrdiff_t... Extents>
 class extents
 {
@@ -30,20 +53,6 @@ private:
   template <ptrdiff_t...>
   friend class extents;
 
-  template <ptrdiff_t... OtherExtents>
-  static std::false_type _check_compatible_extents(std::false_type);
-  template <ptrdiff_t... OtherExtents>
-  static std::integral_constant<
-    bool,
-    (
-      (
-        Extents == dynamic_extent
-          || OtherExtents == dynamic_extent
-          || Extents == OtherExtents
-      ) && ...
-    )
-  >
-  _check_compatible_extents(std::true_type);
 
   template <ptrdiff_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
@@ -72,7 +81,7 @@ private:
 public:
 
   static constexpr size_t rank() noexcept { return sizeof...(Extents); }
-  static constexpr size_t rank_dynamic() noexcept { return (int(Extents == dynamic_extent) + ...); }
+  static constexpr size_t rank_dynamic() noexcept { return (int(Extents == dynamic_extent) + ... + 0); }
 
   //--------------------------------------------------------------------------------
   // Constructors, Destructors, and Assignment
@@ -110,8 +119,10 @@ public:
     ptrdiff_t... OtherExtents,
     /* requires */ (
       /* multi-stage check to protect from invalid pack expansion when sizes don't match? */
-      decltype(extents<Extents...>::template _check_compatible_extents<OtherExtents...>(
-        std::integral_constant<bool, sizeof...(Extents) == sizeof...(OtherExtents)>{}
+      decltype(detail::_check_compatible_extents(
+        std::integral_constant<bool, sizeof...(Extents) == sizeof...(OtherExtents)>{},
+        std::integer_sequence<ptrdiff_t, Extents...>{},
+        std::integer_sequence<ptrdiff_t, OtherExtents...>{}
       ))::value
     )
   )
