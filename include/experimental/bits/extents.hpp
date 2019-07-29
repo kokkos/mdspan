@@ -132,6 +132,23 @@ public:
     : _storage(other._storage)
   { }
 
+  MDSPAN_TEMPLATE_REQUIRES(
+    ptrdiff_t... OtherExtents,
+    /* requires */ (
+      /* multi-stage check to protect from invalid pack expansion when sizes don't match? */
+      decltype(detail::_check_compatible_extents(
+        std::integral_constant<bool, sizeof...(Extents) == sizeof...(OtherExtents)>{},
+        std::integer_sequence<ptrdiff_t, Extents...>{},
+        std::integer_sequence<ptrdiff_t, OtherExtents...>{}
+      ))::value
+    )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr extents& operator=(const extents<OtherExtents...>& other) noexcept
+  {
+    _storage = other._storage;
+  }
+
   //--------------------------------------------------------------------------------
   
   MDSPAN_INLINE_FUNCTION

@@ -59,3 +59,11 @@ MDSPAN_STATIC_TEST(
     std::extents<2, 3>
   >
 );
+
+MDSPAN_STATIC_TEST(
+  std::is_assignable_v<
+    std::extents<2, std::dynamic_extent>,
+    std::extents<2, 3>
+  >
+);
+
