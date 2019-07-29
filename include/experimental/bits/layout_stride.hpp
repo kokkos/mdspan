@@ -16,70 +16,6 @@ namespace std {
 
 namespace detail {
 
-// TODO make this faster; this is pretty ugly right now
-template <class T>
-
-template <class, ptrdiff_t>
-struct _fold_assign_drop;
-template <size_t... Idxs, size_t I>
-struct _fold_assign_drop<index_sequence<Idxs...>, I> {
-  template <ptrdiff_t J>
-  _fold_assign_drop<index_sequence<Idxs..., J>, I> operator=(integral_constant<size_t, J>) noexcept; // NOLINT(misc-unconventional-assign-operator)
-  _fold_assign_drop<index_sequence<Idxs...>, I> operator=(integral_constant<size_t, I>) noexcept; // NOLINT(misc-unconventional-assign-operator)
-  using type = index_sequence<Idxs...>;
-};
-template <class T, ptrdiff_t I> struct _drop_index_impl;
-template <class T, T... Vals, ptrdiff_t I> struct _drop_index_impl<
-  std::integer_sequence<T, Vals...>, I
-> {
-  using type = typename decltype(
-    ((_fold_assign_drop<integer_sequence<T>, I>{}) = ... = std::integral_constant<T, Vals>{})
-  )::type;
-};
-
-template <class, class, class, bool, ptrdiff_t>
-struct _fold_assign_is_always_contig;
-template <class ExtentsType, class StridesType, ptrdiff_t... Rem, bool Result, ptrdiff_t PrevStrideTimesExt>
-struct _fold_assign_is_always_contig<ExtentsType, StridesType, std::index_sequence<Rem...>, Result, PrevStrideTimesExt> {
-  static constexpr auto value = Result;
-
-  // if any of the strides at the remaining indices equal _prev_stride_times_prev_extent, then remove that index from
-  // the remaining indices and continue with true
-
-  static constexpr auto NextIdx = (
-    (
-      (ExtentsType::template __static_extent<Rem>() == PrevStrideTimesExt) ?
-      Rem + 1 : 0
-    ) + ... + 0
-  ) - 1;
-
-  MDSPAN_TEMPLATE_REQUIRES(
-    size_t N,
-    (NextIdx > 0)
-  )
-  constexpr
-  _fold_assign_is_always_contig<
-    ExtentsType,
-    StridesType,
-    typename _drop_index_impl<std::index_sequence<Rem...>, NextIdx>::type,
-    Result,
-    (ExtentsType::template __static_extent<NextIdx>() * StridesType::template get<NextIdx>)
-  > operator=(std::integral_constant<size_t, N>) noexcept;
-
-  MDSPAN_TEMPLATE_REQUIRES(
-    size_t N,
-    (NextIdx == 0)
-  )
-  constexpr
-  _fold_assign_is_always_contig<ExtentsType, StridesType, std::index_sequence<>, false, 0>
-  operator=(std::integral_constant<size_t, N>) noexcept;
-};
-template <class ExtentsType, class StridesType, class RemType>
-struct _fold_assign_is_always_contig<ExtentsType, StridesType, RemType, false, 0> {
-  template <size_t N>
-  _fold_assign_is_always_contig operator=(std::integral_constant<size_t, N>) noexcept;
-};
-
 template <class, ptrdiff_t...> class layout_stride_impl;
 
 template <ptrdiff_t... Exts, ptrdiff_t... Strides>
@@ -128,17 +64,6 @@ private:
     static constexpr size_t _req_span_size_impl(layout_stride_impl const& self) noexcept {
       // assumes no negative strides; not sure if I'm allowed to assume that or not
       return __impl::_call_op_impl(self, (self.extents().template __extent<Idxs>() - 1)...) + 1;
-    }
-
-    MDSPAN_INLINE_FUNCTION
-    static constexpr bool _is_always_contiguous_impl() noexcept {
-      return (
-        _fold_assign_is_always_contig<
-          std::extents<Exts...>,
-          stride_storage_t,
-          std::index_sequence<Idxs...>,
-
-      )
     }
   };
 
@@ -193,6 +118,7 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
   // TODO @proposal-bug this wording for this is (at least slightly) broken (should at least be "... stride(p[0]) == 1...")
   MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept {
+    // TODO @testing test layout_stride is_contiguous()
     auto rem = std::array<ptrdiff_t, sizeof...(Exts)>{ };
     std::iota(rem.begin(), rem.end(), ptrdiff_t(0));
     auto next_idx_iter = std::find_if(
@@ -228,17 +154,22 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
 
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
-  /* this is the only recursive template instantiation in the implementation, so don't do it unless we need it */
-  MDSPAN_INSTANTIATE_ONLY_IF_USED
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept {
-    return ;
+    // TODO @proposal-bug this will need to be updated with the incorporation of static strides into the layout stride definition
+    // TODO this should actually check whether we know statically from the strides if this is always contiguous
+    return false;
   }
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
-  // TODO constraints
-  template <class... Integral>
+  MDSPAN_TEMPLATE_REQUIRES(
+    class... Indices,
+    /* requires */ (
+      sizeof...(Indices) == sizeof...(Exts) &&
+      (is_constructible_v<Indices, ptrdiff_t> && ...)
+    )
+  )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t operator()(Integral... idxs) const noexcept {
+  constexpr ptrdiff_t operator()(Indices... idxs) const noexcept {
     return __impl<>::_call_op_impl(*this, idxs...);
   }
 
