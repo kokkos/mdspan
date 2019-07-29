@@ -120,7 +120,7 @@ public:
 
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
   MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept { return true; }
-  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return sizeof...(Exts) > 1; /* TODO Check this! */ }
+  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
 
   MDSPAN_INLINE_FUNCTION
   constexpr ptrdiff_t stride(size_t r) const noexcept {

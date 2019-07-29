@@ -51,6 +51,7 @@ public:
       is_convertible_v<OtherExtents, std::extents<Exts...>>
     )
   )
+  MDSPAN_INLINE_FUNCTION
   layout_right_impl(layout_right_impl<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
     : base_t(other.extents())
   { }
@@ -62,6 +63,7 @@ public:
       is_convertible_v<OtherExtents, std::extents<Exts...>>
     )
   )
+  MDSPAN_INLINE_FUNCTION
   layout_right_impl& operator=(layout_right_impl<OtherExtents> const& other)
   {
     this->_extents = other.extents();
@@ -73,7 +75,7 @@ public:
 
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return sizeof...(Exts) > 1; }
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
   // TODO @proposal-bug these (and other analogous operators) should be non-member functions
   template<class OtherExtents>

@@ -92,3 +92,9 @@
     MDSPAN_CLOSE_ANGLE_REQUIRES(REQ) \
     /**/
 
+#define MDSPAN_INSTANTIATE_ONLY_IF_USED \
+  MDSPAN_TEMPLATE_REQUIRES( \
+    class __instantiate_only_if_used_tparam=void, \
+    ( std::is_void_v<__instantiate_only_if_used_tparam> ) \
+  ) \
+  /**/
