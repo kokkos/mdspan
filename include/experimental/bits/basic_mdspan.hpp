@@ -101,6 +101,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   explicit constexpr basic_mdspan(pointer p, IndexType... dynamic_extents)
     noexcept
+    // TODO @proposal-bug shouldn't I be allowed to do `move(p)` here?
     : ptr_(p),
       map_(extents_type(dynamic_extents...)),
       acc_()
@@ -149,6 +150,7 @@ public:
       is_convertible_v<typename OtherLayoutPolicy::template mapping<OtherExtents>, mapping_type> &&
       is_convertible_v<OtherAccessor, accessor_type> &&
       is_convertible_v<typename OtherAccessor::pointer, pointer> &&
+      // TODO @proposal-bug there is a redundant constraint in the proposal; the convertibility of the extents is effectively stated twice
       is_convertible_v<OtherExtents, extents_type>
     )
   )
@@ -186,6 +188,7 @@ public:
     ptr_ = other.ptr_;
     map_ = other.map_;
     acc_ = other.acc_;
+    return *this;
   }
 
   //--------------------------------------------------------------------------------
@@ -201,7 +204,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](Index idx) const noexcept
   {
-    return acc_.access(ptr_, map_(idx));
+    return acc_.access(ptr_, map_(index_type(idx)));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -214,7 +217,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(IndexType... indices) const noexcept
   {
-    return acc_.access(ptr_, map_(indices...)); 
+    return acc_.access(ptr_, map_(index_type(indices)...));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -246,7 +249,19 @@ public:
     return this->_crtp_base_t::__size();
   };
 
-  MDSPAN_INLINE_FUNCTION constexpr index_type unique_size() const noexcept { return map_.required_span_size(); }
+  // TODO @proposal-bug for non-unique, non-contiguous mappings this is unimplementable
+  MDSPAN_INLINE_FUNCTION constexpr index_type unique_size() const noexcept {
+    if(map_.is_unique()) {
+      return size();
+    }
+    else if(map_.is_contiguous()) {
+      return map_.required_span_size();
+    }
+    else {
+      // ??? guess, for now, until this gets fixed in the proposal ???
+      return map_.required_span_size();
+    }
+  }
 
   // [mdspan.basic.codomain], basic_mdspan observers of the codomain
   // TODO span (or just `codomain` function, as discussed)

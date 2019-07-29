@@ -11,6 +11,30 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
+  std::is_copy_constructible_v<
+    std::extents<1, 2, std::dynamic_extent>
+  >
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_copy_constructible_v<
+    std::extents<1, 2>
+  >
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_copy_constructible_v<
+    std::extents<std::dynamic_extent>
+  >
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_move_constructible_v<
+    std::extents<1, 2, std::dynamic_extent>
+  >
+);
+
+MDSPAN_STATIC_TEST(
   std::is_default_constructible_v<
     std::extents<1, 2, 3>
   >

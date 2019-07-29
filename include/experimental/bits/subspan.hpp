@@ -5,8 +5,12 @@
 #include "basic_mdspan.hpp"
 #include "all_type.hpp"
 #include "dynamic_extent.hpp"
+#include "layout_left.hpp"
+#include "layout_right.hpp"
+#include "layout_stride.hpp"
 
 #include <tuple> // std::apply
+#include <utility> // std::pair
 
 namespace std {
 
@@ -326,10 +330,32 @@ constexpr auto _subspan_impl(
   );
 }
 
+template <class T> struct _is_layout_stride : std::false_type { };
+template <ptrdiff_t... StaticStrides> struct _is_layout_stride<
+  layout_stride<StaticStrides...>
+> : std::true_type
+{ };
+
+
 } // namespace detail
 
-// TODO constraints
-template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs>
+// TODO @proposal-bug sizeof...(SliceSpecs) == sizeof...(Exts) should be a constraint, not a requirement
+MDSPAN_TEMPLATE_REQUIRES(
+  class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs,
+  /* requires */ (
+    (
+      is_same_v<LP, layout_left>
+        || is_same_v<LP, layout_right>
+        || detail::_is_layout_stride<LP>::value
+    ) &&
+    ((
+      is_convertible_v<SliceSpecs, ptrdiff_t>
+        || is_convertible_v<SliceSpecs, pair<ptrdiff_t, ptrdiff_t>>
+        || is_convertible_v<SliceSpecs, all_type>
+    ) && ...) &&
+    sizeof...(SliceSpecs) == sizeof...(Exts)
+  )
+)
 MDSPAN_INLINE_FUNCTION
 constexpr auto subspan(
   basic_mdspan<ET, std::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices

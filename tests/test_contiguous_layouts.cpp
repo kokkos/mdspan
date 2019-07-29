@@ -48,7 +48,6 @@ struct TestLayout<std::tuple<
 
   template <class... Index>
   ptrdiff_t expected_mapping(Index... idxs) const {
-    using extents_type = decltype(map.extents());
     return get_expected_mapping(map, idxs...);
   }
 };

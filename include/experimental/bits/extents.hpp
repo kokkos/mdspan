@@ -41,7 +41,7 @@ public:
 private:
 
   using storage_type = typename detail::_make_mixed_impl<integer_sequence<ptrdiff_t, Extents...>>::type;
-  [[no_unique_address]] storage_type _storage;
+  [[no_unique_address]] storage_type _storage = { };
 
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -80,7 +80,9 @@ private:
 
 public:
 
+  MDSPAN_INLINE_FUNCTION
   static constexpr size_t rank() noexcept { return sizeof...(Extents); }
+  MDSPAN_INLINE_FUNCTION
   static constexpr size_t rank_dynamic() noexcept { return (int(Extents == dynamic_extent) + ... + 0); }
 
   //--------------------------------------------------------------------------------
@@ -94,16 +96,35 @@ public:
   MDSPAN_INLINE_FUNCTION ~extents() noexcept = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
+    ptrdiff_t... OtherExtents,
+    /* requires */ (
+      /* multi-stage check to protect from invalid pack expansion when sizes don't match? */
+      decltype(detail::_check_compatible_extents(
+        std::integral_constant<bool, sizeof...(Extents) == sizeof...(OtherExtents)>{},
+        std::integer_sequence<ptrdiff_t, Extents...>{},
+        std::integer_sequence<ptrdiff_t, OtherExtents...>{}
+      ))::value
+    )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr extents(const extents<OtherExtents...>& other)
+    noexcept
+    : _storage(other._storage)
+  { }
+
+  MDSPAN_TEMPLATE_REQUIRES(
     class... Integral,
     /* requires */ (
       (std::is_convertible_v<Integral, index_type> && ...) && sizeof...(Integral) == rank_dynamic()
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(Integral... dyn) noexcept
+  constexpr explicit extents(Integral... dyn) noexcept
     : _storage(detail::construct_mixed_storage_from_sizes_tag, dyn...)
   { }
 
+
+  // TODO @proposal-bug this constructor should be explicit
   MDSPAN_TEMPLATE_REQUIRES(
     class IndexType,
     /* requires */ (
@@ -127,26 +148,10 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(const extents<OtherExtents...>& other)
-    noexcept
-    : _storage(other._storage)
-  { }
-
-  MDSPAN_TEMPLATE_REQUIRES(
-    ptrdiff_t... OtherExtents,
-    /* requires */ (
-      /* multi-stage check to protect from invalid pack expansion when sizes don't match? */
-      decltype(detail::_check_compatible_extents(
-        std::integral_constant<bool, sizeof...(Extents) == sizeof...(OtherExtents)>{},
-        std::integer_sequence<ptrdiff_t, Extents...>{},
-        std::integer_sequence<ptrdiff_t, OtherExtents...>{}
-      ))::value
-    )
-  )
-  MDSPAN_INLINE_FUNCTION
   constexpr extents& operator=(const extents<OtherExtents...>& other) noexcept
   {
     _storage = other._storage;
+    return *this;
   }
 
   //--------------------------------------------------------------------------------
