@@ -52,7 +52,7 @@
 //================================================================================
 
 template <class T, ptrdiff_t... Es>
-using lmdspan = std::basic_mdspan<T, std::extents<Es...>, std::layout_left>;
+using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 
 //================================================================================
 
@@ -79,9 +79,9 @@ void BM_MDSpan_Sum_3D_left(benchmark::State& state, MDSpan, DynSizes... dyn) {
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, left_, lmdspan, 20, 20, 20);
-MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, right_, std::mdspan, 20, 20, 20);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, right_, stdex::mdspan, 20, 20, 20);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, left_, lmdspan, 200, 200, 200);
-MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, right_, std::mdspan, 200, 200, 200);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, right_, stdex::mdspan, 200, 200, 200);
 
 //================================================================================
 

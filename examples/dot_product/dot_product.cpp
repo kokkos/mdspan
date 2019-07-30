@@ -47,6 +47,8 @@
 #include <iomanip>
 #include <memory>
 
+namespace stdex = std::experimental;
+
 //================================================================================
 
 template <
@@ -55,8 +57,8 @@ template <
   class ExtsB, class LayB, class AccB
 >
 T dot_product(
-  std::basic_mdspan<T, ExtsA, LayA, AccA> a,
-  std::basic_mdspan<T, ExtsB, LayB, AccB> b
+  stdex::basic_mdspan<T, ExtsA, LayA, AccA> a,
+  stdex::basic_mdspan<T, ExtsB, LayB, AccB> b
 ) //requires ExtsA::rank() == ExtsB::rank() && ExtsA::rank() == 2
 {
   T result = 0;
@@ -75,7 +77,7 @@ template <
   class ExtsA, class LayA, class AccA
 >
 void fill_in_order(
-  std::basic_mdspan<T, ExtsA, LayA, AccA> a
+  stdex::basic_mdspan<T, ExtsA, LayA, AccA> a
 ) // requires ExtsA::rank() == 2
 {
   T count = 0;
@@ -95,8 +97,8 @@ constexpr int cols = 3;
 
 int main() {
   {
-    using span_2d_dynamic = std::basic_mdspan<int, std::extents<std::dynamic_extent, std::dynamic_extent>, std::layout_right>;
-    using span_2d_dynamic_left = std::basic_mdspan<int, std::extents<std::dynamic_extent, std::dynamic_extent>, std::layout_left>;
+    using span_2d_dynamic = stdex::basic_mdspan<int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, stdex::layout_right>;
+    using span_2d_dynamic_left = stdex::basic_mdspan<int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, stdex::layout_left>;
 
     auto data_a = std::make_unique<int[]>(rows * cols);
     auto data_b = std::make_unique<int[]>(rows * cols);
@@ -110,8 +112,8 @@ int main() {
   }
 
   {
-    using span_2d_10_10 = std::basic_mdspan<int, std::extents<rows, cols>, std::layout_right>;
-    using span_2d_10_10_left = std::basic_mdspan<int, std::extents<rows, cols>, std::layout_right>;
+    using span_2d_10_10 = stdex::basic_mdspan<int, stdex::extents<rows, cols>, stdex::layout_right>;
+    using span_2d_10_10_left = stdex::basic_mdspan<int, stdex::extents<rows, cols>, stdex::layout_right>;
 
     auto data_a = std::make_unique<int[]>(100);
     auto data_b = std::make_unique<int[]>(100);

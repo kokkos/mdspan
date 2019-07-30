@@ -51,6 +51,7 @@
 #include <array>
 
 namespace std {
+namespace experimental {
 namespace detail {
 
 _MDSPAN_INLINE_VARIABLE constexpr struct construct_mixed_storage_from_sizes_tag_t { } construct_mixed_storage_from_sizes_tag = { };
@@ -216,4 +217,5 @@ struct _make_mixed_impl<integer_sequence<T, Sizes...>, integer_sequence<size_t, 
 };
 
 } // namespace detail
+} // end namespace experimental
 } // namespace std

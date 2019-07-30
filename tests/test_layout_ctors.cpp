@@ -45,6 +45,7 @@
 #include <gtest/gtest-typed-test.h>
 #include <experimental/mdspan>
 
+namespace stdex = std::experimental;
 
 template <class> struct TestLayoutCtors;
 template <class Mapping, ptrdiff_t... DynamicSizes>
@@ -59,30 +60,30 @@ struct TestLayoutCtors<std::tuple<
 
 template <class Extents, ptrdiff_t... DynamicSizes>
 using test_left_type = std::tuple<
-  typename std::layout_left::template mapping<Extents>,
+  typename stdex::layout_left::template mapping<Extents>,
   std::integer_sequence<ptrdiff_t, DynamicSizes...>
 >;
 
 template <class Extents, ptrdiff_t... DynamicSizes>
 using test_right_type = std::tuple<
-  typename std::layout_right::template mapping<Extents>,
+  typename stdex::layout_right::template mapping<Extents>,
   std::integer_sequence<ptrdiff_t, DynamicSizes...>
 >;
 
 using layout_test_types =
   ::testing::Types<
-    test_left_type<std::extents<10>>,
-    test_right_type<std::extents<10>>,
+    test_left_type<stdex::extents<10>>,
+    test_right_type<stdex::extents<10>>,
     //----------
-    test_left_type<std::extents<std::dynamic_extent>, 10>,
-    test_right_type<std::extents<std::dynamic_extent>, 10>,
+    test_left_type<stdex::extents<stdex::dynamic_extent>, 10>,
+    test_right_type<stdex::extents<stdex::dynamic_extent>, 10>,
     //----------
-    test_left_type<std::extents<std::dynamic_extent, 10>, 5>,
-    test_left_type<std::extents<5, std::dynamic_extent>, 10>,
-    test_left_type<std::extents<5, 10>>,
-    test_right_type<std::extents<std::dynamic_extent, 10>, 5>,
-    test_right_type<std::extents<5, std::dynamic_extent>, 10>,
-    test_right_type<std::extents<5, 10>>
+    test_left_type<stdex::extents<stdex::dynamic_extent, 10>, 5>,
+    test_left_type<stdex::extents<5, stdex::dynamic_extent>, 10>,
+    test_left_type<stdex::extents<5, 10>>,
+    test_right_type<stdex::extents<stdex::dynamic_extent, 10>, 5>,
+    test_right_type<stdex::extents<5, stdex::dynamic_extent>, 10>,
+    test_right_type<stdex::extents<5, 10>>
   >;
 
 TYPED_TEST_SUITE(TestLayoutCtors, layout_test_types);
@@ -114,34 +115,34 @@ struct TestLayoutCompatCtors<std::tuple<
 
 template <class E1, class S1, class E2, class S2>
 using test_left_type_compatible = std::tuple<
-  typename std::layout_left::template mapping<E1>, S1,
-  typename std::layout_left::template mapping<E2>, S2
+  typename stdex::layout_left::template mapping<E1>, S1,
+  typename stdex::layout_left::template mapping<E2>, S2
 >;
 template <class E1, class S1, class E2, class S2>
 using test_right_type_compatible = std::tuple<
-  typename std::layout_right::template mapping<E1>, S1,
-  typename std::layout_right::template mapping<E2>, S2
+  typename stdex::layout_right::template mapping<E1>, S1,
+  typename stdex::layout_right::template mapping<E2>, S2
 >;
 template <ptrdiff_t... Ds>
 using _sizes = std::integer_sequence<ptrdiff_t, Ds...>;
 template <ptrdiff_t... Ds>
-using _exts = std::extents<Ds...>;
+using _exts = stdex::extents<Ds...>;
 
 template <template <class, class, class, class> class _test_case_type>
 using compatible_layout_test_types =
   ::testing::Types<
-    _test_case_type<_exts<std::dynamic_extent>, _sizes<10>, _exts<10>, _sizes<>>,
+    _test_case_type<_exts<stdex::dynamic_extent>, _sizes<10>, _exts<10>, _sizes<>>,
     //--------------------
-    _test_case_type<_exts<std::dynamic_extent, 10>, _sizes<5>, _exts<5, std::dynamic_extent>, _sizes<10>>,
-    _test_case_type<_exts<std::dynamic_extent, std::dynamic_extent>, _sizes<5, 10>, _exts<5, std::dynamic_extent>, _sizes<10>>,
-    _test_case_type<_exts<std::dynamic_extent, std::dynamic_extent>, _sizes<5, 10>, _exts<std::dynamic_extent, 10>, _sizes<5>>,
-    _test_case_type<_exts<std::dynamic_extent, std::dynamic_extent>, _sizes<5, 10>, _exts<5, 10>, _sizes<>>,
-    _test_case_type<_exts<5, 10>, _sizes<>, _exts<5, std::dynamic_extent>, _sizes<10>>,
-    _test_case_type<_exts<5, 10>, _sizes<>, _exts<std::dynamic_extent, 10>, _sizes<5>>,
+    _test_case_type<_exts<stdex::dynamic_extent, 10>, _sizes<5>, _exts<5, stdex::dynamic_extent>, _sizes<10>>,
+    _test_case_type<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent>, _sizes<10>>,
+    _test_case_type<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<stdex::dynamic_extent, 10>, _sizes<5>>,
+    _test_case_type<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, 10>, _sizes<>>,
+    _test_case_type<_exts<5, 10>, _sizes<>, _exts<5, stdex::dynamic_extent>, _sizes<10>>,
+    _test_case_type<_exts<5, 10>, _sizes<>, _exts<stdex::dynamic_extent, 10>, _sizes<5>>,
     //--------------------
-    _test_case_type<_exts<std::dynamic_extent, std::dynamic_extent, 15>, _sizes<5, 10>, _exts<5, std::dynamic_extent, 15>, _sizes<10>>,
-    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<5, std::dynamic_extent, 15>, _sizes<10>>,
-    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<std::dynamic_extent, std::dynamic_extent, std::dynamic_extent>, _sizes<5, 10, 15>>
+    _test_case_type<_exts<stdex::dynamic_extent, stdex::dynamic_extent, 15>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>>,
+    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>>,
+    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10, 15>>
   >;
 
 using left_compatible_test_types = compatible_layout_test_types<test_left_type_compatible>;

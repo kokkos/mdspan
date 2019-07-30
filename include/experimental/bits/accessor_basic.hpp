@@ -48,6 +48,7 @@
 #include <cstddef>
 
 namespace std {
+namespace experimental {
 
 template <class ElementType>
 struct accessor_basic {
@@ -75,4 +76,5 @@ struct accessor_basic {
 
 };
 
+} // end namespace experimental
 } // end namespace std

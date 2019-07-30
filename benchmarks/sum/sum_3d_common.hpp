@@ -47,6 +47,8 @@
 
 #include "fill.hpp"
 
+namespace stdex = std::experimental;
+
 //==============================================================================
 // <editor-fold desc="A helpful template for instantiating all 3D combinations"> {{{1
 
@@ -55,25 +57,25 @@ BENCHMARK_CAPTURE( \
   bench_template, prefix##fixed_##X##_##Y##_##Z, md_template<int, X, Y, Z>{} \
 ); \
 BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_##X##_##Y##_d##Z, md_template<int, X, Y, std::dynamic_extent>{}, Z \
+  bench_template, prefix##dyn_##X##_##Y##_d##Z, md_template<int, X, Y, stdex::dynamic_extent>{}, Z \
 ); \
 BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_##X##_d##Y##_##Z, md_template<int, X, std::dynamic_extent, Z>{}, Y \
+  bench_template, prefix##dyn_##X##_d##Y##_##Z, md_template<int, X, stdex::dynamic_extent, Z>{}, Y \
 ); \
 BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_##Y##_##Z, md_template<int, std::dynamic_extent, Y, Z>{}, X \
+  bench_template, prefix##dyn_d##X##_##Y##_##Z, md_template<int, stdex::dynamic_extent, Y, Z>{}, X \
 ); \
 BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_##X##_d##Y##_d##Z, md_template<int, X, std::dynamic_extent, std::dynamic_extent>{}, Y, Z \
+  bench_template, prefix##dyn_##X##_d##Y##_d##Z, md_template<int, X, stdex::dynamic_extent, stdex::dynamic_extent>{}, Y, Z \
 ); \
 BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_##Y##_d##Z, md_template<int, std::dynamic_extent, Y, std::dynamic_extent>{}, X, Z \
+  bench_template, prefix##dyn_d##X##_##Y##_d##Z, md_template<int, stdex::dynamic_extent, Y, stdex::dynamic_extent>{}, X, Z \
 ); \
 BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_d##Y##_##Z, md_template<int, std::dynamic_extent, std::dynamic_extent, Z>{}, X, Y \
+  bench_template, prefix##dyn_d##X##_d##Y##_##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, Z>{}, X, Y \
 ); \
 BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_d##Y##_d##Z, md_template<int, std::dynamic_extent, std::dynamic_extent, std::dynamic_extent>{}, X, Y, Z \
+  bench_template, prefix##dyn_d##X##_d##Y##_d##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>{}, X, Y, Z \
 )
 
 // </editor-fold> end A helpful template for instantiating all 3D combinations }}}1
@@ -84,7 +86,7 @@ void BM_Raw_Sum_1D(benchmark::State& state, T, Size size) {
   auto buffer = std::make_unique<T[]>(size);
   {
     // just for setup...
-    auto wrapped = std::mdspan<T, std::dynamic_extent>{buffer.get(), size};
+    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{buffer.get(), size};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -106,7 +108,7 @@ void BM_Raw_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) 
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = std::mdspan<T, std::dynamic_extent>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -132,7 +134,7 @@ void BM_Raw_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = std::mdspan<T, std::dynamic_extent>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -158,7 +160,7 @@ void BM_Raw_Sum_3D_right_iter_left(benchmark::State& state, T, SizeX x, SizeY y,
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = std::mdspan<T, std::dynamic_extent>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -190,7 +192,7 @@ void BM_Raw_Static_Sum_3D_right(benchmark::State& state, T,
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = std::mdspan<T, std::dynamic_extent>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -219,7 +221,7 @@ void BM_Raw_Static_Sum_3D_left(benchmark::State& state, T,
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = std::mdspan<T, std::dynamic_extent>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -248,7 +250,7 @@ void BM_Raw_Static_Sum_3D_right_iter_left(benchmark::State& state, T,
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = std::mdspan<T, std::dynamic_extent>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();

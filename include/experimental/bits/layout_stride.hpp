@@ -53,6 +53,7 @@
 #include <array>
 
 namespace std {
+namespace experimental {
 
 //==============================================================================
 
@@ -62,13 +63,13 @@ template <class, ptrdiff_t...> class layout_stride_impl;
 
 template <ptrdiff_t... Exts, ptrdiff_t... Strides>
 class layout_stride_impl<
-  std::extents<Exts...>, Strides...
+  std::experimental::extents<Exts...>, Strides...
 >
-  : public extents_storage<std::extents<Exts...>>
+  : public extents_storage<std::experimental::extents<Exts...>>
 {
 private:
 
-  using base_t = extents_storage<std::extents<Exts...>>;
+  using base_t = extents_storage<std::experimental::extents<Exts...>>;
   using idx_seq = make_index_sequence<sizeof...(Exts)>;
 
   using stride_storage_t = typename _make_mixed_impl<integer_sequence<ptrdiff_t, Strides...>>::type;
@@ -137,7 +138,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr
   layout_stride_impl(
-    std::extents<Exts...> const& e,
+    std::experimental::extents<Exts...> const& e,
     array<ptrdiff_t, stride_storage_t::size_dynamic> const& strides
   ) noexcept
     : base_t(e),
@@ -256,4 +257,6 @@ struct layout_stride {
     Extents, StaticStrides...
   >;
 };
+
+} // end namespace experimental
 } // end namespace std

@@ -53,6 +53,7 @@
 #include <tuple> // std::apply
 
 namespace std {
+namespace experimental {
 
 namespace detail {
 
@@ -98,18 +99,18 @@ template <
 >
 class basic_mdspan<
   ElementType,
-  std::extents<Exts...>,
+  std::experimental::extents<Exts...>,
   LayoutPolicy,
   AccessorPolicy
 >
   : detail::_basic_mdspan_crtp_helper<
-      basic_mdspan<ElementType, std::extents<Exts...>, LayoutPolicy, AccessorPolicy>,
+      basic_mdspan<ElementType, std::experimental::extents<Exts...>, LayoutPolicy, AccessorPolicy>,
       std::make_index_sequence<sizeof...(Exts)>
     >
 {
 private:
   using _crtp_base_t = detail::_basic_mdspan_crtp_helper<
-      basic_mdspan<ElementType, std::extents<Exts...>, LayoutPolicy, AccessorPolicy>,
+      basic_mdspan<ElementType, std::experimental::extents<Exts...>, LayoutPolicy, AccessorPolicy>,
       std::make_index_sequence<sizeof...(Exts)>
     >;
 public:
@@ -117,7 +118,7 @@ public:
   //--------------------------------------------------------------------------------
   // Domain and codomain types
 
-  using extents_type = std::extents<Exts...>;
+  using extents_type = std::experimental::extents<Exts...>;
   using layout_type = LayoutPolicy;
   using accessor_type = AccessorPolicy;
   using mapping_type = typename layout_type::template mapping<extents_type>;
@@ -216,7 +217,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType, ptrdiff_t... OtherExtents, class OtherLayoutPolicy, class OtherAccessorPolicy,
     /* requires */ (
-      is_assignable_v<mapping_type, typename OtherLayoutPolicy::template mapping<std::extents<OtherExtents...>>> &&
+      is_assignable_v<mapping_type, typename OtherLayoutPolicy::template mapping<std::experimental::extents<OtherExtents...>>> &&
       is_assignable_v<accessor_type, OtherAccessorPolicy> &&
       is_assignable_v<pointer, typename OtherAccessorPolicy::pointer> &&
       sizeof...(OtherExtents) == extents_type::rank() &&
@@ -224,12 +225,12 @@ public:
       //   && static_extent(r) != dynamic_extent is true, then
       //   other.static_extent(r) == static_extent(r) is true."
       // (this is just the convertiblity constraint on extents...)
-      is_convertible_v<std::extents<Exts...>, std::extents<OtherExtents...>>
+      is_convertible_v<std::experimental::extents<Exts...>, std::experimental::extents<OtherExtents...>>
     )
   )
   MDSPAN_INLINE_FUNCTION
   constexpr basic_mdspan& operator=(
-    const basic_mdspan<OtherElementType, std::extents<OtherExtents...>, OtherLayoutPolicy, OtherAccessorPolicy>& other
+    const basic_mdspan<OtherElementType, std::experimental::extents<OtherExtents...>, OtherLayoutPolicy, OtherAccessorPolicy>& other
   ) noexcept(/* TODO noexcept specification */ true)
   {
     ptr_ = other.ptr_;
@@ -345,6 +346,7 @@ private:
 
 
 template <class T, ptrdiff_t... Exts>
-using mdspan = basic_mdspan<T, std::extents<Exts...>>;
+using mdspan = basic_mdspan<T, std::experimental::extents<Exts...>>;
 
+} // end namespace experimental
 } // end namespace std

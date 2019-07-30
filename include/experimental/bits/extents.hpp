@@ -50,6 +50,7 @@
 #include <cstddef>
 
 namespace std {
+namespace experimental {
 
 namespace detail {
 
@@ -99,11 +100,11 @@ private:
 
   template <ptrdiff_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool _eq_impl(std::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return false; }
+  constexpr bool _eq_impl(std::experimental::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return false; }
   template <ptrdiff_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
   constexpr bool _eq_impl(
-    std::extents<OtherExtents...> other,
+    std::experimental::extents<OtherExtents...> other,
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_AND((_storage.template get<Idxs>() == other._storage.template get<Idxs>()) /* && ... */);
@@ -111,11 +112,11 @@ private:
 
   template <ptrdiff_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool _not_eq_impl(std::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return true; }
+  constexpr bool _not_eq_impl(std::experimental::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return true; }
   template <ptrdiff_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
   constexpr bool _not_eq_impl(
-    std::extents<OtherExtents...> other,
+    std::experimental::extents<OtherExtents...> other,
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_OR((_storage.template get<Idxs>() != other._storage.template get<Idxs>()) /* || ... */);
@@ -247,8 +248,7 @@ public:  // (but not really)
     return storage_type::template get_static<N, Default>();
   }
 
-
 };
 
-
+} // end namespace experimental
 } // namespace std

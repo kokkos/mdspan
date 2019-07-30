@@ -48,6 +48,7 @@
 #include "trait_backports.hpp"
 
 namespace std {
+namespace experimental {
 
 //==============================================================================
 
@@ -63,13 +64,13 @@ struct layout_right_idx_conditional {
 template <class> class layout_right_impl;
 
 template <ptrdiff_t... Exts>
-class layout_right_impl<std::extents<Exts...>>
-  : public fixed_layout_common_impl<std::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_right_idx_conditional>
+class layout_right_impl<std::experimental::extents<Exts...>>
+  : public fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_right_idx_conditional>
 {
 private:
 
   using idx_seq = make_index_sequence<sizeof...(Exts)>;
-  using base_t = fixed_layout_common_impl<std::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_right_idx_conditional>;
+  using base_t = fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_right_idx_conditional>;
 
   template <class>
   friend class layout_right_impl;
@@ -91,7 +92,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherExtents,
     /* requires */ (
-      is_convertible_v<OtherExtents, std::extents<Exts...>>
+      is_convertible_v<OtherExtents, std::experimental::extents<Exts...>>
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -103,7 +104,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherExtents,
       /* requires */ (
-      is_convertible_v<OtherExtents, std::extents<Exts...>>
+      is_convertible_v<OtherExtents, std::experimental::extents<Exts...>>
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -144,4 +145,6 @@ struct layout_right {
   using mapping = detail::layout_right_impl<Extents>;
 };
 
+
+} // end namespace experimental
 } // end namespace std

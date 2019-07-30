@@ -48,6 +48,7 @@
 #include "trait_backports.hpp"
 
 namespace std {
+namespace experimental {
 
 //==============================================================================
 
@@ -62,13 +63,13 @@ struct layout_left_idx_conditional {
 template <class> class layout_left_impl;
 
 template <ptrdiff_t... Exts>
-class layout_left_impl<std::extents<Exts...>>
-  : public fixed_layout_common_impl<std::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_left_idx_conditional>
+class layout_left_impl<std::experimental::extents<Exts...>>
+  : public fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_left_idx_conditional>
 {
 private:
 
 using idx_seq = make_index_sequence<sizeof...(Exts)>;
-  using base_t = fixed_layout_common_impl<std::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_left_idx_conditional>;
+  using base_t = fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_left_idx_conditional>;
 
   template <class>
   friend class layout_left_impl;
@@ -90,7 +91,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherExtents,
     /* requires */ (
-      is_convertible_v<OtherExtents, std::extents<Exts...>>
+      is_convertible_v<OtherExtents, std::experimental::extents<Exts...>>
     )
   )
   layout_left_impl(layout_left_impl<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
@@ -102,7 +103,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherExtents,
     /* requires */ (
-      is_convertible_v<OtherExtents, std::extents<Exts...>>
+      is_convertible_v<OtherExtents, std::experimental::extents<Exts...>>
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -142,4 +143,6 @@ struct layout_left {
   using mapping = detail::layout_left_impl<Extents>;
 };
 
+
+} // end namespace experimental
 } // end namespace std

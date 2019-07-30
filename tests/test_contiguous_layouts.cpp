@@ -49,9 +49,11 @@
 #include <tuple>
 #include <utility>
 
+namespace stdex = std::experimental;
+
 template <class Extents>
 ptrdiff_t get_expected_mapping(
-  typename std::layout_left::template mapping<Extents> const& map,
+  typename stdex::layout_left::template mapping<Extents> const& map,
   ptrdiff_t i, ptrdiff_t j, ptrdiff_t k
 )
 {
@@ -61,7 +63,7 @@ ptrdiff_t get_expected_mapping(
 
 template <class Extents>
 ptrdiff_t get_expected_mapping(
-  typename std::layout_right::template mapping<Extents> const& map,
+  typename stdex::layout_right::template mapping<Extents> const& map,
   ptrdiff_t i, ptrdiff_t j, ptrdiff_t k
 )
 {
@@ -96,50 +98,50 @@ struct TestLayout<std::tuple<
 
 template <class Extents, ptrdiff_t... DynamicSizes>
 using test_3d_left_types = std::tuple<
-  typename std::layout_left::template mapping<Extents>,
+  typename stdex::layout_left::template mapping<Extents>,
   std::integer_sequence<ptrdiff_t, DynamicSizes...>
 >;
 
 template <class Extents, ptrdiff_t... DynamicSizes>
 using test_3d_right_types = std::tuple<
-  typename std::layout_right::template mapping<Extents>,
+  typename stdex::layout_right::template mapping<Extents>,
   std::integer_sequence<ptrdiff_t, DynamicSizes...>
 >;
 
 using layout_test_types_3d =
   ::testing::Types<
-    test_3d_left_types<std::extents<3, 4, 5>>,
-    test_3d_left_types<std::extents<5, 4, 3>>,
-    test_3d_left_types<std::extents<3, 4, std::dynamic_extent>, 5>,
-    test_3d_left_types<std::extents<5, 4, std::dynamic_extent>, 3>,
-    test_3d_left_types<std::extents<3, std::dynamic_extent, 5>, 4>,
-    test_3d_left_types<std::extents<5, std::dynamic_extent, 3>, 4>,
-    test_3d_left_types<std::extents<std::dynamic_extent, 4, 5>, 3>,
-    test_3d_left_types<std::extents<std::dynamic_extent, 4, 3>, 5>,
-    test_3d_left_types<std::extents<std::dynamic_extent, std::dynamic_extent, 5>, 3, 4>,
-    test_3d_left_types<std::extents<std::dynamic_extent, std::dynamic_extent, 3>, 5, 4>,
-    test_3d_left_types<std::extents<std::dynamic_extent, 4, std::dynamic_extent>, 3, 5>,
-    test_3d_left_types<std::extents<std::dynamic_extent, 4, std::dynamic_extent>, 5, 3>,
-    test_3d_left_types<std::extents<3, std::dynamic_extent, std::dynamic_extent>, 4, 5>,
-    test_3d_left_types<std::extents<5, std::dynamic_extent, std::dynamic_extent>, 4, 3>,
-    test_3d_left_types<std::extents<std::dynamic_extent, std::dynamic_extent, std::dynamic_extent>, 3, 4, 5>,
-    test_3d_left_types<std::extents<std::dynamic_extent, std::dynamic_extent, std::dynamic_extent>, 5, 4, 3>,
-    test_3d_right_types<std::extents<3, 4, 5>>,
-    test_3d_right_types<std::extents<5, 4, 3>>,
-    test_3d_right_types<std::extents<3, 4, std::dynamic_extent>, 5>,
-    test_3d_right_types<std::extents<5, 4, std::dynamic_extent>, 3>,
-    test_3d_right_types<std::extents<3, std::dynamic_extent, 5>, 4>,
-    test_3d_right_types<std::extents<5, std::dynamic_extent, 3>, 4>,
-    test_3d_right_types<std::extents<std::dynamic_extent, 4, 5>, 3>,
-    test_3d_right_types<std::extents<std::dynamic_extent, 4, 3>, 5>,
-    test_3d_right_types<std::extents<std::dynamic_extent, std::dynamic_extent, 5>, 3, 4>,
-    test_3d_right_types<std::extents<std::dynamic_extent, std::dynamic_extent, 3>, 5, 4>,
-    test_3d_right_types<std::extents<std::dynamic_extent, 4, std::dynamic_extent>, 3, 5>,
-    test_3d_right_types<std::extents<std::dynamic_extent, 4, std::dynamic_extent>, 5, 3>,
-    test_3d_right_types<std::extents<3, std::dynamic_extent, std::dynamic_extent>, 4, 5>,
-    test_3d_right_types<std::extents<5, std::dynamic_extent, std::dynamic_extent>, 4, 3>,
-    test_3d_right_types<std::extents<std::dynamic_extent, std::dynamic_extent, std::dynamic_extent>, 3, 4, 5>,
-    test_3d_right_types<std::extents<std::dynamic_extent, std::dynamic_extent, std::dynamic_extent>, 5, 4, 3>
+    test_3d_left_types<stdex::extents<3, 4, 5>>,
+    test_3d_left_types<stdex::extents<5, 4, 3>>,
+    test_3d_left_types<stdex::extents<3, 4, stdex::dynamic_extent>, 5>,
+    test_3d_left_types<stdex::extents<5, 4, stdex::dynamic_extent>, 3>,
+    test_3d_left_types<stdex::extents<3, stdex::dynamic_extent, 5>, 4>,
+    test_3d_left_types<stdex::extents<5, stdex::dynamic_extent, 3>, 4>,
+    test_3d_left_types<stdex::extents<stdex::dynamic_extent, 4, 5>, 3>,
+    test_3d_left_types<stdex::extents<stdex::dynamic_extent, 4, 3>, 5>,
+    test_3d_left_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, 5>, 3, 4>,
+    test_3d_left_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, 3>, 5, 4>,
+    test_3d_left_types<stdex::extents<stdex::dynamic_extent, 4, stdex::dynamic_extent>, 3, 5>,
+    test_3d_left_types<stdex::extents<stdex::dynamic_extent, 4, stdex::dynamic_extent>, 5, 3>,
+    test_3d_left_types<stdex::extents<3, stdex::dynamic_extent, stdex::dynamic_extent>, 4, 5>,
+    test_3d_left_types<stdex::extents<5, stdex::dynamic_extent, stdex::dynamic_extent>, 4, 3>,
+    test_3d_left_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, 3, 4, 5>,
+    test_3d_left_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, 5, 4, 3>,
+    test_3d_right_types<stdex::extents<3, 4, 5>>,
+    test_3d_right_types<stdex::extents<5, 4, 3>>,
+    test_3d_right_types<stdex::extents<3, 4, stdex::dynamic_extent>, 5>,
+    test_3d_right_types<stdex::extents<5, 4, stdex::dynamic_extent>, 3>,
+    test_3d_right_types<stdex::extents<3, stdex::dynamic_extent, 5>, 4>,
+    test_3d_right_types<stdex::extents<5, stdex::dynamic_extent, 3>, 4>,
+    test_3d_right_types<stdex::extents<stdex::dynamic_extent, 4, 5>, 3>,
+    test_3d_right_types<stdex::extents<stdex::dynamic_extent, 4, 3>, 5>,
+    test_3d_right_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, 5>, 3, 4>,
+    test_3d_right_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, 3>, 5, 4>,
+    test_3d_right_types<stdex::extents<stdex::dynamic_extent, 4, stdex::dynamic_extent>, 3, 5>,
+    test_3d_right_types<stdex::extents<stdex::dynamic_extent, 4, stdex::dynamic_extent>, 5, 3>,
+    test_3d_right_types<stdex::extents<3, stdex::dynamic_extent, stdex::dynamic_extent>, 4, 5>,
+    test_3d_right_types<stdex::extents<5, stdex::dynamic_extent, stdex::dynamic_extent>, 4, 3>,
+    test_3d_right_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, 3, 4, 5>,
+    test_3d_right_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, 5, 4, 3>
   >;
 
 template <class T> struct TestLayout3D : TestLayout<T> { };

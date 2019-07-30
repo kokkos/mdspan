@@ -46,9 +46,11 @@
 #include "macros.hpp"
 
 namespace std {
+namespace experimental {
 
 struct all_type { };
 
 _MDSPAN_INLINE_VARIABLE constexpr auto all = all_type{ };
-        
+
+} // end namespace experimental
 } // namespace std

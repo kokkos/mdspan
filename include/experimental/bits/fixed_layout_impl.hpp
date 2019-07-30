@@ -56,6 +56,7 @@
 //==============================================================================================================
 
 namespace std {
+namespace experimental {
 
 namespace detail {
 
@@ -92,11 +93,11 @@ public:
 template <class, class, class> struct stride_storage_impl;
 
 template <ptrdiff_t... Exts, size_t... Idxs, class IdxConditional>
-struct stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
-  : extents_storage<std::extents<Exts...>>
+struct stride_storage_impl<std::experimental::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
+  : extents_storage<std::experimental::extents<Exts...>>
 {
 private:
-  using base_t = extents_storage<std::extents<Exts...>>;  
+  using base_t = extents_storage<std::experimental::extents<Exts...>>;
 public:
 
   constexpr stride_storage_impl() noexcept = default;
@@ -129,12 +130,12 @@ template <class, class, class>
 class fixed_layout_common_impl;
 
 template <ptrdiff_t... Exts, size_t... Idxs, class IdxConditional>
-class fixed_layout_common_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
-  : protected stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
+class fixed_layout_common_impl<std::experimental::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
+  : protected stride_storage_impl<std::experimental::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
 {
 private:
 
-  using base_t = stride_storage_impl<std::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>;
+  using base_t = stride_storage_impl<std::experimental::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>;
 
 public:
 
@@ -194,4 +195,6 @@ public:  // (but not really)
 //==============================================================================================================
 
 } // namespace detail
+
+} // end namespace experimental
 } // namespace std

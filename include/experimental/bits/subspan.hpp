@@ -57,6 +57,7 @@
 #include <utility> // std::pair
 
 namespace std {
+namespace experimental {
 
 namespace detail {
 
@@ -225,17 +226,18 @@ struct _assign_op_slice_handler<
   constexpr auto
   _make_layout_mapping_impl(NewLayout) {
     // not layout stride, so don't pass dynamic_strides
-    return typename NewLayout::template mapping<std::extents<Extents...>>(
-      std::extents<Extents...>(dynamic_extents)
+    return typename NewLayout::template mapping<std::experimental::extents<Extents...>>(
+      std::experimental::extents<Extents...>(dynamic_extents)
     );
   }
 
+  MDSPAN_INSTANTIATE_ONLY_IF_USED
   MDSPAN_INLINE_FUNCTION
   constexpr auto
   _make_layout_mapping_impl(layout_stride<StaticStrides...>) {
     // not layout stride, so don't pass dynamic_strides
-    return typename layout_stride<StaticStrides...>::template mapping<std::extents<Extents...>>(
-      std::extents<Extents...>(dynamic_extents),
+    return typename layout_stride<StaticStrides...>::template mapping<std::experimental::extents<Extents...>>(
+      std::experimental::extents<Extents...>(dynamic_extents),
       dynamic_strides
     );
   }
@@ -249,33 +251,39 @@ struct _assign_op_slice_handler<
 
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
-  constexpr auto fwd_extent(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const {
+  constexpr auto fwd_extent(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const noexcept
+  {
     return dynamic_extents;
   }
 
   template <ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
-  constexpr auto fwd_extent(_slice_wrap<dynamic_extent, OldStaticStride, T> const& slice) const {
-    return array<ptrdiff_t, sizeof...(ExtentInitIdxs)>{ std::get<ExtentInitIdxs>(dynamic_extents)..., slice.old_extent };
+  constexpr auto fwd_extent(_slice_wrap<dynamic_extent, OldStaticStride, T> const& slice) const noexcept
+    -> array<ptrdiff_t, sizeof...(ExtentInitIdxs) + 1>
+  {
+    return { std::get<ExtentInitIdxs>(dynamic_extents)..., slice.old_extent };
   }
 
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
-  constexpr auto fwd_stride(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const {
+  constexpr auto fwd_stride(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const noexcept
+  {
     return dynamic_strides;
   }
 
   template <ptrdiff_t OldStaticExtent, class T>
   MDSPAN_INLINE_FUNCTION
-  constexpr auto fwd_stride(_slice_wrap<OldStaticExtent, dynamic_extent, T> const& slice) const {
-    return array<ptrdiff_t, sizeof...(DynamicStrideIdxs)>{ std::get<DynamicStrideIdxs>(dynamic_strides)..., slice.old_stride };
+  constexpr auto fwd_stride(_slice_wrap<OldStaticExtent, dynamic_extent, T> const& slice) const noexcept
+    -> array<ptrdiff_t, sizeof...(DynamicStrideIdxs) + 1>
+  {
+    return { std::get<DynamicStrideIdxs>(dynamic_strides)..., slice.old_stride };
   }
 
   // For ptrdiff_t slice, skip the extent and stride, but add an offset corresponding to the value
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr auto
-  operator=(_slice_wrap<OldStaticExtent, OldStaticStride, ptrdiff_t> slice)
+  operator=(_slice_wrap<OldStaticExtent, OldStaticStride, ptrdiff_t> slice) noexcept
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents...>,
          integer_sequence<ptrdiff_t, StaticStrides...>,
@@ -296,7 +304,7 @@ struct _assign_op_slice_handler<
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr auto
-  operator=(_slice_wrap<OldStaticExtent, OldStaticStride, all_type> slice)
+  operator=(_slice_wrap<OldStaticExtent, OldStaticStride, all_type> slice) noexcept
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents..., OldStaticExtent>,
          integer_sequence<ptrdiff_t, StaticStrides..., OldStaticStride>,
@@ -317,9 +325,9 @@ struct _assign_op_slice_handler<
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr auto
-  operator=(_slice_wrap<OldStaticExtent, OldStaticStride, std::pair<ptrdiff_t, ptrdiff_t>> slice)
+  operator=(_slice_wrap<OldStaticExtent, OldStaticStride, std::pair<ptrdiff_t, ptrdiff_t>> slice) noexcept
     -> _assign_op_slice_handler<
-         integer_sequence<ptrdiff_t, Extents..., std::dynamic_extent>,
+         integer_sequence<ptrdiff_t, Extents..., dynamic_extent>,
          integer_sequence<ptrdiff_t, StaticStrides..., OldStaticStride>,
          typename PreserveLayoutAnalysis::encounter_pair,
          array<ptrdiff_t, NOffsets + 1>,
@@ -339,7 +347,7 @@ template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs, 
 MDSPAN_INLINE_FUNCTION
 constexpr auto _subspan_impl(
   std::integer_sequence<size_t, Idxs...>,
-  basic_mdspan<ET, std::extents<Exts...>, LP, AP> const& src,
+  basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
   SliceSpecs&&... slices
 ) noexcept
 {
@@ -351,11 +359,11 @@ constexpr auto _subspan_impl(
           integer_sequence<ptrdiff_t>,
           typename std::conditional<
             std::is_same<LP, layout_right>::value,
-            std::detail::preserve_layout_right_analysis<>,
+            detail::preserve_layout_right_analysis<>,
             typename std::conditional<
               std::is_same<LP, layout_left>::value,
-              std::detail::preserve_layout_left_analysis<>,
-              std::detail::ignore_layout_preservation
+              detail::preserve_layout_left_analysis<>,
+              detail::ignore_layout_preservation
             >::type
           >::type
         >{}
@@ -407,10 +415,11 @@ MDSPAN_TEMPLATE_REQUIRES(
 )
 MDSPAN_INLINE_FUNCTION
 constexpr auto subspan(
-  basic_mdspan<ET, std::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices
+  basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices
 ) noexcept
 {
-  return std::detail::_subspan_impl(std::index_sequence_for<SliceSpecs...>{}, src, slices...);
+  return detail::_subspan_impl(std::index_sequence_for<SliceSpecs...>{}, src, slices...);
 }
-        
+
+} // end namespace experimental
 } // namespace std

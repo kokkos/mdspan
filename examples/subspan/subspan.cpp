@@ -48,6 +48,8 @@
 #include <memory>
 #include <cassert>
 
+namespace stdex = std::experimental;
+
 //================================================================================
 
 int main() {
@@ -55,41 +57,41 @@ int main() {
   {
     // static sized
     double buffer[2*3*4] = { };
-    auto s1 = std::mdspan<double, 2, 3, 4>(buffer);
+    auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
     s1(1, 1, 1) = 42;
-    auto sub1 = std::subspan(s1, 1, 1, std::all);
+    auto sub1 = stdex::subspan(s1, 1, 1, stdex::all);
     assert(sub1[1] == 42);
   }
 
   {
     // static sized
     double buffer[2*3*4] = { };
-    auto s1 = std::basic_mdspan<double, std::extents<2, 3, 4>, std::layout_left>(buffer);
+    auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
     s1(1, 1, 1) = 42;
-    auto sub1 = std::subspan(s1, 1, std::all, std::all);
-    auto sub2 = std::subspan(sub1, 1, std::all);
+    auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
+    auto sub2 = stdex::subspan(sub1, 1, stdex::all);
     assert(sub2[1] == 42);
   }
 
   {
     // static sized, all subspans
     double buffer[2*3*4] = { };
-    auto s1 = std::mdspan<double, 2, 3, 4>(buffer);
+    auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
     s1(1, 1, 1) = 42;
-    auto sub1 = std::subspan(s1, 1, std::all, std::all);
-    auto sub2 = std::subspan(sub1, 1, std::all);
-    auto sub3 = std::subspan(sub2, 1);
+    auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
+    auto sub2 = stdex::subspan(sub1, 1, stdex::all);
+    auto sub3 = stdex::subspan(sub2, 1);
     assert(sub3() == 42);
   }
 
   {
     // static sized, all subspans
     double buffer[2*3*4] = { };
-    auto s1 = std::basic_mdspan<double, std::extents<2, 3, 4>, std::layout_left>(buffer);
+    auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
     s1(1, 1, 1) = 42;
-    auto sub1 = std::subspan(s1, 1, std::all, std::all);
-    auto sub2 = std::subspan(sub1, 1, std::all);
-    auto sub3 = std::subspan(sub2, 1);
+    auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
+    auto sub2 = stdex::subspan(sub1, 1, stdex::all);
+    auto sub3 = stdex::subspan(sub2, 1);
     assert(sub3() == 42);
   }
 
