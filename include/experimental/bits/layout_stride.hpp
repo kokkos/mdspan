@@ -31,7 +31,7 @@ private:
 
   using stride_storage_t = typename _make_mixed_impl<integer_sequence<ptrdiff_t, Strides...>>::type;
 
-  [[no_unique_address]] stride_storage_t _strides;
+  _MDSPAN_NO_UNIQUE_ADDRESS stride_storage_t _strides;
 
   template <class, ptrdiff_t...>
   friend class layout_stride_impl;
@@ -46,18 +46,18 @@ private:
     template <class OtherExtents, ptrdiff_t... OtherStrides>
     MDSPAN_INLINE_FUNCTION
     static constexpr bool _eq_impl(layout_stride_impl const& self, layout_stride_impl<OtherExtents, OtherStrides...> const& other) noexcept {
-      return ((self.template __stride<Idxs>() == other.template __stride<Idxs>()) && ...);
+      return _MDSPAN_FOLD_AND((self.template __stride<Idxs>() == other.template __stride<Idxs>()) /* && ... */);
     }
     template <class OtherExtents, ptrdiff_t... OtherStrides>
     MDSPAN_INLINE_FUNCTION
     static constexpr bool _not_eq_impl(layout_stride_impl const& self, layout_stride_impl<OtherExtents, OtherStrides...> const& other) noexcept {
-      return ((self.template __stride<Idxs>() != other.template __stride<Idxs>()) || ...);
+      return _MDSPAN_FOLD_OR((self.template __stride<Idxs>() != other.template __stride<Idxs>()) /* || ... */);
     }
 
     template <class... Integral>
     MDSPAN_FORCE_INLINE_FUNCTION
     static constexpr ptrdiff_t _call_op_impl(layout_stride_impl const& self, Integral... idxs) noexcept {
-      return ((idxs * self.template __stride<Idxs>()) + ... + 0);
+      return _MDSPAN_FOLD_PLUS_RIGHT((idxs * self.template __stride<Idxs>()), /* + ... + */ 0);
     }
 
     MDSPAN_INLINE_FUNCTION
@@ -165,7 +165,7 @@ public:
     class... Indices,
     /* requires */ (
       sizeof...(Indices) == sizeof...(Exts) &&
-      (is_constructible_v<Indices, ptrdiff_t> && ...)
+      _MDSPAN_FOLD_AND(is_constructible_v<Indices, ptrdiff_t> /*&& ...*/)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION

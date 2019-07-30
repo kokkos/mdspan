@@ -2,6 +2,7 @@
 #pragma once
 
 #include "dynamic_extent.hpp"
+#include "trait_backports.hpp"
 
 #include <cstddef> // ptrdiff_t
 #include <utility> // integer_sequence
@@ -10,7 +11,7 @@
 namespace std {
 namespace detail {
 
-inline constexpr struct construct_mixed_storage_from_sizes_tag_t { } construct_mixed_storage_from_sizes_tag = { };
+_MDSPAN_INLINE_VARIABLE constexpr struct construct_mixed_storage_from_sizes_tag_t { } construct_mixed_storage_from_sizes_tag = { };
 
 template <class SizesSeq, class, class=make_index_sequence<SizesSeq::size()>>
 class mixed_static_and_dynamic_size_storage;
@@ -28,73 +29,80 @@ class mixed_static_and_dynamic_size_storage<
 {
 public:
 
-  static inline constexpr auto size_dynamic = (static_cast<int>((Sizes == dynamic_extent)) + ... + 0);
+  static constexpr auto size_dynamic =
+    _MDSPAN_FOLD_PLUS_RIGHT(static_cast<int>((Sizes == dynamic_extent)), /* + ... + */ 0);
 
 private:
 
-  [[no_unique_address]] array<ptrdiff_t, size_dynamic> dynamic_sizes = { };
+  _MDSPAN_NO_UNIQUE_ADDRESS array<ptrdiff_t, size_dynamic> dynamic_sizes = { };
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_INLINE_FUNCTION
-  constexpr ptrdiff_t _select(true_type) const noexcept { return std::get<DynamicOffset>(dynamic_sizes); }
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr ptrdiff_t _select(true_type) const noexcept { return dynamic_sizes[DynamicOffset]; }
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t _select(false_type) const noexcept { return Size; }
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t _select_set(true_type, ptrdiff_t value) noexcept { dynamic_sizes[DynamicOffset] = value; return 0; }
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t _select_set(false_type, ptrdiff_t) noexcept { return 0; }
 
 public:
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t select() const noexcept {
-    return _select<Size, DynamicOffset>(bool_constant<Size == dynamic_extent>{});
+    return _select<Size, DynamicOffset>(integral_constant<bool, Size == dynamic_extent>{});
+  }
+
+  template <ptrdiff_t Size, ptrdiff_t DynamicOffset, size_t Idx, ptrdiff_t N, ptrdiff_t Default=dynamic_extent>
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr ptrdiff_t select_n() const noexcept {
+    return Idx == N ? _select<Size, DynamicOffset>(integral_constant<bool, Size == dynamic_extent>{}) : Default;
   }
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset, ptrdiff_t Default=dynamic_extent>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   static constexpr ptrdiff_t select_static() noexcept {
     return Size == dynamic_extent ? Default : Size;
   }
 
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset, size_t Idx, ptrdiff_t N>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t select_set(ptrdiff_t value) noexcept {
-    return _select_set<Size, DynamicOffset>(bool_constant<Size == dynamic_extent && Idx == N>{}, value);
+    return _select_set<Size, DynamicOffset>(integral_constant<bool, Size == dynamic_extent && Idx == N>{}, value);
   }
  
  
   template <size_t N>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t get() const noexcept {
-    return std::get<N>(
-      array<ptrdiff_t, sizeof...(Sizes)>{select<Sizes, DynamicOffsets>()...}
-    );
+    return _MDSPAN_FOLD_PLUS_RIGHT((select_n<Sizes, DynamicOffsets, Idxs, N, 0>()), /* + ... + */ 0);
   }
 
   template <size_t N, ptrdiff_t Default=dynamic_extent>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   static constexpr ptrdiff_t get_static() noexcept {
     return std::get<N>(
       array<ptrdiff_t, sizeof...(Sizes)>{select_static<Sizes, DynamicOffsets, Default>()...}
     );
   }
 
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t get(size_t n) const noexcept {
     return array<ptrdiff_t, sizeof...(Sizes)>{select<Sizes, DynamicOffsets>()...}[n];
   }
 
   template <size_t N>
-  MDSPAN_INLINE_FUNCTION
-  constexpr void set(ptrdiff_t value) noexcept {
-    (select_set<Sizes, DynamicOffsets, Idxs, N>(value), ...);  
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr __mdspan_enable_fold_comma
+  set(ptrdiff_t value) noexcept {
+    _MDSPAN_FOLD_COMMA(select_set<Sizes, DynamicOffsets, Idxs, N>(value) /* , ... */);
+    return { };
   }
 
   MDSPAN_INLINE_FUNCTION
@@ -125,8 +133,9 @@ public:
       std::integer_sequence<size_t, UIdxs...>
     > const& other
   ) : dynamic_sizes{}
-  { 
-    (set<Idxs>(other.template get<Idxs>()), ...);
+  {
+    // TODO @compatibility fold emulation
+    _MDSPAN_FOLD_COMMA(set<Idxs>(other.template get<Idxs>()) /* , ... */);
   }
 
   template <class Integral>
@@ -142,7 +151,8 @@ public:
 template <size_t N, class, class> struct _make_mixed_impl_helper;
 template <size_t N, size_t... Idxs, ptrdiff_t... Sizes>
 struct _make_mixed_impl_helper<N, integer_sequence<size_t, Idxs...>, integer_sequence<ptrdiff_t, Sizes...>> {
-  static constexpr ptrdiff_t value = (int(Idxs < size_t(N) && Sizes == dynamic_extent) + ...); 
+  static constexpr ptrdiff_t value =
+    _MDSPAN_FOLD_PLUS_RIGHT((int(Idxs < size_t(N) && Sizes == dynamic_extent)), /* + ... + */ 0);
 };
 
 template <class Sequence, class=void>

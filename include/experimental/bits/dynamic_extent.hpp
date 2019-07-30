@@ -5,7 +5,7 @@
 
 namespace std {
 
-inline constexpr ptrdiff_t dynamic_extent = -1;
+_MDSPAN_INLINE_VARIABLE constexpr ptrdiff_t dynamic_extent = -1;
 
 } // namespace std
 

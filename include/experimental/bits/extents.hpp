@@ -3,6 +3,7 @@
 
 #include "macros.hpp"
 #include "mixed_size_storage.hpp"
+#include "trait_backports.hpp"
 
 #include <cstddef>
 
@@ -17,12 +18,12 @@ static constexpr std::false_type _check_compatible_extents(
 template <ptrdiff_t... Extents, ptrdiff_t... OtherExtents>
 static std::integral_constant<
   bool,
-  (
+  _MDSPAN_FOLD_AND(
     (
       Extents == dynamic_extent
         || OtherExtents == dynamic_extent
         || Extents == OtherExtents
-    ) && ...
+    ) /* && ... */
   )
 >
 _check_compatible_extents(
@@ -41,13 +42,13 @@ public:
 private:
 
   using storage_type = typename detail::_make_mixed_impl<integer_sequence<ptrdiff_t, Extents...>>::type;
-  [[no_unique_address]] storage_type _storage = { };
+  _MDSPAN_NO_UNIQUE_ADDRESS storage_type _storage = { };
 
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
   static constexpr
   index_type _static_extent_impl(size_t n, std::integer_sequence<size_t, Idxs...>) noexcept {
-    return (((Idxs == n) ? Extents : 0) + ... + 0); 
+    return _MDSPAN_FOLD_PLUS_RIGHT(((Idxs == n) ? Extents : 0), /* + ... + */ 0);
   }
 
   template <ptrdiff_t...>
@@ -63,7 +64,7 @@ private:
     std::extents<OtherExtents...> other,
     true_type, index_sequence<Idxs...>
   ) const noexcept {
-    return ((_storage.template get<Idxs>() == other._storage.template get<Idxs>()) && ...);
+    return _MDSPAN_FOLD_AND((_storage.template get<Idxs>() == other._storage.template get<Idxs>()) /* && ... */);
   }
 
   template <ptrdiff_t... OtherExtents, size_t... Idxs>
@@ -75,7 +76,7 @@ private:
     std::extents<OtherExtents...> other,
     true_type, index_sequence<Idxs...>
   ) const noexcept {
-    return ((_storage.template get<Idxs>() != other._storage.template get<Idxs>()) || ...);
+    return _MDSPAN_FOLD_OR((_storage.template get<Idxs>() != other._storage.template get<Idxs>()) /* || ... */);
   }
 
 public:
@@ -83,7 +84,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   static constexpr size_t rank() noexcept { return sizeof...(Extents); }
   MDSPAN_INLINE_FUNCTION
-  static constexpr size_t rank_dynamic() noexcept { return (int(Extents == dynamic_extent) + ... + 0); }
+  static constexpr size_t rank_dynamic() noexcept { return _MDSPAN_FOLD_PLUS_RIGHT((int(Extents == dynamic_extent)), /* + ... + */ 0); }
 
   //--------------------------------------------------------------------------------
   // Constructors, Destructors, and Assignment
@@ -115,7 +116,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... Integral,
     /* requires */ (
-      (std::is_convertible_v<Integral, index_type> && ...) && sizeof...(Integral) == rank_dynamic()
+      _MDSPAN_FOLD_AND(std::is_convertible_v<Integral, index_type> /* && ... */) && sizeof...(Integral) == rank_dynamic()
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -191,7 +192,7 @@ public:
 public:  // (but not really)
 
   template <size_t N>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   constexpr
   index_type __extent() const noexcept {
     return _storage.template get<N>();

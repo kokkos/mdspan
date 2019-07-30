@@ -5,6 +5,7 @@
 #include "accessor_basic.hpp"
 #include "layout_right.hpp"
 #include "extents.hpp"
+#include "trait_backports.hpp"
 
 #include <utility> // make_index_sequence
 #include <tuple> // std::apply
@@ -27,7 +28,11 @@ protected:
   MDSPAN_FORCE_INLINE_FUNCTION Derived& __self() noexcept { return *static_cast<Derived*>(this); }
   MDSPAN_FORCE_INLINE_FUNCTION Derived const& __self() const noexcept { return *static_cast<Derived const*>(this); }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr auto __size() const noexcept {
-    return (__self().map_.extents().template __extent<ExtIdxs>() * ... * 1);
+    return _MDSPAN_FOLD_TIMES_RIGHT((__self().map_.extents().template __extent<ExtIdxs>()), /* * ... * */ 1);
+  }
+  template <class IndexType, size_t N>
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr auto __callop(const array<IndexType, N>& indices) const noexcept {
+    return __self().acc_.access(__self().ptr_, __self().map_(indices[ExtIdxs]...));
   }
 };
 
@@ -92,7 +97,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... IndexType,
     /* requires */ (
-      (is_convertible_v<IndexType, index_type> && ...) &&
+      _MDSPAN_FOLD_AND(is_convertible_v<IndexType, index_type> /* && ... */) &&
       (sizeof...(IndexType) == extents_type::rank_dynamic()) &&
       is_constructible_v<mapping_type, extents_type> &&
       is_default_constructible_v<accessor_type>
@@ -210,7 +215,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... IndexType,
     /* requires */ (
-      (is_convertible_v<IndexType, index_type> && ...) &&
+      _MDSPAN_FOLD_AND(is_convertible_v<IndexType, index_type> /* && ... */) &&
       sizeof...(Exts) == extents_type::rank()
     )
   )
@@ -230,7 +235,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(const array<IndexType, N>& indices) const noexcept
   {
-    return acc_.access(ptr_, std::apply(map_, indices));
+    return this->_crtp_base_t::__callop(indices);
   }
 
   MDSPAN_INLINE_FUNCTION
@@ -285,8 +290,8 @@ public:
 private:
 
   pointer ptr_ = nullptr;
-  [[no_unique_address]] mapping_type map_ = {};
-  [[no_unique_address]] accessor_type acc_ = {};
+  _MDSPAN_NO_UNIQUE_ADDRESS mapping_type map_ = {};
+  _MDSPAN_NO_UNIQUE_ADDRESS accessor_type acc_ = {};
 
   template <class, class, class, class>
   friend class basic_mdspan;

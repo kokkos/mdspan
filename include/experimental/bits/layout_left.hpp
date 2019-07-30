@@ -3,6 +3,7 @@
 
 #include "macros.hpp"
 #include "fixed_layout_impl.hpp"
+#include "trait_backports.hpp"
 
 namespace std {
 

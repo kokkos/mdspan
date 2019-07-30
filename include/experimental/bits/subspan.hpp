@@ -8,6 +8,8 @@
 #include "layout_left.hpp"
 #include "layout_right.hpp"
 #include "layout_stride.hpp"
+#include "macros.hpp"
+#include "trait_backports.hpp"
 
 #include <tuple> // std::apply
 #include <utility> // std::pair
@@ -161,9 +163,9 @@ struct _assign_op_slice_handler<
 >
 {
   static_assert(
-    ((StaticStrides == dynamic_extent || StaticStrides > 0) && ...)
+    _MDSPAN_FOLD_AND((StaticStrides == dynamic_extent || StaticStrides > 0) /* && ... */),
+    " "
   );
-
 
   array<ptrdiff_t, NOffsets> offsets;
   array<ptrdiff_t, NDynamicExtents> dynamic_extents;
@@ -212,7 +214,7 @@ struct _assign_op_slice_handler<
   template <ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
   constexpr auto fwd_extent(_slice_wrap<dynamic_extent, OldStaticStride, T> const& slice) const {
-    return array{ std::get<ExtentInitIdxs>(dynamic_extents)..., slice.old_extent };
+    return array<ptrdiff_t, sizeof...(ExtentInitIdxs)>{ std::get<ExtentInitIdxs>(dynamic_extents)..., slice.old_extent };
   }
 
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride, class T>
@@ -224,7 +226,7 @@ struct _assign_op_slice_handler<
   template <ptrdiff_t OldStaticExtent, class T>
   MDSPAN_INLINE_FUNCTION
   constexpr auto fwd_stride(_slice_wrap<OldStaticExtent, dynamic_extent, T> const& slice) const {
-    return array{ std::get<DynamicStrideIdxs>(dynamic_strides)..., slice.old_stride };
+    return array<ptrdiff_t, sizeof...(DynamicStrideIdxs)>{ std::get<DynamicStrideIdxs>(dynamic_strides)..., slice.old_stride };
   }
 
   // For ptrdiff_t slice, skip the extent and stride, but add an offset corresponding to the value
@@ -242,7 +244,7 @@ struct _assign_op_slice_handler<
        >
   {
     return {
-      array{std::get<OffsetIdxs>(offsets)..., slice.slice},
+      {std::get<OffsetIdxs>(offsets)..., slice.slice},
       dynamic_extents,
       dynamic_strides
     };
@@ -263,7 +265,7 @@ struct _assign_op_slice_handler<
        >
   {
     return {
-      array{std::get<OffsetIdxs>(offsets)..., ptrdiff_t(0)},
+      {std::get<OffsetIdxs>(offsets)..., ptrdiff_t(0)},
       fwd_extent(slice),
       fwd_stride(slice)
     };
@@ -284,8 +286,8 @@ struct _assign_op_slice_handler<
        >
   {
     return {
-      array{std::get<OffsetIdxs>(offsets)..., std::get<0>(slice.slice)},
-      array{std::get<ExtentInitIdxs>(dynamic_extents)..., std::get<1>(slice.slice) - std::get<0>(slice.slice)},
+      {std::get<OffsetIdxs>(offsets)..., std::get<0>(slice.slice)},
+      {std::get<ExtentInitIdxs>(dynamic_extents)..., std::get<1>(slice.slice) - std::get<0>(slice.slice)},
       fwd_stride(slice)
     };
   }
@@ -299,27 +301,32 @@ constexpr auto _subspan_impl(
   SliceSpecs&&... slices
 ) noexcept
 {
-  auto _handled = (
-    detail::_assign_op_slice_handler<
-      integer_sequence<ptrdiff_t>,
-      integer_sequence<ptrdiff_t>,
-      typename std::conditional<
-        std::is_same<LP, layout_right>::value,
-        std::detail::preserve_layout_right_analysis<>,
-        typename std::conditional<
-          std::is_same<LP, layout_left>::value,
-          std::detail::preserve_layout_left_analysis<>,
-          std::detail::ignore_layout_preservation
-        >::type
-      >::type
-    >{} = ... = detail::_wrap_slice<
-      Exts, decltype(src.mapping())::template __static_stride<Idxs>()
-    >(
-      slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
-    )
-  );   
-  
-  ptrdiff_t offset_size = std::apply(src.mapping(), _handled.offsets);
+  auto _handled =
+    _MDSPAN_FOLD_ASSIGN_LEFT(
+      (
+        detail::_assign_op_slice_handler<
+          integer_sequence<ptrdiff_t>,
+          integer_sequence<ptrdiff_t>,
+          typename std::conditional<
+            std::is_same<LP, layout_right>::value,
+            std::detail::preserve_layout_right_analysis<>,
+            typename std::conditional<
+              std::is_same<LP, layout_left>::value,
+              std::detail::preserve_layout_left_analysis<>,
+              std::detail::ignore_layout_preservation
+            >::type
+          >::type
+        >{}
+      ),
+        /* = ... = */
+      detail::_wrap_slice<
+        Exts, decltype(src.mapping())::template __static_stride<Idxs>()
+      >(
+        slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
+      )
+    );
+
+  ptrdiff_t offset_size = src.mapping()(_handled.offsets[Idxs]...);
   auto offset_ptr = src.accessor().offset(src.data(), offset_size);
   auto map = _handled.make_layout_mapping(src.mapping());
   auto acc_pol = typename AP::offset_policy(src.accessor());
@@ -348,11 +355,11 @@ MDSPAN_TEMPLATE_REQUIRES(
         || is_same_v<LP, layout_right>
         || detail::_is_layout_stride<LP>::value
     ) &&
-    ((
+    _MDSPAN_FOLD_OR((
       is_convertible_v<SliceSpecs, ptrdiff_t>
         || is_convertible_v<SliceSpecs, pair<ptrdiff_t, ptrdiff_t>>
         || is_convertible_v<SliceSpecs, all_type>
-    ) && ...) &&
+    ) /* && ... */) &&
     sizeof...(SliceSpecs) == sizeof...(Exts)
   )
 )

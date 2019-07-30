@@ -26,7 +26,7 @@ struct extents_storage
 public:
   using extents_type = Extents;
 protected:
-  [[no_unique_address]] extents_type _extents = {};
+  _MDSPAN_NO_UNIQUE_ADDRESS extents_type _extents = {};
 public:
   constexpr extents_storage() noexcept = default;
   constexpr extents_storage(extents_storage const&) noexcept = default;
@@ -70,14 +70,14 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept { return this->base_t::extents(); };
 
   template <size_t N>
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t get_stride() const noexcept {
-    return ((IdxConditional{}(Idxs, N) ? extents().template __extent<Idxs>() : 1) * ... * 1);
+    return _MDSPAN_FOLD_TIMES_RIGHT((IdxConditional{}(Idxs, N) ? extents().template __extent<Idxs>() : 1), /* * ... * */ 1);
   }
 
   MDSPAN_INLINE_FUNCTION
   constexpr ptrdiff_t get_stride(size_t n) const noexcept {
-    return ((IdxConditional{}(Idxs, n) ? extents().template __extent<Idxs>() : 1) * ... * 1);
+    return _MDSPAN_FOLD_TIMES_RIGHT((IdxConditional{}(Idxs, n) ? extents().template __extent<Idxs>() : 1), /* * ... * */ 1);
   }
 
 };
@@ -110,12 +110,12 @@ public:
   template <class... Integral>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t operator()(Integral... idxs) const noexcept {
-    return ((idxs * this->base_t::template get_stride<Idxs>()) + ... + 0);
+    return _MDSPAN_FOLD_PLUS_RIGHT((idxs * this->base_t::template get_stride<Idxs>()), /* + ... + */ 0);
   }
 
   MDSPAN_INLINE_FUNCTION
   constexpr ptrdiff_t required_span_size() const noexcept {
-    return (base_t::extents().template __extent<Idxs>() * ... * 1);
+    return _MDSPAN_FOLD_TIMES_RIGHT((base_t::extents().template __extent<Idxs>()), /* * ... * */ 1);
   }
 
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
@@ -141,8 +141,9 @@ public:  // (but not really)
   MDSPAN_INLINE_FUNCTION
   static constexpr ptrdiff_t __static_stride() noexcept
   {
-    constexpr ptrdiff_t result =
-      ((IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1) * ... * 1);
+    constexpr ptrdiff_t result = _MDSPAN_FOLD_TIMES_RIGHT(
+      (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
+    );
     return result == 0 ? Default : result;
   }
 

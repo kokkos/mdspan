@@ -2,16 +2,12 @@
 
 #pragma once
 
+#include "config.hpp"
+
 #include <type_traits> // std::is_void
 
 #define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline))
 #define MDSPAN_INLINE_FUNCTION inline
-
-#if __cpp_concepts >= 201507
-#  define MDSPAN_USE_CONCEPTS 1
-#else
-#  undef MDSPAN_USE_CONCEPTS
-#endif
 
 //==============================================================================
 // <editor-fold desc="Preprocessor helpers"> {{{1
@@ -45,9 +41,12 @@
 // </editor-fold> end Preprocessor helpers }}}1
 //==============================================================================
 
+//==============================================================================
+// <editor-fold desc="Concept emulation"> {{{1
+
 // These compatibility macros don't help with partial ordering, but they should do the trick
 // for what we need to do with concepts in mdspan
-#ifdef MDSPAN_USE_CONCEPTS
+#ifdef _MDSPAN_USE_CONCEPTS
 #  define MDSPAN_REQUIRES(...) requires __VA_ARGS__
 #  define MDSPAN_NOEXCEPT_REQUIRES(...) noexcept requires __VA_ARGS__
 #  define MDSPAN_CLOSE_ANGLE_REQUIRES(REQ) > requires REQ
@@ -98,3 +97,139 @@
     ( std::is_void_v<__instantiate_only_if_used_tparam> ) \
   ) \
   /**/
+
+// </editor-fold> end Concept emulation }}}1
+//==============================================================================
+
+//==============================================================================
+// <editor-fold desc="inline variables"> {{{1
+
+#ifdef _MDSPAN_USE_INLINE_VARIABLES
+#  define _MDSPAN_INLINE_VARIABLE inline
+#else
+#  define _MDSPAN_INLINE_VARIABLE
+#endif
+
+// </editor-fold> end inline variables }}}1
+//==============================================================================
+
+//==============================================================================
+// <editor-fold desc="fold expressions"> {{{1
+
+struct __mdspan_enable_fold_comma { };
+
+#ifdef _MDSPAN_USE_FOLD_EXPRESSIONS
+#  define _MDSPAN_FOLD_AND(...) ((__VA_ARGS__) && ...)
+#  define _MDSPAN_FOLD_AND_TEMPLATE(...) ((__VA_ARGS__) && ...)
+#  define _MDSPAN_FOLD_OR(...) ((__VA_ARGS__) || ...)
+#  define _MDSPAN_FOLD_ASSIGN_LEFT(INIT, ...) (INIT = ... = (__VA_ARGS__))
+#  define _MDSPAN_FOLD_ASSIGN_RIGHT(PACK, ...) (PACK = ... = (__VA_ARGS__))
+#  define _MDSPAN_FOLD_TIMES_RIGHT(PACK, ...) (PACK * ... * (__VA_ARGS__))
+#  define _MDSPAN_FOLD_PLUS_RIGHT(PACK, ...) (PACK + ... + (__VA_ARGS__))
+#  define _MDSPAN_FOLD_COMMA(...) ((__VA_ARGS__), ...)
+#else
+
+namespace std {
+
+namespace __fold_compatibility_impl {
+
+// We could probably be more clever here, but at the (small) risk of losing some compiler understanding.  For the
+// few operations we need, it's not worth generalizing over the operation
+
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_and_impl() {
+  return true;
+}
+
+template <class Arg, class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_and_impl(Arg&& arg, Args&&... args) {
+  return ((Arg&&)arg) && __fold_compatibility_impl::__fold_right_and_impl((Args&&)args...);
+}
+
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_or_impl() {
+  return false;
+}
+
+template <class Arg, class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_or_impl(Arg&& arg, Args&&... args) {
+  return ((Arg&&)arg) || __fold_compatibility_impl::__fold_right_or_impl((Args&&)args...);
+}
+
+
+template <class Arg1, class Arg2, class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_left_assign_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args) {
+  return __fold_compatibility_impl::__fold_left_assign_impl((((Arg1&&)arg1) = ((Arg2&&)arg2)), (Args&&)args...);
+}
+
+template <class Arg1>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_left_assign_impl(Arg1&& arg1) {
+  return (Arg1&&)arg1;
+}
+
+template <class Arg1>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_assign_impl(Arg1&& arg1) {
+  return (Arg1&&)arg1;
+}
+
+template <class Arg1, class Arg2, class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_assign_impl(Arg1&& arg1, Arg2&& arg2,  Args&&... args) {
+  return ((Arg1&&)arg1) = __fold_compatibility_impl::__fold_right_assign_impl((Arg2&&)arg2, (Args&&)args...);
+}
+
+template <class Arg1>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_plus_impl(Arg1&& arg1) {
+  return (Arg1&&)arg1;
+}
+
+template <class Arg1, class Arg2, class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_plus_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args) {
+  return ((Arg1&&)arg1) + __fold_compatibility_impl::__fold_right_plus_impl((Arg2&&)arg2, (Args&&)args...);
+}
+
+template <class Arg1>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_times_impl(Arg1&& arg1) {
+  return (Arg1&&)arg1;
+}
+
+template <class Arg1, class Arg2, class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr decltype(auto) __fold_right_times_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args) {
+  return ((Arg1&&)arg1) * __fold_compatibility_impl::__fold_right_times_impl((Arg2&&)arg2, (Args&&)args...);
+}
+
+
+template <class... Args>
+constexpr void __fold_comma_impl(Args&&... args) { }
+
+template <bool... Bs>
+struct __bools;
+
+} // __fold_compatibility_impl
+
+} // end namespace std
+
+#  define _MDSPAN_FOLD_AND(...) std::__fold_compatibility_impl::__fold_right_and_impl((__VA_ARGS__)...)
+#  define _MDSPAN_FOLD_OR(...) std::__fold_compatibility_impl::__fold_right_or_impl((__VA_ARGS__)...)
+#  define _MDSPAN_FOLD_ASSIGN_LEFT(INIT, ...) std::__fold_compatibility_impl::__fold_left_assign_impl(INIT, (__VA_ARGS__)...)
+#  define _MDSPAN_FOLD_ASSIGN_RIGHT(PACK, ...) std::__fold_compatibility_impl::__fold_right_assign_impl((PACK)..., __VA_ARGS__)
+#  define _MDSPAN_FOLD_TIMES_RIGHT(PACK, ...) std::__fold_compatibility_impl::__fold_right_times_impl((PACK)..., __VA_ARGS__)
+#  define _MDSPAN_FOLD_PLUS_RIGHT(PACK, ...) std::__fold_compatibility_impl::__fold_right_plus_impl((PACK)..., __VA_ARGS__)
+#  define _MDSPAN_FOLD_COMMA(...) std::__fold_compatibility_impl::__fold_comma_impl((__VA_ARGS__)...)
+
+#  define _MDSPAN_FOLD_AND_TEMPLATE(...) \
+  std::is_same_v<__fold_compatibility_impl::__bools<(__VA_ARGS__)..., true>, __fold_compatibility_impl::__bools<true, (__VA_ARGS__)...>>
+
+#endif
+
+// </editor-fold> end fold expressions }}}1
+//==============================================================================

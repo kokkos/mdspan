@@ -5,12 +5,12 @@ import sys
 import os
 from os.path import dirname, join as path_join, abspath, exists
 
-extra_paths = []
+extra_paths = [path_join(dirname(abspath(__file__)), "include")]
 
 def find_file(included_name, current_file):
     current_dir = dirname(abspath(current_file))
     for idir in [current_dir] + extra_paths:
-        try_path = path_join(current_dir, included_name)
+        try_path = path_join(idir, included_name)
         if exists(try_path):
             return try_path
     return None
@@ -35,6 +35,7 @@ def process_file(file_path, out_lines=[], front_matter_lines=[], processed_files
             if m_once:
                 continue
             # otherwise, just add the line to the output
+            if line[-1] != "\n": line = line + "\n"
             out_lines += [line]
     return "".join(front_matter_lines) + "\n" + "".join(out_lines)
 
