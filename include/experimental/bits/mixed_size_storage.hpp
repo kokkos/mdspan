@@ -88,10 +88,10 @@ private:
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t _select_set(true_type, ptrdiff_t value) noexcept { dynamic_sizes[DynamicOffset] = value; return 0; }
+  _MDSPAN_CONSTEXPR_14 ptrdiff_t _select_set(true_type, ptrdiff_t value) noexcept { dynamic_sizes[DynamicOffset] = value; return 0; }
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t _select_set(false_type, ptrdiff_t) noexcept { return 0; }
+  _MDSPAN_CONSTEXPR_14 ptrdiff_t _select_set(false_type, ptrdiff_t) noexcept { return 0; }
 
 public:
 
@@ -116,7 +116,7 @@ public:
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset, size_t Idx, ptrdiff_t N>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t select_set(ptrdiff_t value) noexcept {
+  _MDSPAN_CONSTEXPR_14 ptrdiff_t select_set(ptrdiff_t value) noexcept {
     return _select_set<Size, DynamicOffset>(integral_constant<bool, Size == dynamic_extent && Idx == N>{}, value);
   }
  
@@ -142,7 +142,7 @@ public:
 
   template <size_t N>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr __mdspan_enable_fold_comma
+  _MDSPAN_CONSTEXPR_14 __mdspan_enable_fold_comma
   set(ptrdiff_t value) noexcept {
     _MDSPAN_FOLD_COMMA(select_set<Sizes, DynamicOffsets, Idxs, N>(value) /* , ... */);
     return { };
@@ -155,9 +155,9 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mixed_static_and_dynamic_size_storage(mixed_static_and_dynamic_size_storage&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION
-  constexpr mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage const&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14 mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION
-  constexpr mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage&&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14 mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION
   ~mixed_static_and_dynamic_size_storage() noexcept = default;
 
@@ -169,7 +169,7 @@ public:
 
   template <ptrdiff_t... USizes, ptrdiff_t... UDynOffs, size_t... UIdxs>
   MDSPAN_INLINE_FUNCTION
-  constexpr mixed_static_and_dynamic_size_storage(
+  _MDSPAN_CONSTEXPR_14 mixed_static_and_dynamic_size_storage(
     mixed_static_and_dynamic_size_storage<
       std::integer_sequence<ptrdiff_t, USizes...>,
       std::integer_sequence<ptrdiff_t, UDynOffs...>,

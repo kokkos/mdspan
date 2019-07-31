@@ -145,8 +145,8 @@ public:
       _strides(strides)
   { }      
 
-  MDSPAN_INLINE_FUNCTION constexpr layout_stride_impl& operator=(layout_stride_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr layout_stride_impl& operator=(layout_stride_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 layout_stride_impl& operator=(layout_stride_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 layout_stride_impl& operator=(layout_stride_impl&&) noexcept = default;
 
   MDSPAN_INLINE_FUNCTION ~layout_stride_impl() noexcept = default;
 
@@ -160,13 +160,13 @@ public:
 
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
   // TODO @proposal-bug this wording for this is (at least slightly) broken (should at least be "... stride(p[0]) == 1...")
-  MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept {
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
     // TODO @testing test layout_stride is_contiguous()
     auto rem = std::array<ptrdiff_t, sizeof...(Exts)>{ };
     std::iota(rem.begin(), rem.end(), ptrdiff_t(0));
     auto next_idx_iter = std::find_if(
       rem.begin(), rem.end(),
-      [&](auto i) { _strides.get(i) == 1;  }
+      [&](ptrdiff_t i) { _strides.get(i) == 1;  }
     );
     if(next_idx_iter != rem.end()) {
       ptrdiff_t prev_stride_times_prev_extent =
@@ -178,7 +178,7 @@ public:
       while (found_count != sizeof...(Exts)) {
         next_idx_iter = std::find_if(
           rem.begin(), rem.end(),
-          [&](auto i) {
+          [&](ptrdiff_t i) {
             return i != removed_index_sentinel
               && _strides.get(i) * this->extents().extent(i) == prev_stride_times_prev_extent;
           }
@@ -208,7 +208,7 @@ public:
     class... Indices,
     /* requires */ (
       sizeof...(Indices) == sizeof...(Exts) &&
-      _MDSPAN_FOLD_AND(is_constructible_v<Indices, ptrdiff_t> /*&& ...*/)
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_constructible, Indices, ptrdiff_t) /*&& ...*/)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION

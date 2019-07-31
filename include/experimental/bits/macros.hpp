@@ -136,7 +136,7 @@
 #define MDSPAN_INSTANTIATE_ONLY_IF_USED \
   MDSPAN_TEMPLATE_REQUIRES( \
     class __instantiate_only_if_used_tparam=void, \
-    ( std::is_void_v<__instantiate_only_if_used_tparam> ) \
+    ( _MDSPAN_TRAIT(std::is_void, __instantiate_only_if_used_tparam) ) \
   ) \
   /**/
 
@@ -146,13 +146,36 @@
 //==============================================================================
 // <editor-fold desc="inline variables"> {{{1
 
-#ifdef _MDSPAN_USE_INLINE_VARIABLES
+#if _MDSPAN_USE_INLINE_VARIABLES
 #  define _MDSPAN_INLINE_VARIABLE inline
 #else
 #  define _MDSPAN_INLINE_VARIABLE
 #endif
 
 // </editor-fold> end inline variables }}}1
+//==============================================================================
+
+//==============================================================================
+// <editor-fold desc="Return type deduction"> {{{1
+
+#if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+#  define _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
+    auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) { return MDSPAN_PP_REMOVE_PARENS(BODY); }
+#  define _MDSPAN_DEDUCE_DECLTYPE_AUTO_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
+    decltype(auto) MDSPAN_PP_REMOVE_PARENS(SIGNATURE) { return MDSPAN_PP_REMOVE_PARENS(BODY); }
+#else
+#  define _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
+    auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) \
+      -> typename std::remove_cv<typename std::remove_reference<decltype(BODY)>::type>::type \
+    { return MDSPAN_PP_REMOVE_PARENS(BODY); }
+#  define _MDSPAN_DEDUCE_DECLTYPE_AUTO_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
+    auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) \
+      -> decltype(BODY) \
+    { return MDSPAN_PP_REMOVE_PARENS(BODY); }
+
+#endif
+
+// </editor-fold> end Return type deduction }}}1
 //==============================================================================
 
 //==============================================================================
@@ -177,6 +200,8 @@ namespace __fold_compatibility_impl {
 
 // We could probably be more clever here, but at the (small) risk of losing some compiler understanding.  For the
 // few operations we need, it's not worth generalizing over the operation
+
+#if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
 
 MDSPAN_FORCE_INLINE_FUNCTION
 constexpr decltype(auto) __fold_right_and_impl() {
@@ -249,9 +274,224 @@ constexpr decltype(auto) __fold_right_times_impl(Arg1&& arg1, Arg2&& arg2, Args&
   return ((Arg1&&)arg1) * __fold_compatibility_impl::__fold_right_times_impl((Arg2&&)arg2, (Args&&)args...);
 }
 
+#else
+
+//------------------------------------------------------------------------------
+// <editor-fold desc="right and"> {{{2
 
 template <class... Args>
-constexpr void __fold_comma_impl(Args&&... args) { }
+struct __fold_right_and_impl_;
+template <>
+struct __fold_right_and_impl_<> {
+  using __rv = bool;
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl() noexcept {
+    return true;
+  }
+};
+template <class Arg, class... Args>
+struct __fold_right_and_impl_<Arg, Args...> {
+  using __next_t = __fold_right_and_impl_<Args...>;
+  using __rv = decltype(std::declval<Arg>() && std::declval<typename __next_t::__rv>());
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg&& arg, Args&&... args) noexcept {
+    return ((Arg&&)arg) && __next_t::__impl((Args&&)args...);
+  }
+};
+
+template <class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr typename __fold_right_and_impl_<Args...>::__rv
+__fold_right_and_impl(Args&&... args) {
+  return __fold_right_and_impl_<Args...>::__impl((Args&&)args...);
+}
+
+// </editor-fold> end right and }}}2
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// <editor-fold desc="right or"> {{{2
+
+template <class... Args>
+struct __fold_right_or_impl_;
+template <>
+struct __fold_right_or_impl_<> {
+  using __rv = bool;
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl() noexcept {
+    return false;
+  }
+};
+template <class Arg, class... Args>
+struct __fold_right_or_impl_<Arg, Args...> {
+  using __next_t = __fold_right_or_impl_<Args...>;
+  using __rv = decltype(std::declval<Arg>() || std::declval<typename __next_t::__rv>());
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg&& arg, Args&&... args) noexcept {
+    return ((Arg&&)arg) || __next_t::__impl((Args&&)args...);
+  }
+};
+
+template <class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr typename __fold_right_or_impl_<Args...>::__rv
+__fold_right_or_impl(Args&&... args) {
+  return __fold_right_or_impl_<Args...>::__impl((Args&&)args...);
+}
+
+// </editor-fold> end right or }}}2
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// <editor-fold desc="right plus"> {{{2
+
+template <class... Args>
+struct __fold_right_plus_impl_;
+template <class Arg>
+struct __fold_right_plus_impl_<Arg> {
+  using __rv = Arg&&;
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg&& arg) noexcept {
+    return (Arg&&)arg;
+  }
+};
+template <class Arg1, class Arg2, class... Args>
+struct __fold_right_plus_impl_<Arg1, Arg2, Args...> {
+  using __next_t = __fold_right_plus_impl_<Arg2, Args...>;
+  using __rv = decltype(std::declval<Arg1>() + std::declval<typename __next_t::__rv>());
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg1&& arg, Arg2&& arg2, Args&&... args) noexcept {
+    return ((Arg1&&)arg) + __next_t::__impl((Arg2&&)arg2, (Args&&)args...);
+  }
+};
+
+template <class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr typename __fold_right_plus_impl_<Args...>::__rv
+__fold_right_plus_impl(Args&&... args) {
+  return __fold_right_plus_impl_<Args...>::__impl((Args&&)args...);
+}
+
+// </editor-fold> end right plus }}}2
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// <editor-fold desc="right times"> {{{2
+
+template <class... Args>
+struct __fold_right_times_impl_;
+template <class Arg>
+struct __fold_right_times_impl_<Arg> {
+  using __rv = Arg&&;
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg&& arg) noexcept {
+    return (Arg&&)arg;
+  }
+};
+template <class Arg1, class Arg2, class... Args>
+struct __fold_right_times_impl_<Arg1, Arg2, Args...> {
+  using __next_t = __fold_right_times_impl_<Arg2, Args...>;
+  using __rv = decltype(std::declval<Arg1>() * std::declval<typename __next_t::__rv>());
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg1&& arg, Arg2&& arg2, Args&&... args) noexcept {
+    return ((Arg1&&)arg) * __next_t::__impl((Arg2&&)arg2, (Args&&)args...);
+  }
+};
+
+template <class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr typename __fold_right_times_impl_<Args...>::__rv
+__fold_right_times_impl(Args&&... args) {
+  return __fold_right_times_impl_<Args...>::__impl((Args&&)args...);
+}
+
+// </editor-fold> end right times }}}2
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// <editor-fold desc="right assign"> {{{2
+
+template <class... Args>
+struct __fold_right_assign_impl_;
+template <class Arg>
+struct __fold_right_assign_impl_<Arg> {
+  using __rv = Arg&&;
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg&& arg) noexcept {
+    return (Arg&&)arg;
+  }
+};
+template <class Arg1, class Arg2, class... Args>
+struct __fold_right_assign_impl_<Arg1, Arg2, Args...> {
+  using __next_t = __fold_right_assign_impl_<Arg2, Args...>;
+  using __rv = decltype(std::declval<Arg1>() = std::declval<typename __next_t::__rv>());
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg1&& arg, Arg2&& arg2, Args&&... args) noexcept {
+    return ((Arg1&&)arg) = __next_t::__impl((Arg2&&)arg2, (Args&&)args...);
+  }
+};
+
+template <class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr typename __fold_right_assign_impl_<Args...>::__rv
+__fold_right_assign_impl(Args&&... args) {
+  return __fold_right_assign_impl_<Args...>::__impl((Args&&)args...);
+}
+
+// </editor-fold> end right assign }}}2
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// <editor-fold desc="left assign"> {{{2
+
+template <class... Args>
+struct __fold_left_assign_impl_;
+template <class Arg>
+struct __fold_left_assign_impl_<Arg> {
+  using __rv = Arg&&;
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg&& arg) noexcept {
+    return (Arg&&)arg;
+  }
+};
+template <class Arg1, class Arg2, class... Args>
+struct __fold_left_assign_impl_<Arg1, Arg2, Args...> {
+  using __assign_result_t = decltype(std::declval<Arg1>() = std::declval<Arg2>());
+  using __next_t = __fold_left_assign_impl_<__assign_result_t, Args...>;
+  using __rv = typename __next_t::__rv;
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr __rv
+  __impl(Arg1&& arg, Arg2&& arg2, Args&&... args) noexcept {
+    return __next_t::__impl(((Arg1&&)arg) = (Arg2&&)arg2, (Args&&)args...);
+  }
+};
+
+template <class... Args>
+MDSPAN_FORCE_INLINE_FUNCTION
+constexpr typename __fold_left_assign_impl_<Args...>::__rv
+__fold_left_assign_impl(Args&&... args) {
+  return __fold_left_assign_impl_<Args...>::__impl((Args&&)args...);
+}
+
+// </editor-fold> end left assign }}}2
+//------------------------------------------------------------------------------
+
+#endif
+
+
+template <class... Args>
+constexpr __mdspan_enable_fold_comma __fold_comma_impl(Args&&... args) noexcept { return { }; }
 
 template <bool... Bs>
 struct __bools;
@@ -269,9 +509,34 @@ struct __bools;
 #  define _MDSPAN_FOLD_COMMA(...) std::__fold_compatibility_impl::__fold_comma_impl((__VA_ARGS__)...)
 
 #  define _MDSPAN_FOLD_AND_TEMPLATE(...) \
-  std::is_same_v<__fold_compatibility_impl::__bools<(__VA_ARGS__)..., true>, __fold_compatibility_impl::__bools<true, (__VA_ARGS__)...>>
+  _MDSPAN_TRAIT(std::is_same, __fold_compatibility_impl::__bools<(__VA_ARGS__)..., true>, __fold_compatibility_impl::__bools<true, (__VA_ARGS__)...>)
 
 #endif
 
 // </editor-fold> end fold expressions }}}1
 //==============================================================================
+
+//==============================================================================
+// <editor-fold desc="Variable template compatibility"> {{{1
+
+#if _MDSPAN_USE_VARIABLE_TEMPLATES
+#  define _MDSPAN_TRAIT(TRAIT, ...) TRAIT##_v<__VA_ARGS__>
+#else
+#  define _MDSPAN_TRAIT(TRAIT, ...) TRAIT<__VA_ARGS__>::value
+#endif
+
+// </editor-fold> end Variable template compatibility }}}1
+//==============================================================================
+
+//==============================================================================
+// <editor-fold desc="Pre-C++14 constexpr"> {{{1
+
+#if _MDSPAN_USE_CONSTEXPR_14
+#  define _MDSPAN_CONSTEXPR_14 constexpr
+#else
+#  define _MDSPAN_CONSTEXPR_14
+#endif
+
+// </editor-fold> end Pre-C++14 constexpr }}}1
+//==============================================================================
+

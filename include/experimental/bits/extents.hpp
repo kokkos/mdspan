@@ -135,8 +135,8 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr extents() noexcept = default;
   MDSPAN_INLINE_FUNCTION constexpr extents(extents const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION constexpr extents(extents&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr extents& operator=(extents const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr extents& operator=(extents&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 extents& operator=(extents const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 extents& operator=(extents&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION ~extents() noexcept = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -159,7 +159,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... Integral,
     /* requires */ (
-      _MDSPAN_FOLD_AND(std::is_convertible_v<Integral, index_type> /* && ... */) && sizeof...(Integral) == rank_dynamic()
+      _MDSPAN_FOLD_AND(std::_MDSPAN_TRAIT(is_convertible, Integral, index_type) /* && ... */) && sizeof...(Integral) == rank_dynamic()
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -172,7 +172,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class IndexType,
     /* requires */ (
-      is_convertible_v<IndexType, index_type>
+      _MDSPAN_TRAIT(is_convertible, IndexType, index_type)
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -192,7 +192,7 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr extents& operator=(const extents<OtherExtents...>& other) noexcept
+  _MDSPAN_CONSTEXPR_14 extents& operator=(const extents<OtherExtents...>& other) noexcept
   {
     _storage = other._storage;
     return *this;

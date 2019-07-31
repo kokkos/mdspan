@@ -215,42 +215,58 @@ struct _assign_op_slice_handler<
   array<ptrdiff_t, NDynamicStrides> dynamic_strides;
   
   // TODO defer instantiation of this?
-  using layout_type = std::conditional_t<
+  using layout_type = typename conditional<
     PreserveLayoutAnalysis::value,
     typename PreserveLayoutAnalysis::layout_type_if_preserved,
     layout_stride<StaticStrides...>
-  >;
+  >::type;
 
+  // TODO noexcept specification
   template <class NewLayout>
   MDSPAN_INLINE_FUNCTION
-  constexpr auto
-  _make_layout_mapping_impl(NewLayout) {
-    // not layout stride, so don't pass dynamic_strides
-    return typename NewLayout::template mapping<std::experimental::extents<Extents...>>(
-      std::experimental::extents<Extents...>(dynamic_extents)
-    );
-  }
+  _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
+    (
+      constexpr /* auto */
+      _make_layout_mapping_impl(NewLayout) const noexcept
+    ),
+    (
+      /* not layout stride, so don't pass dynamic_strides */
+      /* return */ typename NewLayout::template mapping<std::experimental::extents<Extents...>>(
+        std::experimental::extents<Extents...>(dynamic_extents)
+      ) /* ; */
+    )
+  );
 
   MDSPAN_INLINE_FUNCTION
-  constexpr auto
-  _make_layout_mapping_impl(layout_stride<StaticStrides...>) {
-    // not layout stride, so don't pass dynamic_strides
-    return typename layout_stride<StaticStrides...>::template mapping<std::experimental::extents<Extents...>>(
-      std::experimental::extents<Extents...>(dynamic_extents),
-      dynamic_strides
-    );
-  }
+  _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
+    (
+      constexpr /* auto */
+      _make_layout_mapping_impl(layout_stride<StaticStrides...>) const noexcept
+    ),
+    (
+      /* return */ typename layout_stride<StaticStrides...>::template mapping<std::experimental::extents<Extents...>>(
+        std::experimental::extents<Extents...>(dynamic_extents),
+        dynamic_strides
+      ) /* ; */
+    )
+  )
 
   template <class OldLayoutMapping> // mostly for deferred instantiation, but maybe we'll use this in the future
   MDSPAN_INLINE_FUNCTION
-  constexpr auto
-  make_layout_mapping(OldLayoutMapping const&) {
-    return _make_layout_mapping_impl(layout_type{});
-  }
+  _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
+    (
+      constexpr /* auto */
+      make_layout_mapping(OldLayoutMapping const&) const
+    ),
+    (
+      /* return */ _make_layout_mapping_impl(layout_type{}) /* ; */
+    )
+  )
 
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
   constexpr auto fwd_extent(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const noexcept
+    -> decltype(dynamic_extents)
   {
     return dynamic_extents;
   }
@@ -266,6 +282,7 @@ struct _assign_op_slice_handler<
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
   constexpr auto fwd_stride(_slice_wrap<OldStaticExtent, OldStaticStride, T> const& slice) const noexcept
+    -> decltype(dynamic_strides)
   {
     return dynamic_strides;
   }
@@ -281,7 +298,7 @@ struct _assign_op_slice_handler<
   // For ptrdiff_t slice, skip the extent and stride, but add an offset corresponding to the value
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr auto
+  _MDSPAN_CONSTEXPR_14 auto
   operator=(_slice_wrap<OldStaticExtent, OldStaticStride, ptrdiff_t> slice) noexcept
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents...>,
@@ -302,7 +319,7 @@ struct _assign_op_slice_handler<
   // For a std::all, offset 0 and old extent
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr auto
+  _MDSPAN_CONSTEXPR_14 auto
   operator=(_slice_wrap<OldStaticExtent, OldStaticStride, all_type> slice) noexcept
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents..., OldStaticExtent>,
@@ -323,7 +340,7 @@ struct _assign_op_slice_handler<
   // For a std::pair, add an offset and add a new dynamic extent (strides still preserved)
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr auto
+  _MDSPAN_CONSTEXPR_14 auto
   operator=(_slice_wrap<OldStaticExtent, OldStaticStride, std::pair<ptrdiff_t, ptrdiff_t>> slice) noexcept
     -> _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents..., dynamic_extent>,
@@ -342,6 +359,8 @@ struct _assign_op_slice_handler<
   }
 };
 
+#if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+// Forking this because the C++11 version will be *completely* unreadable
 template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
 MDSPAN_INLINE_FUNCTION
 constexpr auto _subspan_impl(
@@ -385,6 +404,64 @@ constexpr auto _subspan_impl(
     std::move(offset_ptr), std::move(map), std::move(acc_pol)
   );
 }
+#else
+// Avert your eyes!!!
+#define _MDSPAN_SUBSPAN_IMPL_HANDLED \
+( \
+  _MDSPAN_FOLD_ASSIGN_LEFT( \
+    ( \
+      detail::_assign_op_slice_handler< \
+        integer_sequence<ptrdiff_t>, \
+        integer_sequence<ptrdiff_t>, \
+        typename std::conditional< \
+          std::is_same<LP, layout_right>::value, \
+          detail::preserve_layout_right_analysis<>, \
+          typename std::conditional< \
+            std::is_same<LP, layout_left>::value, \
+            detail::preserve_layout_left_analysis<>, \
+            detail::ignore_layout_preservation \
+          >::type \
+        >::type \
+      >{} \
+    ), \
+      /* = ... = */ \
+    detail::_wrap_slice< \
+      Exts, decltype(src.mapping())::template __static_stride<Idxs>() \
+    >( \
+      slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs) \
+    ) \
+  ) \
+)
+#define _MDSPAN_SUBSPAN_IMPL_MAP \
+( \
+  _MDSPAN_SUBSPAN_IMPL_HANDLED.make_layout_mapping(src.mapping()) \
+)
+#define _MDSPAN_SUBSPAN_IMPL_OFFSET_PTR \
+( \
+  src.accessor().offset(src.data(), src.mapping()(_MDSPAN_SUBSPAN_IMPL_HANDLED.offsets[Idxs]...)) \
+)
+template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
+MDSPAN_INLINE_FUNCTION
+_MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
+  (
+    constexpr /* auto */ _subspan_impl(
+      std::integer_sequence<size_t, Idxs...>,
+      basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
+      SliceSpecs&&... slices
+    ) noexcept
+  ),
+  (
+    /* return */ basic_mdspan<
+      ET, decltype(_MDSPAN_SUBSPAN_IMPL_MAP.extents()), typename decltype(_MDSPAN_SUBSPAN_IMPL_HANDLED)::layout_type, typename AP::offset_policy
+    >(
+      _MDSPAN_SUBSPAN_IMPL_OFFSET_PTR, _MDSPAN_SUBSPAN_IMPL_MAP, typename AP::offset_policy(src.accessor())
+    ) /* ; */
+  )
+)
+#undef _MDSPAN_SUBSPAN_IMPL_HANDLED
+#undef _MDSPAN_SUBSPAN_IMPL_MAP
+#undef _MDSPAN_SUBSPAN_IMPL_OFFSET_PTR
+#endif
 
 template <class T> struct _is_layout_stride : std::false_type { };
 template <ptrdiff_t... StaticStrides> struct _is_layout_stride<
@@ -400,25 +477,30 @@ MDSPAN_TEMPLATE_REQUIRES(
   class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs,
   /* requires */ (
     (
-      is_same_v<LP, layout_left>
-        || is_same_v<LP, layout_right>
+      _MDSPAN_TRAIT(is_same, LP, layout_left)
+        || _MDSPAN_TRAIT(is_same, LP, layout_right)
         || detail::_is_layout_stride<LP>::value
     ) &&
     _MDSPAN_FOLD_OR((
-      is_convertible_v<SliceSpecs, ptrdiff_t>
-        || is_convertible_v<SliceSpecs, pair<ptrdiff_t, ptrdiff_t>>
-        || is_convertible_v<SliceSpecs, all_type>
+      _MDSPAN_TRAIT(is_convertible, SliceSpecs, ptrdiff_t)
+        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, pair<ptrdiff_t, ptrdiff_t>)
+        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, all_type)
     ) /* && ... */) &&
     sizeof...(SliceSpecs) == sizeof...(Exts)
   )
 )
 MDSPAN_INLINE_FUNCTION
-constexpr auto subspan(
-  basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices
-) noexcept
-{
-  return detail::_subspan_impl(std::index_sequence_for<SliceSpecs...>{}, src, slices...);
-}
+_MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
+  (
+    constexpr subspan(
+      basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices
+    ) noexcept
+  ),
+  (
+    /* return */
+      detail::_subspan_impl(std::index_sequence_for<SliceSpecs...>{}, src, slices...) /*;*/
+  )
+)
 
 } // end namespace experimental
 } // namespace std

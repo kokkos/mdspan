@@ -92,7 +92,42 @@
 #ifndef _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
 #  if !(defined(__cpp_lib_type_trait_variable_templates) && __cpp_lib_type_trait_variable_templates >= 201510L) \
           && !MDSPAN_HAS_CXX_17
-#    define _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
+#    define _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS 1
+#  endif
+#endif
+
+#ifndef _MDSPAN_USE_VARIABLE_TEMPLATES
+#  if (defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304) \
+        || MDSPAN_HAS_CXX_14
+#    define _MDSPAN_USE_VARIABLE_TEMPLATES 1
+#  endif
+#endif // _MDSPAN_USE_VARIABLE_TEMPLATES
+
+#ifndef _MDSPAN_USE_CONSTEXPR_14
+#  if (defined(__cpp_constexpr) && __cpp_constexpr >= 201304) \
+        || MDSPAN_HAS_CXX_14
+#    define _MDSPAN_USE_CONSTEXPR_14 1
+#  endif
+#endif
+
+#ifndef _MDSPAN_USE_INTEGER_SEQUENCE
+#  if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) \
+        || MDSPAN_HAS_CXX_14
+#    define _MDSPAN_USE_INTEGER_SEQUENCE 1
+#  endif
+#endif
+
+#ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+#  if (defined(__cpp_return_type_deduction) && __cpp_return_type_deduction >= 201304) \
+        || MDSPAN_HAS_CXX_14
+#    define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
+#  endif
+#endif
+
+#ifndef _MDSPAN_USE_STANDARD_TRAIT_ALIASES
+#  if (defined(__cpp_lib_transformation_trait_aliases) && __cpp_lib_transformation_trait_aliases >= 201304) \
+        || MDSPAN_HAS_CXX_14
+#    define _MDSPAN_USE_STANDARD_TRAIT_ALIASES 1
 #  endif
 #endif
 

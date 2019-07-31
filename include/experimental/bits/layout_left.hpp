@@ -81,8 +81,8 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr layout_left_impl() noexcept = default;
   MDSPAN_INLINE_FUNCTION constexpr layout_left_impl(layout_left_impl const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION constexpr layout_left_impl(layout_left_impl&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr layout_left_impl& operator=(layout_left_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr layout_left_impl& operator=(layout_left_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 layout_left_impl& operator=(layout_left_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 layout_left_impl& operator=(layout_left_impl&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION ~layout_left_impl() noexcept = default;
 
   using base_t::base_t;
@@ -91,9 +91,10 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherExtents,
     /* requires */ (
-      is_convertible_v<OtherExtents, std::experimental::extents<Exts...>>
+      _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
     )
   )
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
   layout_left_impl(layout_left_impl<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
     : base_t(other.extents())
   { }
@@ -103,10 +104,10 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherExtents,
     /* requires */ (
-      is_convertible_v<OtherExtents, std::experimental::extents<Exts...>>
+      _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
     )
   )
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
   layout_left_impl& operator=(layout_left_impl<OtherExtents> const& other)
   {
     this->_extents = other.extents();

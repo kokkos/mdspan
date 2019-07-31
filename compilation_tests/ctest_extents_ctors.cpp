@@ -48,104 +48,104 @@
 namespace stdex = std::experimental;
 
 MDSPAN_STATIC_TEST(
-  std::is_constructible_v<
+  std::is_constructible<
     std::experimental::extents<1, 2, stdex::dynamic_extent>,
     int
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_copy_constructible_v<
+  std::is_copy_constructible<
     std::experimental::extents<1, 2, stdex::dynamic_extent>
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_copy_constructible_v<
+  std::is_copy_constructible<
     std::experimental::extents<1, 2>
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_copy_constructible_v<
+  std::is_copy_constructible<
     std::experimental::extents<stdex::dynamic_extent>
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_move_constructible_v<
+  std::is_move_constructible<
     std::experimental::extents<1, 2, stdex::dynamic_extent>
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_default_constructible_v<
+  std::is_default_constructible<
     std::experimental::extents<1, 2, 3>
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_constructible_v<
+  std::is_constructible<
     std::experimental::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>,
     int, int, int
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  !std::is_constructible_v<
+  !std::is_constructible<
     std::experimental::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>,
     int, int
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  !std::is_constructible_v<
+  !std::is_constructible<
     std::experimental::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>,
     int, int
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_constructible_v<
+  std::is_constructible<
     std::experimental::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>,
     std::experimental::extents<stdex::dynamic_extent, 2, 3>
-  >
+  >::value
 );
 
 
 MDSPAN_STATIC_TEST(
-  std::is_convertible_v<
+  std::is_convertible<
     std::experimental::extents<2, 3>,
     std::experimental::extents<2, stdex::dynamic_extent>
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  !std::is_convertible_v<
+  !std::is_convertible<
     std::experimental::extents<3, 2>,
     std::experimental::extents<2, stdex::dynamic_extent>
-  >
+  >::value
 );
 
 
 MDSPAN_STATIC_TEST(
-  std::is_convertible_v<
+  std::is_convertible<
     std::experimental::extents<2, stdex::dynamic_extent>,
     std::experimental::extents<2, 3>
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  !std::is_convertible_v<
+  !std::is_convertible<
     std::experimental::extents<3, stdex::dynamic_extent>,
     std::experimental::extents<2, 3>
-  >
+  >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_assignable_v<
+  std::is_assignable<
     std::experimental::extents<2, stdex::dynamic_extent>,
     std::experimental::extents<2, 3>
-  >
+  >::value
 );
 

@@ -131,11 +131,11 @@ namespace _impl {
 
 template <class, class T>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
+constexpr T&& _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
 
 template <class T, class LP, class AP>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr void _do_sum_subspan(
+_MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
   T& sum,
   stdex::basic_mdspan<T, std::experimental::extents<>, LP, AP> s
 )
@@ -145,7 +145,7 @@ constexpr void _do_sum_subspan(
 
 template <class T, ptrdiff_t E, ptrdiff_t... Es, class LP, class AP>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr void _do_sum_subspan(
+_MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
   T& sum,
   stdex::basic_mdspan<T, std::experimental::extents<E, Es...>, LP, AP> s
 )

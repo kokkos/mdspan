@@ -73,8 +73,8 @@ public:
   constexpr extents_storage() noexcept = default;
   constexpr extents_storage(extents_storage const&) noexcept = default;
   constexpr extents_storage(extents_storage&&) noexcept = default;
-  constexpr extents_storage& operator=(extents_storage const&) noexcept = default;
-  constexpr extents_storage& operator=(extents_storage&&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14 extents_storage& operator=(extents_storage const&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14 extents_storage& operator=(extents_storage&&) noexcept = default;
   ~extents_storage() noexcept = default;
 
   MDSPAN_INLINE_FUNCTION
@@ -103,8 +103,8 @@ public:
   constexpr stride_storage_impl() noexcept = default;
   constexpr stride_storage_impl(stride_storage_impl const&) noexcept = default;
   constexpr stride_storage_impl(stride_storage_impl&&) noexcept = default;
-  constexpr stride_storage_impl& operator=(stride_storage_impl const&) noexcept = default;
-  constexpr stride_storage_impl& operator=(stride_storage_impl&&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14 stride_storage_impl& operator=(stride_storage_impl const&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14 stride_storage_impl& operator=(stride_storage_impl&&) noexcept = default;
   ~stride_storage_impl() noexcept = default;
 
   using base_t::base_t;
@@ -142,8 +142,8 @@ public:
   constexpr fixed_layout_common_impl() noexcept = default;
   constexpr fixed_layout_common_impl(fixed_layout_common_impl const&) noexcept = default;
   constexpr fixed_layout_common_impl(fixed_layout_common_impl&&) noexcept = default;
-  constexpr fixed_layout_common_impl& operator=(fixed_layout_common_impl const&) noexcept = default;
-  constexpr fixed_layout_common_impl& operator=(fixed_layout_common_impl&&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14 fixed_layout_common_impl& operator=(fixed_layout_common_impl const&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14 fixed_layout_common_impl& operator=(fixed_layout_common_impl&&) noexcept = default;
   ~fixed_layout_common_impl() noexcept = default;
 
   using base_t::base_t;
@@ -183,10 +183,19 @@ public:  // (but not really)
   MDSPAN_INLINE_FUNCTION
   static constexpr ptrdiff_t __static_stride() noexcept
   {
-    constexpr ptrdiff_t result = _MDSPAN_FOLD_TIMES_RIGHT(
-      (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
-    );
-    return result == 0 ? Default : result;
+    // This needs to be constexpr even in C++11, since it's used in a template parameter
+    #if _MDSPAN_USE_CONSTEXPR_14
+      constexpr ptrdiff_t result = _MDSPAN_FOLD_TIMES_RIGHT(
+        (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
+      );
+      return result == 0 ? Default : result;
+    #else
+      return _MDSPAN_FOLD_TIMES_RIGHT(
+        (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
+      ) == 0 ? Default : _MDSPAN_FOLD_TIMES_RIGHT(
+        (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
+      );
+    #endif
   }
 
 
