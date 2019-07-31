@@ -89,8 +89,6 @@
 // These compatibility macros don't help with partial ordering, but they should do the trick
 // for what we need to do with concepts in mdspan
 #ifdef _MDSPAN_USE_CONCEPTS
-#  define MDSPAN_REQUIRES(...) requires __VA_ARGS__
-#  define MDSPAN_NOEXCEPT_REQUIRES(...) noexcept requires __VA_ARGS__
 #  define MDSPAN_CLOSE_ANGLE_REQUIRES(REQ) > requires REQ
 #  define MDSPAN_FUNCTION_REQUIRES(PAREN_PREQUALS, FNAME, PAREN_PARAMS, QUALS, REQ) \
      MDSPAN_PP_REMOVE_PARENS(PAREN_PREQUALS) FNAME PAREN_PARAMS QUALS requires REQ \
