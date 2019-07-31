@@ -231,7 +231,6 @@ struct _assign_op_slice_handler<
     );
   }
 
-  MDSPAN_INSTANTIATE_ONLY_IF_USED
   MDSPAN_INLINE_FUNCTION
   constexpr auto
   _make_layout_mapping_impl(layout_stride<StaticStrides...>) {

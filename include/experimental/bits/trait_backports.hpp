@@ -61,6 +61,7 @@ _MDSPAN_BACKPORT_TRAIT(is_constructible)
 _MDSPAN_BACKPORT_TRAIT(is_convertible)
 _MDSPAN_BACKPORT_TRAIT(is_default_constructible)
 _MDSPAN_BACKPORT_TRAIT(is_same)
+_MDSPAN_BACKPORT_TRAIT(is_void)
 
 } // end namespace std
 
