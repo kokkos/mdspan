@@ -140,6 +140,7 @@ namespace std {
   template <class... Args> using TRAIT##_t = typename TRAIT<Args...>::type;
 
 _MDSPAN_BACKPORT_TRAIT_ALIAS(remove_cv)
+_MDSPAN_BACKPORT_TRAIT_ALIAS(remove_reference)
 
 template <bool _B, class _T=void>
 using enable_if_t = typename enable_if<_B, _T>::type;

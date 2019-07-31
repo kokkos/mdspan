@@ -55,7 +55,10 @@ namespace experimental {
 namespace detail {
 
 struct layout_left_idx_conditional {
-  constexpr inline bool operator()(size_t Idx, size_t N) const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr layout_left_idx_conditional() noexcept = default;
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr bool operator()(size_t Idx, size_t N) const noexcept {
     return Idx < N;
   };
 };

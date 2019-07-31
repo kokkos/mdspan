@@ -113,6 +113,12 @@ public:
     return Size == dynamic_extent ? Default : Size;
   }
 
+  template <ptrdiff_t Size, ptrdiff_t DynamicOffset, size_t Idx, size_t N, ptrdiff_t Default=dynamic_extent, ptrdiff_t DefaultWrongIdx=Default>
+  MDSPAN_FORCE_INLINE_FUNCTION
+  static constexpr ptrdiff_t select_static_n() noexcept {
+    return (Idx == N) ? ((Size == dynamic_extent) ? Default : Size) : DefaultWrongIdx;
+  }
+
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset, size_t Idx, ptrdiff_t N>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -130,9 +136,7 @@ public:
   template <size_t N, ptrdiff_t Default=dynamic_extent>
   MDSPAN_FORCE_INLINE_FUNCTION
   static constexpr ptrdiff_t get_static() noexcept {
-    return std::get<N>(
-      array<ptrdiff_t, sizeof...(Sizes)>{select_static<Sizes, DynamicOffsets, Default>()...}
-    );
+    return _MDSPAN_FOLD_PLUS_RIGHT((select_static_n<Sizes, DynamicOffsets, Idxs, N, Default, 0>()), /* + ... + */ 0);
   }
 
   MDSPAN_FORCE_INLINE_FUNCTION

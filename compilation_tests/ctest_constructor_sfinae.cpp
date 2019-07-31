@@ -53,17 +53,17 @@ namespace stdex = std::experimental;
 // <editor-fold desc="Test allowed pointer + extents ctors"> {{{1
 
 MDSPAN_STATIC_TEST(
-    std::is_constructible_v<
+    std::is_constructible<
         stdex::mdspan<int, 2, stdex::dynamic_extent>,
         int*, int
-    >
+    >::value
 );
 
 MDSPAN_STATIC_TEST(
-    std::is_constructible_v<
+    std::is_constructible<
         stdex::mdspan<double, stdex::dynamic_extent, 2, stdex::dynamic_extent>,
         double*, unsigned, int
-    >
+    >::value
 );
 
 // </editor-fold> end Test allowed pointer + extents ctors }}}1
@@ -74,19 +74,18 @@ MDSPAN_STATIC_TEST(
 // <editor-fold desc="Test forbidden pointer + extents ctors"> {{{1
 
 MDSPAN_STATIC_TEST(
-    !std::is_constructible_v<
+    !std::is_constructible<
         stdex::mdspan<int, 2, stdex::dynamic_extent>,
         double*, int
-    >
+    >::value
 );
 
 MDSPAN_STATIC_TEST(
-    !std::is_constructible_v<
+    !std::is_constructible<
         stdex::mdspan<int, 2, stdex::dynamic_extent>,
         int*, int, int
-    >
+    >::value
 );
-
 
 // </editor-fold> end Test forbidden pointer + extents ctors }}}1
 //==============================================================================

@@ -49,6 +49,29 @@
 
 namespace stdex = std::experimental;
 
+#if !(defined(__cpp_lib_make_unique) && __cpp_lib_make_unique >= 201304) && !MDSPAN_HAS_CXX_14
+// Not actually conforming, but it works for the purposes of this file
+namespace std {
+template <class T>
+struct __unique_ptr_new_impl {
+  template <class... Args>
+  static T* __impl(Args&&... args) {
+    return new T((Args&&)args...);
+  }
+};
+template <class T>
+struct __unique_ptr_new_impl<T[]> {
+  static T* __impl(size_t size) {
+    return new T[size];
+  }
+};
+template <class T, class... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+  return std::unique_ptr<T>(__unique_ptr_new_impl<T>::__impl((Args&&)args...));
+}
+} // end namespace std
+#endif
+
 //================================================================================
 
 template <

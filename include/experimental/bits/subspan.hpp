@@ -213,6 +213,10 @@ struct _assign_op_slice_handler<
   array<ptrdiff_t, NOffsets> offsets;
   array<ptrdiff_t, NDynamicExtents> dynamic_extents;
   array<ptrdiff_t, NDynamicStrides> dynamic_strides;
+
+#if !defined(_MDSPAN_USE_RETURN_TYPE_DEDUCTION) || !_MDSPAN_USE_RETURN_TYPE_DEDUCTION
+  using extents_type = std::experimental::extents<Extents...>;
+#endif
   
   // TODO defer instantiation of this?
   using layout_type = typename conditional<
@@ -405,62 +409,61 @@ constexpr auto _subspan_impl(
   );
 }
 #else
-// Avert your eyes!!!
-#define _MDSPAN_SUBSPAN_IMPL_HANDLED \
-( \
-  _MDSPAN_FOLD_ASSIGN_LEFT( \
-    ( \
-      detail::_assign_op_slice_handler< \
-        integer_sequence<ptrdiff_t>, \
-        integer_sequence<ptrdiff_t>, \
-        typename std::conditional< \
-          std::is_same<LP, layout_right>::value, \
-          detail::preserve_layout_right_analysis<>, \
-          typename std::conditional< \
-            std::is_same<LP, layout_left>::value, \
-            detail::preserve_layout_left_analysis<>, \
-            detail::ignore_layout_preservation \
-          >::type \
-        >::type \
-      >{} \
-    ), \
-      /* = ... = */ \
-    detail::_wrap_slice< \
-      Exts, decltype(src.mapping())::template __static_stride<Idxs>() \
-    >( \
-      slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs) \
-    ) \
-  ) \
-)
-#define _MDSPAN_SUBSPAN_IMPL_MAP \
-( \
-  _MDSPAN_SUBSPAN_IMPL_HANDLED.make_layout_mapping(src.mapping()) \
-)
-#define _MDSPAN_SUBSPAN_IMPL_OFFSET_PTR \
-( \
-  src.accessor().offset(src.data(), src.mapping()(_MDSPAN_SUBSPAN_IMPL_HANDLED.offsets[Idxs]...)) \
-)
+
+template <class ET, class AP, class Src, class Handled, size_t... Idxs>
+auto _subspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t, Idxs...>)
+  -> basic_mdspan<
+       ET, typename Handled::extents_type, typename Handled::layout_type, typename AP::offset_policy
+     >
+{
+  return {
+    src.accessor().offset(src.data(), src.mapping()(h.offsets[Idxs]...)),
+    h.make_layout_mapping(src.mapping()),
+    typename AP::offset_policy(src.accessor())
+  };
+}
+
 template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
 MDSPAN_INLINE_FUNCTION
 _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
   (
     constexpr /* auto */ _subspan_impl(
-      std::integer_sequence<size_t, Idxs...>,
+      std::integer_sequence<size_t, Idxs...> seq,
       basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
       SliceSpecs&&... slices
     ) noexcept
   ),
   (
-    /* return */ basic_mdspan<
-      ET, decltype(_MDSPAN_SUBSPAN_IMPL_MAP.extents()), typename decltype(_MDSPAN_SUBSPAN_IMPL_HANDLED)::layout_type, typename AP::offset_policy
-    >(
-      _MDSPAN_SUBSPAN_IMPL_OFFSET_PTR, _MDSPAN_SUBSPAN_IMPL_MAP, typename AP::offset_policy(src.accessor())
+    /* return */ _subspan_impl_helper<ET, AP>(
+      src,
+      _MDSPAN_FOLD_ASSIGN_LEFT(
+        (
+          detail::_assign_op_slice_handler<
+            integer_sequence<ptrdiff_t>,
+            integer_sequence<ptrdiff_t>,
+            typename std::conditional<
+              std::is_same<LP, layout_right>::value,
+              detail::preserve_layout_right_analysis<>,
+              typename std::conditional<
+                std::is_same<LP, layout_left>::value,
+                detail::preserve_layout_left_analysis<>,
+                detail::ignore_layout_preservation
+              >::type
+            >::type
+          >{}
+        ),
+        /* = ... = */
+        detail::_wrap_slice<
+          Exts, decltype(src.mapping())::template __static_stride<Idxs>()
+        >(
+          slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
+        )
+      ),
+      seq
     ) /* ; */
   )
 )
-#undef _MDSPAN_SUBSPAN_IMPL_HANDLED
-#undef _MDSPAN_SUBSPAN_IMPL_MAP
-#undef _MDSPAN_SUBSPAN_IMPL_OFFSET_PTR
+
 #endif
 
 template <class T> struct _is_layout_stride : std::false_type { };
@@ -498,7 +501,7 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
   ),
   (
     /* return */
-      detail::_subspan_impl(std::index_sequence_for<SliceSpecs...>{}, src, slices...) /*;*/
+      detail::_subspan_impl(std::make_index_sequence<sizeof...(SliceSpecs)>{}, src, slices...) /*;*/
   )
 )
 
