@@ -260,10 +260,10 @@ struct _assign_op_slice_handler<
   _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
     (
       constexpr /* auto */
-      make_layout_mapping(OldLayoutMapping const&) const
+      make_layout_mapping(OldLayoutMapping const&) const noexcept
     ),
     (
-      /* return */ _make_layout_mapping_impl(layout_type{}) /* ; */
+      /* return */ this->_make_layout_mapping_impl(layout_type{}) /* ; */
     )
   )
 
@@ -301,7 +301,7 @@ struct _assign_op_slice_handler<
 
   // For ptrdiff_t slice, skip the extent and stride, but add an offset corresponding to the value
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
-  MDSPAN_FORCE_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
   operator=(_slice_wrap<OldStaticExtent, OldStaticStride, ptrdiff_t> slice) noexcept
     -> _assign_op_slice_handler<
@@ -322,7 +322,7 @@ struct _assign_op_slice_handler<
 
   // For a std::all, offset 0 and old extent
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
-  MDSPAN_FORCE_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
   operator=(_slice_wrap<OldStaticExtent, OldStaticStride, all_type> slice) noexcept
     -> _assign_op_slice_handler<
@@ -330,20 +330,20 @@ struct _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, StaticStrides..., OldStaticStride>,
          typename PreserveLayoutAnalysis::encounter_all,
          array<ptrdiff_t, NOffsets + 1>,
-         decltype(fwd_extent(slice)),
-         decltype(fwd_stride(slice))
+         decltype(this->fwd_extent(slice)),
+         decltype(this->fwd_stride(slice))
        >
   {
     return {
       {std::get<OffsetIdxs>(offsets)..., ptrdiff_t(0)},
-      fwd_extent(slice),
-      fwd_stride(slice)
+      this->fwd_extent(slice),
+      this->fwd_stride(slice)
     };
   }
 
   // For a std::pair, add an offset and add a new dynamic extent (strides still preserved)
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride>
-  MDSPAN_FORCE_INLINE_FUNCTION
+  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
   operator=(_slice_wrap<OldStaticExtent, OldStaticStride, std::pair<ptrdiff_t, ptrdiff_t>> slice) noexcept
     -> _assign_op_slice_handler<
@@ -352,13 +352,13 @@ struct _assign_op_slice_handler<
          typename PreserveLayoutAnalysis::encounter_pair,
          array<ptrdiff_t, NOffsets + 1>,
          array<ptrdiff_t, NDynamicExtents + 1>,
-         decltype(fwd_stride(slice))
+         decltype(this->fwd_stride(slice))
        >
   {
     return {
       {std::get<OffsetIdxs>(offsets)..., std::get<0>(slice.slice)},
       {std::get<ExtentInitIdxs>(dynamic_extents)..., std::get<1>(slice.slice) - std::get<0>(slice.slice)},
-      fwd_stride(slice)
+      this->fwd_stride(slice)
     };
   }
 };

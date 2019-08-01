@@ -44,13 +44,16 @@
 #ifndef _MDSPAN_INCLUDE_EXPERIMENTAL_BITS_CONFIG_HPP_
 #define _MDSPAN_INCLUDE_EXPERIMENTAL_BITS_CONFIG_HPP_
 
-//#ifndef __has_include
-//#  define __has_include(x) 0
-//#endif
-//
-//#if __has_include(<version>)
-//#  include <version>
-//#endif
+#ifndef __has_include
+#  define __has_include(x) 0
+#endif
+
+#if __has_include(<version>)
+#  include <version>
+#else
+#  include <type_traits>
+#  include <utility>
+#endif
 
 #define MDSPAN_CXX_STD_14 201402L
 #define MDSPAN_CXX_STD_17 201703L
@@ -78,7 +81,7 @@
 #endif
 
 #ifndef _MDSPAN_USE_FOLD_EXPRESSIONS
-#  if MDSPAN_HAS_CXX_17 || (defined(__cpp_fold_expressions) && __cpp_fold_expressions >= 201603L)
+#  if (defined(__cpp_fold_expressions) && __cpp_fold_expressions >= 201603L)
 #    define _MDSPAN_USE_FOLD_EXPRESSIONS 1
 #  endif
 #endif
@@ -97,36 +100,31 @@
 #endif
 
 #ifndef _MDSPAN_USE_VARIABLE_TEMPLATES
-#  if (defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304) \
-        || MDSPAN_HAS_CXX_14
+#  if (defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304)
 #    define _MDSPAN_USE_VARIABLE_TEMPLATES 1
 #  endif
 #endif // _MDSPAN_USE_VARIABLE_TEMPLATES
 
 #ifndef _MDSPAN_USE_CONSTEXPR_14
-#  if (defined(__cpp_constexpr) && __cpp_constexpr >= 201304) \
-        || MDSPAN_HAS_CXX_14
+#  if (defined(__cpp_constexpr) && __cpp_constexpr >= 201304)
 #    define _MDSPAN_USE_CONSTEXPR_14 1
 #  endif
 #endif
 
 #ifndef _MDSPAN_USE_INTEGER_SEQUENCE
-#  if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) \
-        || MDSPAN_HAS_CXX_14
+#  if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304)
 #    define _MDSPAN_USE_INTEGER_SEQUENCE 1
 #  endif
 #endif
 
 #ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
-#  if (defined(__cpp_return_type_deduction) && __cpp_return_type_deduction >= 201304) \
-        || MDSPAN_HAS_CXX_14
+#  if (defined(__cpp_return_type_deduction) && __cpp_return_type_deduction >= 201304)
 #    define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
 #  endif
 #endif
 
 #ifndef _MDSPAN_USE_STANDARD_TRAIT_ALIASES
-#  if (defined(__cpp_lib_transformation_trait_aliases) && __cpp_lib_transformation_trait_aliases >= 201304) \
-        || MDSPAN_HAS_CXX_14
+#  if (defined(__cpp_lib_transformation_trait_aliases) && __cpp_lib_transformation_trait_aliases >= 201304)
 #    define _MDSPAN_USE_STANDARD_TRAIT_ALIASES 1
 #  endif
 #endif
