@@ -7,9 +7,14 @@ project(MDSpan
 
 ################################################################################
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+################################################################################
+
 option(MDSPAN_ENABLE_TESTS "Enable tests." Off)
 option(MDSPAN_ENABLE_EXAMPLES "Build examples." Off)
 option(MDSPAN_ENABLE_BENCHMARKS "Enable benchmarks." Off)
+option(MDSPAN_ENABLE_COMP_BENCH "Enable compilation benchmarks." Off)
 
 # Option to override which C++ standard to use
 set(MDSPAN_CXX_STANDARD DETECT CACHE STRING "Override the default CXX_STANDARD to compile with.")
@@ -138,4 +143,8 @@ endif()
 
 if(MDSPAN_ENABLE_BENCHMARKS)
  add_subdirectory(benchmarks)
+endif()
+
+if(MDSPAN_ENABLE_COMP_BENCH)
+  add_subdirectory(comp_bench)
 endif()
