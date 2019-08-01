@@ -178,9 +178,6 @@ public:  // (but not really)
   constexpr ptrdiff_t __stride() const noexcept {
     return this->base_t::template get_stride<R>();
   }
-  
-
-  //#ifndef _MDSPAN_USE_CONSTEXPR_14
 
   template <size_t N, ptrdiff_t _Default=dynamic_extent>
   struct __static_stride_workaround {
@@ -190,27 +187,12 @@ public:  // (but not really)
     static constexpr ptrdiff_t value = __result == 0 ? _Default : __result;
   };
 
-  //template <size_t N, ptrdiff_t Default=dynamic_extent>
-  //MDSPAN_INLINE_FUNCTION
-  //static constexpr ptrdiff_t __static_stride() noexcept
-  //{
-  //  return __static_stride_cxx11_workaround<N, Default>::value;
-  //}
-
-  //#else
-
-  //template <size_t N, ptrdiff_t Default=dynamic_extent>
-  //MDSPAN_INLINE_FUNCTION
-  //static _MDSPAN_CONSTEXPR_14 ptrdiff_t __static_stride() noexcept
-  //{
-  //  constexpr ptrdiff_t result = _MDSPAN_FOLD_TIMES_RIGHT(
-  //    (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
-  //  );
-  //  return result == 0 ? Default : result;
-  //}
-
-  //#endif
-
+  template <size_t N, ptrdiff_t Default=dynamic_extent>
+  MDSPAN_INLINE_FUNCTION
+  static constexpr ptrdiff_t __static_stride() noexcept
+  {
+    return __static_stride_workaround<N, Default>::value;
+  }
 
 };
 
