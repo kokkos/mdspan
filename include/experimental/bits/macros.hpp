@@ -48,8 +48,12 @@
 
 #include <type_traits> // std::is_void
 
-#define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline))
-#define MDSPAN_INLINE_FUNCTION inline
+#ifndef MDSPAN_FORCE_INLINE_FUNCTION
+#  define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline))
+#endif
+#ifndef MDSPAN_INLINE_FUNCTION
+#  define MDSPAN_INLINE_FUNCTION inline
+#endif
 
 //==============================================================================
 // <editor-fold desc="Preprocessor helpers"> {{{1

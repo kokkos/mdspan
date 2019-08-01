@@ -239,7 +239,7 @@ struct _assign_op_slice_handler<
         std::experimental::extents<Extents...>(dynamic_extents)
       ) /* ; */
     )
-  );
+  )
 
   MDSPAN_INLINE_FUNCTION
   _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(

@@ -289,8 +289,8 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.domobs], basic_mdspan observers of the domain multidimensional index space
 
-  MDSPAN_INLINE_FUNCTION static constexpr int rank() noexcept { return extents_type::rank(); };
-  MDSPAN_INLINE_FUNCTION static constexpr int rank_dynamic() noexcept { return extents_type::rank_dynamic(); };;
+  MDSPAN_INLINE_FUNCTION static constexpr int rank() noexcept { return extents_type::rank(); }
+  MDSPAN_INLINE_FUNCTION static constexpr int rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
   MDSPAN_INLINE_FUNCTION static constexpr index_type static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
 
   MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept { return map_.extents(); };
