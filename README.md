@@ -22,7 +22,9 @@ Features
 Building and Installation
 -------------------------
 
-TODO write this
+This implementation is header-only, with compiler features detected using feature test macros, so you can just use it directly with no building or installation.  If you would like to run the included tests or benchmarks, you'll need CMake. 
+
+TODO finish this
 
 ### Running tests
 
