@@ -70,12 +70,12 @@ public:
 protected:
   _MDSPAN_NO_UNIQUE_ADDRESS extents_type _extents = {};
 public:
-  constexpr extents_storage() noexcept = default;
-  constexpr extents_storage(extents_storage const&) noexcept = default;
-  constexpr extents_storage(extents_storage&&) noexcept = default;
-  _MDSPAN_CONSTEXPR_14 extents_storage& operator=(extents_storage const&) noexcept = default;
-  _MDSPAN_CONSTEXPR_14 extents_storage& operator=(extents_storage&&) noexcept = default;
-  ~extents_storage() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents_storage() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents_storage(extents_storage const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents_storage(extents_storage&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 extents_storage& operator=(extents_storage const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 extents_storage& operator=(extents_storage&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED ~extents_storage() noexcept = default;
 
   MDSPAN_INLINE_FUNCTION
   constexpr extents_storage(extents_type const& exts)
@@ -100,12 +100,12 @@ private:
   using base_t = extents_storage<std::experimental::extents<Exts...>>;
 public:
 
-  constexpr stride_storage_impl() noexcept = default;
-  constexpr stride_storage_impl(stride_storage_impl const&) noexcept = default;
-  constexpr stride_storage_impl(stride_storage_impl&&) noexcept = default;
-  _MDSPAN_CONSTEXPR_14 stride_storage_impl& operator=(stride_storage_impl const&) noexcept = default;
-  _MDSPAN_CONSTEXPR_14 stride_storage_impl& operator=(stride_storage_impl&&) noexcept = default;
-  ~stride_storage_impl() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr stride_storage_impl() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr stride_storage_impl(stride_storage_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr stride_storage_impl(stride_storage_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 stride_storage_impl& operator=(stride_storage_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 stride_storage_impl& operator=(stride_storage_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED ~stride_storage_impl() noexcept = default;
 
   using base_t::base_t;
 
@@ -139,12 +139,12 @@ private:
 
 public:
 
-  constexpr fixed_layout_common_impl() noexcept = default;
-  constexpr fixed_layout_common_impl(fixed_layout_common_impl const&) noexcept = default;
-  constexpr fixed_layout_common_impl(fixed_layout_common_impl&&) noexcept = default;
-  _MDSPAN_CONSTEXPR_14 fixed_layout_common_impl& operator=(fixed_layout_common_impl const&) noexcept = default;
-  _MDSPAN_CONSTEXPR_14 fixed_layout_common_impl& operator=(fixed_layout_common_impl&&) noexcept = default;
-  ~fixed_layout_common_impl() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr fixed_layout_common_impl() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr fixed_layout_common_impl(fixed_layout_common_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr fixed_layout_common_impl(fixed_layout_common_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 fixed_layout_common_impl& operator=(fixed_layout_common_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 fixed_layout_common_impl& operator=(fixed_layout_common_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED ~fixed_layout_common_impl() noexcept = default;
 
   using base_t::base_t;
   using base_t::extents;
@@ -180,36 +180,36 @@ public:  // (but not really)
   }
   
 
-  #ifndef _MDSPAN_USE_CONSTEXPR_14
+  //#ifndef _MDSPAN_USE_CONSTEXPR_14
 
   template <size_t N, ptrdiff_t _Default=dynamic_extent>
-  struct __static_stride_cxx11_workaround {
+  struct __static_stride_workaround {
     static constexpr ptrdiff_t __result = _MDSPAN_FOLD_TIMES_RIGHT(
       (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
     );
     static constexpr ptrdiff_t value = __result == 0 ? _Default : __result;
   };
 
-  template <size_t N, ptrdiff_t Default=dynamic_extent>
-  MDSPAN_INLINE_FUNCTION
-  static constexpr ptrdiff_t __static_stride() noexcept
-  {
-    return __static_stride_cxx11_workaround<N, Default>::value;
-  }
+  //template <size_t N, ptrdiff_t Default=dynamic_extent>
+  //MDSPAN_INLINE_FUNCTION
+  //static constexpr ptrdiff_t __static_stride() noexcept
+  //{
+  //  return __static_stride_cxx11_workaround<N, Default>::value;
+  //}
 
-  #else
+  //#else
 
-  template <size_t N, ptrdiff_t Default=dynamic_extent>
-  MDSPAN_INLINE_FUNCTION
-  static _MDSPAN_CONSTEXPR_14 ptrdiff_t __static_stride() noexcept
-  {
-    constexpr ptrdiff_t result = _MDSPAN_FOLD_TIMES_RIGHT(
-      (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
-    );
-    return result == 0 ? Default : result;
-  }
+  //template <size_t N, ptrdiff_t Default=dynamic_extent>
+  //MDSPAN_INLINE_FUNCTION
+  //static _MDSPAN_CONSTEXPR_14 ptrdiff_t __static_stride() noexcept
+  //{
+  //  constexpr ptrdiff_t result = _MDSPAN_FOLD_TIMES_RIGHT(
+  //    (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
+  //  );
+  //  return result == 0 ? Default : result;
+  //}
 
-  #endif
+  //#endif
 
 
 };

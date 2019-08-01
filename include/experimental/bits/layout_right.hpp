@@ -56,7 +56,7 @@ namespace detail {
 
 
 struct layout_right_idx_conditional {
-  MDSPAN_FORCE_INLINE_FUNCTION
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr layout_right_idx_conditional() noexcept = default;
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr inline bool operator()(size_t Idx, size_t N) const noexcept {
@@ -82,12 +82,12 @@ public:
 
   //--------------------------------------------------------------------------------
 
-  MDSPAN_INLINE_FUNCTION constexpr layout_right_impl() noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr layout_right_impl(layout_right_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr layout_right_impl(layout_right_impl&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 layout_right_impl& operator=(layout_right_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 layout_right_impl& operator=(layout_right_impl&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION ~layout_right_impl() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_right_impl() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_right_impl(layout_right_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_right_impl(layout_right_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 layout_right_impl& operator=(layout_right_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 layout_right_impl& operator=(layout_right_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED ~layout_right_impl() noexcept = default;
 
   using base_t::base_t;
 

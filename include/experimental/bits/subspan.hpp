@@ -392,7 +392,7 @@ constexpr auto _subspan_impl(
       ),
         /* = ... = */
       detail::_wrap_slice<
-        Exts, decltype(src.mapping())::template __static_stride<Idxs>()
+        Exts, decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
       >(
         slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
       )
@@ -454,7 +454,7 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
         ),
         /* = ... = */
         detail::_wrap_slice<
-          Exts, decltype(src.mapping())::template __static_stride<Idxs>()
+          Exts, decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
         >(
           slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
         )

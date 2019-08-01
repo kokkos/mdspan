@@ -134,9 +134,9 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.cons], basic_mdspan constructors, assignment, and destructor
 
-  MDSPAN_INLINE_FUNCTION constexpr basic_mdspan() noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr basic_mdspan(const basic_mdspan&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr basic_mdspan(basic_mdspan&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr basic_mdspan() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr basic_mdspan(const basic_mdspan&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr basic_mdspan(basic_mdspan&&) noexcept = default;
 
   // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
@@ -211,10 +211,11 @@ public:
       acc_(other.acc_)
   { }
 
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~basic_mdspan() noexcept = default;
 
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 basic_mdspan& operator=(const basic_mdspan&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 basic_mdspan& operator=(basic_mdspan&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 basic_mdspan& operator=(const basic_mdspan&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 basic_mdspan& operator=(basic_mdspan&&) noexcept = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType, ptrdiff_t... OtherExtents, class OtherLayoutPolicy, class OtherAccessorPolicy,

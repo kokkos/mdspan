@@ -152,17 +152,17 @@ public:
     return { };
   }
 
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr mixed_static_and_dynamic_size_storage() = default;
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr mixed_static_and_dynamic_size_storage(mixed_static_and_dynamic_size_storage const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr mixed_static_and_dynamic_size_storage(mixed_static_and_dynamic_size_storage&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   _MDSPAN_CONSTEXPR_14 mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   _MDSPAN_CONSTEXPR_14 mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~mixed_static_and_dynamic_size_storage() noexcept = default;
 
   template <class... Integral>

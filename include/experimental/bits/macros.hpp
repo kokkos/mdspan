@@ -54,6 +54,9 @@
 #ifndef MDSPAN_INLINE_FUNCTION
 #  define MDSPAN_INLINE_FUNCTION inline
 #endif
+#ifndef MDSPAN_INLINE_FUNCTION_DEFAULTED
+#  define MDSPAN_INLINE_FUNCTION_DEFAULTED inline
+#endif
 
 //==============================================================================
 // <editor-fold desc="Preprocessor helpers"> {{{1

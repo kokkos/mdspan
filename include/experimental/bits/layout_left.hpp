@@ -55,7 +55,7 @@ namespace experimental {
 namespace detail {
 
 struct layout_left_idx_conditional {
-  MDSPAN_FORCE_INLINE_FUNCTION
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr layout_left_idx_conditional() noexcept = default;
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr bool operator()(size_t Idx, size_t N) const noexcept {
@@ -81,12 +81,12 @@ public:
 
   //--------------------------------------------------------------------------------
 
-  MDSPAN_INLINE_FUNCTION constexpr layout_left_impl() noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr layout_left_impl(layout_left_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION constexpr layout_left_impl(layout_left_impl&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 layout_left_impl& operator=(layout_left_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 layout_left_impl& operator=(layout_left_impl&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION ~layout_left_impl() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_left_impl() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_left_impl(layout_left_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_left_impl(layout_left_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 layout_left_impl& operator=(layout_left_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 layout_left_impl& operator=(layout_left_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED ~layout_left_impl() noexcept = default;
 
   using base_t::base_t;
 
