@@ -537,8 +537,15 @@ struct __bools;
 
 #if _MDSPAN_USE_CONSTEXPR_14
 #  define _MDSPAN_CONSTEXPR_14 constexpr
+// Workaround for a bug (I think?) in EDG frontends
+#  ifdef __EDG__
+#    define _MDSPAN_CONSTEXPR_14_DEFAULTED
+#  else
+#    define _MDSPAN_CONSTEXPR_14_DEFAULTED constexpr
+#  endif
 #else
 #  define _MDSPAN_CONSTEXPR_14
+#  define _MDSPAN_CONSTEXPR_14_DEFAULTED
 #endif
 
 // </editor-fold> end Pre-C++14 constexpr }}}1

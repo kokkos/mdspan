@@ -314,7 +314,7 @@ struct _assign_op_slice_handler<
        >
   {
     return {
-      {std::get<OffsetIdxs>(offsets)..., slice.slice},
+      {{ std::get<OffsetIdxs>(offsets)..., slice.slice }},
       dynamic_extents,
       dynamic_strides
     };
@@ -335,7 +335,7 @@ struct _assign_op_slice_handler<
        >
   {
     return {
-      {std::get<OffsetIdxs>(offsets)..., ptrdiff_t(0)},
+      {{std::get<OffsetIdxs>(offsets)..., ptrdiff_t(0)}},
       this->fwd_extent(slice),
       this->fwd_stride(slice)
     };

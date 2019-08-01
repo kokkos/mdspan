@@ -133,21 +133,21 @@ template <class, class T>
 MDSPAN_FORCE_INLINE_FUNCTION
 constexpr T&& _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
 
-template <class T, class LP, class AP>
+template <class T, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
   T& sum,
-  stdex::basic_mdspan<T, std::experimental::extents<>, LP, AP> s
+  stdex::basic_mdspan<T, std::experimental::extents<>, Rest...> s
 )
 {
   sum += s();
 }
 
-template <class T, ptrdiff_t E, ptrdiff_t... Es, class LP, class AP>
+template <class T, ptrdiff_t E, ptrdiff_t... Es, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
   T& sum,
-  stdex::basic_mdspan<T, std::experimental::extents<E, Es...>, LP, AP> s
+  stdex::basic_mdspan<T, std::experimental::extents<E, Es...>, Rest...> s
 )
 {
   for(ptrdiff_t i = 0; i < s.extent(0); ++i) {

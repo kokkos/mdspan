@@ -141,7 +141,7 @@ public:
 
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t get(size_t n) const noexcept {
-    return array<ptrdiff_t, sizeof...(Sizes)>{select<Sizes, DynamicOffsets>()...}[n];
+    return array<ptrdiff_t, sizeof...(Sizes)>({{select<Sizes, DynamicOffsets>()...}})[n];
   }
 
   template <size_t N>
@@ -159,16 +159,16 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr mixed_static_and_dynamic_size_storage(mixed_static_and_dynamic_size_storage&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14 mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage const&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14 mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage&&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~mixed_static_and_dynamic_size_storage() noexcept = default;
 
   template <class... Integral>
   MDSPAN_INLINE_FUNCTION
   constexpr mixed_static_and_dynamic_size_storage(construct_mixed_storage_from_sizes_tag_t, Integral... dyn_sizes)
-    : dynamic_sizes{dyn_sizes...}
+    : dynamic_sizes({{dyn_sizes...}})
   { }
 
   template <ptrdiff_t... USizes, ptrdiff_t... UDynOffs, size_t... UIdxs>
@@ -179,7 +179,7 @@ public:
       std::integer_sequence<ptrdiff_t, UDynOffs...>,
       std::integer_sequence<size_t, UIdxs...>
     > const& other
-  ) : dynamic_sizes{}
+  ) : dynamic_sizes({})
   {
     // TODO @compatibility fold emulation
     _MDSPAN_FOLD_COMMA(set<Idxs>(other.template get<Idxs>()) /* , ... */);

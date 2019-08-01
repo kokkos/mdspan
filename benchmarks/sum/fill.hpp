@@ -46,6 +46,8 @@
 #include <experimental/mdspan>
 #include <memory>
 
+
+
 #if !(defined(__cpp_lib_make_unique) && __cpp_lib_make_unique >= 201304) && !MDSPAN_HAS_CXX_14
 // Not actually conforming, but it works for the purposes of this file
 namespace std {
@@ -78,9 +80,9 @@ namespace _impl {
 template <class, class T>
 T&& _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
 
-template <class T, class LP, class AP, class RNG, class Dist>
+template <class T, class... Rest, class RNG, class Dist>
 void _do_fill_random(
-  std::experimental::basic_mdspan<T, std::experimental::extents<>, LP, AP> s,
+  std::experimental::basic_mdspan<T, std::experimental::extents<>, Rest...> s,
   RNG& gen,
   Dist& dist
 )
@@ -88,9 +90,9 @@ void _do_fill_random(
   s() = dist(gen);
 }
 
-template <class T, ptrdiff_t E, ptrdiff_t... Es, class LP, class AP, class RNG, class Dist>
+template <class T, ptrdiff_t E, ptrdiff_t... Es, class... Rest, class RNG, class Dist>
 void _do_fill_random(
-  std::experimental::basic_mdspan<T, std::experimental::extents<E, Es...>, LP, AP> s,
+  std::experimental::basic_mdspan<T, std::experimental::extents<E, Es...>, Rest...> s,
   RNG& gen,
   Dist& dist
 )
@@ -102,8 +104,8 @@ void _do_fill_random(
 
 } // end namespace _impl
 
-template <class T, class E, class LP, class AP>
-void fill_random(std::experimental::basic_mdspan<T, E, LP, AP> s, long long seed = 1234) {
+template <class T, class E, class... Rest>
+void fill_random(std::experimental::basic_mdspan<T, E, Rest...> s, long long seed = 1234) {
   std::mt19937 gen(seed);
   auto val_dist = std::uniform_int_distribution<>(0, 127);
   _impl::_do_fill_random(s, gen, val_dist);

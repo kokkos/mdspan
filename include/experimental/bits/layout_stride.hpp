@@ -119,16 +119,16 @@ public: // (but not really)
     return _strides.template get<N>();
   }
 
-  template <size_t N, ptrdiff_t _Default=dynamic_extent>
+  template <size_t N>
   struct __static_stride_workaround {
-    static constexpr ptrdiff_t value =  stride_storage_t::template get_static<N, _Default>();
+    static constexpr ptrdiff_t value =  stride_storage_t::template get_static<N, dynamic_extent>();
   };
 
-  template <size_t N, ptrdiff_t Default=dynamic_extent>
+  template <size_t N>
   MDSPAN_INLINE_FUNCTION
   static constexpr ptrdiff_t __static_stride() noexcept
   {
-    return stride_storage_t::template get_static<N, Default>();
+    return stride_storage_t::template get_static<N>();
   }
 
 public:
@@ -150,8 +150,8 @@ public:
       _strides(strides)
   { }      
 
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 layout_stride_impl& operator=(layout_stride_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 layout_stride_impl& operator=(layout_stride_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED layout_stride_impl& operator=(layout_stride_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED layout_stride_impl& operator=(layout_stride_impl&&) noexcept = default;
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~layout_stride_impl() noexcept = default;
 

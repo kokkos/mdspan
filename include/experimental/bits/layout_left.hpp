@@ -84,8 +84,8 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_left_impl() noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_left_impl(layout_left_impl const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_left_impl(layout_left_impl&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 layout_left_impl& operator=(layout_left_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 layout_left_impl& operator=(layout_left_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED layout_left_impl& operator=(layout_left_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED layout_left_impl& operator=(layout_left_impl&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~layout_left_impl() noexcept = default;
 
   using base_t::base_t;
