@@ -7,7 +7,7 @@ The ISO-C++ proposal [P0009](https://wg21.link/p0009) will add support for non-o
 Using `mdspan`
 --------------
 
-TODO write this
+A [tutorial-style introduction](https://github.com/kokkos/mdspan/wiki/A-Gentle-Introduction-to-mdspan) to the basic usage of `mdspan` is provided on the project wiki.  More advanced tutorials to come.
 
 Features
 --------
