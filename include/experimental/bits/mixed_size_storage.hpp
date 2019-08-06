@@ -181,7 +181,6 @@ public:
     > const& other
   ) : dynamic_sizes({})
   {
-    // TODO @compatibility fold emulation
     _MDSPAN_FOLD_COMMA(set<Idxs>(other.template get<Idxs>()) /* , ... */);
   }
 

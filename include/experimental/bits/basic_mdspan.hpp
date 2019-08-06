@@ -44,8 +44,6 @@
 
 #pragma once
 
-#include <vector>
-
 #include "accessor_basic.hpp"
 #include "layout_right.hpp"
 #include "extents.hpp"
