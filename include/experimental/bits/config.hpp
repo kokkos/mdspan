@@ -112,11 +112,25 @@
 #endif
 
 #ifndef _MDSPAN_USE_INTEGER_SEQUENCE
+#  ifdef _MSC_VER
+#    if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304)
+#      define _MDSPAN_USE_INTEGER_SEQUENCE 1
+#    endif
+#  endif
+#endif
+#ifndef _MDSPAN_USE_INTEGER_SEQUENCE
 #  if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) && MDSPAN_HAS_CXX_14
 #    define _MDSPAN_USE_INTEGER_SEQUENCE 1
 #  endif
 #endif
 
+#ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+#  ifdef _MSC_VER
+#    if !(defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) && MDSPAN_HAS_CXX_14
+#      define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
+#    endif
+#  endif
+#endif
 #ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
 #  if (defined(__cpp_return_type_deduction) && __cpp_return_type_deduction >= 201304) && MDSPAN_HAS_CXX_14
 #    define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
