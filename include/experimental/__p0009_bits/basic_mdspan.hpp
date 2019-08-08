@@ -73,8 +73,8 @@ protected:
   MDSPAN_FORCE_INLINE_FUNCTION constexpr ptrdiff_t __size() const noexcept {
     return _MDSPAN_FOLD_TIMES_RIGHT((__self().map_.extents().template __extent<ExtIdxs>()), /* * ... * */ 1);
   }
-  template <class ElementType, class IndexType, size_t N>
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr ElementType __callop(const array<IndexType, N>& indices) const noexcept {
+  template <class ReferenceType, class IndexType, size_t N>
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr ReferenceType __callop(const array<IndexType, N>& indices) const noexcept {
     return __self().acc_.access(__self().ptr_, __self().map_(indices[ExtIdxs]...));
   }
 };
@@ -279,7 +279,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(const array<IndexType, N>& indices) const noexcept
   {
-    return this->_crtp_base_t::template __callop<element_type>(indices);
+    return this->_crtp_base_t::template __callop<reference>(indices);
   }
 
   MDSPAN_INLINE_FUNCTION
