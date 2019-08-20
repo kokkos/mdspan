@@ -147,7 +147,8 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~fixed_layout_common_impl() noexcept = default;
 
   using base_t::base_t;
-  using base_t::extents;
+
+  MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept { return this->base_t::extents(); };
 
   template <class... Integral>
   MDSPAN_FORCE_INLINE_FUNCTION

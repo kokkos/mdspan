@@ -286,13 +286,13 @@ constexpr decltype(auto) __fold_right_or_impl(Arg&& arg, Args&&... args) {
 
 template <class Arg1>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) __fold_left_assign_impl(Arg1&& arg1) {
+constexpr auto __fold_left_assign_impl(Arg1&& arg1) {
   return (Arg1&&)arg1;
 }
 
 template <class Arg1, class Arg2, class... Args>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) __fold_left_assign_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args) {
+constexpr auto __fold_left_assign_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args) {
   return __fold_compatibility_impl::__fold_left_assign_impl((((Arg1&&)arg1) = ((Arg2&&)arg2)), (Args&&)args...);
 }
 

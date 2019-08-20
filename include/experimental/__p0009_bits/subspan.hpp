@@ -210,9 +210,9 @@ struct _assign_op_slice_handler<
     " "
   );
 
-  array<ptrdiff_t, NOffsets> offsets;
-  array<ptrdiff_t, NDynamicExtents> dynamic_extents;
-  array<ptrdiff_t, NDynamicStrides> dynamic_strides;
+  array<ptrdiff_t, NOffsets> offsets = { };
+  array<ptrdiff_t, NDynamicExtents> dynamic_extents = { };
+  array<ptrdiff_t, NDynamicStrides> dynamic_strides = { };
 
 #if !defined(_MDSPAN_USE_RETURN_TYPE_DEDUCTION) || !_MDSPAN_USE_RETURN_TYPE_DEDUCTION
   using extents_type = std::experimental::extents<Extents...>;
@@ -356,8 +356,8 @@ struct _assign_op_slice_handler<
        >
   {
     return {
-      {std::get<OffsetIdxs>(offsets)..., std::get<0>(slice.slice)},
-      {std::get<ExtentInitIdxs>(dynamic_extents)..., std::get<1>(slice.slice) - std::get<0>(slice.slice)},
+      {{std::get<OffsetIdxs>(offsets)..., std::get<0>(slice.slice)}},
+      {{std::get<ExtentInitIdxs>(dynamic_extents)..., std::get<1>(slice.slice) - std::get<0>(slice.slice)}},
       this->fwd_stride(slice)
     };
   }
@@ -388,7 +388,7 @@ constexpr auto _subspan_impl(
               detail::ignore_layout_preservation
             >::type
           >::type
-        >{}
+        >{std::array<ptrdiff_t, 0>{}, std::array<ptrdiff_t, 0>{}, std::array<ptrdiff_t, 0>{}}
       ),
         /* = ... = */
       detail::_wrap_slice<

@@ -118,8 +118,6 @@ public:
   }
   //--------------------------------------------------------------------------------
 
-  using base_t::extents;
-
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }

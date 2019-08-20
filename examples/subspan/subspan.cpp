@@ -41,9 +41,9 @@
 //@HEADER
 */
 
+#include <iostream>
 #include <experimental/mdspan>
 
-#include <iostream>
 #include <iomanip>
 #include <memory>
 #include <cassert>
@@ -60,7 +60,7 @@ int main() {
     auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::subspan(s1, 1, 1, stdex::all);
-    assert(sub1[1] == 42);
+    std::cout << std::boolalpha << (sub1[1] == 42) << std::endl;
   }
 
   {
@@ -70,7 +70,7 @@ int main() {
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
     auto sub2 = stdex::subspan(sub1, 1, stdex::all);
-    assert(sub2[1] == 42);
+    std::cout << std::boolalpha << (sub2[1] == 42) << std::endl;
   }
 
   {
@@ -81,7 +81,7 @@ int main() {
     auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
     auto sub2 = stdex::subspan(sub1, 1, stdex::all);
     auto sub3 = stdex::subspan(sub2, 1);
-    assert(sub3() == 42);
+    std::cout << std::boolalpha << (sub3() == 42) << std::endl;
   }
 
   {
@@ -92,7 +92,7 @@ int main() {
     auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
     auto sub2 = stdex::subspan(sub1, 1, stdex::all);
     auto sub3 = stdex::subspan(sub2, 1);
-    assert(sub3() == 42);
+    std::cout << std::boolalpha << (sub3() == 42) << std::endl;
   }
 
 }
