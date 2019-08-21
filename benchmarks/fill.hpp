@@ -41,7 +41,8 @@
 //@HEADER
 */
 
-#pragma once
+#ifndef MDSPAN_BENCHMARKS_FILL_HPP
+#define MDSPAN_BENCHMARKS_FILL_HPP
 
 #include <experimental/mdspan>
 #include <memory>
@@ -112,6 +113,6 @@ void fill_random(std::experimental::basic_mdspan<T, E, Rest...> s, long long see
   _impl::_do_fill_random(s, gen, val_dist);
 }
 
-
-
 } // namespace mdspan_benchmark
+
+#endif // MDSPAN_BENCHMARKS_FILL_HPP
