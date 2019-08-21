@@ -161,7 +161,7 @@ public:
 
   //--------------------------------------------------------------------------------
 
-  using base_t::extents;
+  MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept { return this->base_t::__extents; };
 
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
   // TODO @proposal-bug this wording for this is (at least slightly) broken (should at least be "... stride(p[0]) == 1...")
