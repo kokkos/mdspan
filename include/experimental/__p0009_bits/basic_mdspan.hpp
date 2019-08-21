@@ -88,12 +88,12 @@ private:
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ptrdiff_t __size(basic_mdspan const& __self) noexcept {
-      return _MDSPAN_FOLD_TIMES_RIGHT((__self.mapping().extents().template __extent<Idxs>()), /* * ... * */ 1);
+      return _MDSPAN_FOLD_TIMES_RIGHT((__self.map_.extents().template __extent<Idxs>()), /* * ... * */ 1);
     }
     template <class ReferenceType, class IndexType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ReferenceType __callop(basic_mdspan const& __self, const array<IndexType, N>& indices) noexcept {
-      return __self.acc_.access(__self.data(), __self.map_(indices[Idxs]...));
+      return __self.acc_.access(__self.ptr_, __self.map_(indices[Idxs]...));
     }
   };
 
@@ -168,7 +168,7 @@ public:
   { }
 
   // TODO noexcept specification
-  MDSPAN_INLINE_FUNCTION 
+  MDSPAN_INLINE_FUNCTION
   constexpr basic_mdspan(pointer p, const mapping_type& m, const accessor_type& a) noexcept
     : ptr_(p),
       map_(m),
