@@ -251,4 +251,49 @@ BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_right, size_400_400_400, int(), 400, 400, 4
 
 //================================================================================
 
+template <class T, class SizeX, class SizeY, class SizeZ>
+void BM_Raw_Cuda_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+
+  using value_type = T;
+  value_type* data = nullptr;
+  {
+    // just for setup...
+    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{};
+    auto s = fill_device_mdspan(wrapped, x*y*z);
+    data = s.data();
+  }
+
+  int repeats = x*y*z > (100*100*100) ? 50 : 1000;
+
+  for (auto _ : state) {
+    auto timed = run_kernel_timed(
+    [=] __device__ {
+      for(int r = 0; r < repeats; ++r) {
+        value_type sum_local = 0;
+        for(ptrdiff_t i = blockIdx.x; i < x; i += gridDim.x) {
+          for(ptrdiff_t j = threadIdx.x; j < y; j += blockDim.x) {
+            for(ptrdiff_t k = threadIdx.y; k < z; k += blockDim.y) {
+              sum_local += data[k*x*y + j*x + i];
+            }
+          }
+        }
+        DoNotOptimize(*(volatile value_type*)(&data[0]) = sum_local);
+        asm volatile ("": : :"memory");
+      }
+    }
+    );
+    // units of cuda timer is milliseconds, units of iteration timer is seconds
+    state.SetIterationTime(timed * 1e-3);
+  }
+  state.SetBytesProcessed(x * y * z * sizeof(value_type) * state.iterations() * repeats);
+  state.counters["repeats"] = repeats;
+
+  CUDA_SAFE_CALL(cudaDeviceSynchronize());
+  CUDA_SAFE_CALL(cudaFree(data));
+}
+BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_left, size_80_80_80, int(), 80, 80, 80);
+BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_left, size_400_400_400, int(), 400, 400, 400);
+
+//================================================================================
+
 BENCHMARK_MAIN();
