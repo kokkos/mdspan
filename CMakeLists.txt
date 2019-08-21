@@ -15,6 +15,7 @@ option(MDSPAN_ENABLE_TESTS "Enable tests." Off)
 option(MDSPAN_ENABLE_EXAMPLES "Build examples." Off)
 option(MDSPAN_ENABLE_BENCHMARKS "Enable benchmarks." Off)
 option(MDSPAN_ENABLE_COMP_BENCH "Enable compilation benchmarks." Off)
+option(MDSPAN_ENABLE_CUDA "Enable Cuda tests/benchmarks/examples if tests/benchmarks/examples are enabled." Off)
 
 # Option to override which C++ standard to use
 set(MDSPAN_CXX_STANDARD DETECT CACHE STRING "Override the default CXX_STANDARD to compile with.")
@@ -90,6 +91,20 @@ endif()
 
 ################################################################################
 
+if(MDSPAN_ENABLE_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_STANDARD ${CMAKE_CXX_STANDARD})
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  else()
+    message(FATAL_ERROR "Requested CUDA support, but no CMAKE_CUDA_COMPILER available")
+  endif()
+endif()
+
+################################################################################
+
 add_library(mdspan INTERFACE)
 add_library(std::mdspan ALIAS mdspan)
 
@@ -103,6 +118,7 @@ target_include_directories(mdspan INTERFACE
 install(TARGETS mdspan EXPORT mdspanTargets
   INCLUDES DESTINATION include
 )
+
 
 install(EXPORT mdspanTargets
     FILE mdspanTargets.cmake

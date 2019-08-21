@@ -51,12 +51,18 @@
 #ifndef MDSPAN_FORCE_INLINE_FUNCTION
 #  ifdef _MSC_VER // Microsoft compilers
 #    define MDSPAN_FORCE_INLINE_FUNCTION __forceinline
+#  elif defined(__CUDA_ARCH__)
+#    define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline)) __host__ __device__
 #  else
 #    define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline))
 #  endif
 #endif
 #ifndef MDSPAN_INLINE_FUNCTION
-#  define MDSPAN_INLINE_FUNCTION inline
+#  if defined(__CUDA_ARCH__)
+#    define MDSPAN_INLINE_FUNCTION inline __host__ __device__
+#  else
+#    define MDSPAN_INLINE_FUNCTION inline
+#  endif
 #endif
 #ifndef MDSPAN_INLINE_FUNCTION_DEFAULTED
 #  define MDSPAN_INLINE_FUNCTION_DEFAULTED inline
