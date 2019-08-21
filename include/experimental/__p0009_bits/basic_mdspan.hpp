@@ -88,7 +88,7 @@ private:
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ptrdiff_t __size(basic_mdspan const& __self) noexcept {
-      return _MDSPAN_FOLD_TIMES_RIGHT((__self.mappping().extents().template __extent<Idxs>()), /* * ... * */ 1);
+      return _MDSPAN_FOLD_TIMES_RIGHT((__self.mapping().extents().template __extent<Idxs>()), /* * ... * */ 1);
     }
     template <class ReferenceType, class IndexType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
