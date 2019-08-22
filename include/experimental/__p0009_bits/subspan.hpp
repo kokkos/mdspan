@@ -214,10 +214,22 @@ struct _assign_op_slice_handler<
   array<ptrdiff_t, NDynamicExtents> dynamic_extents = { };
   array<ptrdiff_t, NDynamicStrides> dynamic_strides = { };
 
+  // Some old compilers don't like aggregate initialization, so we have to do this.  It shouldn't hurt other compilers
+  MDSPAN_INLINE_FUNCTION
+  _assign_op_slice_handler(
+    array<ptrdiff_t, NOffsets> arg_offsets,
+    array<ptrdiff_t, NDynamicExtents> arg_dynamic_extents,
+    array<ptrdiff_t, NDynamicStrides> arg_dynamic_strides
+  ) noexcept
+    : offsets(std::move(arg_offsets)),
+      dynamic_extents(std::move(arg_dynamic_extents)),
+      dynamic_strides(std::move(arg_dynamic_strides))
+  { }
+
 #if !defined(_MDSPAN_USE_RETURN_TYPE_DEDUCTION) || !_MDSPAN_USE_RETURN_TYPE_DEDUCTION
   using extents_type = std::experimental::extents<Extents...>;
 #endif
-  
+
   // TODO defer instantiation of this?
   using layout_type = typename conditional<
     PreserveLayoutAnalysis::value,
@@ -314,7 +326,7 @@ struct _assign_op_slice_handler<
        >
   {
     return {
-      {{ std::get<OffsetIdxs>(offsets)..., slice.slice }},
+      array<ptrdiff_t, NOffsets + 1>{{ std::get<OffsetIdxs>(offsets)..., slice.slice }},
       dynamic_extents,
       dynamic_strides
     };
@@ -335,7 +347,7 @@ struct _assign_op_slice_handler<
        >
   {
     return {
-      {{std::get<OffsetIdxs>(offsets)..., ptrdiff_t(0)}},
+      array<ptrdiff_t, NOffsets + 1>{{std::get<OffsetIdxs>(offsets)..., ptrdiff_t(0)}},
       this->fwd_extent(slice),
       this->fwd_stride(slice)
     };
@@ -356,8 +368,8 @@ struct _assign_op_slice_handler<
        >
   {
     return {
-      {{std::get<OffsetIdxs>(offsets)..., std::get<0>(slice.slice)}},
-      {{std::get<ExtentInitIdxs>(dynamic_extents)..., std::get<1>(slice.slice) - std::get<0>(slice.slice)}},
+      array<ptrdiff_t, NOffsets + 1>{{std::get<OffsetIdxs>(offsets)..., std::get<0>(slice.slice)}},
+      array<ptrdiff_t, NDynamicExtents + 1>{{std::get<ExtentInitIdxs>(dynamic_extents)..., std::get<1>(slice.slice) - std::get<0>(slice.slice)}},
       this->fwd_stride(slice)
     };
   }

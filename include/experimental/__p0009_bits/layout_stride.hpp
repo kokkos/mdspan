@@ -74,8 +74,6 @@ private:
 
   using stride_storage_t = typename _make_mixed_impl<integer_sequence<ptrdiff_t, Strides...>>::type;
 
-  _MDSPAN_NO_UNIQUE_ADDRESS stride_storage_t _strides;
-
   template <class, ptrdiff_t...>
   friend class layout_stride_impl;
 
@@ -109,7 +107,6 @@ private:
       return __impl::_call_op_impl(self, (self.extents().template __extent<Idxs>() - 1)...) + 1;
     }
   };
-
 
 public: // (but not really)
 
@@ -246,6 +243,10 @@ public:
   constexpr bool operator!=(layout_stride_impl<OtherExtents, OtherStaticStrides...> const& other) const noexcept {
     return __impl<>::_not_eq_impl(*this, other);
   }
+
+private:
+
+  _MDSPAN_NO_UNIQUE_ADDRESS stride_storage_t _strides = { };
 
 };
 

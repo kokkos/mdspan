@@ -81,7 +81,7 @@
 #endif
 
 #ifndef _MDSPAN_USE_FOLD_EXPRESSIONS
-#  if (defined(__cpp_fold_expressions) && __cpp_fold_expressions >= 201603L)
+#  if (defined(__cpp_fold_expressions) && __cpp_fold_expressions >= 201603L) || MDSPAN_HAS_CXX_17
 #    define _MDSPAN_USE_FOLD_EXPRESSIONS 1
 #  endif
 #endif

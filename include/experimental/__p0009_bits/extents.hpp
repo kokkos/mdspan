@@ -85,7 +85,6 @@ public:
 private:
 
   using storage_type = typename detail::_make_mixed_impl<integer_sequence<ptrdiff_t, Extents...>>::type;
-  _MDSPAN_NO_UNIQUE_ADDRESS storage_type _storage = { };
 
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -247,6 +246,10 @@ public:  // (but not really)
   index_type __static_extent() noexcept {
     return storage_type::template get_static<N, Default>();
   }
+
+private:
+
+  _MDSPAN_NO_UNIQUE_ADDRESS storage_type _storage = { };
 
 };
 
