@@ -112,13 +112,12 @@ dim3 get_bench_grid() {
   cudaDeviceProp cudaProp;
   CUDA_SAFE_CALL(cudaGetDeviceProperties(&cudaProp, 0));
   return dim3(cudaProp.multiProcessorCount, 1, 1);
-  //return dim3(1, 1, 1);
 }
 
 dim3 get_bench_thread_block() {
   cudaDeviceProp cudaProp;
   CUDA_SAFE_CALL(cudaGetDeviceProperties(&cudaProp, 1));
-  return dim3(warpsPerBlock, cudaProp.warpSize, 1);
+  return dim3(1, cudaProp.warpSize, warpsPerBlock);
 }
 
 template <class F, class... Args>
@@ -179,7 +178,7 @@ void BM_MDSpan_Cuda_Sum_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
         for(int r = 0; r < repeats; ++r) {
           value_type sum_local = 0;
           for(ptrdiff_t i = blockIdx.x; i < s.extent(0); i += gridDim.x) {
-            for(ptrdiff_t j = threadIdx.x; j < s.extent(1); j += blockDim.x) {
+            for(ptrdiff_t j = threadIdx.z; j < s.extent(1); j += blockDim.z) {
               for(ptrdiff_t k = threadIdx.y; k < s.extent(2); k += blockDim.y) {
                 sum_local += s(i, j, k);
               }
@@ -226,7 +225,7 @@ void BM_Raw_Cuda_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, Size
         for(int r = 0; r < repeats; ++r) {
           value_type sum_local = 0;
           for(ptrdiff_t i = blockIdx.x; i < x; i += gridDim.x) {
-            for(ptrdiff_t j = threadIdx.x; j < y; j += blockDim.x) {
+            for(ptrdiff_t j = threadIdx.z; j < y; j += blockDim.z) {
               for(ptrdiff_t k = threadIdx.y; k < z; k += blockDim.y) {
                 sum_local += data[k + j*z + i*z*y];
               }
@@ -271,7 +270,7 @@ void BM_Raw_Cuda_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
       for(int r = 0; r < repeats; ++r) {
         value_type sum_local = 0;
         for(ptrdiff_t i = blockIdx.x; i < x; i += gridDim.x) {
-          for(ptrdiff_t j = threadIdx.x; j < y; j += blockDim.x) {
+          for(ptrdiff_t j = threadIdx.z; j < y; j += blockDim.z) {
             for(ptrdiff_t k = threadIdx.y; k < z; k += blockDim.y) {
               sum_local += data[k*x*y + j*x + i];
             }
