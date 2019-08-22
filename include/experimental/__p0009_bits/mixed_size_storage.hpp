@@ -141,7 +141,7 @@ public:
 
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t get(size_t n) const noexcept {
-    return array<ptrdiff_t, sizeof...(Sizes)>({{select<Sizes, DynamicOffsets>()...}})[n];
+    return _MDSPAN_FOLD_PLUS_RIGHT(((Idxs == n) ? select<Sizes, DynamicOffsets>() : 0), /* + ... + */ 0);
   }
 
   template <size_t N>

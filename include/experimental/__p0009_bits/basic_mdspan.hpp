@@ -318,8 +318,8 @@ public:
 private:
 
   pointer ptr_ = nullptr;
-  _MDSPAN_NO_UNIQUE_ADDRESS mapping_type map_ = {};
-  _MDSPAN_NO_UNIQUE_ADDRESS accessor_type acc_ = {};
+  _MDSPAN_NO_UNIQUE_ADDRESS mapping_type map_;
+  _MDSPAN_NO_UNIQUE_ADDRESS accessor_type acc_;
 
   template <class, class, class, class>
   friend class basic_mdspan;
