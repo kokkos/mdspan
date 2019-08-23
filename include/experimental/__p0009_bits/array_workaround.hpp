@@ -44,4 +44,108 @@
 #ifndef MDSPAN_INCLUDE_EXPERIMENTAL___P0009_BITS_ARRAY_WORKAROUND_HPP_
 #define MDSPAN_INCLUDE_EXPERIMENTAL___P0009_BITS_ARRAY_WORKAROUND_HPP_
 
+#include "macros.hpp"
+
+#include <type_traits>
+#include <array>
+
+namespace std {
+namespace experimental {
+// nvcc itself and icc's optimizer both don't play well with std::array :-/
+namespace __array_workaround {
+
+// Assumes T is integral, which works for our use case
+template <class T, size_t Idx>
+struct __array_entry_impl {
+  T __value = { };
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr T __iget(ptrdiff_t i) const noexcept {
+    return (i == Idx) ? __value : T(0);
+  }
+  MDSPAN_FORCE_INLINE_FUNCTION
+  _MDSPAN_CONSTEXPR_14 __mdspan_enable_fold_comma __iset(ptrdiff_t i, T val) noexcept {
+    if(i == Idx) __value = val;
+    return { };
+  }
+};
+
+template <class T, size_t N, class>
+struct __array_impl;
+
+template <class T, size_t I>
+using __repeated = T;
+
+template <class T, size_t N, size_t... Idxs>
+struct __array_impl<T, N, integer_sequence<size_t, Idxs...>>
+  : __array_entry_impl<T, Idxs>...
+{
+  static constexpr size_t __size = N;
+
+  MDSPAN_FUNCTION_REQUIRES(
+    (MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr),
+    __array_impl, (), noexcept,
+    /* requires */ N != 0
+  ) : __array_entry_impl<T, Idxs>()...
+  { }
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __array_impl(__array_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __array_impl(__array_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __array_impl& operator=(__array_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __array_impl& operator=(__array_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  ~__array_impl() noexcept = default;
+
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr
+  __array_impl(__repeated<T, Idxs>... vals) noexcept
+    : __array_entry_impl<T, Idxs>({T{vals}})...
+  { }
+
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr
+  __array_impl(array<T, N> vals) noexcept
+    : __array_entry_impl<T, Idxs>(vals[Idxs])...
+  { }
+
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr T
+  __get(ptrdiff_t i) const noexcept {
+    // For N > 0, this should work:
+    // (static_cast<__array_entry_impl<T, 0>>(this) + i)->__value;
+    return _MDSPAN_FOLD_PLUS_RIGHT((this->__array_entry_impl<T, Idxs>::__iget(i)), /* + ... + */ 0);
+  }
+  template <ptrdiff_t I>
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr T const&
+  __get_n() const noexcept {
+    return this->__array_entry_impl<T, I>::__value;
+  }
+
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr void
+  __set(ptrdiff_t i, T val) const noexcept {
+    _MDSPAN_FOLD_COMMA(this->__array_entry_impl<T, Idxs>::__iset(i, val) /*, ... */);
+  }
+  template <ptrdiff_t I>
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr void
+  __set_n(T val) const noexcept {
+    this->__array_entry_impl<T, I>::__value = val;
+  }
+};
+
+template <class T, size_t N>
+struct __array : __array_impl<T, N, make_index_sequence<N>>
+{
+  using base_t = __array_impl<T, N, make_index_sequence<N>>;
+  using base_t::base_t;
+};
+
+} // end namespace __array_workaround
+} // end namespace experimental
+} // end namespace std
+
 #endif //MDSPAN_INCLUDE_EXPERIMENTAL___P0009_BITS_ARRAY_WORKAROUND_HPP_

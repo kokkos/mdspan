@@ -52,6 +52,7 @@
 #include "layout_stride.hpp"
 #include "macros.hpp"
 #include "trait_backports.hpp"
+#include "array_workaround.hpp"
 
 #include <tuple> // std::apply
 #include <utility> // std::pair
@@ -173,12 +174,12 @@ struct ignore_layout_preservation : std::integral_constant<bool, false> {
 
 template <
   class Extents, class StaticStrides, class PreserveLayoutAnalysis,
-  class Offsets = array<ptrdiff_t, 0>,
-  class ExtentInitializers = array<ptrdiff_t, 0>,
-  class DynamicStrides = array<ptrdiff_t, 0>,
-  class=std::make_index_sequence<std::tuple_size<Offsets>::value>,
-  class=std::make_index_sequence<std::tuple_size<ExtentInitializers>::value>,
-  class=std::make_index_sequence<std::tuple_size<DynamicStrides>::value>
+  class Offsets = __array_workaround::__array<ptrdiff_t, 0>,
+  class ExtentInitializers = __array_workaround::__array<ptrdiff_t, 0>,
+  class DynamicStrides = __array_workaround::__array<ptrdiff_t, 0>,
+  class=std::make_index_sequence<Offsets::__size>,
+  class=std::make_index_sequence<ExtentInitializers::__size>,
+  class=std::make_index_sequence<DynamicStrides::__size>
 >
 struct _assign_op_slice_handler;
 
@@ -197,12 +198,12 @@ struct _assign_op_slice_handler<
   integer_sequence<ptrdiff_t, Extents...>,
   integer_sequence<ptrdiff_t, StaticStrides...>,
   PreserveLayoutAnalysis,
-  array<ptrdiff_t, NOffsets>,
-  array<ptrdiff_t, NDynamicExtents>,
-  array<ptrdiff_t, NDynamicStrides>,
-  index_sequence<OffsetIdxs...>,
-  index_sequence<ExtentInitIdxs...>,
-  index_sequence<DynamicStrideIdxs...>
+  __array_workaround::__array<ptrdiff_t, NOffsets>,
+  __array_workaround::__array<ptrdiff_t, NDynamicExtents>,
+  __array_workaround::__array<ptrdiff_t, NDynamicStrides>,
+  integer_sequence<size_t, OffsetIdxs...>,
+  integer_sequence<size_t, ExtentInitIdxs...>,
+  integer_sequence<size_t, DynamicStrideIdxs...>
 >
 {
   static_assert(
@@ -210,16 +211,16 @@ struct _assign_op_slice_handler<
     " "
   );
 
-  array<ptrdiff_t, NOffsets> offsets = { };
-  array<ptrdiff_t, NDynamicExtents> dynamic_extents = { };
-  array<ptrdiff_t, NDynamicStrides> dynamic_strides = { };
+  __array_workaround::__array<ptrdiff_t, NOffsets> offsets = { };
+  __array_workaround::__array<ptrdiff_t, NDynamicExtents> dynamic_extents = { };
+  __array_workaround::__array<ptrdiff_t, NDynamicStrides> dynamic_strides = { };
 
   // Some old compilers don't like aggregate initialization, so we have to do this.  It shouldn't hurt other compilers
   MDSPAN_INLINE_FUNCTION
   _assign_op_slice_handler(
-    array<ptrdiff_t, NOffsets> arg_offsets,
-    array<ptrdiff_t, NDynamicExtents> arg_dynamic_extents,
-    array<ptrdiff_t, NDynamicStrides> arg_dynamic_strides
+    __array_workaround::__array<ptrdiff_t, NOffsets> arg_offsets,
+    __array_workaround::__array<ptrdiff_t, NDynamicExtents> arg_dynamic_extents,
+    __array_workaround::__array<ptrdiff_t, NDynamicStrides> arg_dynamic_strides
   ) noexcept
     : offsets(std::move(arg_offsets)),
       dynamic_extents(std::move(arg_dynamic_extents)),
@@ -248,7 +249,7 @@ struct _assign_op_slice_handler<
     (
       /* not layout stride, so don't pass dynamic_strides */
       /* return */ typename NewLayout::template mapping<std::experimental::extents<Extents...>>(
-        std::experimental::extents<Extents...>(dynamic_extents)
+        std::experimental::extents<Extents...>(dynamic_extents.template __get_n<ExtentInitIdxs>()...)
       ) /* ; */
     )
   )
@@ -261,8 +262,8 @@ struct _assign_op_slice_handler<
     ),
     (
       /* return */ typename layout_stride<StaticStrides...>::template mapping<std::experimental::extents<Extents...>>(
-        std::experimental::extents<Extents...>(dynamic_extents),
-        dynamic_strides
+        std::experimental::extents<Extents...>(dynamic_extents.template __get_n<ExtentInitIdxs>()...),
+        std::array<ptrdiff_t, NDynamicStrides>{dynamic_strides.template __get_n<DynamicStrideIdxs>()...}
       ) /* ; */
     )
   )
@@ -290,9 +291,9 @@ struct _assign_op_slice_handler<
   template <ptrdiff_t OldStaticStride, class T>
   MDSPAN_INLINE_FUNCTION
   constexpr auto fwd_extent(_slice_wrap<dynamic_extent, OldStaticStride, T> const& slice) const noexcept
-    -> array<ptrdiff_t, sizeof...(ExtentInitIdxs) + 1>
+    -> __array_workaround::__array<ptrdiff_t, sizeof...(ExtentInitIdxs) + 1>
   {
-    return { std::get<ExtentInitIdxs>(dynamic_extents)..., slice.old_extent };
+    return { dynamic_extents.template __get_n<ExtentInitIdxs>()..., slice.old_extent };
   }
 
   template <ptrdiff_t OldStaticExtent, ptrdiff_t OldStaticStride, class T>
@@ -306,9 +307,9 @@ struct _assign_op_slice_handler<
   template <ptrdiff_t OldStaticExtent, class T>
   MDSPAN_INLINE_FUNCTION
   constexpr auto fwd_stride(_slice_wrap<OldStaticExtent, dynamic_extent, T> const& slice) const noexcept
-    -> array<ptrdiff_t, sizeof...(DynamicStrideIdxs) + 1>
+    -> __array_workaround::__array<ptrdiff_t, sizeof...(DynamicStrideIdxs) + 1>
   {
-    return { std::get<DynamicStrideIdxs>(dynamic_strides)..., slice.old_stride };
+    return { dynamic_strides.template __get_n<DynamicStrideIdxs>()..., slice.old_stride };
   }
 
   // For ptrdiff_t slice, skip the extent and stride, but add an offset corresponding to the value
@@ -320,13 +321,13 @@ struct _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents...>,
          integer_sequence<ptrdiff_t, StaticStrides...>,
          typename PreserveLayoutAnalysis::encounter_scalar,
-         array<ptrdiff_t, NOffsets + 1>,
-         array<ptrdiff_t, NDynamicExtents>,
-         array<ptrdiff_t, NDynamicStrides>
+         __array_workaround::__array<ptrdiff_t, NOffsets + 1>,
+         __array_workaround::__array<ptrdiff_t, NDynamicExtents>,
+         __array_workaround::__array<ptrdiff_t, NDynamicStrides>
        >
   {
     return {
-      array<ptrdiff_t, NOffsets + 1>{{ std::get<OffsetIdxs>(offsets)..., slice.slice }},
+      __array_workaround::__array<ptrdiff_t, NOffsets + 1>( offsets.template __get_n<OffsetIdxs>()..., slice.slice ),
       dynamic_extents,
       dynamic_strides
     };
@@ -341,13 +342,13 @@ struct _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents..., OldStaticExtent>,
          integer_sequence<ptrdiff_t, StaticStrides..., OldStaticStride>,
          typename PreserveLayoutAnalysis::encounter_all,
-         array<ptrdiff_t, NOffsets + 1>,
+         __array_workaround::__array<ptrdiff_t, NOffsets + 1>,
          decltype(this->fwd_extent(slice)),
          decltype(this->fwd_stride(slice))
        >
   {
     return {
-      array<ptrdiff_t, NOffsets + 1>{{std::get<OffsetIdxs>(offsets)..., ptrdiff_t(0)}},
+      __array_workaround::__array<ptrdiff_t, NOffsets + 1>(offsets.template __get_n<OffsetIdxs>()..., ptrdiff_t(0)),
       this->fwd_extent(slice),
       this->fwd_stride(slice)
     };
@@ -362,14 +363,14 @@ struct _assign_op_slice_handler<
          integer_sequence<ptrdiff_t, Extents..., dynamic_extent>,
          integer_sequence<ptrdiff_t, StaticStrides..., OldStaticStride>,
          typename PreserveLayoutAnalysis::encounter_pair,
-         array<ptrdiff_t, NOffsets + 1>,
-         array<ptrdiff_t, NDynamicExtents + 1>,
+         __array_workaround::__array<ptrdiff_t, NOffsets + 1>,
+         __array_workaround::__array<ptrdiff_t, NDynamicExtents + 1>,
          decltype(this->fwd_stride(slice))
        >
   {
     return {
-      array<ptrdiff_t, NOffsets + 1>{{std::get<OffsetIdxs>(offsets)..., std::get<0>(slice.slice)}},
-      array<ptrdiff_t, NDynamicExtents + 1>{{std::get<ExtentInitIdxs>(dynamic_extents)..., std::get<1>(slice.slice) - std::get<0>(slice.slice)}},
+      __array_workaround::__array<ptrdiff_t, NOffsets + 1>(offsets.template __get_n<OffsetIdxs>()..., std::get<0>(slice.slice)),
+      __array_workaround::__array<ptrdiff_t, NDynamicExtents + 1>(dynamic_extents.template __get_n<ExtentInitIdxs>()..., std::get<1>(slice.slice) - std::get<0>(slice.slice)),
       this->fwd_stride(slice)
     };
   }
@@ -410,7 +411,7 @@ constexpr auto _subspan_impl(
       )
     );
 
-  ptrdiff_t offset_size = src.mapping()(_handled.offsets[Idxs]...);
+  ptrdiff_t offset_size = src.mapping()(_handled.offsets.template __get_n<Idxs>()...);
   auto offset_ptr = src.accessor().offset(src.data(), offset_size);
   auto map = _handled.make_layout_mapping(src.mapping());
   auto acc_pol = typename AP::offset_policy(src.accessor());
