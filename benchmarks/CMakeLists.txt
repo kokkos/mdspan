@@ -47,6 +47,23 @@ function(mdspan_add_cuda_benchmark EXENAME)
   endif()
 endfunction(mdspan_add_cuda_benchmark)
 
+if(MDSPAN_ENABLE_OPENMP)
+  find_package(OpenMP)
+endif()
+
+function(mdspan_add_openmp_benchmark EXENAME)
+  if(MDSPAN_ENABLE_OPENMP)
+    if(OpenMP_CXX_FOUND)
+      add_executable(${EXENAME} ${EXENAME}.cpp)
+      target_link_libraries(${EXENAME} mdspan benchmark::benchmark OpenMP::OpenMP_CXX)
+      target_include_directories(${EXENAME} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/benchmarks>
+      )
+    else()
+      message(WARNING "Not adding target ${EXENAME} because OpenMP was not found")
+    endif()
+  endif()
+endfunction(mdspan_add_openmp_benchmark)
 
 add_subdirectory(sum)
 add_subdirectory(copy)
