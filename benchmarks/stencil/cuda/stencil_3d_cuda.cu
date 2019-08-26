@@ -53,7 +53,6 @@
 
 //================================================================================
 
-static constexpr int warpsPerBlock = 4;
 static constexpr int global_delta = 1;
 static constexpr int global_repeat = 16;
 
@@ -275,7 +274,6 @@ void BM_Raw_Cuda_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y, S
   auto lambda =
     [=] __device__ {
       for(int r = 0; r < repeats; ++r) {
-        value_type sum_local = 0;
         for(ptrdiff_t i = blockIdx.x+d; i < x-d; i += gridDim.x) {
           for(ptrdiff_t j = threadIdx.z+d; j < y-d; j += blockDim.z) {
             for(ptrdiff_t k = threadIdx.y+d; k < z-d; k += blockDim.y) {

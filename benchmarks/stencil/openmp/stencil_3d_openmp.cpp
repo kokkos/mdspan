@@ -118,7 +118,6 @@ void BM_MDSpan_OpenMP_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dy
     }
   }
 
-  std::chrono::high_resolution_clock::time_point time_stop,time_start;
   for (auto _ : state) {
     #pragma omp parallel for
     for(ptrdiff_t i = d; i < s.extent(0)-d; i ++) {
@@ -242,7 +241,7 @@ void BM_Raw_OpenMP_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y,
       }
     }
   }
-  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+
   for (auto _ : state) {
     #pragma omp parallel for
     for(ptrdiff_t i = d; i < x-d; i ++) {
