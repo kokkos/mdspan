@@ -48,10 +48,8 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "tiny_matrix_add_common.hpp"
 #include "fill.hpp"
-#include <iostream>
-#include <chrono>
+
 //================================================================================
 
 static constexpr int warpsPerBlock = 4;
@@ -100,40 +98,36 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
   mdspan_benchmark::fill_random(o);
 
   int d = global_delta;
-  int count;
 
   #pragma omp parallel for
   for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
     for(int r = 0; r<global_repeat; r++) {
       for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
         for(ptrdiff_t k = 0; k < s.extent(2); k ++) {
-          o(i,j,k) += o(i,j,k);
+          o(i,j,k) += s(i,j,k);
         }
       }
     }
   }
-  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+
   for (auto _ : state) {
-    time_start = std::chrono::high_resolution_clock::now(); 
-    #pragma omp parallel for simd
+    #pragma omp parallel for
     for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
-      //for(int r = 0; r<global_repeat; r++) {
+      for(int r = 0; r<global_repeat; r++) {
         for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
           for(ptrdiff_t k = 0; k < s.extent(2); k ++) {
-            o(i,j,k) += o(i,j,k);
+            o(i,j,k) += s(i,j,k);
           }
         }
-      //}
+      }
     }
-    time_stop = std::chrono::high_resolution_clock::now(); 
-    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
-    state.SetIterationTime(time);
   }
   ptrdiff_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
   state.SetBytesProcessed( num_elements * 3 * sizeof(value_type) * state.iterations() * global_repeat);
+  state.counters["repeats"] = global_repeat;
 }
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_OpenMP_TinyMatrixSum, right_, stdex::mdspan, 1000000, 3, 3);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_OpenMP_TinyMatrixSum, left_, lmdspan, 1000000, 3, 3);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_TinyMatrixSum, right_, stdex::mdspan, 1000000, 3, 3);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_TinyMatrixSum, left_, lmdspan, 1000000, 3, 3);
 
 //================================================================================
 
@@ -156,9 +150,6 @@ void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
   mdspan_benchmark::fill_random(o);
   T* o_ptr = o.data();
 
-  int d = global_delta;
-  int count;
-
   #pragma omp parallel for
   for(ptrdiff_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
@@ -169,10 +160,9 @@ void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
         }
       }
   }
-  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+
   for (auto _ : state) {
-    time_start = std::chrono::high_resolution_clock::now(); 
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for(ptrdiff_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
         for(ptrdiff_t j = 0; j < 3; j ++) {
@@ -182,12 +172,10 @@ void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
         }
       }
     }
-    time_stop = std::chrono::high_resolution_clock::now(); 
-    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
-    state.SetIterationTime(time);
   }
   ptrdiff_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
+  state.counters["repeats"] = global_repeat;
 }
 BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_right, size_1000000_3_3, double(), 1000000, 3, 3);
 
@@ -212,9 +200,6 @@ void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY
   mdspan_benchmark::fill_random(o);
   T* o_ptr = o.data();
 
-  int d = global_delta;
-  int count;
-
   #pragma omp parallel for
   for(ptrdiff_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
@@ -225,10 +210,9 @@ void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY
         }
       }
   }
-  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+
   for (auto _ : state) {
-    time_start = std::chrono::high_resolution_clock::now(); 
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for(ptrdiff_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
         for(ptrdiff_t j = 0; j < 3; j ++) {
@@ -238,12 +222,10 @@ void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY
         }
       }
     }
-    time_stop = std::chrono::high_resolution_clock::now(); 
-    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
-    state.SetIterationTime(time);
   }
   ptrdiff_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
+  state.counters["repeats"] = global_repeat;
 }
 BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_left, size_1000000_3_3, double(), 1000000, 3, 3);
 
@@ -286,9 +268,6 @@ void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x,
   mdspan_benchmark::fill_random(o);
   T*** o_ptr = make_3d_ptr_array(o);
 
-  int d = global_delta;
-  int count;
-
   #pragma omp parallel for
   for(ptrdiff_t i = 0; i < x; i ++) {
     for(int r = 0; r<global_repeat; r++) {
@@ -299,10 +278,9 @@ void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x,
       }
     }
   }
-  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+
   for (auto _ : state) {
-    time_start = std::chrono::high_resolution_clock::now(); 
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for(ptrdiff_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
         for(ptrdiff_t j = 0; j < 3; j ++) {
@@ -312,12 +290,10 @@ void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x,
         }
       }
     }
-    time_stop = std::chrono::high_resolution_clock::now(); 
-    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
-    state.SetIterationTime(time);
   }
   ptrdiff_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
+  state.counters["repeats"] = global_repeat;
   free_3d_ptr_array(s_ptr,s.extent(0));
   free_3d_ptr_array(o_ptr,o.extent(0));
 }
