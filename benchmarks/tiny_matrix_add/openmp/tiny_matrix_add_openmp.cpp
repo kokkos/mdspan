@@ -1,0 +1,329 @@
+/*
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 2.0
+//              Copyright (2019) Sandia Corporation
+//
+// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+// the U.S. Government retains certain rights in this software.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+// 1. Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the Corporation nor the names of the
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
+// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
+//
+// ************************************************************************
+//@HEADER
+*/
+
+#include <experimental/mdspan>
+
+#include <memory>
+#include <random>
+#include <sstream>
+#include <stdexcept>
+
+#include "tiny_matrix_add_common.hpp"
+#include "fill.hpp"
+#include <iostream>
+#include <chrono>
+//================================================================================
+
+static constexpr int warpsPerBlock = 4;
+static constexpr int global_delta = 1;
+static constexpr int global_repeat = 1;
+
+//================================================================================
+
+template <class T, ptrdiff_t... Es>
+using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+
+void throw_runtime_exception(const std::string &msg) {
+  std::ostringstream o;
+  o << msg;
+  throw std::runtime_error(o.str());
+}
+
+template<class MDSpan>
+void OpenMP_first_touch_3D(MDSpan s) {
+  #pragma omp parallel for
+  for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
+    for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
+      for(ptrdiff_t k = 0; k < s.extent(2); k ++) {
+        s(i,j,k) = 0;
+      }
+    }
+  }
+}
+
+//================================================================================
+
+template <class MDSpan, class... DynSizes>
+void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes... dyn) {
+
+  using value_type = typename MDSpan::value_type;
+  auto buffer_size = MDSpan{nullptr, dyn...}.mapping().required_span_size();
+
+  auto buffer_s = std::make_unique<value_type[]>(buffer_size);
+  auto s = MDSpan{buffer_s.get(), dyn...};
+  OpenMP_first_touch_3D(s);
+  mdspan_benchmark::fill_random(s);
+
+  auto buffer_o = std::make_unique<value_type[]>(buffer_size);
+  auto o = MDSpan{buffer_o.get(), dyn...};
+  OpenMP_first_touch_3D(o);
+  mdspan_benchmark::fill_random(o);
+
+  int d = global_delta;
+  int count;
+
+  #pragma omp parallel for
+  for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
+    for(int r = 0; r<global_repeat; r++) {
+      for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
+        for(ptrdiff_t k = 0; k < s.extent(2); k ++) {
+          o(i,j,k) += o(i,j,k);
+        }
+      }
+    }
+  }
+  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+  for (auto _ : state) {
+    time_start = std::chrono::high_resolution_clock::now(); 
+    #pragma omp parallel for simd
+    for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
+      //for(int r = 0; r<global_repeat; r++) {
+        for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
+          for(ptrdiff_t k = 0; k < s.extent(2); k ++) {
+            o(i,j,k) += o(i,j,k);
+          }
+        }
+      //}
+    }
+    time_stop = std::chrono::high_resolution_clock::now(); 
+    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
+    state.SetIterationTime(time);
+  }
+  ptrdiff_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
+  state.SetBytesProcessed( num_elements * 3 * sizeof(value_type) * state.iterations() * global_repeat);
+}
+MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_OpenMP_TinyMatrixSum, right_, stdex::mdspan, 1000000, 3, 3);
+MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_OpenMP_TinyMatrixSum, left_, lmdspan, 1000000, 3, 3);
+
+//================================================================================
+
+template <class T, class SizeX, class SizeY, class SizeZ>
+void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+
+  using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>;  
+  using value_type = typename MDSpan::value_type;
+  auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
+
+  auto buffer_s = std::make_unique<value_type[]>(buffer_size);
+  auto s = MDSpan{buffer_s.get(), x,y,z};
+  OpenMP_first_touch_3D(s);
+  mdspan_benchmark::fill_random(s);
+  T* s_ptr = s.data();
+
+  auto buffer_o = std::make_unique<value_type[]>(buffer_size);
+  auto o = MDSpan{buffer_o.get(), x,y,z};
+  OpenMP_first_touch_3D(o);
+  mdspan_benchmark::fill_random(o);
+  T* o_ptr = o.data();
+
+  int d = global_delta;
+  int count;
+
+  #pragma omp parallel for
+  for(ptrdiff_t i = 0; i < x; i ++) {
+      for(int r = 0; r<global_repeat; r++) {
+        for(ptrdiff_t j = 0; j < 3; j ++) {
+          for(ptrdiff_t k = 0; k < 3; k ++) {
+            o_ptr[k + j*3 + i*3*3] += s_ptr[k + j*3 + i*3*3];
+          }
+        }
+      }
+  }
+  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+  for (auto _ : state) {
+    time_start = std::chrono::high_resolution_clock::now(); 
+    #pragma omp parallel for 
+    for(ptrdiff_t i = 0; i < x; i ++) {
+      for(int r = 0; r<global_repeat; r++) {
+        for(ptrdiff_t j = 0; j < 3; j ++) {
+          for(ptrdiff_t k = 0; k < 3; k ++) {
+            o_ptr[k + j*3 + i*3*3] += s_ptr[k + j*3 + i*3*3];
+          }
+        }
+      }
+    }
+    time_stop = std::chrono::high_resolution_clock::now(); 
+    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
+    state.SetIterationTime(time);
+  }
+  ptrdiff_t num_inner_elements = x * y * z;
+  state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
+}
+BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_right, size_1000000_3_3, double(), 1000000, 3, 3);
+
+//================================================================================
+
+template <class T, class SizeX, class SizeY, class SizeZ>
+void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+
+  using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, 3,3>;  
+  using value_type = typename MDSpan::value_type;
+  auto buffer_size = MDSpan{nullptr, x}.mapping().required_span_size();
+
+  auto buffer_s = std::make_unique<value_type[]>(buffer_size);
+  auto s = MDSpan{buffer_s.get(), x};
+  OpenMP_first_touch_3D(s);
+  mdspan_benchmark::fill_random(s);
+  T* s_ptr = s.data();
+
+  auto buffer_o = std::make_unique<value_type[]>(buffer_size);
+  auto o = MDSpan{buffer_o.get(), x};
+  OpenMP_first_touch_3D(o);
+  mdspan_benchmark::fill_random(o);
+  T* o_ptr = o.data();
+
+  int d = global_delta;
+  int count;
+
+  #pragma omp parallel for
+  for(ptrdiff_t i = 0; i < x; i ++) {
+      for(int r = 0; r<global_repeat; r++) {
+        for(ptrdiff_t j = 0; j < 3; j ++) {
+          for(ptrdiff_t k = 0; k < 3; k ++) {
+            o_ptr[k*x*3 + j*x + i] += s_ptr[k*x*3 + j*x + i];
+          }
+        }
+      }
+  }
+  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+  for (auto _ : state) {
+    time_start = std::chrono::high_resolution_clock::now(); 
+    #pragma omp parallel for 
+    for(ptrdiff_t i = 0; i < x; i ++) {
+      for(int r = 0; r<global_repeat; r++) {
+        for(ptrdiff_t j = 0; j < 3; j ++) {
+          for(ptrdiff_t k = 0; k < 3; k ++) {
+            o_ptr[k*x*3 + j*x + i] += s_ptr[k*x*3 + j*x + i];
+          }
+        }
+      }
+    }
+    time_stop = std::chrono::high_resolution_clock::now(); 
+    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
+    state.SetIterationTime(time);
+  }
+  ptrdiff_t num_inner_elements = x * y * z;
+  state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
+}
+BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_left, size_1000000_3_3, double(), 1000000, 3, 3);
+
+template <class MDSpan>
+typename MDSpan::value_type*** make_3d_ptr_array(MDSpan s) {
+  static_assert(std::is_same<typename MDSpan::layout_type,std::experimental::layout_right>::value,"Creating MD Ptr only works from mdspan with layout_right");
+  using value_type = typename MDSpan::value_type;
+  value_type*** ptr= new value_type**[s.extent(0)];
+  for(ptrdiff_t i = 0; i<s.extent(0); i++) {
+    ptr[i] = new value_type*[s.extent(1)];
+    for(ptrdiff_t j = 0; j<s.extent(1); j++)
+      ptr[i][j]=&s(i,j,0);
+  }
+  return ptr;
+}
+
+template <class T>
+void free_3d_ptr_array(T*** ptr, ptrdiff_t extent_0) {
+  for(int i=0; i<extent_0; i++)
+    delete [] ptr[i];
+  delete [] ptr;
+}
+
+template <class T, class SizeX, class SizeY, class SizeZ>
+void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+
+  using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, 3,3>;  
+  using value_type = typename MDSpan::value_type;
+  auto buffer_size = MDSpan{nullptr, x}.mapping().required_span_size();
+
+  auto buffer_s = std::make_unique<value_type[]>(buffer_size);
+  auto s = MDSpan{buffer_s.get(), x};
+  OpenMP_first_touch_3D(s);
+  mdspan_benchmark::fill_random(s);
+  T*** s_ptr = make_3d_ptr_array(s);
+
+  auto buffer_o = std::make_unique<value_type[]>(buffer_size);
+  auto o = MDSpan{buffer_o.get(), x};
+  OpenMP_first_touch_3D(o);
+  mdspan_benchmark::fill_random(o);
+  T*** o_ptr = make_3d_ptr_array(o);
+
+  int d = global_delta;
+  int count;
+
+  #pragma omp parallel for
+  for(ptrdiff_t i = 0; i < x; i ++) {
+    for(int r = 0; r<global_repeat; r++) {
+      for(ptrdiff_t j = 0; j < 3; j ++) {
+        for(ptrdiff_t k = 0; k < 3; k ++) {
+          o_ptr[i][j][k] += s_ptr[i][j][k];
+        }
+      }
+    }
+  }
+  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+  for (auto _ : state) {
+    time_start = std::chrono::high_resolution_clock::now(); 
+    #pragma omp parallel for 
+    for(ptrdiff_t i = 0; i < x; i ++) {
+      for(int r = 0; r<global_repeat; r++) {
+        for(ptrdiff_t j = 0; j < 3; j ++) {
+          for(ptrdiff_t k = 0; k < 3; k ++) {
+            o_ptr[i][j][k] += s_ptr[i][j][k];
+          }
+        }
+      }
+    }
+    time_stop = std::chrono::high_resolution_clock::now(); 
+    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
+    state.SetIterationTime(time);
+  }
+  ptrdiff_t num_inner_elements = x * y * z;
+  state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
+  free_3d_ptr_array(s_ptr,s.extent(0));
+  free_3d_ptr_array(o_ptr,o.extent(0));
+}
+BENCHMARK_CAPTURE(BM_RawMDPtr_OpenMP_TinyMatrixSum_right, size_1000000_3_3, double(), 1000000, 3, 3);
+
+
+//================================================================================
+
+BENCHMARK_MAIN();
