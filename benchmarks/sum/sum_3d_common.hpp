@@ -50,65 +50,6 @@
 
 namespace stdex = std::experimental;
 
-//==============================================================================
-// <editor-fold desc="A helpful template for instantiating all 3D combinations"> {{{1
-
-#define MDSPAN_BENCHMARK_ALL_3D(bench_template, prefix, md_template, X, Y, Z) \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##fixed_##X##_##Y##_##Z, md_template<int, X, Y, Z>{} \
-); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_##X##_##Y##_d##Z, md_template<int, X, Y, stdex::dynamic_extent>{}, Z \
-); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_##X##_d##Y##_##Z, md_template<int, X, stdex::dynamic_extent, Z>{}, Y \
-); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_##Y##_##Z, md_template<int, stdex::dynamic_extent, Y, Z>{}, X \
-); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_##X##_d##Y##_d##Z, md_template<int, X, stdex::dynamic_extent, stdex::dynamic_extent>{}, Y, Z \
-); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_##Y##_d##Z, md_template<int, stdex::dynamic_extent, Y, stdex::dynamic_extent>{}, X, Z \
-); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_d##Y##_##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, Z>{}, X, Y \
-); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_d##Y##_d##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>{}, X, Y, Z \
-)
-
-#define MDSPAN_BENCHMARK_ALL_3D_MANUAL(bench_template, prefix, md_template, X, Y, Z) \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##fixed_##X##_##Y##_##Z, md_template<int, X, Y, Z>{} \
-)->UseManualTime(); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_##X##_##Y##_d##Z, md_template<int, X, Y, stdex::dynamic_extent>{}, Z \
-)->UseManualTime(); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_##X##_d##Y##_##Z, md_template<int, X, stdex::dynamic_extent, Z>{}, Y \
-)->UseManualTime(); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_##Y##_##Z, md_template<int, stdex::dynamic_extent, Y, Z>{}, X \
-)->UseManualTime(); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_##X##_d##Y##_d##Z, md_template<int, X, stdex::dynamic_extent, stdex::dynamic_extent>{}, Y, Z \
-)->UseManualTime(); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_##Y##_d##Z, md_template<int, stdex::dynamic_extent, Y, stdex::dynamic_extent>{}, X, Z \
-)->UseManualTime(); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_d##Y##_##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, Z>{}, X, Y \
-)->UseManualTime(); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_d##Y##_d##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>{}, X, Y, Z \
-)->UseManualTime()
-
-
-// </editor-fold> end A helpful template for instantiating all 3D combinations }}}1
-//==============================================================================
-
 template <class T, class Size>
 void BM_Raw_Sum_1D(benchmark::State& state, T, Size size) {
   auto buffer = std::make_unique<T[]>(size);

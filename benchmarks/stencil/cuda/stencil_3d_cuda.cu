@@ -41,17 +41,16 @@
 //@HEADER
 */
 
+#include "fill.hpp"
+
 #include <experimental/mdspan>
 
 #include <memory>
 #include <random>
 #include <sstream>
 #include <stdexcept>
-
-#include "sum_3d_common.hpp"
-#include "fill.hpp"
 #include <iostream>
-#include "Kokkos_Timer.hpp"
+
 //================================================================================
 
 static constexpr int warpsPerBlock = 4;
@@ -149,7 +148,7 @@ MDSpan fill_device_mdspan(MDSpan, DynSizes... dyn) {
 //================================================================================
 
 template <class MDSpan, class... DynSizes>
-void BM_MDSpan_Cuda_Sum_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
+void BM_MDSpan_Cuda_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
 
   using value_type = typename MDSpan::value_type;
   auto s = fill_device_mdspan(MDSpan{}, dyn...);
@@ -193,15 +192,15 @@ void BM_MDSpan_Cuda_Sum_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
   CUDA_SAFE_CALL(cudaFree(s.data()));
 }
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, right_, stdex::mdspan, 80, 80, 80);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, left_, lmdspan, 80, 80, 80);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, right_, stdex::mdspan, 400, 400, 400);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, left_, lmdspan, 400, 400, 400);
+MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, right_, stdex::mdspan, 80, 80, 80);
+MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, left_, lmdspan, 80, 80, 80);
+MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, right_, stdex::mdspan, 400, 400, 400);
+MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, left_, lmdspan, 400, 400, 400);
 
 //================================================================================
 
 template <class T, class SizeX, class SizeY, class SizeZ>
-void BM_Raw_Cuda_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+void BM_Raw_Cuda_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
   using value_type = T;
   value_type* data = nullptr;
@@ -251,13 +250,13 @@ void BM_Raw_Cuda_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, Size
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
   CUDA_SAFE_CALL(cudaFree(data));
 }
-BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_right, size_80_80_80, int(), 80, 80, 80);
-BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_right, size_400_400_400, int(), 400, 400, 400);
+BENCHMARK_CAPTURE(BM_Raw_Cuda_Stencil_3D_right, size_80_80_80, int(), 80, 80, 80);
+BENCHMARK_CAPTURE(BM_Raw_Cuda_Stencil_3D_right, size_400_400_400, int(), 400, 400, 400);
 
 //================================================================================
 
 template <class T, class SizeX, class SizeY, class SizeZ>
-void BM_Raw_Cuda_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+void BM_Raw_Cuda_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
   using value_type = T;
   value_type* data = nullptr;
@@ -308,8 +307,8 @@ void BM_Raw_Cuda_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
   CUDA_SAFE_CALL(cudaFree(data));
 }
-BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_left, size_80_80_80, int(), 80, 80, 80);
-BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_left, size_400_400_400, int(), 400, 400, 400);
+BENCHMARK_CAPTURE(BM_Raw_Cuda_Stencil_3D_left, size_80_80_80, int(), 80, 80, 80);
+BENCHMARK_CAPTURE(BM_Raw_Cuda_Stencil_3D_left, size_400_400_400, int(), 400, 400, 400);
 
 //================================================================================
 

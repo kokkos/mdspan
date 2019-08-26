@@ -41,17 +41,19 @@
 //@HEADER
 */
 
+#include "fill.hpp"
+
 #include <experimental/mdspan>
+
+#include <benchmark/benchmark.h>
 
 #include <memory>
 #include <random>
 #include <sstream>
 #include <stdexcept>
-
-#include "sum_3d_common.hpp"
-#include "fill.hpp"
 #include <iostream>
 #include <chrono>
+
 //================================================================================
 
 static constexpr int warpsPerBlock = 4;
@@ -100,7 +102,6 @@ void BM_MDSpan_OpenMP_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dy
   mdspan_benchmark::fill_random(o);
 
   int d = global_delta;
-  int count;
 
   #pragma omp parallel for
   for(ptrdiff_t i = d; i < s.extent(0)-d; i ++) {
@@ -116,10 +117,10 @@ void BM_MDSpan_OpenMP_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dy
       }
     }
   }
+
   std::chrono::high_resolution_clock::time_point time_stop,time_start;
   for (auto _ : state) {
-    time_start = std::chrono::high_resolution_clock::now(); 
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for(ptrdiff_t i = d; i < s.extent(0)-d; i ++) {
       for(ptrdiff_t j = d; j < s.extent(1)-d; j ++) {
         for(ptrdiff_t k = d; k < s.extent(2)-d; k ++) {
@@ -133,18 +134,15 @@ void BM_MDSpan_OpenMP_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dy
         }
       }
     }
-    time_stop = std::chrono::high_resolution_clock::now(); 
-    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
-    state.SetIterationTime(time);
   }
   ptrdiff_t num_inner_elements = (s.extent(0)-d) * (s.extent(1)-d) * (s.extent(2)-d);
   ptrdiff_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations());
 }
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_OpenMP_Stencil_3D, right_, stdex::mdspan, 80, 80, 80);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_OpenMP_Stencil_3D, left_, lmdspan, 80, 80, 80);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_OpenMP_Stencil_3D, right_, stdex::mdspan, 400, 400, 400);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_OpenMP_Stencil_3D, left_, lmdspan, 400, 400, 400);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, right_, stdex::mdspan, 80, 80, 80);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, left_, lmdspan, 80, 80, 80);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, right_, stdex::mdspan, 400, 400, 400);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, left_, lmdspan, 400, 400, 400);
 
 //================================================================================
 
@@ -168,7 +166,6 @@ void BM_Raw_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y
   T* o_ptr = o.data();
 
   int d = global_delta;
-  int count;
 
   #pragma omp parallel for
   for(ptrdiff_t i = d; i < x-d; i ++) {
@@ -184,10 +181,9 @@ void BM_Raw_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y
       }
     }
   }
-  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+
   for (auto _ : state) {
-    time_start = std::chrono::high_resolution_clock::now(); 
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for(ptrdiff_t i = d; i < x-d; i ++) {
       for(ptrdiff_t j = d; j < y-d; j ++) {
         for(ptrdiff_t k = d; k < z-d; k ++) {
@@ -201,9 +197,6 @@ void BM_Raw_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y
         }
       }
     }
-    time_stop = std::chrono::high_resolution_clock::now(); 
-    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
-    state.SetIterationTime(time);
   }
   ptrdiff_t num_inner_elements = (s.extent(0)-d) * (s.extent(1)-d) * (s.extent(2)-d);
   ptrdiff_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
@@ -234,7 +227,6 @@ void BM_Raw_OpenMP_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y,
   T* o_ptr = o.data();
 
   int d = global_delta;
-  int count;
 
   #pragma omp parallel for
   for(ptrdiff_t i = d; i < x-d; i ++) {
@@ -252,8 +244,7 @@ void BM_Raw_OpenMP_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y,
   }
   std::chrono::high_resolution_clock::time_point time_stop,time_start;
   for (auto _ : state) {
-    time_start = std::chrono::high_resolution_clock::now(); 
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for(ptrdiff_t i = d; i < x-d; i ++) {
       for(ptrdiff_t j = d; j < y-d; j ++) {
         for(ptrdiff_t k = d; k < z-d; k ++) {
@@ -267,9 +258,6 @@ void BM_Raw_OpenMP_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y,
         }
       }
     }
-    time_stop = std::chrono::high_resolution_clock::now(); 
-    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
-    state.SetIterationTime(time);
   }
   ptrdiff_t num_inner_elements = (s.extent(0)-d) * (s.extent(1)-d) * (s.extent(2)-d);
   ptrdiff_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
@@ -318,7 +306,6 @@ void BM_RawMDPtr_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, Si
   T*** o_ptr = make_3d_ptr_array(o);
 
   int d = global_delta;
-  int count;
 
   #pragma omp parallel for
   for(ptrdiff_t i = d; i < x-d; i ++) {
@@ -334,10 +321,9 @@ void BM_RawMDPtr_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, Si
       }
     }
   }
-  std::chrono::high_resolution_clock::time_point time_stop,time_start;
+
   for (auto _ : state) {
-    time_start = std::chrono::high_resolution_clock::now(); 
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for(ptrdiff_t i = d; i < x-d; i ++) {
       for(ptrdiff_t j = d; j < y-d; j ++) {
         for(ptrdiff_t k = d; k < z-d; k ++) {
@@ -351,9 +337,6 @@ void BM_RawMDPtr_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, Si
         }
       }
     }
-    time_stop = std::chrono::high_resolution_clock::now(); 
-    double time = std::chrono::duration_cast<std::chrono::duration<double>>(time_stop - time_start).count(); 
-    state.SetIterationTime(time);
   }
   ptrdiff_t num_inner_elements = (s.extent(0)-d) * (s.extent(1)-d) * (s.extent(2)-d);
   ptrdiff_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
