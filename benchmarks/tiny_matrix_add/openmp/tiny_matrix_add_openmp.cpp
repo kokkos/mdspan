@@ -97,8 +97,6 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
   OpenMP_first_touch_3D(o);
   mdspan_benchmark::fill_random(o);
 
-  int d = global_delta;
-
   #pragma omp parallel for
   for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
     for(int r = 0; r<global_repeat; r++) {
