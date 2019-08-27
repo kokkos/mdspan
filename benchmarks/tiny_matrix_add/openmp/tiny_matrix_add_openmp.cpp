@@ -111,6 +111,8 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
   }
 
   for (auto _ : state) {
+    benchmark::DoNotOptimize(o.data());
+    benchmark::DoNotOptimize(s.data());
     #pragma omp parallel for
     for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
       for(int r = 0; r<global_repeat; r++) {
@@ -121,6 +123,7 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
         }
       }
     }
+    benchmark::ClobberMemory();
   }
   ptrdiff_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
   state.SetBytesProcessed( num_elements * 3 * sizeof(value_type) * state.iterations() * global_repeat);
@@ -132,7 +135,7 @@ MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_TinyMatrixSum, left_, lmdspan, 1000000,
 //================================================================================
 
 template <class T, class SizeX, class SizeY, class SizeZ>
-void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+void BM_Raw_Static_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
   using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>;  
   using value_type = typename MDSpan::value_type;
@@ -162,6 +165,8 @@ void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
   }
 
   for (auto _ : state) {
+    benchmark::DoNotOptimize(o_ptr);
+    benchmark::DoNotOptimize(s_ptr);
     #pragma omp parallel for
     for(ptrdiff_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
@@ -172,17 +177,69 @@ void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
         }
       }
     }
+    benchmark::ClobberMemory();
   }
   ptrdiff_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
   state.counters["repeats"] = global_repeat;
 }
-BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_right, size_1000000_3_3, double(), 1000000, 3, 3);
+BENCHMARK_CAPTURE(BM_Raw_Static_OpenMP_TinyMatrixSum_right, size_1000000_3_3, int(), 1000000, 3, 3);
+
+template <class T, class SizeX, class SizeY, class SizeZ>
+void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+
+  using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>;
+  using value_type = typename MDSpan::value_type;
+  auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
+
+  auto buffer_s = std::make_unique<value_type[]>(buffer_size);
+  auto s = MDSpan{buffer_s.get(), x,y,z};
+  OpenMP_first_touch_3D(s);
+  mdspan_benchmark::fill_random(s);
+  T* s_ptr = s.data();
+
+  auto buffer_o = std::make_unique<value_type[]>(buffer_size);
+  auto o = MDSpan{buffer_o.get(), x,y,z};
+  OpenMP_first_touch_3D(o);
+  mdspan_benchmark::fill_random(o);
+  T* o_ptr = o.data();
+
+#pragma omp parallel for
+  for(ptrdiff_t i = 0; i < x; i ++) {
+    for(int r = 0; r<global_repeat; r++) {
+      for(ptrdiff_t j = 0; j < y; j ++) {
+        for(ptrdiff_t k = 0; k < z; k ++) {
+          o_ptr[k + j*y + i*y*z] += s_ptr[k + j*y + i*y*z];
+        }
+      }
+    }
+  }
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(o_ptr);
+    benchmark::DoNotOptimize(s_ptr);
+#pragma omp parallel for
+    for(ptrdiff_t i = 0; i < x; i ++) {
+      for(int r = 0; r<global_repeat; r++) {
+        for(ptrdiff_t j = 0; j < y; j ++) {
+          for(ptrdiff_t k = 0; k < z; k ++) {
+            o_ptr[k + j*y + i*y*z] += s_ptr[k + j*y + i*y*z];
+          }
+        }
+      }
+    }
+    benchmark::ClobberMemory();
+  }
+  ptrdiff_t num_inner_elements = x * y * z;
+  state.SetBytesProcessed( num_inner_elements * y * global_repeat * sizeof(value_type) * state.iterations());
+  state.counters["repeats"] = global_repeat;
+}
+BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_right, size_1000000_3_3, int(), 1000000, 3, 3);
 
 //================================================================================
 
 template <class T, class SizeX, class SizeY, class SizeZ>
-void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+void BM_Raw_Static_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
   using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, 3,3>;  
   using value_type = typename MDSpan::value_type;
@@ -212,6 +269,8 @@ void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY
   }
 
   for (auto _ : state) {
+    benchmark::DoNotOptimize(o_ptr);
+    benchmark::DoNotOptimize(s_ptr);
     #pragma omp parallel for
     for(ptrdiff_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
@@ -222,12 +281,66 @@ void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY
         }
       }
     }
+    benchmark::ClobberMemory();
   }
   ptrdiff_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
   state.counters["repeats"] = global_repeat;
 }
-BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_left, size_1000000_3_3, double(), 1000000, 3, 3);
+BENCHMARK_CAPTURE(BM_Raw_Static_OpenMP_TinyMatrixSum_left, size_1000000_3_3, int(), 1000000, 3, 3);
+
+//================================================================================
+
+template <class T, class SizeX, class SizeY, class SizeZ>
+void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+
+  using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, 3,3>;
+  using value_type = typename MDSpan::value_type;
+  auto buffer_size = MDSpan{nullptr, x}.mapping().required_span_size();
+
+  auto buffer_s = std::make_unique<value_type[]>(buffer_size);
+  auto s = MDSpan{buffer_s.get(), x};
+  OpenMP_first_touch_3D(s);
+  mdspan_benchmark::fill_random(s);
+  T* s_ptr = s.data();
+
+  auto buffer_o = std::make_unique<value_type[]>(buffer_size);
+  auto o = MDSpan{buffer_o.get(), x};
+  OpenMP_first_touch_3D(o);
+  mdspan_benchmark::fill_random(o);
+  T* o_ptr = o.data();
+
+  #pragma omp parallel for
+  for(ptrdiff_t i = 0; i < x; i ++) {
+    for(int r = 0; r<global_repeat; r++) {
+      for(ptrdiff_t j = 0; j < y; j ++) {
+        for(ptrdiff_t k = 0; k < z; k ++) {
+          o_ptr[k*x*y + j*x + i] += s_ptr[k*x*y + j*x + i];
+        }
+      }
+    }
+  }
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(o_ptr);
+    benchmark::DoNotOptimize(s_ptr);
+    #pragma omp parallel for
+    for(ptrdiff_t i = 0; i < x; i ++) {
+      for(int r = 0; r<global_repeat; r++) {
+        for(ptrdiff_t j = 0; j < y; j ++) {
+          for(ptrdiff_t k = 0; k < z; k ++) {
+            o_ptr[k*x*y + j*x + i] += s_ptr[k*x*y + j*x + i];
+          }
+        }
+      }
+    }
+    benchmark::ClobberMemory();
+  }
+  ptrdiff_t num_inner_elements = x * y * z;
+  state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
+  state.counters["repeats"] = global_repeat;
+}
+BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_left, size_1000000_3_3, int(), 1000000, 3, 3);
 
 template <class MDSpan>
 typename MDSpan::value_type*** make_3d_ptr_array(MDSpan s) {
@@ -280,16 +393,21 @@ void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x,
   }
 
   for (auto _ : state) {
+    benchmark::DoNotOptimize(o_ptr);
+    benchmark::DoNotOptimize(s_ptr);
     #pragma omp parallel for
     for(ptrdiff_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
+#pragma ivdep
         for(ptrdiff_t j = 0; j < 3; j ++) {
+#pragma ivdep
           for(ptrdiff_t k = 0; k < 3; k ++) {
             o_ptr[i][j][k] += s_ptr[i][j][k];
           }
         }
       }
     }
+    benchmark::ClobberMemory();
   }
   ptrdiff_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
@@ -297,7 +415,7 @@ void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x,
   free_3d_ptr_array(s_ptr,s.extent(0));
   free_3d_ptr_array(o_ptr,o.extent(0));
 }
-BENCHMARK_CAPTURE(BM_RawMDPtr_OpenMP_TinyMatrixSum_right, size_1000000_3_3, double(), 1000000, 3, 3);
+BENCHMARK_CAPTURE(BM_RawMDPtr_OpenMP_TinyMatrixSum_right, size_1000000_3_3, int(), 1000000, 3, 3);
 
 
 //================================================================================
