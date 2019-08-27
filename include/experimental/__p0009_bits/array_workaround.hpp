@@ -82,7 +82,7 @@ struct __array_impl<T, N, integer_sequence<size_t, Idxs...>>
   static constexpr size_t __size = N;
 
   MDSPAN_FUNCTION_REQUIRES(
-    (MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr),
+    (MDSPAN_FORCE_INLINE_FUNCTION constexpr),
     __array_impl, (), noexcept,
     /* requires */ N != 0
   ) : __array_entry_impl<T, Idxs>()...
@@ -104,10 +104,16 @@ struct __array_impl<T, N, integer_sequence<size_t, Idxs...>>
     : __array_entry_impl<T, Idxs>({T{vals}})...
   { }
 
+  MDSPAN_FUNCTION_REQUIRES(
+    (MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr),
+    __array_impl, (array<T, N> vals), noexcept,
+    /* requires */ N != 0
+  ) : __array_entry_impl<T, Idxs>({T{vals[Idxs]}})...
+  { }
+
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr
-  __array_impl(array<T, N> vals) noexcept
-    : __array_entry_impl<T, Idxs>(vals[Idxs])...
+  __array_impl(array<T, 0> vals) noexcept
   { }
 
   MDSPAN_FORCE_INLINE_FUNCTION

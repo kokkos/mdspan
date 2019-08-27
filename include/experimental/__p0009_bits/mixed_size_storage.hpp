@@ -45,6 +45,7 @@
 
 #include "dynamic_extent.hpp"
 #include "trait_backports.hpp"
+#include "array_workaround.hpp"
 
 #include <cstddef> // ptrdiff_t
 #include <utility> // integer_sequence
@@ -77,18 +78,18 @@ public:
 
 private:
 
-  _MDSPAN_NO_UNIQUE_ADDRESS array<ptrdiff_t, size_dynamic> dynamic_sizes = { };
+  _MDSPAN_NO_UNIQUE_ADDRESS __array_workaround::__array<ptrdiff_t, size_dynamic> dynamic_sizes = { };
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t _select(true_type) const noexcept { return dynamic_sizes[DynamicOffset]; }
+  constexpr ptrdiff_t _select(true_type) const noexcept { return dynamic_sizes.template __get_n<DynamicOffset>(); }
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t _select(false_type) const noexcept { return Size; }
 
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
   MDSPAN_FORCE_INLINE_FUNCTION
-  _MDSPAN_CONSTEXPR_14 ptrdiff_t _select_set(true_type, ptrdiff_t value) noexcept { dynamic_sizes[DynamicOffset] = value; return 0; }
+  _MDSPAN_CONSTEXPR_14 ptrdiff_t _select_set(true_type, ptrdiff_t value) noexcept { dynamic_sizes.template __set_n<DynamicOffset>(value); return 0; }
   template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
   MDSPAN_FORCE_INLINE_FUNCTION
   _MDSPAN_CONSTEXPR_14 ptrdiff_t _select_set(false_type, ptrdiff_t) noexcept { return 0; }
@@ -168,7 +169,7 @@ public:
   template <class... Integral>
   MDSPAN_INLINE_FUNCTION
   constexpr mixed_static_and_dynamic_size_storage(construct_mixed_storage_from_sizes_tag_t, Integral... dyn_sizes)
-    : dynamic_sizes({{dyn_sizes...}})
+    : dynamic_sizes(ptrdiff_t{dyn_sizes}...)
   { }
 
   template <ptrdiff_t... USizes, ptrdiff_t... UDynOffs, size_t... UIdxs>
