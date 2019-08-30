@@ -74,6 +74,11 @@ void BM_Raw_Sum_1D(benchmark::State& state, T, Size size) {
 
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
+
+  benchmark::DoNotOptimize(x);
+  benchmark::DoNotOptimize(y);
+  benchmark::DoNotOptimize(z);
+
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
@@ -81,7 +86,10 @@ void BM_Raw_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) 
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
+
+
   for (auto _ : state) {
+    benchmark::DoNotOptimize(data);
     T sum = 0;
     for(ptrdiff_t i = 0; i < x; ++i) {
       for(ptrdiff_t j = 0; j < y; ++j) {
@@ -91,7 +99,7 @@ void BM_Raw_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) 
       }
     }
     benchmark::DoNotOptimize(sum);
-    benchmark::DoNotOptimize(data);
+    benchmark::ClobberMemory();
   }
   state.SetBytesProcessed(x * y * z * sizeof(T) * state.iterations());
 }
@@ -108,6 +116,7 @@ void BM_Raw_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
   }
   T* data = buffer.get();
   for (auto _ : state) {
+    benchmark::DoNotOptimize(data);
     T sum = 0;
     for(ptrdiff_t k = 0; k < z; ++k) {
       for(ptrdiff_t j = 0; j < y; ++j) {
@@ -117,7 +126,7 @@ void BM_Raw_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
       }
     }
     benchmark::DoNotOptimize(sum);
-    benchmark::DoNotOptimize(data);
+    benchmark::ClobberMemory();
   }
   state.SetBytesProcessed(x * y * z * sizeof(T) * state.iterations());
 }
@@ -132,8 +141,15 @@ void BM_Raw_Sum_3D_right_iter_left(benchmark::State& state, T, SizeX x, SizeY y,
     auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
+
+  benchmark::DoNotOptimize(x);
+  benchmark::DoNotOptimize(y);
+  benchmark::DoNotOptimize(z);
+  benchmark::ClobberMemory();
+
   T* data = buffer.get();
   for (auto _ : state) {
+    benchmark::DoNotOptimize(data);
     T sum = 0;
     for(ptrdiff_t k = 0; k < z; ++k) {
       for(ptrdiff_t j = 0; j < y; ++j) {
@@ -143,7 +159,7 @@ void BM_Raw_Sum_3D_right_iter_left(benchmark::State& state, T, SizeX x, SizeY y,
       }
     }
     benchmark::DoNotOptimize(sum);
-    benchmark::DoNotOptimize(data);
+    benchmark::ClobberMemory();
   }
   state.SetBytesProcessed(x * y * z * sizeof(T) * state.iterations());
 }
@@ -166,6 +182,7 @@ void BM_Raw_Static_Sum_3D_right(benchmark::State& state, T,
   }
   T* data = buffer.get();
   for (auto _ : state) {
+    benchmark::DoNotOptimize(data);
     T sum = 0;
     for(ptrdiff_t i = 0; i < x; ++i) {
       for(ptrdiff_t j = 0; j < y; ++j) {
@@ -175,6 +192,7 @@ void BM_Raw_Static_Sum_3D_right(benchmark::State& state, T,
       }
     }
     benchmark::DoNotOptimize(sum);
+    benchmark::ClobberMemory();
   }
   state.SetBytesProcessed(x * y * z * sizeof(T) * state.iterations());
 }
@@ -195,6 +213,7 @@ void BM_Raw_Static_Sum_3D_left(benchmark::State& state, T,
   }
   T* data = buffer.get();
   for (auto _ : state) {
+    benchmark::DoNotOptimize(data);
     T sum = 0;
     for(ptrdiff_t k = 0; k < z; ++k) {
       for(ptrdiff_t j = 0; j < y; ++j) {
@@ -204,6 +223,7 @@ void BM_Raw_Static_Sum_3D_left(benchmark::State& state, T,
       }
     }
     benchmark::DoNotOptimize(sum);
+    benchmark::ClobberMemory();
   }
   state.SetBytesProcessed(x * y * z * sizeof(T) * state.iterations());
 }
@@ -224,6 +244,7 @@ void BM_Raw_Static_Sum_3D_right_iter_left(benchmark::State& state, T,
   }
   T* data = buffer.get();
   for (auto _ : state) {
+    benchmark::DoNotOptimize(data);
     T sum = 0;
     for(ptrdiff_t k = 0; k < z; ++k) {
       for(ptrdiff_t j = 0; j < y; ++j) {
@@ -233,6 +254,7 @@ void BM_Raw_Static_Sum_3D_right_iter_left(benchmark::State& state, T,
       }
     }
     benchmark::DoNotOptimize(sum);
+    benchmark::ClobberMemory();
   }
   state.SetBytesProcessed(x * y * z * sizeof(T) * state.iterations());
 }

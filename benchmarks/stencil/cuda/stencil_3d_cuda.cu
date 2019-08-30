@@ -155,7 +155,6 @@ void BM_MDSpan_Cuda_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn)
   
   int d = global_delta;
   int repeats = global_repeat==0? (s.extent(0)*s.extent(1)*s.extent(2) > (100*100*100) ? 50 : 1000) : global_repeat;
-  int count = 0;
 
   auto lambda =  
       [=] __device__ {
@@ -178,7 +177,6 @@ void BM_MDSpan_Cuda_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn)
   run_kernel_timed(s.extent(0),s.extent(1),s.extent(2),lambda);
 
   for (auto _ : state) {
-    count++;
     auto timed = run_kernel_timed(s.extent(0),s.extent(1),s.extent(2),lambda);
     // units of cuda timer is milliseconds, units of iteration timer is seconds
     state.SetIterationTime(timed * 1e-3);

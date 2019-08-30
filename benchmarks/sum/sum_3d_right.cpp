@@ -58,13 +58,18 @@ using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left
 
 template <class MDSpan, class... DynSizes>
 void BM_MDSpan_Sum_3D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
+
   using value_type = typename MDSpan::value_type;
   auto buffer = std::make_unique<value_type[]>(
     MDSpan{nullptr, dyn...}.mapping().required_span_size()
   );
+
   auto s = MDSpan{buffer.get(), dyn...};
   mdspan_benchmark::fill_random(s);
+
   for (auto _ : state) {
+    benchmark::DoNotOptimize(s);
+    benchmark::DoNotOptimize(s.data());
     value_type sum = 0;
     for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
       for (ptrdiff_t j = 0; j < s.extent(1); ++j) {
@@ -74,7 +79,7 @@ void BM_MDSpan_Sum_3D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
       }
     }
     benchmark::DoNotOptimize(sum);
-    benchmark::DoNotOptimize(s.data());
+    benchmark::ClobberMemory();
   }
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
@@ -86,10 +91,10 @@ MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_right, left_, lmdspan, 200, 200, 200);
 //================================================================================
 
 BENCHMARK_CAPTURE(
-  BM_Raw_Sum_3D_right, size_20_20_20, int(), 20, 20, 20
+  BM_Raw_Sum_3D_right, size_20_20_20, int(), ptrdiff_t(20), ptrdiff_t(20), ptrdiff_t(20)
 );
 BENCHMARK_CAPTURE(
-  BM_Raw_Sum_3D_right, size_200_200_200, int(), 200, 200, 200
+  BM_Raw_Sum_3D_right, size_200_200_200, int(), ptrdiff_t(200), ptrdiff_t(200), ptrdiff_t(200)
 );
 
 //================================================================================
