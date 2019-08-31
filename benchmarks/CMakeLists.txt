@@ -66,6 +66,7 @@ function(mdspan_add_openmp_benchmark EXENAME)
 endfunction(mdspan_add_openmp_benchmark)
 
 add_subdirectory(sum)
+add_subdirectory(matvec)
 add_subdirectory(copy)
 add_subdirectory(stencil)
 add_subdirectory(tiny_matrix_add)
