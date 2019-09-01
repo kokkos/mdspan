@@ -93,12 +93,6 @@ inline void cuda_internal_safe_call(cudaError e, const char* name,
 
 //================================================================================
 
-dim3 get_bench_thread_block(ptrdiff_t M) {
-  cudaDeviceProp cudaProp;
-  int dim_x = 1;
-  while(dim_x*8 < M && dim_x<512) dim_x *= 2;
-  return dim3(dim_x,1,1);
-}
 
 template <class F, class... Args>
 __global__
@@ -113,7 +107,7 @@ float run_kernel_timed(ptrdiff_t N, ptrdiff_t M, F&& f, Args&&... args) {
   CUDA_SAFE_CALL(cudaEventCreate(&stop));
 
   CUDA_SAFE_CALL(cudaEventRecord(start));
-  do_run_kernel<<<N, get_bench_thread_block(M)>>>(
+  do_run_kernel<<<(N+255)/256,256>>>(
     (F&&)f, ((Args&&) args)...
   );
   CUDA_SAFE_CALL(cudaEventRecord(stop));
@@ -156,9 +150,10 @@ void BM_MDSpan_CUDA_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... dy
   
   auto lambda =  
       [=] __device__ {
-         const ptrdiff_t i = blockIdx.x;
-         
-         for(ptrdiff_t j = threadIdx.x; j < A.extent(1); j += blockDim.x) {
+         const ptrdiff_t i = blockIdx.x * blockDim.x + threadIdx.x;
+         if(i>=A.extent(0)) return;  
+         value_type y_i = 0; 
+         for(ptrdiff_t j = 0; j < A.extent(1); j ++) {
            y_i += A(i,j) * x(j);
          }
          y(i) = y_i;
@@ -171,11 +166,12 @@ void BM_MDSpan_CUDA_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... dy
     state.SetIterationTime(timed * 1e-3);
   }
   ptrdiff_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
-  state.SetBytesProcessed( R * num_elements * sizeof(value_type) * state.iterations() * global_repeat);
-  state.counters["repeats"] = repeats; 
+  state.SetBytesProcessed( num_elements * sizeof(value_type) * state.iterations() );
   
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  CUDA_SAFE_CALL(cudaFree(s.data()));
+  CUDA_SAFE_CALL(cudaFree(A.data()));
+  CUDA_SAFE_CALL(cudaFree(x.data()));
+  CUDA_SAFE_CALL(cudaFree(y.data()));
 }
 
 BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec, left, lmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
@@ -201,9 +197,11 @@ void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynS
 
   auto lambda =  
       [=] __device__ {
-         const ptrdiff_t i = blockIdx.x;
+         const ptrdiff_t i = blockIdx.x * blockDim.x + threadIdx.x;
+         if(i>=N) return;  
+         value_type y_i = 0; 
          
-         for(ptrdiff_t j = threadIdx.x; j < M; j += blockDim.x) {
+         for(ptrdiff_t j = 0; j < M; j ++) {
            y_i += p_A[i*M+j] * p_x[j];
          }
          p_y[i] = y_i;
@@ -216,11 +214,12 @@ void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynS
     state.SetIterationTime(timed * 1e-3);
   }
   ptrdiff_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
-  state.SetBytesProcessed( R * num_elements * sizeof(value_type) * state.iterations());
-  state.counters["repeats"] = repeats; 
+  state.SetBytesProcessed( num_elements * sizeof(value_type) * state.iterations() );
   
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  CUDA_SAFE_CALL(cudaFree(s.data()));
+  CUDA_SAFE_CALL(cudaFree(A.data()));
+  CUDA_SAFE_CALL(cudaFree(x.data()));
+  CUDA_SAFE_CALL(cudaFree(y.data()));
 }
 
 BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec_Raw_Right, right, rmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
@@ -245,9 +244,11 @@ void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSi
 
   auto lambda =  
       [=] __device__ {
-         const ptrdiff_t i = blockIdx.x;
+         const ptrdiff_t i = blockIdx.x * blockDim.x + threadIdx.x;
+         if(i>=N) return;  
+         value_type y_i = 0; 
          
-         for(ptrdiff_t j = threadIdx.x; j < M; j += blockDim.x) {
+         for(ptrdiff_t j = 0; j < M; j ++) {
            y_i += p_A[i+j*N] * p_x[j];
          }
          p_y[i] = y_i;
@@ -260,11 +261,12 @@ void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSi
     state.SetIterationTime(timed * 1e-3);
   }
   ptrdiff_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
-  state.SetBytesProcessed( R * num_elements * sizeof(value_type) * state.iterations());
-  state.counters["repeats"] = repeats; 
+  state.SetBytesProcessed( num_elements * sizeof(value_type) * state.iterations());
   
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  CUDA_SAFE_CALL(cudaFree(s.data()));
+  CUDA_SAFE_CALL(cudaFree(A.data()));
+  CUDA_SAFE_CALL(cudaFree(x.data()));
+  CUDA_SAFE_CALL(cudaFree(y.data()));
 }
 
 BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec_Raw_Left, left, lmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
