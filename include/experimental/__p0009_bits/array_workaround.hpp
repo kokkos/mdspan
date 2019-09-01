@@ -45,9 +45,11 @@
 #define MDSPAN_INCLUDE_EXPERIMENTAL___P0009_BITS_ARRAY_WORKAROUND_HPP_
 
 #include "macros.hpp"
+#include "trait_backports.hpp"
 
 #include <type_traits>
 #include <array>
+#include <utility>
 
 namespace std {
 namespace experimental {
@@ -92,9 +94,9 @@ struct __array_impl<T, N, integer_sequence<size_t, Idxs...>>
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __array_impl(__array_impl&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __array_impl& operator=(__array_impl const&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __array_impl& operator=(__array_impl const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __array_impl& operator=(__array_impl&&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __array_impl& operator=(__array_impl&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~__array_impl() noexcept = default;
 
