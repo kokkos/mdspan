@@ -195,9 +195,9 @@ void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynS
   ptrdiff_t N = A.extent(0);
   ptrdiff_t M = A.extent(1);
 
-  T* p_A = A.data();
-  T* p_x = x.data();
-  T* p_y = y.data();
+  value_type* p_A = A.data();
+  value_type* p_x = x.data();
+  value_type* p_y = y.data();
 
   auto lambda =  
       [=] __device__ {
@@ -239,9 +239,9 @@ void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSi
   ptrdiff_t N = A.extent(0);
   ptrdiff_t M = A.extent(1);
 
-  T* p_A = A.data();
-  T* p_x = x.data();
-  T* p_y = y.data();
+  value_type* p_A = A.data();
+  value_type* p_x = x.data();
+  value_type* p_y = y.data();
 
   auto lambda =  
       [=] __device__ {
