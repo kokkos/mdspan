@@ -60,6 +60,12 @@ namespace __array_workaround {
 template <class T, size_t Idx>
 struct __array_entry_impl {
   T __value = { };
+#if !MDSPAN_HAS_CXX_14
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr __array_entry_impl() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr __array_entry_impl(__array_entry_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr __array_entry_impl(__array_entry_impl&&) noexcept = default;
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr __array_entry_impl(T&& val) noexcept : __value(std::move(val)) { }
+#endif
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr T __iget(ptrdiff_t i) const noexcept {
     return (i == Idx) ? __value : T(0);

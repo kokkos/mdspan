@@ -286,7 +286,7 @@ constexpr decltype(auto) __fold_right_or_impl() {
 
 template <class Arg, class... Args>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) __fold_right_or_impl(Arg&& arg, Args&&... args) {
+constexpr auto __fold_right_or_impl(Arg&& arg, Args&&... args) {
   return ((Arg&&)arg) || __fold_compatibility_impl::__fold_right_or_impl((Args&&)args...);
 }
 
@@ -304,37 +304,37 @@ constexpr auto __fold_left_assign_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args)
 
 template <class Arg1>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) __fold_right_assign_impl(Arg1&& arg1) {
+constexpr auto __fold_right_assign_impl(Arg1&& arg1) {
   return (Arg1&&)arg1;
 }
 
 template <class Arg1, class Arg2, class... Args>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) __fold_right_assign_impl(Arg1&& arg1, Arg2&& arg2,  Args&&... args) {
+constexpr auto __fold_right_assign_impl(Arg1&& arg1, Arg2&& arg2,  Args&&... args) {
   return ((Arg1&&)arg1) = __fold_compatibility_impl::__fold_right_assign_impl((Arg2&&)arg2, (Args&&)args...);
 }
 
 template <class Arg1>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) __fold_right_plus_impl(Arg1&& arg1) {
+constexpr auto __fold_right_plus_impl(Arg1&& arg1) {
   return (Arg1&&)arg1;
 }
 
 template <class Arg1, class Arg2, class... Args>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) __fold_right_plus_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args) {
+constexpr auto __fold_right_plus_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args) {
   return ((Arg1&&)arg1) + __fold_compatibility_impl::__fold_right_plus_impl((Arg2&&)arg2, (Args&&)args...);
 }
 
 template <class Arg1>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) __fold_right_times_impl(Arg1&& arg1) {
+constexpr auto __fold_right_times_impl(Arg1&& arg1) {
   return (Arg1&&)arg1;
 }
 
 template <class Arg1, class Arg2, class... Args>
 MDSPAN_FORCE_INLINE_FUNCTION
-constexpr decltype(auto) __fold_right_times_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args) {
+constexpr auto __fold_right_times_impl(Arg1&& arg1, Arg2&& arg2, Args&&... args) {
   return ((Arg1&&)arg1) * __fold_compatibility_impl::__fold_right_times_impl((Arg2&&)arg2, (Args&&)args...);
 }
 
