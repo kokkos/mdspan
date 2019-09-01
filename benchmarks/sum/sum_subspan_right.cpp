@@ -45,6 +45,7 @@
 
 #include <memory>
 #include <random>
+#include <iostream>
 
 #include "sum_3d_common.hpp"
 #include "../fill.hpp"

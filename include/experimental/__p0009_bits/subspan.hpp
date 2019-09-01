@@ -216,6 +216,7 @@ struct _assign_op_slice_handler<
   __array_workaround::__array<ptrdiff_t, NDynamicStrides> dynamic_strides = { };
 
   // Some old compilers don't like aggregate initialization, so we have to do this.  It shouldn't hurt other compilers
+#if !MDSPAN_HAS_CXX_14
   MDSPAN_INLINE_FUNCTION
   _assign_op_slice_handler(
     __array_workaround::__array<ptrdiff_t, NOffsets> arg_offsets,
@@ -226,6 +227,10 @@ struct _assign_op_slice_handler<
       dynamic_extents(std::move(arg_dynamic_extents)),
       dynamic_strides(std::move(arg_dynamic_strides))
   { }
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr _assign_op_slice_handler() noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr _assign_op_slice_handler(_assign_op_slice_handler const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr _assign_op_slice_handler(_assign_op_slice_handler&&) noexcept = default;
+#endif
 
 #if !defined(_MDSPAN_USE_RETURN_TYPE_DEDUCTION) || !_MDSPAN_USE_RETURN_TYPE_DEDUCTION
   using extents_type = std::experimental::extents<Extents...>;
@@ -430,7 +435,7 @@ auto _subspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t, 
      >
 {
   return {
-    src.accessor().offset(src.data(), src.mapping()(h.offsets[Idxs]...)),
+    src.accessor().offset(src.data(), src.mapping()(h.offsets.template __get_n<Idxs>()...)),
     h.make_layout_mapping(src.mapping()),
     typename AP::offset_policy(src.accessor())
   };
@@ -463,7 +468,7 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
                 detail::ignore_layout_preservation
               >::type
             >::type
-          >{}
+          >{std::array<ptrdiff_t, 0>{}, std::array<ptrdiff_t, 0>{}, std::array<ptrdiff_t, 0>{}}
         ),
         /* = ... = */
         detail::_wrap_slice<
