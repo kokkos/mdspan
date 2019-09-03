@@ -64,6 +64,8 @@ struct __array_entry_impl {
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr __array_entry_impl() noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr __array_entry_impl(__array_entry_impl const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr __array_entry_impl(__array_entry_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 __array_entry_impl& operator=(__array_entry_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14 __array_entry_impl& operator=(__array_entry_impl&&) noexcept = default;
   MDSPAN_FORCE_INLINE_FUNCTION constexpr __array_entry_impl(T&& val) noexcept : __value(std::move(val)) { }
 #endif
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -89,12 +91,6 @@ struct __array_impl<T, N, integer_sequence<size_t, Idxs...>>
 {
   static constexpr size_t __size = N;
 
-  MDSPAN_FUNCTION_REQUIRES(
-    (MDSPAN_FORCE_INLINE_FUNCTION constexpr),
-    __array_impl, (), noexcept,
-    /* requires */ N != 0
-  ) : __array_entry_impl<T, Idxs>()...
-  { }
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __array_impl(__array_impl const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -105,6 +101,13 @@ struct __array_impl<T, N, integer_sequence<size_t, Idxs...>>
   _MDSPAN_CONSTEXPR_14_DEFAULTED __array_impl& operator=(__array_impl&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~__array_impl() noexcept = default;
+
+  MDSPAN_FUNCTION_REQUIRES(
+    (MDSPAN_FORCE_INLINE_FUNCTION constexpr),
+    __array_impl, (), noexcept,
+  /* requires */ N != 0
+  ) : __array_entry_impl<T, Idxs>()...
+  { }
 
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr
@@ -124,6 +127,7 @@ struct __array_impl<T, N, integer_sequence<size_t, Idxs...>>
   __array_impl(array<T, 0> vals) noexcept
   { }
 
+  // TODO remove this, it's unused
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr T
   __get(ptrdiff_t i) const noexcept {
@@ -138,15 +142,16 @@ struct __array_impl<T, N, integer_sequence<size_t, Idxs...>>
     return this->__array_entry_impl<T, I>::__value;
   }
 
+  // TODO remove this, it's unused
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr void
-  __set(ptrdiff_t i, T val) const noexcept {
+  _MDSPAN_CONSTEXPR_14 void
+  __set(ptrdiff_t i, T val) noexcept {
     _MDSPAN_FOLD_COMMA(this->__array_entry_impl<T, Idxs>::__iset(i, val) /*, ... */);
   }
   template <ptrdiff_t I>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr void
-  __set_n(T val) const noexcept {
+  _MDSPAN_CONSTEXPR_14 void
+  __set_n(T val) noexcept {
     this->__array_entry_impl<T, I>::__value = val;
   }
 };

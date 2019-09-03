@@ -48,7 +48,6 @@
 #include <iostream>
 
 #include "sum_3d_common.hpp"
-#include "../fill.hpp"
 
 //================================================================================
 
@@ -87,9 +86,9 @@ void BM_MDSpan_Sum_Subspan_3D_right(benchmark::State& state, MDSpan, DynSizes...
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_Subspan_3D_right, right_, stdex::mdspan, 20, 20, 20);
-//MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_Subspan_3D_right, left_, lmdspan, 20, 20, 20);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_Subspan_3D_right, left_, lmdspan, 20, 20, 20);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_Subspan_3D_right, right_, stdex::mdspan, 200, 200, 200);
-//MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_Subspan_3D_right, left_, lmdspan, 200, 200, 200);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_Subspan_3D_right, left_, lmdspan, 200, 200, 200);
 
 //================================================================================
 
@@ -113,7 +112,6 @@ BENCHMARK_CAPTURE(
   std::integral_constant<ptrdiff_t, 200>{}
 );
 
-/*
 BENCHMARK_CAPTURE(
   BM_Raw_Sum_3D_right_iter_left, size_20_20_20, int(), 20, 20, 20
 );
@@ -223,7 +221,6 @@ BENCHMARK_CAPTURE(
 );
 
 //================================================================================
- */
 
 BENCHMARK_MAIN();
 

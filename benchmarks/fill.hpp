@@ -127,14 +127,6 @@ BENCHMARK_CAPTURE( \
   bench_template, prefix##fixed_##X##_##Y##_##Z, md_template<int, X, Y, Z>{} \
 ); \
 BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_d##Y##_d##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>{}, X, Y, Z \
-)
-/*
-#define MDSPAN_BENCHMARK_ALL_3D(bench_template, prefix, md_template, X, Y, Z) \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##fixed_##X##_##Y##_##Z, md_template<int, X, Y, Z>{} \
-); \
-BENCHMARK_CAPTURE( \
   bench_template, prefix##dyn_##X##_##Y##_d##Z, md_template<int, X, Y, stdex::dynamic_extent>{}, Z \
 ); \
 BENCHMARK_CAPTURE( \
@@ -155,18 +147,7 @@ BENCHMARK_CAPTURE( \
 BENCHMARK_CAPTURE( \
   bench_template, prefix##dyn_d##X##_d##Y##_d##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>{}, X, Y, Z \
 )
- */
 
-#define MDSPAN_BENCHMARK_ALL_3D_MANUAL(bench_template, prefix, md_template, X, Y, Z) \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##fixed_##X##_##Y##_##Z, md_template<int, X, Y, Z>{} \
-)->UseManualTime(); \
-BENCHMARK_CAPTURE( \
-  bench_template, prefix##dyn_d##X##_d##Y##_d##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>{}, X, Y, Z \
-)->UseManualTime()
-
-
-/*
 #define MDSPAN_BENCHMARK_ALL_3D_MANUAL(bench_template, prefix, md_template, X, Y, Z) \
 BENCHMARK_CAPTURE( \
   bench_template, prefix##fixed_##X##_##Y##_##Z, md_template<int, X, Y, Z>{} \
@@ -192,7 +173,6 @@ BENCHMARK_CAPTURE( \
 BENCHMARK_CAPTURE( \
   bench_template, prefix##dyn_d##X##_d##Y##_d##Z, md_template<int, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>{}, X, Y, Z \
 )->UseManualTime()
- */
 
 #define MDSPAN_BENCHMARK_ALL_3D_REAL_TIME(bench_template, prefix, md_template, X, Y, Z) \
 BENCHMARK_CAPTURE( \
