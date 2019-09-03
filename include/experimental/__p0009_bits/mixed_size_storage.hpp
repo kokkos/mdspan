@@ -180,7 +180,7 @@ public:
       std::integer_sequence<ptrdiff_t, UDynOffs...>,
       std::integer_sequence<size_t, UIdxs...>
     > const& other
-  ) : dynamic_sizes({})
+  ) : dynamic_sizes()
   {
     _MDSPAN_FOLD_COMMA(set<Idxs>(other.template get<Idxs>()) /* , ... */);
   }
