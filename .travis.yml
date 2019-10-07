@@ -32,5 +32,5 @@ before_install:
 - which $CXX
 
 script:
-- git clone https://github.com/google/googletest.git && cd googletest && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/tmp/gtest -DCMAKE_BUILD_TYPE=Release .. && make -j2 && make install
-- mkdir build && cd build && cmake -DMDSPAN_ENABLE_TESTS=ON -DCMAKE_PREFIX_PATH=/tmp/gtest .. && make -j4 && ctest --output-on-failure
+- git clone https://github.com/google/googletest.git && pushd googletest && mkdir build && pushd build && cmake -DCMAKE_INSTALL_PREFIX=/tmp/gtest -DCMAKE_BUILD_TYPE=Release .. && make -j2 && make install && popd && popd
+- mkdir build && pushd build && cmake -DMDSPAN_ENABLE_TESTS=ON -DCMAKE_PREFIX_PATH=/tmp/gtest .. && make -j4 && ctest --output-on-failure
