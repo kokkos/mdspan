@@ -1,5 +1,5 @@
 language: cpp
-dist: beaver
+dist: bionic
 env:
 - CXX_STANDARD=14
 matrix:
@@ -18,7 +18,7 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-beaver-9.0
+            - llvm-toolchain-bionic-9.0
           packages:
             - clang-9.0
             - cmake
