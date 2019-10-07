@@ -11,7 +11,7 @@ matrix:
             - g++-7
             - cmake
       env:
-        - MATRIX_EVAL="CXX=g++-7"
+        - MATRIX_EVAL="CXX=g++-7 && CXX_FOR_BUILD=g++-7"
     - os: linux
       addons:
         apt:
