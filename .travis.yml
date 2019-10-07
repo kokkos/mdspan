@@ -1,0 +1,32 @@
+language: cpp
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - cmake
+      env:
+        - MATRIX_EVAL="CXX=g++-7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-beaver-9.0
+          packages:
+            - clang-9.0
+            - cmake
+      env:
+        - MATRIX_EVAL="CXX=clang++-9.0"
+
+    - os: osx
+      osx_image: xcode11
+
+before_install:
+    - eval "${MATRIX_EVAL}"
+
+script:
+- mkdir build && cd build && cmake .. -DMDSPAN_ENABLE_TESTS=ON && make -j4 && ctest --output-on-failure
