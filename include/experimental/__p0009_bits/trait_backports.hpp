@@ -48,6 +48,7 @@
 #include "config.hpp"
 
 #include <type_traits>
+#include <utility> // integer_sequence
 
 //==============================================================================
 // <editor-fold desc="Variable template trait backports (e.g., is_void_v)"> {{{1
