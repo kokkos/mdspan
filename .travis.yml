@@ -30,6 +30,7 @@ matrix:
 
 before_install:
 - eval "${MATRIX_EVAL}"
+- echo $MATRIX_EVAL
 - echo $CXX
 - which $CXX
 
