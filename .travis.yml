@@ -20,10 +20,10 @@ matrix:
           sources:
             - llvm-toolchain-bionic-9
           packages:
-            - clang-9.0
+            - clang-9
             - cmake
       env:
-        - MATRIX_EVAL="CXX=clang++-9.0"
+        - MATRIX_EVAL="CXX=clang++-9"
 
     - os: osx
       osx_image: xcode11
