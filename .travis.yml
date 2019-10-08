@@ -32,9 +32,6 @@ matrix:
 
 before_install:
 - eval "${MATRIX_EVAL}"
-- echo $MATRIX_EVAL
-- echo $CXX
-- which $CXX
 
 script:
 - git clone https://github.com/google/googletest.git && pushd googletest && mkdir build && pushd build && cmake -DCMAKE_INSTALL_PREFIX=/tmp/gtest -DCMAKE_BUILD_TYPE=Release .. && make -j2 && make install && popd && popd
