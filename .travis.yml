@@ -1,5 +1,5 @@
 language: cpp
-dist: bionic
+dist: xenial
 env:
 - CXX_STANDARD=14
 matrix:
@@ -18,7 +18,7 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-bionic-9
+            - llvm-toolchain-xenial-9
           packages:
             - clang-9
             - cmake
