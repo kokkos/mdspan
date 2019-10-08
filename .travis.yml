@@ -20,7 +20,7 @@ matrix:
           sources:
             - llvm-toolchain-xenial-8
           packages:
-            - clang-8
+            - clang-8 libc++-8-dev libc++abi-8-dev
             - cmake
       env:
         - MATRIX_EVAL="CXX=clang++-8"
