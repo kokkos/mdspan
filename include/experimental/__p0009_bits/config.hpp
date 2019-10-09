@@ -135,7 +135,7 @@
 
 #ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
 #  ifdef _MSC_VER
-#    if !(defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) && MDSPAN_HAS_CXX_14
+#    if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) && MDSPAN_HAS_CXX_14
 #      define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
 #    endif
 #  endif
