@@ -41,9 +41,10 @@
 //@HEADER
 */
 
+#include <experimental/mdspan>
+
 #include <gtest/gtest.h>
 #include <gtest/gtest-typed-test.h>
-#include <experimental/mdspan>
 
 namespace stdex = std::experimental;
 
