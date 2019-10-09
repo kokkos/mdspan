@@ -44,7 +44,6 @@
 #include <experimental/mdspan>
 
 #include <gtest/gtest.h>
-#include <gtest/gtest-typed-test.h>
 
 #include <tuple>
 #include <utility>

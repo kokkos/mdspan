@@ -44,7 +44,6 @@
 #include <experimental/mdspan>
 
 #include <gtest/gtest.h>
-#include <gtest/gtest-typed-test.h>
 
 namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
