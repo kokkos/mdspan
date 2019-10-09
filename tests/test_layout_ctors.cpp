@@ -44,7 +44,6 @@
 #include <experimental/mdspan>
 
 #include <gtest/gtest.h>
-#include <gtest/gtest-typed-test.h>
 
 namespace stdex = std::experimental;
 
