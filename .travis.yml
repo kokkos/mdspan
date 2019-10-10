@@ -15,7 +15,28 @@ matrix:
             - g++-7
             - cmake
       env:
-        - MATRIX_EVAL="CXX=g++-7"
+        - MATRIX_EVAL="CXX=g++-7 && CXX_STANDARD=11"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - cmake
+      env:
+        - MATRIX_EVAL="CXX=g++-7 && CXX_STANDARD=14"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - cmake
+      env:
+        - MATRIX_EVAL="CXX=g++-7 && CXX_STANDARD=17"
+
     - os: linux
       addons:
         apt:
@@ -25,10 +46,41 @@ matrix:
             - clang-8 libc++-8-dev libc++abi-8-dev
             - cmake
       env:
-        - MATRIX_EVAL="CXX=clang++-8"
+        - MATRIX_EVAL="CXX=clang++-8 && CXX_STANDARD=11"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-8
+          packages:
+            - clang-8 libc++-8-dev libc++abi-8-dev
+            - cmake
+      env:
+        - MATRIX_EVAL="CXX=clang++-8 && CXX_STANDARD=14"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-8
+          packages:
+            - clang-8 libc++-8-dev libc++abi-8-dev
+            - cmake
+      env:
+        - MATRIX_EVAL="CXX=clang++-8 && CXX_STANDARD=17"
 
     - os: osx
       osx_image: xcode11
+      env:
+        - MATRIX_EVAL="CXX_STANDARD=11"
+    - os: osx
+      osx_image: xcode11
+      env:
+        - MATRIX_EVAL="CXX_STANDARD=14"
+    - os: osx
+      osx_image: xcode11
+      env:
+        - MATRIX_EVAL="CXX_STANDARD=17"
+
 
 before_install:
 - eval "${MATRIX_EVAL}"
