@@ -41,18 +41,43 @@
 //@HEADER
 */
 
-#pragma once
-
 #include "macros.hpp"
-
-#include <cstddef>
 
 namespace std {
 namespace experimental {
 
-_MDSPAN_INLINE_VARIABLE constexpr ptrdiff_t dynamic_extent = -1;
+//==============================================================================
+
+namespace detail {
+
+template <class...> struct __type_list;
+
+// Implementation of type_list at() that's heavily optimized for small typelists
+template <size_t, class> struct __type_at;
+
+template <size_t _I, class _T0, class _T1, class... _Ts>
+struct __type_at<_I, __type_list<_T0, _T1, _Ts...>>
+    : __type_at<_I - 2, __type_list<_Ts...>> {};
+
+template <class _T0>
+struct __type_at<0, __type_list<_T0>> {
+  using type = _T0;
+};
+
+template <class _T0, class _T1, class... _Ts>
+struct __type_at<0, __type_list<_T0, _T1, _Ts...>> {
+  using type = _T0;
+};
+
+template <class _T0, class _T1, class... _Ts>
+struct __type_at<1, __type_list<_T0, _T1, _Ts...>> {
+  using type = _T1;
+};
+
+
+} // namespace detail
+
+//==============================================================================
 
 } // end namespace experimental
-} // namespace std
-
-//==============================================================================================================
+} // end namespace std

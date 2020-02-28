@@ -46,6 +46,8 @@
 #include "dynamic_extent.hpp"
 #include "trait_backports.hpp"
 #include "array_workaround.hpp"
+#include "maybe_static_value.hpp"
+#include "type_list.hpp"
 
 #include <cstddef> // ptrdiff_t
 #include <utility> // integer_sequence
@@ -55,169 +57,213 @@ namespace std {
 namespace experimental {
 namespace detail {
 
-_MDSPAN_INLINE_VARIABLE constexpr struct construct_mixed_storage_from_sizes_tag_t { } construct_mixed_storage_from_sizes_tag = { };
+//==============================================================================
 
-template <class SizesSeq, class, class=make_index_sequence<SizesSeq::size()>>
-class mixed_static_and_dynamic_size_storage;
+_MDSPAN_INLINE_VARIABLE constexpr struct
+    __construct_partially_static_array_from_sizes_tag_t {
+} __construct_partially_static_array_from_sizes_tag = {};
+
+//==============================================================================
+
+template <size_t _I, class _T>
+using __repeated_with_idxs = _T;
+
+//==============================================================================
+
+template <class _Result, class _Seq, class _Mask>
+struct __mask_sequence_impl;
+
+template <class _T, _T... _Result, _T _S1, _T... _Seq, bool... _Mask>
+struct __mask_sequence_impl<
+  integer_sequence<_T, _Result...>,
+  integer_sequence<_T, _S1, _Seq...>,
+  integer_sequence<bool, true, _Mask...>
+> : __mask_sequence_impl<
+  integer_sequence<_T, _Result..., _S1>,
+  integer_sequence<_T, _Seq...>,
+  integer_sequence<bool, _Mask...>
+> { };
+
+template <class _T, _T... _Result, _T _S1, _T... _Seq, bool... _Mask>
+struct __mask_sequence_impl<
+  integer_sequence<_T, _Result...>,
+  integer_sequence<_T, _S1, _Seq...>,
+  integer_sequence<bool, false, _Mask...>
+> : __mask_sequence_impl<
+  integer_sequence<_T, _Result...>,
+  integer_sequence<_T, _Seq...>,
+  integer_sequence<bool, _Mask...>
+> { };
+
+template <class _T, _T... _Result>
+struct __mask_sequence_impl<
+  integer_sequence<_T, _Result...>,
+  integer_sequence<_T>,
+  integer_sequence<bool>
+> {
+  using type = integer_sequence<_T, _Result...>;
+};
+
+template <class _Seq, class _Mask>
+struct __mask_sequence;
+
+template <class _T, _T... _Vals, class _Mask>
+struct __mask_sequence<integer_sequence<_T, _Vals...>, _Mask>
+  : __mask_sequence_impl<integer_sequence<_T>, integer_sequence<_T, _Vals...>, _Mask>
+{ };
+
+//==============================================================================
+
+template <class _T, class _Vals, _T __sentinal,
+          class _Idxs, class _IdxsDynamic, class _IdxsDynamicIdxs>
+class __partially_static_array_impl;
 
 template <
-  ptrdiff_t... Sizes,
-  ptrdiff_t... DynamicOffsets,
-  size_t... Idxs
+  class _T, _T... __values_or_sentinals, _T __sentinal,
+  size_t... _Idxs,
+  size_t... _IdxsDynamic,
+  size_t... _IdxsDynamicIdxs
 >
-class mixed_static_and_dynamic_size_storage<
-  integer_sequence<ptrdiff_t, Sizes...>,
-  integer_sequence<ptrdiff_t, DynamicOffsets...>,
-  integer_sequence<size_t, Idxs...>
+class __partially_static_array_impl<
+  _T,
+  integer_sequence<_T, __values_or_sentinals...>,
+  __sentinal,
+  integer_sequence<size_t, _Idxs...>,
+  integer_sequence<size_t, _IdxsDynamic...>,
+  integer_sequence<size_t, _IdxsDynamicIdxs...>
 >
-{
-public:
-
-  static constexpr auto size_dynamic =
-    _MDSPAN_FOLD_PLUS_RIGHT(static_cast<int>((Sizes == dynamic_extent)), /* + ... + */ 0);
-
+    : private __maybe_static_value<_T, __values_or_sentinals, __sentinal,
+                                   _Idxs>... {
 private:
 
-  _MDSPAN_NO_UNIQUE_ADDRESS __array_workaround::__array<ptrdiff_t, size_dynamic> dynamic_sizes = { };
-
-  template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t _select(true_type) const noexcept { return dynamic_sizes.template __get_n<DynamicOffset>(); }
-  template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t _select(false_type) const noexcept { return Size; }
-
-  template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  _MDSPAN_CONSTEXPR_14 ptrdiff_t _select_set(true_type, ptrdiff_t value) noexcept { dynamic_sizes.template __set_n<DynamicOffset>(value); return 0; }
-  template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  _MDSPAN_CONSTEXPR_14 ptrdiff_t _select_set(false_type, ptrdiff_t) noexcept { return 0; }
-
+  template <size_t _N>
+  using __base_n = typename __type_at<_N,
+    __type_list<__maybe_static_value<_T, __values_or_sentinals, __sentinal, _Idxs>...>
+  >::type;
+  
 public:
 
-  template <ptrdiff_t Size, ptrdiff_t DynamicOffset>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t select() const noexcept {
-    return _select<Size, DynamicOffset>(integral_constant<bool, Size == dynamic_extent>{});
-  }
+  static constexpr auto __size_dynamic =
+    _MDSPAN_FOLD_PLUS_RIGHT(static_cast<int>((__values_or_sentinals == __sentinal)), /* + ... + */ 0);
 
-  template <ptrdiff_t Size, ptrdiff_t DynamicOffset, size_t Idx, ptrdiff_t N, ptrdiff_t Default=dynamic_extent>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t select_n() const noexcept {
-    return Idx == N ? _select<Size, DynamicOffset>(integral_constant<bool, Size == dynamic_extent>{}) : Default;
-  }
-
-  template <ptrdiff_t Size, ptrdiff_t DynamicOffset, ptrdiff_t Default=dynamic_extent>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  static constexpr ptrdiff_t select_static() noexcept {
-    return Size == dynamic_extent ? Default : Size;
-  }
-
-  template <ptrdiff_t Size, ptrdiff_t DynamicOffset, size_t Idx, size_t N, ptrdiff_t Default=dynamic_extent, ptrdiff_t DefaultWrongIdx=Default>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  static constexpr ptrdiff_t select_static_n() noexcept {
-    return (Idx == N) ? ((Size == dynamic_extent) ? Default : Size) : DefaultWrongIdx;
-  }
-
-
-  template <ptrdiff_t Size, ptrdiff_t DynamicOffset, size_t Idx, ptrdiff_t N>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  _MDSPAN_CONSTEXPR_14 ptrdiff_t select_set(ptrdiff_t value) noexcept {
-    return _select_set<Size, DynamicOffset>(integral_constant<bool, Size == dynamic_extent && Idx == N>{}, value);
-  }
- 
- 
-  template <size_t N>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t get() const noexcept {
-    return _MDSPAN_FOLD_PLUS_RIGHT((select_n<Sizes, DynamicOffsets, Idxs, N, 0>()), /* + ... + */ 0);
-  }
-
-  template <size_t N, ptrdiff_t Default=dynamic_extent>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  static constexpr ptrdiff_t get_static() noexcept {
-    return _MDSPAN_FOLD_PLUS_RIGHT((select_static_n<Sizes, DynamicOffsets, Idxs, N, Default, 0>()), /* + ... + */ 0);
-  }
-
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t get(size_t n) const noexcept {
-    return _MDSPAN_FOLD_PLUS_RIGHT(((Idxs == n) ? select<Sizes, DynamicOffsets>() : 0), /* + ... + */ 0);
-  }
-
-  template <size_t N>
-  MDSPAN_FORCE_INLINE_FUNCTION
-  _MDSPAN_CONSTEXPR_14 __mdspan_enable_fold_comma
-  set(ptrdiff_t value) noexcept {
-    _MDSPAN_FOLD_COMMA(select_set<Sizes, DynamicOffsets, Idxs, N>(value) /* , ... */);
-    return { };
-  }
+  //--------------------------------------------------------------------------
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr mixed_static_and_dynamic_size_storage() = default;
+  constexpr __partially_static_array_impl() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr mixed_static_and_dynamic_size_storage(mixed_static_and_dynamic_size_storage const&) noexcept = default;
+  constexpr __partially_static_array_impl(
+      __partially_static_array_impl const &) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr mixed_static_and_dynamic_size_storage(mixed_static_and_dynamic_size_storage&&) noexcept = default;
+  constexpr __partially_static_array_impl(
+      __partially_static_array_impl &&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage const&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __partially_static_array_impl &
+  operator=(__partially_static_array_impl const &) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED mixed_static_and_dynamic_size_storage& operator=(mixed_static_and_dynamic_size_storage&&) noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __partially_static_array_impl &
+  operator=(__partially_static_array_impl &&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~mixed_static_and_dynamic_size_storage() noexcept = default;
+  ~__partially_static_array_impl() noexcept = default;
 
-  template <class... Integral>
   MDSPAN_INLINE_FUNCTION
-  constexpr mixed_static_and_dynamic_size_storage(construct_mixed_storage_from_sizes_tag_t, Integral... dyn_sizes)
-    : dynamic_sizes(ptrdiff_t{dyn_sizes}...)
-  { }
+  constexpr explicit __partially_static_array_impl(
+      __construct_partially_static_array_from_sizes_tag_t,
+      __repeated_with_idxs<_Idxs, _T> const &... __vals) noexcept
+      : __base_n<_Idxs>{__vals}... {}
 
-  template <ptrdiff_t... USizes, ptrdiff_t... UDynOffs, size_t... UIdxs>
+  // Dynamic idxs only given version, which is probably going to not need to
+  // supported by the time mdspan is merged into the standard, but is currently the
+  // way this is specified.  Use a repeated tag for the old semantics
   MDSPAN_INLINE_FUNCTION
-  _MDSPAN_CONSTEXPR_14 mixed_static_and_dynamic_size_storage(
-    mixed_static_and_dynamic_size_storage<
-      std::integer_sequence<ptrdiff_t, USizes...>,
-      std::integer_sequence<ptrdiff_t, UDynOffs...>,
-      std::integer_sequence<size_t, UIdxs...>
-    > const& other
-  ) : dynamic_sizes()
-  {
-    _MDSPAN_FOLD_COMMA(set<Idxs>(other.template get<Idxs>()) /* , ... */);
+  constexpr __partially_static_array_impl(
+      __construct_partially_static_array_from_sizes_tag_t,
+      __construct_partially_static_array_from_sizes_tag_t,
+      __repeated_with_idxs<_IdxsDynamicIdxs, _T> const &... __vals) noexcept
+      : __base_n<_IdxsDynamic>(__vals)... {}
+
+  MDSPAN_INLINE_FUNCTION
+  constexpr explicit __partially_static_array_impl(
+      array<_T, __size_dynamic> const &__vals_dynamic) noexcept
+      : __partially_static_array_impl(
+            __construct_partially_static_array_from_sizes_tag,
+            __construct_partially_static_array_from_sizes_tag,
+            std::get<_IdxsDynamicIdxs>(__vals_dynamic)...) {}
+
+  //--------------------------------------------------------------------------
+
+  template <size_t _I>
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __get_n() const noexcept {
+    return static_cast<__base_n<_I> const*>(this)->__value();
   }
 
-  template <class Integral>
-  MDSPAN_INLINE_FUNCTION
-  constexpr mixed_static_and_dynamic_size_storage(std::array<Integral, size_dynamic> const& dyn)
-    : dynamic_sizes(dyn)
-  { }
+  template <class _U, size_t _I>
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 void __set_n(_U&& __rhs) noexcept {
+    static_cast<__base_n<_I>*>(this)->__set_value((_U&&)__rhs);
+  }
+
+  template <size_t _I, _T __default = __sentinal>
+  MDSPAN_FORCE_INLINE_FUNCTION static constexpr _T
+  __get_static_n() noexcept {
+    return __base_n<_I>::__static_value;
+  }
+  
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T
+  __get(size_t __n) const noexcept {
+    return _MDSPAN_FOLD_PLUS_RIGHT(
+      ((_Idxs == __n) ? __get_n<_Idxs>() : _T(0)), /* + ... + */ _T(0)
+    );
+  }
 
 };
 
-//================================================================================
+//==============================================================================
 
-template <size_t N, class, class> struct _make_mixed_impl_helper;
-template <size_t N, size_t... Idxs, ptrdiff_t... Sizes>
-struct _make_mixed_impl_helper<N, integer_sequence<size_t, Idxs...>, integer_sequence<ptrdiff_t, Sizes...>> {
-  static constexpr ptrdiff_t value =
-    _MDSPAN_FOLD_PLUS_RIGHT((int(Idxs < size_t(N) && Sizes == dynamic_extent)), /* + ... + */ 0);
-};
+template <class _T, class _ValSeq, _T __sentinal, class _Idxs = make_index_sequence<_ValSeq::size()>>
+struct __partially_static_array_impl_maker;
 
-template <class Sequence, class=void>
-struct _make_mixed_impl;
-template <class T, T... Sizes>
-struct _make_mixed_impl<integer_sequence<T, Sizes...>, void>
-  : _make_mixed_impl<integer_sequence<T, Sizes...>, std::make_index_sequence<sizeof...(Sizes)>>
-{ };
-template <class T, T... Sizes, size_t... Idxs>
-struct _make_mixed_impl<integer_sequence<T, Sizes...>, integer_sequence<size_t, Idxs...>> {
-  using type = mixed_static_and_dynamic_size_storage<
-      integer_sequence<ptrdiff_t, Sizes...>,
-      integer_sequence<ptrdiff_t,
-        _make_mixed_impl_helper<
-          Idxs, std::index_sequence<Idxs...>, std::integer_sequence<ptrdiff_t, Sizes...>
-        >::value...
-      >
+template <
+  class _T, _T... _Vals, _T __sentinal, size_t... _Idxs
+>
+struct __partially_static_array_impl_maker<
+  _T, integer_sequence<_T, _Vals...>, __sentinal, integer_sequence<size_t, _Idxs...>
+>
+{
+  using __dynamic_idxs = typename __mask_sequence<
+    integer_sequence<size_t, _Idxs...>,
+    integer_sequence<bool, (_Vals == __sentinal)...>
+  >::type;
+  using __impl_base = 
+    __partially_static_array_impl<_T,
+      integer_sequence<_T, _Vals...>,
+      __sentinal, integer_sequence<size_t, _Idxs...>,
+      __dynamic_idxs,
+      make_index_sequence<__dynamic_idxs::size()>
     >;
+};
+
+template <class _T, class _ValsSeq, _T __sentinal = dynamic_extent, class _IdxsSeq = make_index_sequence<_ValsSeq::size()>>
+class __partially_static_array;
+
+template <class _T, class _ValsSeq, _T __sentinal, size_t... _Idxs>
+class __partially_static_array<_T, _ValsSeq, __sentinal, integer_sequence<size_t, _Idxs...>>
+  : public __partially_static_array_impl_maker<_T, _ValsSeq, __sentinal>::__impl_base
+{
+private:
+  using __base_t = typename __partially_static_array_impl_maker<_T, _ValsSeq, __sentinal>::__impl_base;
+public:
+
+  using __base_t::__base_t;
+
+  MDSPAN_INLINE_FUNCTION constexpr explicit __partially_static_array(
+      array<_T, _ValsSeq::size()> const &__vals) noexcept
+      : __base_t(std::get<_Idxs>(__vals)...) {}
+
+  // Do we need this constructor?
+  template <class _U, class _UVals, _U __u_sentinal>
+  MDSPAN_INLINE_FUNCTION constexpr __partially_static_array(
+      __partially_static_array<_U, _UVals, __u_sentinal> const &__rhs) noexcept
+      : __base_t(__construct_partially_static_array_from_sizes_tag,
+                 __rhs.template __get_n<_Idxs>()...) {}
 };
 
 } // namespace detail

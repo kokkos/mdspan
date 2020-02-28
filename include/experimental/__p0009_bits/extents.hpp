@@ -46,6 +46,7 @@
 #include "macros.hpp"
 #include "mixed_size_storage.hpp"
 #include "trait_backports.hpp"
+#include "no_unique_address.hpp"
 
 #include <cstddef>
 
@@ -77,6 +78,9 @@ _check_compatible_extents(
 
 template <ptrdiff_t... Extents>
 class extents
+  : private detail::__no_unique_address_emulation<
+      detail::__partially_static_array<ptrdiff_t, integer_sequence<ptrdiff_t, Extents...>>
+    >
 {
 public:
 
@@ -84,7 +88,9 @@ public:
 
 private:
 
-  using storage_type = typename detail::_make_mixed_impl<integer_sequence<ptrdiff_t, Extents...>>::type;
+  using __base_t = detail::__no_unique_address_emulation<
+    detail::__partially_static_array<ptrdiff_t, integer_sequence<ptrdiff_t, Extents...>>
+  >;
 
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -106,7 +112,9 @@ private:
     std::experimental::extents<OtherExtents...> other,
     true_type, index_sequence<Idxs...>
   ) const noexcept {
-    return _MDSPAN_FOLD_AND((_storage.template get<Idxs>() == other._storage.template get<Idxs>()) /* && ... */);
+    return _MDSPAN_FOLD_AND(
+      (this->__base_t::template __get_n<Idxs>() == other.template __get_n<Idxs>()) /* && ... */
+    );
   }
 
   template <ptrdiff_t... OtherExtents, size_t... Idxs>
@@ -118,7 +126,9 @@ private:
     std::experimental::extents<OtherExtents...> other,
     true_type, index_sequence<Idxs...>
   ) const noexcept {
-    return _MDSPAN_FOLD_OR((_storage.template get<Idxs>() != other._storage.template get<Idxs>()) /* || ... */);
+    return _MDSPAN_FOLD_OR(
+      (this->__base_t::template __get_n<Idxs>() != other.template __get_n<Idxs>()) /* || ... */
+    );
   }
 
 public:
@@ -150,9 +160,9 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(const extents<OtherExtents...>& other)
+  constexpr extents(const extents<OtherExtents...>& __other)
     noexcept
-    : _storage(other._storage)
+    : __base_t(typename __base_t::__stored_type{__other.__ref()})
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -163,7 +173,8 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr explicit extents(Integral... dyn) noexcept
-    : _storage(detail::construct_mixed_storage_from_sizes_tag, dyn...)
+    : __base_t{typename __base_t::__stored_type{
+        detail::__construct_partially_static_array_from_sizes_tag, dyn...}}
   { }
 
 
@@ -175,8 +186,8 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(std::array<IndexType, storage_type::size_dynamic> const& dyn) noexcept
-    : _storage(dyn)
+  constexpr extents(std::array<IndexType, __base_t::__stored_type::__size_dynamic> const& dyn) noexcept
+    : __base_t{typename __base_t::__stored_type{dyn}}
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -193,7 +204,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   _MDSPAN_CONSTEXPR_14 extents& operator=(const extents<OtherExtents...>& other) noexcept
   {
-    _storage = other._storage;
+    this->__base_t::__ref() = other.__base_t::__ref();
     return *this;
   }
 
@@ -208,7 +219,8 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr
   index_type extent(size_t n) const noexcept {
-    return _storage.get(n);
+    // TODO return this->__base_t::ref().__get
+    return this->__base_t::__ref().__get(n);
   }
 
   //--------------------------------------------------------------------------------
@@ -237,19 +249,15 @@ public:  // (but not really)
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr
   index_type __extent() const noexcept {
-    return _storage.template get<N>();
+    return this->__base_t::__ref().template __get_n<N>();
   }
 
   template <size_t N, ptrdiff_t Default=dynamic_extent>
   MDSPAN_INLINE_FUNCTION
   static constexpr
   index_type __static_extent() noexcept {
-    return storage_type::template get_static<N, Default>();
+    return __base_t::__stored_type::template __get_static_n<N, Default>();
   }
-
-private:
-
-  _MDSPAN_NO_UNIQUE_ADDRESS storage_type _storage = { };
 
 };
 

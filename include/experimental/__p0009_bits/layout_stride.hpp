@@ -64,15 +64,19 @@ template <class, ptrdiff_t...> class layout_stride_impl;
 template <ptrdiff_t... Exts, ptrdiff_t... Strides>
 class layout_stride_impl<
   std::experimental::extents<Exts...>, Strides...
->
-  : public extents_storage<std::experimental::extents<Exts...>>
+> : private __no_unique_address_emulation<std::experimental::extents<Exts...>>,
+    // Avoid an ambiguity in the inheritance hierarchy by adding disambiguator parameter different
+    // from the default one in the __no_unique_address_emulation class template
+    private __no_unique_address_emulation<__partially_static_array<ptrdiff_t, integer_sequence<ptrdiff_t, Strides...>>, 1>
 {
 private:
 
-  using base_t = extents_storage<std::experimental::extents<Exts...>>;
   using idx_seq = make_index_sequence<sizeof...(Exts)>;
 
-  using stride_storage_t = typename _make_mixed_impl<integer_sequence<ptrdiff_t, Strides...>>::type;
+  using __extents_base_t =
+    __no_unique_address_emulation<std::experimental::extents<Exts...>>;
+  using __strides_base_t =
+    __no_unique_address_emulation<__partially_static_array<ptrdiff_t, integer_sequence<ptrdiff_t, Strides...>>, 1>;
 
   template <class, ptrdiff_t...>
   friend class layout_stride_impl;
@@ -113,22 +117,24 @@ public: // (but not really)
   template <size_t N>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t __stride() const noexcept {
-    return _strides.template get<N>();
+    return this->__strides_base_t::__ref().template __get_n<N>();
   }
 
   template <size_t N>
   struct __static_stride_workaround {
-    static constexpr ptrdiff_t value =  stride_storage_t::template get_static<N, dynamic_extent>();
+    static constexpr ptrdiff_t value = __strides_base_t::__stored_type::template __get_static_n<N, dynamic_extent>();
   };
 
   template <size_t N>
   MDSPAN_INLINE_FUNCTION
   static constexpr ptrdiff_t __static_stride() noexcept
   {
-    return stride_storage_t::template get_static<N>();
+    return __strides_base_t::__stored_type::template __get_static_n<N>();
   }
 
 public:
+
+  using extents_type = experimental::extents<Exts...>;
 
   //--------------------------------------------------------------------------------
 
@@ -141,24 +147,26 @@ public:
   constexpr
   layout_stride_impl(
     std::experimental::extents<Exts...> const& e,
-    array<ptrdiff_t, stride_storage_t::size_dynamic> const& strides
+    array<ptrdiff_t, __strides_base_t::__stored_type::__size_dynamic> const& strides
   ) noexcept
-    : base_t(e),
-      _strides(strides)
+    : __extents_base_t{typename __extents_base_t::__stored_type(e)},
+      __strides_base_t{typename __strides_base_t::__stored_type(strides)}
   { }      
 
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED layout_stride_impl& operator=(layout_stride_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED layout_stride_impl& operator=(layout_stride_impl&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED
+  layout_stride_impl& operator=(layout_stride_impl const&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED
+  layout_stride_impl& operator=(layout_stride_impl&&) noexcept = default;
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~layout_stride_impl() noexcept = default;
-
-  using base_t::base_t;
 
   // TODO conversion constructors and assignment
 
   //--------------------------------------------------------------------------------
 
-  MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept { return this->base_t::__extents; };
+  MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept {
+    return this->__extents_base_t::__value();
+  };
 
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
   // TODO @proposal-bug this wording for this is (at least slightly) broken (should at least be "... stride(p[0]) == 1...")
@@ -168,11 +176,11 @@ public:
     std::iota(rem.begin(), rem.end(), ptrdiff_t(0));
     auto next_idx_iter = std::find_if(
       rem.begin(), rem.end(),
-      [&](ptrdiff_t i) { _strides.get(i) == 1;  }
+      [&](ptrdiff_t i) { this->stride(i) == 1;  }
     );
     if(next_idx_iter != rem.end()) {
       ptrdiff_t prev_stride_times_prev_extent =
-        this->extents().extent(*next_idx_iter) * _strides.get(*next_idx_iter);
+        this->extents().extent(*next_idx_iter) * this->stride(*next_idx_iter);
       // "remove" the index
       constexpr ptrdiff_t removed_index_sentinel = -1;
       *next_idx_iter = removed_index_sentinel;
@@ -182,14 +190,14 @@ public:
           rem.begin(), rem.end(),
           [&](ptrdiff_t i) {
             return i != removed_index_sentinel
-              && _strides.get(i) * this->extents().extent(i) == prev_stride_times_prev_extent;
+              && this->stride(i) * this->extents().extent(i) == prev_stride_times_prev_extent;
           }
         );
         if (next_idx_iter != rem.end()) {
           // "remove" the index
           *next_idx_iter = removed_index_sentinel;
           ++found_count;
-          prev_stride_times_prev_extent = _strides.get(*next_idx_iter) * this->extents().extent(*next_idx_iter);
+          prev_stride_times_prev_extent = stride(*next_idx_iter) * this->extents().extent(*next_idx_iter);
         } else { break; }
       }
       return found_count == sizeof...(Exts);
@@ -220,7 +228,7 @@ public:
 
   MDSPAN_INLINE_FUNCTION
   constexpr ptrdiff_t stride(size_t r) const noexcept {
-    return _strides.get(r);
+    return this->__strides_base_t::__ref().__get(r);
   }
 
   MDSPAN_INLINE_FUNCTION
@@ -243,10 +251,6 @@ public:
   constexpr bool operator!=(layout_stride_impl<OtherExtents, OtherStaticStrides...> const& other) const noexcept {
     return __impl<>::_not_eq_impl(*this, other);
   }
-
-private:
-
-  _MDSPAN_NO_UNIQUE_ADDRESS stride_storage_t _strides = { };
 
 };
 
