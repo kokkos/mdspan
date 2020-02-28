@@ -90,11 +90,13 @@ template <class, class, class> struct stride_storage_impl;
 
 template <ptrdiff_t... Exts, size_t... Idxs, class IdxConditional>
 struct stride_storage_impl<std::experimental::extents<Exts...>, integer_sequence<size_t, Idxs...>, IdxConditional>
-  : extents_storage<std::experimental::extents<Exts...>>
+  : __no_unique_address_emulation<experimental::extents<Exts...>>
 {
 protected:
-  using base_t = extents_storage<std::experimental::extents<Exts...>>;
+  using __base_t = __no_unique_address_emulation<experimental::extents<Exts...>>;
 public:
+
+  using extents_type = experimental::extents<Exts...>;
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr stride_storage_impl() noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr stride_storage_impl(stride_storage_impl const&) noexcept = default;
@@ -103,17 +105,33 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED stride_storage_impl& operator=(stride_storage_impl&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~stride_storage_impl() noexcept = default;
 
-  using base_t::base_t;
+  MDSPAN_INLINE_FUNCTION
+  constexpr explicit stride_storage_impl(extents_type const& __exts) noexcept
+    : __base_t(__exts)
+  { }
+
+  MDSPAN_INLINE_FUNCTION
+  constexpr explicit stride_storage_impl(extents_type&& __exts) noexcept
+    : __base_t{(extents_type&&)__exts}
+  { }
+
+  using __base_t::__base_t;
 
   template <size_t N>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t get_stride() const noexcept {
-    return _MDSPAN_FOLD_TIMES_RIGHT((IdxConditional{}(Idxs, N) ? base_t::__extents.template __extent<Idxs>() : 1), /* * ... * */ 1);
+    return _MDSPAN_FOLD_TIMES_RIGHT(
+      (IdxConditional{}(Idxs, N) ? this->__base_t::__ref().template __extent<Idxs>() : 1),
+        /* * ... * */ 1
+    );
   }
 
   MDSPAN_INLINE_FUNCTION
   constexpr ptrdiff_t get_stride(size_t n) const noexcept {
-    return _MDSPAN_FOLD_TIMES_RIGHT((IdxConditional{}(Idxs, n) ? base_t::__extents.template __extent<Idxs>() : 1), /* * ... * */ 1);
+    return _MDSPAN_FOLD_TIMES_RIGHT(
+      (IdxConditional{}(Idxs, n) ? this->__base_t::__ref().template __extent<Idxs>() : 1),
+        /* * ... * */ 1
+    );
   }
 
 };
@@ -142,7 +160,9 @@ public:
 
   using base_t::base_t;
 
-  MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept { return this->base_t::base_t::__extents; };
+  MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept {
+    return this->base_t::__value();
+  };
 
   template <class... Integral>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -152,7 +172,7 @@ public:
 
   MDSPAN_INLINE_FUNCTION
   constexpr ptrdiff_t required_span_size() const noexcept {
-    return _MDSPAN_FOLD_TIMES_RIGHT((base_t::__extents.template __extent<Idxs>()), /* * ... * */ 1);
+    return _MDSPAN_FOLD_TIMES_RIGHT((base_t::__ref().template __extent<Idxs>()), /* * ... * */ 1);
   }
 
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
@@ -177,7 +197,9 @@ public:  // (but not really)
   template <size_t N>
   struct __static_stride_workaround {
     static constexpr ptrdiff_t __result = _MDSPAN_FOLD_TIMES_RIGHT(
-      (IdxConditional{}(Idxs, N) ? base_t::extents_type::template __static_extent<Idxs, 0>() : 1), /* * ... * */ 1
+      (IdxConditional{}(Idxs, N) ?
+        base_t::__stored_type::template __static_extent<Idxs, 0>() : 1
+      ), /* * ... * */ 1
     );
     static constexpr ptrdiff_t value = __result == 0 ? dynamic_extent : __result;
   };
