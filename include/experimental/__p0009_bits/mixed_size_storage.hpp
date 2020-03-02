@@ -210,7 +210,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T
   __get(size_t __n) const noexcept {
     return _MDSPAN_FOLD_PLUS_RIGHT(
-      ((_Idxs == __n) ? __get_n<_Idxs>() : _T(0)), /* + ... + */ _T(0)
+      (_T(_Idxs == __n) * __get_n<_Idxs>()), /* + ... + */ _T(0)
     );
   }
 
