@@ -105,17 +105,21 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED stride_storage_impl& operator=(stride_storage_impl&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~stride_storage_impl() noexcept = default;
 
+  // The layouts need to be implicitly convertible from extents (as currently specified),
+  // which means we need to make this not explicit here
+  // TODO @proposal-bug make this explicit?
   MDSPAN_INLINE_FUNCTION
-  constexpr explicit stride_storage_impl(extents_type const& __exts) noexcept
-    : __base_t(__exts)
+  constexpr /* implicit */ stride_storage_impl(extents_type const& __exts) noexcept
+    : __base_t(__base_t{__exts})
   { }
 
-  MDSPAN_INLINE_FUNCTION
-  constexpr explicit stride_storage_impl(extents_type&& __exts) noexcept
-    : __base_t{(extents_type&&)__exts}
-  { }
-
-  using __base_t::__base_t;
+  // The layouts need to be implicitly convertible from extents (as currently specified),
+  // which means we need to make this not explicit here
+  // TODO @proposal-bug this one isn't in the proposal?
+  // MDSPAN_INLINE_FUNCTION
+  // constexpr /* implicit */ stride_storage_impl(extents_type&& __exts) noexcept
+  //   : __base_t{(extents_type&&)__exts}
+  // { }
 
   template <size_t N>
   MDSPAN_FORCE_INLINE_FUNCTION

@@ -113,7 +113,7 @@ public:
   MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
   layout_left_impl& operator=(layout_left_impl<OtherExtents> const& other)
   {
-    this->__extents = other.extents();
+    this->base_t::__ref() = other.extents();
     return *this;
   }
   //--------------------------------------------------------------------------------

@@ -48,6 +48,8 @@
 #include "trait_backports.hpp"
 #include "no_unique_address.hpp"
 
+#include <array>
+#include <type_traits>
 #include <cstddef>
 
 namespace std {
@@ -79,8 +81,7 @@ _check_compatible_extents(
 template <ptrdiff_t... Extents>
 class extents
   : private detail::__no_unique_address_emulation<
-      detail::__partially_static_array<ptrdiff_t, integer_sequence<ptrdiff_t, Extents...>>
-    >
+      detail::__partially_static_sizes<Extents...>>
 {
 public:
 
@@ -89,8 +90,7 @@ public:
 private:
 
   using __base_t = detail::__no_unique_address_emulation<
-    detail::__partially_static_array<ptrdiff_t, integer_sequence<ptrdiff_t, Extents...>>
-  >;
+    detail::__partially_static_sizes<Extents...>>;
 
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -113,7 +113,7 @@ private:
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_AND(
-      (this->__base_t::template __get_n<Idxs>() == other.template __get_n<Idxs>()) /* && ... */
+      (this->__base_t::__ref().template __get_n<Idxs>() == other.__ref().template __get_n<Idxs>()) /* && ... */
     );
   }
 
@@ -162,18 +162,19 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr extents(const extents<OtherExtents...>& __other)
     noexcept
-    : __base_t(typename __base_t::__stored_type{__other.__ref()})
+    : __base_t(__base_t{typename __base_t::__stored_type{__other.__ref()}})
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
     class... Integral,
     /* requires */ (
-      _MDSPAN_FOLD_AND(std::_MDSPAN_TRAIT(is_convertible, Integral, index_type) /* && ... */) && sizeof...(Integral) == rank_dynamic()
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, index_type) /* && ... */) && sizeof...(Integral) == rank_dynamic()
     )
   )
   MDSPAN_INLINE_FUNCTION
   constexpr explicit extents(Integral... dyn) noexcept
     : __base_t{typename __base_t::__stored_type{
+        detail::__construct_partially_static_array_from_sizes_tag,
         detail::__construct_partially_static_array_from_sizes_tag, dyn...}}
   { }
 
@@ -187,7 +188,7 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr extents(std::array<IndexType, __base_t::__stored_type::__size_dynamic> const& dyn) noexcept
-    : __base_t{typename __base_t::__stored_type{dyn}}
+    : __base_t(__base_t{typename __base_t::__stored_type{dyn}})
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -204,7 +205,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   _MDSPAN_CONSTEXPR_14 extents& operator=(const extents<OtherExtents...>& other) noexcept
   {
-    this->__base_t::__ref() = other.__base_t::__ref();
+    this->__base_t::__ref() = other.__ref();
     return *this;
   }
 
@@ -219,7 +220,6 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr
   index_type extent(size_t n) const noexcept {
-    // TODO return this->__base_t::ref().__get
     return this->__base_t::__ref().__get(n);
   }
 
