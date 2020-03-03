@@ -76,9 +76,16 @@ class basic_mdspan<
   std::experimental::extents<Exts...>,
   LayoutPolicy,
   AccessorPolicy
->
+> : private detail::__no_unique_address_emulation<
+      typename LayoutPolicy::template mapping<experimental::extents<Exts...>>, 0>,
+    private detail::__no_unique_address_emulation<AccessorPolicy, 1>
 {
 private:
+
+  using __mapping_base_t = detail::__no_unique_address_emulation<
+    typename LayoutPolicy::template mapping<experimental::extents<Exts...>>, 0>;
+  using __accessor_base_t = detail::__no_unique_address_emulation<AccessorPolicy, 1>;
+
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
   template <class=make_index_sequence<sizeof...(Exts)>>
   struct __impl;
@@ -88,12 +95,12 @@ private:
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ptrdiff_t __size(basic_mdspan const& __self) noexcept {
-      return _MDSPAN_FOLD_TIMES_RIGHT((__self.map_.extents().template __extent<Idxs>()), /* * ... * */ 1);
+      return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_base_t::__ref().extents().template __extent<Idxs>()), /* * ... * */ 1);
     }
     template <class ReferenceType, class IndexType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ReferenceType __callop(basic_mdspan const& __self, const array<IndexType, N>& indices) noexcept {
-      return __self.acc_.access(__self.ptr_, __self.map_(indices[Idxs]...));
+      return __self.__accessor_base_t::__ref().access(__self.ptr_, __self.__mapping_base_t::__ref()(indices[Idxs]...));
     }
   };
 
@@ -134,9 +141,9 @@ public:
   explicit constexpr basic_mdspan(pointer p, IndexType... dynamic_extents)
     noexcept
     // TODO @proposal-bug shouldn't I be allowed to do `move(p)` here?
-    : ptr_(p),
-      map_(extents_type(dynamic_extents...)),
-      acc_()
+    : __mapping_base_t(__mapping_base_t{mapping_type(extents_type(dynamic_extents...))}),
+      __accessor_base_t(),
+      ptr_(p)
   { }
 
   // TODO noexcept specification
@@ -152,9 +159,9 @@ public:
   MDSPAN_INLINE_FUNCTION
   explicit constexpr basic_mdspan(pointer p, const array<IndexType, N>& dynamic_extents)
     noexcept
-    : ptr_(p),
-      map_(extents_type(dynamic_extents)),
-      acc_()
+    : __mapping_base_t(mapping_type(extents_type(dynamic_extents))),
+      __accessor_base_t(),
+      ptr_(p)
   { }
 
   // TODO noexcept specification
@@ -162,17 +169,17 @@ public:
     (MDSPAN_INLINE_FUNCTION constexpr),
     basic_mdspan, (pointer p, const mapping_type& m), noexcept,
     /* requires */ (_MDSPAN_TRAIT(is_default_constructible, accessor_type))
-  ) : ptr_(p),
-      map_(m),
-      acc_()
+  ) : __mapping_base_t(__mapping_base_t{m}),
+      __accessor_base_t(),
+      ptr_(p)
   { }
 
   // TODO noexcept specification
   MDSPAN_INLINE_FUNCTION
   constexpr basic_mdspan(pointer p, const mapping_type& m, const accessor_type& a) noexcept
-    : ptr_(p),
-      map_(m),
-      acc_(a)
+    : __mapping_base_t(__mapping_base_t{m}),
+      __accessor_base_t(__accessor_base_t{a}),
+      ptr_(p)
   { }
 
   // TODO noexcept specification
@@ -188,9 +195,9 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr basic_mdspan(const basic_mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other)
-    : ptr_(other.ptr_),
-      map_(other.map_),
-      acc_(other.acc_)
+    : __mapping_base_t(__mapping_base_t{other.map_}),
+      __accessor_base_t(__accessor_base_t{other.acc_}),
+      ptr_(other.ptr_)
   { }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -218,9 +225,9 @@ public:
     const basic_mdspan<OtherElementType, std::experimental::extents<OtherExtents...>, OtherLayoutPolicy, OtherAccessorPolicy>& other
   ) noexcept(/* TODO noexcept specification */ true)
   {
+    this->__mapping_base_t::__ref() = other.map_;
+    this->__accessor_base_t::__ref() = other.acc_;
     ptr_ = other.ptr_;
-    map_ = other.map_;
-    acc_ = other.acc_;
     return *this;
   }
 
@@ -237,7 +244,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](Index idx) const noexcept
   {
-    return acc_.access(ptr_, map_(index_type(idx)));
+    return this->__accessor_base_t::__ref().access(ptr_, this->__mapping_base_t::__ref()(index_type(idx)));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -250,7 +257,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(IndexType... indices) const noexcept
   {
-    return acc_.access(ptr_, map_(index_type(indices)...));
+    return this->__accessor_base_t::__ref().access(ptr_, this->__mapping_base_t::__ref()(index_type(indices)...));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -267,7 +274,7 @@ public:
   }
 
   MDSPAN_INLINE_FUNCTION
-  accessor_type accessor() const { return acc_; };
+  accessor_type accessor() const { return this->__accessor_base_t::__ref(); };
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.domobs], basic_mdspan observers of the domain multidimensional index space
@@ -276,23 +283,23 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr int rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
   MDSPAN_INLINE_FUNCTION static constexpr index_type static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
 
-  MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept { return map_.extents(); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return map_.extents().extent(r); };
+  MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept { return this->__mapping_base_t::__ref().extents(); };
+  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return this->__mapping_base_t::__ref().extents().extent(r); };
   MDSPAN_INLINE_FUNCTION constexpr index_type size() const noexcept {
     return __impl<>::__size(*this);
   };
 
   // TODO @proposal-bug for non-unique, non-contiguous mappings this is unimplementable
   MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 index_type unique_size() const noexcept {
-    if(map_.is_unique()) {
+    if(this->__mapping_base_t::__ref().is_unique()) {
       return size();
     }
-    else if(map_.is_contiguous()) {
-      return map_.required_span_size();
+    else if(this->__mapping_base_t::__ref().is_contiguous()) {
+      return this->__mapping_base_t::__ref().required_span_size();
     }
     else {
       // ??? guess, for now, until this gets fixed in the proposal ???
-      return map_.required_span_size();
+      return this->__mapping_base_t::__ref().required_span_size();
     }
   }
 
@@ -309,17 +316,15 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return mapping_type::is_always_contiguous(); };
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return mapping_type::is_always_strided(); };
 
-  MDSPAN_INLINE_FUNCTION constexpr mapping_type mapping() const noexcept { return map_; };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return map_.is_unique(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept { return map_.is_contiguous(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return map_.is_strided(); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return map_.stride(r); };
+  MDSPAN_INLINE_FUNCTION constexpr mapping_type mapping() const noexcept { return this->__mapping_base_t::__value(); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return this->__mapping_base_t::__ref().is_unique(); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept { return this->__mapping_base_t::__ref().is_contiguous(); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return this->__mapping_base_t::__ref().is_strided(); };
+  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return this->__mapping_base_t::__ref().stride(r); };
 
 private:
 
   pointer ptr_ = nullptr;
-  _MDSPAN_NO_UNIQUE_ADDRESS mapping_type map_;
-  _MDSPAN_NO_UNIQUE_ADDRESS accessor_type acc_;
 
   template <class, class, class, class>
   friend class basic_mdspan;
