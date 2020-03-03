@@ -64,10 +64,10 @@ template <class, ptrdiff_t...> class layout_stride_impl;
 template <ptrdiff_t... Exts, ptrdiff_t... Strides>
 class layout_stride_impl<
   std::experimental::extents<Exts...>, Strides...
-> : private __no_unique_address_emulation<std::experimental::extents<Exts...>>,
+> : private __no_unique_address_emulation<std::experimental::extents<Exts...>, 0>,
     // Avoid an ambiguity in the inheritance hierarchy by adding disambiguator parameter different
     // from the default one in the __no_unique_address_emulation class template
-    private __no_unique_address_emulation<__partially_static_array<ptrdiff_t, integer_sequence<ptrdiff_t, Strides...>>, 1>
+    private __no_unique_address_emulation<__partially_static_sizes<Strides...>, 1>
 {
 private:
 
@@ -76,7 +76,7 @@ private:
   using __extents_base_t =
     __no_unique_address_emulation<std::experimental::extents<Exts...>>;
   using __strides_base_t =
-    __no_unique_address_emulation<__partially_static_array<ptrdiff_t, integer_sequence<ptrdiff_t, Strides...>>, 1>;
+    __no_unique_address_emulation<__partially_static_sizes<Strides...>, 1>;
 
   template <class, ptrdiff_t...>
   friend class layout_stride_impl;

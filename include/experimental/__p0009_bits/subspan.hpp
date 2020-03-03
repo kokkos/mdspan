@@ -97,7 +97,7 @@ template <
   bool encountered_first_all=false,
   bool encountered_first_pair=false
 >
-struct preserve_layout_right_analysis : std::integral_constant<bool, result> {
+struct preserve_layout_right_analysis : integral_constant<bool, result> {
   using layout_type_if_preserved = layout_right;
   using encounter_pair = preserve_layout_right_analysis<
     // If the pair isn't the right-most slice (i.e., if there was a previous pair),
@@ -134,7 +134,7 @@ template <
   bool encountered_first_all=false,
   bool encountered_first_pair=false
 >
-struct preserve_layout_left_analysis : std::integral_constant<bool, result> {
+struct preserve_layout_left_analysis : integral_constant<bool, result> {
   using layout_type_if_preserved = layout_left;
   using encounter_pair = preserve_layout_left_analysis<
     // Only the left-most slice can be a pair.  If we've encountered anything else, 
@@ -412,7 +412,8 @@ constexpr auto _subspan_impl(
       detail::_wrap_slice<
         Exts, decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
       >(
-        slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
+        slices, src.extents().template __extent<Idxs>(),
+        decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
       )
     );
 
