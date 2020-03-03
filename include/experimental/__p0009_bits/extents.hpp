@@ -87,10 +87,10 @@ public:
 
   using index_type = ptrdiff_t;
 
-private:
-
   using __base_t = detail::__no_unique_address_emulation<
     detail::__partially_static_sizes<Extents...>>;
+
+ private:
 
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -131,7 +131,14 @@ private:
     );
   }
 
+  MDSPAN_INLINE_FUNCTION constexpr explicit
+  extents(__base_t&& __b) noexcept
+    : __base_t(::std::move(__b))
+  { }
+
+
 public:
+
 
   MDSPAN_INLINE_FUNCTION
   static constexpr size_t rank() noexcept { return sizeof...(Extents); }
@@ -244,6 +251,11 @@ public:
   }
 
 public:  // (but not really)
+
+  MDSPAN_INLINE_FUNCTION static constexpr
+  extents __make_extents_impl(typename __base_t::__stored_type&& __bs) noexcept {
+    return extents(__base_t{::std::move(__bs)});
+  }
 
   template <size_t N>
   MDSPAN_FORCE_INLINE_FUNCTION
