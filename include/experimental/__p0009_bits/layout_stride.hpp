@@ -69,6 +69,8 @@ class layout_stride_impl<
     // from the default one in the __no_unique_address_emulation class template
     private __no_unique_address_emulation<__partially_static_sizes<Strides...>, 1>
 {
+public:
+  using extents_type = experimental::extents<Exts...>;
 private:
 
   using idx_seq = make_index_sequence<sizeof...(Exts)>;
@@ -112,6 +114,13 @@ private:
     }
   };
 
+  MDSPAN_INLINE_FUNCTION constexpr
+  layout_stride_impl(
+    __extents_base_t&& __eb,
+    __strides_base_t&& __sb
+  ) : __extents_base_t(::std::move(__eb)),
+      __strides_base_t(::std::move(__sb)) {}
+
 public: // (but not really)
 
   template <size_t N>
@@ -132,9 +141,22 @@ public: // (but not really)
     return __strides_base_t::__stored_type::template __get_static_n<N>();
   }
 
+  MDSPAN_INLINE_FUNCTION
+  static constexpr layout_stride_impl
+  __make_layout_stride_impl(
+    __partially_static_sizes<Exts...>&& __exts,
+    __partially_static_sizes<Strides...>&& __strs
+  ) noexcept {
+    // call the private constructor we created for this purpose
+    return layout_stride_impl(
+      __extents_base_t{extents_type::__make_extents_impl(::std::move(__exts))},
+      __strides_base_t{::std::move(__strs)}
+    );
+  }
+
+
 public:
 
-  using extents_type = experimental::extents<Exts...>;
 
   //--------------------------------------------------------------------------------
 

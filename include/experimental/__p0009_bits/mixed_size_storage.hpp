@@ -143,6 +143,7 @@ private:
 
 public:
 
+  static constexpr auto __size = sizeof...(_Idxs);
   static constexpr auto __size_dynamic =
     _MDSPAN_FOLD_PLUS_RIGHT(static_cast<int>((__values_or_sentinals == __sentinal)), /* + ... + */ 0);
 
@@ -274,8 +275,16 @@ public:
 };
 
 template <ptrdiff_t... __values_or_sentinals>
-using __partially_static_sizes = __partially_static_array_with_sentinal<
-  ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
+struct __partially_static_sizes :
+  __partially_static_array_with_sentinal<
+    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>
+{
+private:
+  using __base_t = __partially_static_array_with_sentinal<
+    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
+public:
+  using __base_t::__base_t;
+};
 
 } // namespace detail
 } // end namespace experimental
