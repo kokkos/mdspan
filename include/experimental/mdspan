@@ -54,5 +54,5 @@
 #include "__p0009_bits/layout_right.hpp"
 #include "__p0009_bits/layout_stride.hpp"
 #include "__p0009_bits/macros.hpp"
-#include "__p0009_bits/mixed_size_storage.hpp"
+#include "__p0009_bits/static_array.hpp"
 #include "__p0009_bits/subspan.hpp"

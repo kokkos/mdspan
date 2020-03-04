@@ -45,7 +45,7 @@
 
 #include "macros.hpp"
 #include "fixed_layout_impl.hpp"
-#include "mixed_size_storage.hpp"
+#include "static_array.hpp"
 #include "extents.hpp"
 
 #include <algorithm>

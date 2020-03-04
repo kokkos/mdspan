@@ -44,7 +44,7 @@
 #pragma once
 
 #include "macros.hpp"
-#include "mixed_size_storage.hpp"
+#include "static_array.hpp"
 #include "trait_backports.hpp"
 #include "no_unique_address.hpp"
 
