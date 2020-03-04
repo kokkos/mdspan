@@ -43,7 +43,7 @@
 
 #pragma once
 
-#include "mixed_size_storage.hpp"
+#include "static_array.hpp"
 #include "dynamic_extent.hpp"
 #include "extents.hpp"
 #include "macros.hpp"
