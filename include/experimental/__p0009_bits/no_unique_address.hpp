@@ -240,7 +240,7 @@ struct __compressed_pair<
   MDSPAN_FORCE_INLINE_FUNCTION _U &__second() noexcept {
     return *static_cast<_U *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _T const &__second() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION _U const &__second() const noexcept {
     return *static_cast<_U const *>(this);
   }
 
