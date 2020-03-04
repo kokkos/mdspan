@@ -334,7 +334,7 @@ struct __assign_op_slice_handler<
 template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
 MDSPAN_INLINE_FUNCTION
 constexpr auto _subspan_impl(
-  std::integer_sequence<size_t, Idxs...>,
+  integer_sequence<size_t, Idxs...>,
   basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
   SliceSpecs&&... slices
 ) noexcept
@@ -343,11 +343,11 @@ constexpr auto _subspan_impl(
     _MDSPAN_FOLD_ASSIGN_LEFT(
       (
         detail::__assign_op_slice_handler<
-          typename std::conditional<
-            std::is_same<LP, layout_right>::value,
+          typename conditional<
+            is_same<LP, layout_right>::value,
             detail::preserve_layout_right_analysis<>,
-            typename std::conditional<
-              std::is_same<LP, layout_left>::value,
+            typename conditional<
+              is_same<LP, layout_left>::value,
               detail::preserve_layout_left_analysis<>,
               detail::ignore_layout_preservation
             >::type

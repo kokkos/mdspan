@@ -171,8 +171,9 @@ public:
     std::experimental::extents<Exts...> const& e,
     array<ptrdiff_t, __strides_base_t::__stored_type::__size_dynamic> const& strides
   ) noexcept
-    : __extents_base_t{typename __extents_base_t::__stored_type(e)},
-      __strides_base_t{typename __strides_base_t::__stored_type(strides)}
+    : __extents_base_t(__extents_base_t{typename __extents_base_t::__stored_type(e)}),
+      __strides_base_t(__strides_base_t{typename __strides_base_t::__stored_type(
+        __construct_psa_from_dynamic_values_tag_t<>{}, strides)})
   { }      
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED
