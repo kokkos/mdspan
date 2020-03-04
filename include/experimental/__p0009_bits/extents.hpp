@@ -87,10 +87,15 @@ public:
 
   using index_type = ptrdiff_t;
 
-  using __base_t = detail::__no_unique_address_emulation<
-    detail::__partially_static_sizes<Extents...>>;
+  using __storage_t = detail::__partially_static_sizes<Extents...>;
+  using __base_t = detail::__no_unique_address_emulation<__storage_t>;
 
  private:
+
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr __storage_t& __storage() noexcept { return this->__base_t::__ref(); }
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr __storage_t const& __storage() const noexcept { return this->__base_t::__ref(); }
 
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -113,7 +118,7 @@ public:
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_AND(
-      (this->__base_t::__ref().template __get_n<Idxs>() == other.__ref().template __get_n<Idxs>()) /* && ... */
+      (__storage().template __get_n<Idxs>() == other.__storage().template __get_n<Idxs>()) /* && ... */
     );
   }
 
@@ -169,7 +174,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr extents(const extents<OtherExtents...>& __other)
     noexcept
-    : __base_t(__base_t{typename __base_t::__stored_type{__other.__ref()}})
+    : __base_t(__base_t{__storage_t{__other.__storage().__enable_psa_conversion()}})
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -195,7 +200,8 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr extents(std::array<IndexType, __base_t::__stored_type::__size_dynamic> const& dyn) noexcept
-    : __base_t(__base_t{typename __base_t::__stored_type{dyn}})
+    : __base_t(__base_t{typename __base_t::stored_type{
+        detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn}})
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -212,7 +218,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   _MDSPAN_CONSTEXPR_14 extents& operator=(const extents<OtherExtents...>& other) noexcept
   {
-    this->__base_t::__ref() = other.__ref();
+    __storage() = other.__storage().__enable_psa_conversion();
     return *this;
   }
 
@@ -227,7 +233,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr
   index_type extent(size_t n) const noexcept {
-    return this->__base_t::__ref().__get(n);
+    return __storage().__get(n);
   }
 
   //--------------------------------------------------------------------------------
@@ -261,7 +267,7 @@ public:  // (but not really)
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr
   index_type __extent() const noexcept {
-    return this->__base_t::__ref().template __get_n<N>();
+    return __storage().template __get_n<N>();
   }
 
   template <size_t N, ptrdiff_t Default=dynamic_extent>

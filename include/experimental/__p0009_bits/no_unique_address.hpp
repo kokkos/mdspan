@@ -49,12 +49,12 @@
 
 namespace std {
 namespace experimental {
+namespace detail {
 
 //==============================================================================
 
-namespace detail {
-
-template <class _T, size_t _Disambiguator = 0, class _Enable = void> struct __no_unique_address_emulation {
+template <class _T, size_t _Disambiguator = 0, class _Enable = void>
+struct __no_unique_address_emulation {
   using __stored_type = _T;
   _T __v;
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __value() const noexcept {
@@ -81,13 +81,13 @@ struct __no_unique_address_emulation<
                 _MDSPAN_TRAIT(is_trivially_destructible, _T)>> : private _T {
   using __stored_type = _T;
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __value() const noexcept {
-    return *static_cast<_T const*>(this);
+    return *static_cast<_T const *>(this);
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__ref() const noexcept {
-    return *static_cast<_T const*>(this);
+    return *static_cast<_T const *>(this);
   }
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T &__ref() noexcept {
-    return *static_cast<_T*>(this);
+    return *static_cast<_T *>(this);
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -111,6 +111,156 @@ struct __no_unique_address_emulation<
   // constructor still gets called.
   MDSPAN_INLINE_FUNCTION
   explicit constexpr __no_unique_address_emulation(_T) noexcept {}
+};
+
+//==============================================================================
+
+// TODO also check for final?
+
+// Neither empty
+template <class _T, class _U, class _Enable = void> struct __compressed_pair {
+  _T __t_val;
+  _U __u_val;
+  MDSPAN_FORCE_INLINE_FUNCTION _T &__first() noexcept { return __t_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION _T const &__first() const noexcept {
+    return __t_val;
+  }
+  MDSPAN_FORCE_INLINE_FUNCTION _U &__second() noexcept { return __u_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION _U const &__second() const noexcept {
+    return __u_val;
+  }
+
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair() = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair(__compressed_pair &&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair const &) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair &&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  ~__compressed_pair() noexcept = default;
+  template <class _TLike, class _ULike>
+  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_TLike &&__t, _ULike &&__u)
+    : __t_val((_TLike &&) __t), __u_val((_ULike &&) __u) {}
+};
+
+// First empty
+template <class _T, class _U>
+struct __compressed_pair<
+    _T, _U,
+    enable_if_t<_MDSPAN_TRAIT(is_empty, _T) && !_MDSPAN_TRAIT(is_empty, _U)>>
+    : private _T {
+  _U __u_val;
+  MDSPAN_FORCE_INLINE_FUNCTION _T &__first() noexcept {
+    return *static_cast<_T *>(this);
+  }
+  MDSPAN_FORCE_INLINE_FUNCTION _T const &__first() const noexcept {
+    return *static_cast<_T const *>(this);
+  }
+  MDSPAN_FORCE_INLINE_FUNCTION _U &__second() noexcept { return __u_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION _U const &__second() const noexcept {
+    return __u_val;
+  }
+
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair() = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair(__compressed_pair &&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair const &) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair &&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  ~__compressed_pair() noexcept = default;
+  template <class _TLike, class _ULike>
+  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_TLike &&__t, _ULike &&__u)
+      : _T((_TLike &&) __t), __u_val((_ULike &&) __u) {}
+};
+
+// Second empty
+template <class _T, class _U>
+struct __compressed_pair<
+    _T, _U,
+    enable_if_t<_MDSPAN_TRAIT(is_empty, _U) && !_MDSPAN_TRAIT(is_empty, _T)>>
+    : private _U {
+  _T __t_val;
+  MDSPAN_FORCE_INLINE_FUNCTION _T &__first() noexcept { return __t_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION _T const &__first() const noexcept {
+    return __t_val;
+  }
+  MDSPAN_FORCE_INLINE_FUNCTION _U &__second() noexcept {
+    return *static_cast<_U *>(this);
+  }
+  MDSPAN_FORCE_INLINE_FUNCTION _U const &__second() const noexcept {
+    return *static_cast<_U const *>(this);
+  }
+
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair() = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair(__compressed_pair &&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair const &) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair &&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  ~__compressed_pair() noexcept = default;
+
+  template <class _TLike, class _ULike>
+  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_TLike &&__t, _ULike &&__u)
+      : _U((_ULike &&) __u), __t_val((_TLike &&) __t) {}
+};
+
+// Both empty
+template <class _T, class _U>
+struct __compressed_pair<
+    _T, _U,
+    enable_if_t<_MDSPAN_TRAIT(is_empty, _T) && _MDSPAN_TRAIT(is_empty, _U) &&
+                !_MDSPAN_TRAIT(is_same, _T, _U)>> : private _T,
+                                                    private _U {
+  MDSPAN_FORCE_INLINE_FUNCTION _T &__first() noexcept {
+    return *static_cast<_T *>(this);
+  }
+  MDSPAN_FORCE_INLINE_FUNCTION _T const &__first() const noexcept {
+    return *static_cast<_T const *>(this);
+  }
+  MDSPAN_FORCE_INLINE_FUNCTION _U &__second() noexcept {
+    return *static_cast<_U *>(this);
+  }
+  MDSPAN_FORCE_INLINE_FUNCTION _T const &__second() const noexcept {
+    return *static_cast<_U const *>(this);
+  }
+
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair() = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  constexpr __compressed_pair(__compressed_pair &&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair const &) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair &&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  ~__compressed_pair() noexcept = default;
+  template <class _TLike, class _ULike>
+  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_TLike &&__t, _ULike &&__u)
+      : _T((_TLike &&) __t), _U((_ULike &&) __u) {}
 };
 
 } // namespace detail

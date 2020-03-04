@@ -60,12 +60,6 @@ namespace detail {
 
 //==============================================================================
 
-_MDSPAN_INLINE_VARIABLE constexpr struct
-    __construct_partially_static_array_from_sizes_tag_t {
-} __construct_partially_static_array_from_sizes_tag = {};
-
-//==============================================================================
-
 template <size_t _I, class _T>
 using __repeated_with_idxs = _T;
 
@@ -275,17 +269,19 @@ public:
   using __base_t::__base_t;
 };
 
-template <ptrdiff_t... __values_or_sentinals>
-struct __partially_static_sizes :
-  __partially_static_array_with_sentinal<
-    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>
-{
-private:
-  using __base_t = __partially_static_array_with_sentinal<
-    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
-public:
-  using __base_t::__base_t;
-};
+//==============================================================================
+
+//template <ptrdiff_t... __values_or_sentinals>
+//using __partially_static_sizes
+//  __partially_static_array_with_sentinal<
+//    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>
+//{
+//private:
+//  using __base_t = __partially_static_array_with_sentinal<
+//    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
+//public:
+//  using __base_t::__base_t;
+//};
 
 } // namespace detail
 } // end namespace experimental
