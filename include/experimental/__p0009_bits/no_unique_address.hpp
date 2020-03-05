@@ -57,9 +57,6 @@ template <class _T, size_t _Disambiguator = 0, class _Enable = void>
 struct __no_unique_address_emulation {
   using __stored_type = _T;
   _T __v;
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __value() const noexcept {
-    return __v;
-  }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__ref() const noexcept {
     return __v;
   }
@@ -80,9 +77,6 @@ struct __no_unique_address_emulation<
                 // specialization
                 _MDSPAN_TRAIT(is_trivially_destructible, _T)>> : private _T {
   using __stored_type = _T;
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __value() const noexcept {
-    return *static_cast<_T const *>(this);
-  }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__ref() const noexcept {
     return *static_cast<_T const *>(this);
   }

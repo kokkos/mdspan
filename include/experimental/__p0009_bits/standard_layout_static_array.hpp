@@ -106,7 +106,20 @@ struct __standard_layout_psa<
   }
 
   static constexpr auto __size = sizeof...(_Idxs) + 1;
+#ifdef _MSC_VER
+  // MSVC doesn't like the fact that __next_t happens to be a base
+  // class that's private, even though __size_synamic is public in
+  // it's definition.
+  struct __msvc_workaround_tag {};
+  using __msvc_workaround_next_t = __standard_layout_psa<
+      __msvc_workaround_tag, _T,
+      integer_sequence<_T, __values_or_sentinals...>, __sentinal,
+      integer_sequence<size_t, _Idxs...>>;
+  static constexpr auto __size_dynamic =
+      __msvc_workaround_next_t::__size_dynamic;
+#else
   static constexpr auto __size_dynamic = __next_t::__size_dynamic;
+#endif
 
   //--------------------------------------------------------------------------
 
