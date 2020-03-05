@@ -208,6 +208,14 @@ public:
 
   //--------------------------------------------------------------------------
 
+  // See comment in the previous partial specialization for why this is
+  // necessary.  Or just trust me that it's messy.
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr __partially_static_array_impl const &__enable_psa_conversion() const
+  noexcept {
+      return *this;
+  }
+
   template <size_t _I>
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __get_n() const noexcept {
     return static_cast<__base_n<_I> const*>(this)->__value();
@@ -272,7 +280,7 @@ public:
 //==============================================================================
 
 //template <ptrdiff_t... __values_or_sentinals>
-//using __partially_static_sizes
+//struct __partially_static_sizes :
 //  __partially_static_array_with_sentinal<
 //    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>
 //{

@@ -322,11 +322,11 @@ private:
 
   detail::__compressed_pair<pointer, __map_acc_pair_t> __members;
 
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr pointer& __ptr_ref() noexcept { return __members.__first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 pointer& __ptr_ref() noexcept { return __members.__first(); }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr pointer const& __ptr_ref() const noexcept { return __members.__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr mapping_type& __mapping_ref() noexcept { return __members.__second().__first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 mapping_type& __mapping_ref() noexcept { return __members.__second().__first(); }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr mapping_type const& __mapping_ref() const noexcept { return __members.__second().__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr accessor_type& __accessor_ref() noexcept { return __members.__second().__second(); }
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 accessor_type& __accessor_ref() noexcept { return __members.__second().__second(); }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr accessor_type const& __accessor_ref() const noexcept { return __members.__second().__second(); }
 
   template <class, class, class, class>
