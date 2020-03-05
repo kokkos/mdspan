@@ -163,10 +163,12 @@ public: // (but not really)
   ) noexcept {
     // call the private constructor we created for this purpose
     return layout_stride_impl(
-      __member_pair_t(
-        extents_type::__make_extents_impl(::std::move(__exts)),
-        ::std::move(__strs)
-      )
+      __base_t{
+        __member_pair_t(
+          extents_type::__make_extents_impl(::std::move(__exts)),
+          ::std::move(__strs)
+        )
+      }
     );
   }
 
@@ -183,14 +185,14 @@ public:
   layout_stride_impl& operator=(layout_stride_impl&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~layout_stride_impl() noexcept = default;
 
-// TODO @proposal-bug layout stride needs this constructor
+  // TODO @proposal-bug layout stride needs this constructor
   MDSPAN_INLINE_FUNCTION
   constexpr
   layout_stride_impl(
     std::experimental::extents<Exts...> const& e,
     array<ptrdiff_t, __strides_storage_t::__size_dynamic> const& strides
   ) noexcept
-    : __base_t(e, __strides_storage_t(__construct_psa_from_dynamic_values_tag_t<>{}, strides))
+    : __base_t(__base_t{__member_pair_t(e, __strides_storage_t(__construct_psa_from_dynamic_values_tag_t<>{}, strides))})
   { }      
 
   // TODO conversion constructors and assignment

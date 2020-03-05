@@ -261,8 +261,12 @@ public:
 public:  // (but not really)
 
   MDSPAN_INLINE_FUNCTION static constexpr
-  extents __make_extents_impl(typename __base_t::__stored_type&& __bs) noexcept {
-    return extents(__base_t{::std::move(__bs)});
+  extents __make_extents_impl(detail::__partially_static_sizes<Extents...>&& __bs) noexcept {
+    // This effectively amounts to a sideways cast that can be done in a constexpr
+    // context, but we have to do it to handle the case where the extents and the
+    // strides could accidentally end up with the same types in their hierarchies
+    // somehow (which would cause layout_stride::mapping to not be standard_layout)
+    return extents(__base_t{::std::move(__bs.template __with_tag<detail::__extents_tag>())});
   }
 
   template <size_t N>
