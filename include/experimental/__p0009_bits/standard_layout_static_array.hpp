@@ -158,7 +158,8 @@ struct __standard_layout_psa<
       array<_T, _NDynamic> const &__vals) noexcept
       : __base_t(__base_t{__next_t(__tag, __vals)}) {}
 
-  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal, class _IdxsSeq>
+  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal,
+            class _IdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
       __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _IdxsSeq> const
           &__rhs) noexcept
@@ -292,7 +293,8 @@ struct __standard_layout_psa<
             __next_t(__construct_psa_from_dynamic_values_tag_t<_IDynamic + 1>{},
                      __vals)) {}
 
-  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal, class _UIdxsSeq>
+  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal,
+            class _UIdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
       __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _UIdxsSeq> const
           &__rhs) noexcept
@@ -386,10 +388,19 @@ struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
       __construct_psa_from_dynamic_values_tag_t<_IDynamic> __tag,
       array<_T, _NDynamic> const &__vals) noexcept {}
 
-  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal, class _UIdxsSeq>
+  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal,
+            class _UIdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
       __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _UIdxsSeq> const
           &__rhs) noexcept {}
+
+  // See comment in the previous partial specialization for why this is
+  // necessary.  Or just trust me that it's messy.
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr __standard_layout_psa const &__enable_psa_conversion() const
+      noexcept {
+    return *this;
+  }
 
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __get(size_t /*n*/) const noexcept {
     return 0;
@@ -416,6 +427,19 @@ struct __partially_static_sizes
   using __base_t =
       __partially_static_sizes_tagged<__no_tag, __values_or_sentinals...>;
   using __base_t::__base_t;
+  template <class _UTag>
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr __partially_static_sizes_tagged<
+      _UTag, __values_or_sentinals...>
+  __with_tag() const noexcept {
+    return __partially_static_sizes_tagged<_UTag, __values_or_sentinals...>(
+        static_cast<__partially_static_sizes_tagged<
+            _UTag, __values_or_sentinals...> &&>(
+            typename __partially_static_sizes_tagged<_UTag,
+                                                     __values_or_sentinals...>::
+                __psa_impl_t(
+                    static_cast<typename __base_t::__psa_impl_t const &>(
+                        *this))));
+  }
 };
 
 } // namespace detail

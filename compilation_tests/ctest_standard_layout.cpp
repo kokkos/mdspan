@@ -50,6 +50,35 @@
 namespace stdex = std::experimental;
 
 //==============================================================================
+// <editor-fold desc="helper utilities"> {{{1
+
+struct empty1 { };
+struct empty2 { };
+
+MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
+    stdex::detail::__compressed_pair<empty1, empty2>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  !std::is_base_of<stdex::extents<1, 2, 3>, stdex::detail::__partially_static_sizes<1, 2, 3>>::value
+);
+
+MDSPAN_STATIC_TEST(
+  !std::is_base_of<stdex::detail::__partially_static_sizes<1, 2, 3>, stdex::extents<1, 2, 3>>::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
+    stdex::detail::__partially_static_sizes<1, 2, 3>
+  >::value
+);
+
+// </editor-fold> end helper utilities }}}1
+//==============================================================================
+
+//==============================================================================
 // <editor-fold desc="extents"> {{{1
 
 MDSPAN_STATIC_TEST(
@@ -140,7 +169,22 @@ MDSPAN_STATIC_TEST(
   >::value
 );
 
-// We have to do it this way because empty types are not themselves standard layout
+MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
+    stdex::layout_stride<1, 2, 3>::template mapping<
+      stdex::extents<1, 2, 3>
+    >
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
+    stdex::layout_stride<stdex::dynamic_extent, stdex::dynamic_extent>::template mapping<
+      stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>
+    >
+  >::value
+);
+
 struct layout_stride_as_member_should_be_standard_layout :
   stdex::layout_stride<1, 2, 3>::template mapping<
     stdex::extents<1, 2, 3>
@@ -148,35 +192,6 @@ struct layout_stride_as_member_should_be_standard_layout :
 {
   int foo;
 };
-
-struct empty1 { };
-struct empty2 { };
-
-MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
-    stdex::detail::__compressed_pair<empty1, empty2>
-  >::value
-);
-
-MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
-    stdex::extents<1, 2, 3>
-  >::value
-);
-
-MDSPAN_STATIC_TEST(
-  !std::is_base_of<stdex::extents<1, 2, 3>, stdex::detail::__partially_static_sizes<1, 2, 3>>::value
-);
-
-MDSPAN_STATIC_TEST(
-  !std::is_base_of<stdex::detail::__partially_static_sizes<1, 2, 3>, stdex::extents<1, 2, 3>>::value
-);
-
-MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
-    stdex::detail::__partially_static_sizes<1, 2, 3>
-  >::value
-);
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<layout_stride_as_member_should_be_standard_layout>::value
