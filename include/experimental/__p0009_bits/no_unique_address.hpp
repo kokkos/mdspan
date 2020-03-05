@@ -115,12 +115,12 @@ struct __no_unique_address_emulation<
 template <class _T, class _U, class _Enable = void> struct __compressed_pair {
   _T __t_val;
   _U __u_val;
-  MDSPAN_FORCE_INLINE_FUNCTION _T &__first() noexcept { return __t_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION _T const &__first() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T &__first() noexcept { return __t_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__first() const noexcept {
     return __t_val;
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _U &__second() noexcept { return __u_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION _U const &__second() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _U &__second() noexcept { return __u_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _U const &__second() const noexcept {
     return __u_val;
   }
 
@@ -150,14 +150,14 @@ struct __compressed_pair<
     enable_if_t<_MDSPAN_TRAIT(is_empty, _T) && !_MDSPAN_TRAIT(is_empty, _U)>>
     : private _T {
   _U __u_val;
-  MDSPAN_FORCE_INLINE_FUNCTION _T &__first() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T &__first() noexcept {
     return *static_cast<_T *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _T const &__first() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__first() const noexcept {
     return *static_cast<_T const *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _U &__second() noexcept { return __u_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION _U const &__second() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _U &__second() noexcept { return __u_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _U const &__second() const noexcept {
     return __u_val;
   }
 
@@ -187,14 +187,14 @@ struct __compressed_pair<
     enable_if_t<_MDSPAN_TRAIT(is_empty, _U) && !_MDSPAN_TRAIT(is_empty, _T)>>
     : private _U {
   _T __t_val;
-  MDSPAN_FORCE_INLINE_FUNCTION _T &__first() noexcept { return __t_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION _T const &__first() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T &__first() noexcept { return __t_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__first() const noexcept {
     return __t_val;
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _U &__second() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _U &__second() noexcept {
     return *static_cast<_U *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _U const &__second() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _U const &__second() const noexcept {
     return *static_cast<_U const *>(this);
   }
 
@@ -229,16 +229,16 @@ struct __compressed_pair<
       private __no_unique_address_emulation<_U, 1> {
   using __first_base_t = __no_unique_address_emulation<_T, 0>;
   using __second_base_t = __no_unique_address_emulation<_U, 1>;
-  MDSPAN_FORCE_INLINE_FUNCTION _T &__first() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T &__first() noexcept {
     return this->__first_base_t::__ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _T const &__first() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__first() const noexcept {
     return this->__first_base_t::__ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _U &__second() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _U &__second() noexcept {
     return this->__second_base_t::__ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _U const &__second() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr _U const &__second() const noexcept {
     return this->__second_base_t::__ref();
   }
 
