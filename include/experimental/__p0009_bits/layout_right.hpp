@@ -59,7 +59,7 @@ struct layout_right_idx_conditional {
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr layout_right_idx_conditional() noexcept = default;
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr inline bool operator()(size_t Idx, size_t N) const noexcept {
+  constexpr bool operator()(size_t Idx, size_t N) const noexcept {
     return Idx > N;
   };
 };
