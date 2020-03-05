@@ -85,32 +85,36 @@
 #endif
 
 #ifndef _MDSPAN_USE_FOLD_EXPRESSIONS
-#  if (defined(__cpp_fold_expressions) && __cpp_fold_expressions >= 201603L) || MDSPAN_HAS_CXX_17
+#  if (defined(__cpp_fold_expressions) && __cpp_fold_expressions >= 201603L) \
+          || (!defined(__cpp_fold_expressions) && MDSPAN_HAS_CXX_17)
 #    define _MDSPAN_USE_FOLD_EXPRESSIONS 1
 #  endif
 #endif
 
 #ifndef _MDSPAN_USE_INLINE_VARIABLES
-#  if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
+#  if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L \
+         || (!defined(__cpp_inline_variables) && MDSPAN_HAS_CXX_17)
 #    define _MDSPAN_USE_INLINE_VARIABLES 1
 #  endif
 #endif
 
 #ifndef _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
 #  if !(defined(__cpp_lib_type_trait_variable_templates) && __cpp_lib_type_trait_variable_templates >= 201510L) \
-          && !MDSPAN_HAS_CXX_17
+          || !MDSPAN_HAS_CXX_17
 #    define _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS 1
 #  endif
 #endif
 
 #ifndef _MDSPAN_USE_VARIABLE_TEMPLATES
-#  if (defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304) && MDSPAN_HAS_CXX_14
+#  if (defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304) \
+        || (!defined(__cpp_variable_templates) && MDSPAN_HAS_CXX_14)
 #    define _MDSPAN_USE_VARIABLE_TEMPLATES 1
 #  endif
 #endif // _MDSPAN_USE_VARIABLE_TEMPLATES
 
 #ifndef _MDSPAN_USE_CONSTEXPR_14
-#  if (defined(__cpp_constexpr) && __cpp_constexpr >= 201304) && MDSPAN_HAS_CXX_14
+#  if (defined(__cpp_constexpr) && __cpp_constexpr >= 201304) \
+        || (!defined(__cpp_constexpr) && MDSPAN_HAS_CXX_14)
 #    define _MDSPAN_USE_CONSTEXPR_14 1
 #  endif
 #endif
@@ -124,9 +128,9 @@
 #endif
 #ifndef _MDSPAN_USE_INTEGER_SEQUENCE
 #  if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) \
-        && (MDSPAN_HAS_CXX_14 \
+        || (!defined(__cpp_lib_integer_sequence) && MDSPAN_HAS_CXX_14) \
         /* as far as I can tell, libc++ seems to think this is a C++11 feature... */ \
-        || (defined(__GLIBCXX__) && __GLIBCXX__ > 20150422))
+        || (defined(__GLIBCXX__) && __GLIBCXX__ > 20150422)
      // several compilers lie about integer_sequence working properly unless the C++14 standard is used
 #    define _MDSPAN_USE_INTEGER_SEQUENCE 1
 #  elif defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
@@ -144,13 +148,15 @@
 #  endif
 #endif
 #ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
-#  if (defined(__cpp_return_type_deduction) && __cpp_return_type_deduction >= 201304) && MDSPAN_HAS_CXX_14
+#  if (defined(__cpp_return_type_deduction) && __cpp_return_type_deduction >= 201304) \
+          || (!defined(__cpp_return_type_deduction) && MDSPAN_HAS_CXX_14)
 #    define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
 #  endif
 #endif
 
 #ifndef _MDSPAN_USE_STANDARD_TRAIT_ALIASES
-#  if (defined(__cpp_lib_transformation_trait_aliases) && __cpp_lib_transformation_trait_aliases >= 201304)
+#  if (defined(__cpp_lib_transformation_trait_aliases) && __cpp_lib_transformation_trait_aliases >= 201304) \
+          || (!defined(__cpp_lib_transformation_trait_aliases) && MDSPAN_HAS_CXX_14)
 #    define _MDSPAN_USE_STANDARD_TRAIT_ALIASES 1
 #  elif defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
      // appleclang seems to be missing the __cpp_lib_... macros, but doesn't seem to lie about C++14
