@@ -62,6 +62,18 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
+    stdex::detail::__compressed_pair<int*, empty2>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
+    stdex::detail::__compressed_pair<int*, stdex::detail::__compressed_pair<empty1, empty2>>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
   !std::is_base_of<stdex::extents<1, 2, 3>, stdex::detail::__partially_static_sizes<1, 2, 3>>::value
 );
 
@@ -147,6 +159,14 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
+    stdex::layout_right::template mapping<
+      stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>
+    >
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
     stdex::layout_stride<stdex::dynamic_extent, 1, 3>::template mapping<
       stdex::extents<42, stdex::dynamic_extent, 73>
     >
@@ -197,8 +217,34 @@ MDSPAN_STATIC_TEST(
   std::is_standard_layout<layout_stride_as_member_should_be_standard_layout>::value
 );
 
-
 // </editor-fold> end layouts }}}1
+//==============================================================================
+
+//==============================================================================
+// <editor-fold desc="mdspan"> {{{1
+
+MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
+    stdex::mdspan<double, 1, 2, 3>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
+    stdex::mdspan<int, stdex::dynamic_extent, stdex::dynamic_extent>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_standard_layout<
+    stdex::basic_mdspan<
+      double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>,
+      stdex::layout_left, stdex::accessor_basic<double>
+    >
+  >::value
+);
+
+// </editor-fold> end mdspan }}}1
 //==============================================================================
 
 

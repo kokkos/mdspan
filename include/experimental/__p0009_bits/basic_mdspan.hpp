@@ -76,9 +76,7 @@ class basic_mdspan<
   std::experimental::extents<Exts...>,
   LayoutPolicy,
   AccessorPolicy
-> : private detail::__no_unique_address_emulation<
-      typename LayoutPolicy::template mapping<experimental::extents<Exts...>>, 0>,
-    private detail::__no_unique_address_emulation<AccessorPolicy, 1>
+>
 {
 private:
 
