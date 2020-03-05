@@ -214,6 +214,11 @@ struct __assign_op_slice_handler<
   __extents_storage_t __exts;
   __strides_storage_t __strides;
 
+  // Don't define this unless we need it; they have a cost to compile
+#ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+  using __extents_type = ::std::experimental::extents<_Exts...>;
+#endif
+
   // For ptrdiff_t slice, skip the extent and stride, but add an offset corresponding to the value
   template <ptrdiff_t _OldStaticExtent, ptrdiff_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
@@ -291,7 +296,7 @@ struct __assign_op_slice_handler<
   MDSPAN_INLINE_FUNCTION
   _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
     (
-      constexpr /* auto */
+      _MDSPAN_CONSTEXPR_14 /* auto */
       _make_layout_mapping_impl(NewLayout) noexcept
     ),
     (
@@ -305,7 +310,7 @@ struct __assign_op_slice_handler<
   MDSPAN_INLINE_FUNCTION
   _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
     (
-      constexpr /* auto */
+      _MDSPAN_CONSTEXPR_14 /* auto */
       _make_layout_mapping_impl(layout_stride<_Strides...>) noexcept
     ),
     (
@@ -318,7 +323,7 @@ struct __assign_op_slice_handler<
   MDSPAN_INLINE_FUNCTION
   _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
     (
-      constexpr /* auto */
+      _MDSPAN_CONSTEXPR_14 /* auto */
       make_layout_mapping(OldLayoutMapping const&) noexcept
     ),
     (
@@ -378,7 +383,7 @@ constexpr auto _subspan_impl(
 template <class ET, class AP, class Src, class Handled, size_t... Idxs>
 auto _subspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t, Idxs...>)
   -> basic_mdspan<
-       ET, typename Handled::extents_type, typename Handled::layout_type, typename AP::offset_policy
+       ET, typename Handled::__extents_type, typename Handled::layout_type, typename AP::offset_policy
      >
 {
   return {

@@ -76,24 +76,26 @@ _check_compatible_extents(
   std::true_type, std::integer_sequence<ptrdiff_t, Extents...>, std::integer_sequence<ptrdiff_t, OtherExtents...>
 ) noexcept { return { }; }
 
+struct __extents_tag { };
+
 } // end namespace detail
 
 template <ptrdiff_t... Extents>
 class extents
   : private detail::__no_unique_address_emulation<
-      detail::__partially_static_sizes<Extents...>>
+      detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>>
 {
 public:
 
   using index_type = ptrdiff_t;
 
-  using __storage_t = detail::__partially_static_sizes<Extents...>;
+  using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>;
   using __base_t = detail::__no_unique_address_emulation<__storage_t>;
 
  private:
 
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr __storage_t& __storage() noexcept { return this->__base_t::__ref(); }
+  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+  __storage_t& __storage() noexcept { return this->__base_t::__ref(); }
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr __storage_t const& __storage() const noexcept { return this->__base_t::__ref(); }
 

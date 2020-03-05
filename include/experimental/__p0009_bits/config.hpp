@@ -123,7 +123,10 @@
 #  endif
 #endif
 #ifndef _MDSPAN_USE_INTEGER_SEQUENCE
-#  if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) && MDSPAN_HAS_CXX_14
+#  if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) \
+        && (MDSPAN_HAS_CXX_14 \
+        /* as far as I can tell, libc++ seems to think this is a C++11 feature... */ \
+        || (defined(__GLIBCXX__) && __GLIBCXX__ > 20150422))
      // several compilers lie about integer_sequence working properly unless the C++14 standard is used
 #    define _MDSPAN_USE_INTEGER_SEQUENCE 1
 #  elif defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14

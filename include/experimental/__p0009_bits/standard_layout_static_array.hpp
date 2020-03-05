@@ -75,25 +75,26 @@ template <size_t _I, class _T> using __repeated_with_idxs = _T;
  * @tparam _ValsSeq
  * @tparam __sentinal
  */
-template <class _T, class _ValsSeq, _T __sentinal = dynamic_extent,
+template <class _Tag, class _T, class _ValsSeq, _T __sentinal = dynamic_extent,
           class _IdxsSeq = make_index_sequence<_ValsSeq::size()>>
 struct __standard_layout_psa;
 
 //==============================================================================
 
 // Dynamic case
-template <class _T, _T __value, _T... __values_or_sentinals, _T __sentinal,
-          size_t _Idx, size_t... _Idxs>
+template <class _Tag, class _T, _T __value, _T... __values_or_sentinals,
+          _T __sentinal, size_t _Idx, size_t... _Idxs>
 struct __standard_layout_psa<
-    _T, integer_sequence<_T, __value, __values_or_sentinals...>, __sentinal,
-    integer_sequence<size_t, _Idx, _Idxs...>>
+    _Tag, _T, integer_sequence<_T, __value, __values_or_sentinals...>,
+    __sentinal, integer_sequence<size_t, _Idx, _Idxs...>>
     : private __no_unique_address_emulation<__standard_layout_psa<
-          _T, integer_sequence<_T, __values_or_sentinals...>, __sentinal,
+          _Tag, _T, integer_sequence<_T, __values_or_sentinals...>, __sentinal,
           integer_sequence<size_t, _Idxs...>>> {
   //--------------------------------------------------------------------------
 
   using __next_t =
-      __standard_layout_psa<_T, integer_sequence<_T, __values_or_sentinals...>,
+      __standard_layout_psa<_Tag, _T,
+                            integer_sequence<_T, __values_or_sentinals...>,
                             __sentinal, integer_sequence<size_t, _Idxs...>>;
   using __base_t = __no_unique_address_emulation<__next_t>;
 
@@ -157,9 +158,9 @@ struct __standard_layout_psa<
       array<_T, _NDynamic> const &__vals) noexcept
       : __base_t(__base_t{__next_t(__tag, __vals)}) {}
 
-  template <class _U, class _UValsSeq, _U __u_sentinal, class _IdxsSeq>
+  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal, class _IdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
-      __standard_layout_psa<_U, _UValsSeq, __u_sentinal, _IdxsSeq> const
+      __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _IdxsSeq> const
           &__rhs) noexcept
       : __base_t(__base_t{__next_t(__rhs.__next())}) {}
 
@@ -212,15 +213,16 @@ struct __standard_layout_psa<
 //==============================================================================
 
 // Dynamic case, __next_t may or may not be empty
-template <class _T, _T __sentinal, _T... __values_or_sentinals, size_t _Idx,
-          size_t... _Idxs>
+template <class _Tag, class _T, _T __sentinal, _T... __values_or_sentinals,
+          size_t _Idx, size_t... _Idxs>
 struct __standard_layout_psa<
-    _T, integer_sequence<_T, __sentinal, __values_or_sentinals...>, __sentinal,
-    integer_sequence<size_t, _Idx, _Idxs...>> {
+    _Tag, _T, integer_sequence<_T, __sentinal, __values_or_sentinals...>,
+    __sentinal, integer_sequence<size_t, _Idx, _Idxs...>> {
   //--------------------------------------------------------------------------
 
   using __next_t =
-      __standard_layout_psa<_T, integer_sequence<_T, __values_or_sentinals...>,
+      __standard_layout_psa<_Tag, _T,
+                            integer_sequence<_T, __values_or_sentinals...>,
                             __sentinal, integer_sequence<size_t, _Idxs...>>;
 
   using __value_pair_t = __compressed_pair<_T, __next_t>;
@@ -290,9 +292,9 @@ struct __standard_layout_psa<
             __next_t(__construct_psa_from_dynamic_values_tag_t<_IDynamic + 1>{},
                      __vals)) {}
 
-  template <class _U, class _UValsSeq, _U __u_sentinal, class _UIdxsSeq>
+  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal, class _UIdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
-      __standard_layout_psa<_U, _UValsSeq, __u_sentinal, _UIdxsSeq> const
+      __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _UIdxsSeq> const
           &__rhs) noexcept
       : __value_pair(__rhs.template __get_n<_Idx>(), __rhs.__next()) {}
 
@@ -340,8 +342,8 @@ struct __standard_layout_psa<
 };
 
 // empty/terminal case
-template <class _T, _T __sentinal>
-struct __standard_layout_psa<_T, integer_sequence<_T>, __sentinal,
+template <class _Tag, class _T, _T __sentinal>
+struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
                              integer_sequence<size_t>> {
   //--------------------------------------------------------------------------
 
@@ -384,9 +386,9 @@ struct __standard_layout_psa<_T, integer_sequence<_T>, __sentinal,
       __construct_psa_from_dynamic_values_tag_t<_IDynamic> __tag,
       array<_T, _NDynamic> const &__vals) noexcept {}
 
-  template <class _U, class _UValsSeq, _U __u_sentinal, class _UIdxsSeq>
+  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal, class _UIdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
-      __standard_layout_psa<_U, _UValsSeq, __u_sentinal, _UIdxsSeq> const
+      __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _UIdxsSeq> const
           &__rhs) noexcept {}
 
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __get(size_t /*n*/) const noexcept {
@@ -394,13 +396,26 @@ struct __standard_layout_psa<_T, integer_sequence<_T>, __sentinal,
   }
 };
 
+// Same thing, but with a disambiguator so that same-base issues doesn't cause
+// a loss of standard-layout-ness.
+template <class _Tag, ptrdiff_t... __values_or_sentinals>
+struct __partially_static_sizes_tagged
+    : __standard_layout_psa<
+          _Tag, ptrdiff_t,
+          integer_sequence<ptrdiff_t, __values_or_sentinals...>> {
+  using __tag_t = _Tag;
+  using __psa_impl_t = __standard_layout_psa<
+      _Tag, ptrdiff_t, integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
+  using __psa_impl_t::__psa_impl_t;
+};
+
+struct __no_tag {};
 template <ptrdiff_t... __values_or_sentinals>
 struct __partially_static_sizes
-    : __standard_layout_psa<
-          ptrdiff_t, integer_sequence<ptrdiff_t, __values_or_sentinals...>> {
-  using __psa_impl_t = __standard_layout_psa<
-      ptrdiff_t, integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
-  using __psa_impl_t::__psa_impl_t;
+    : __partially_static_sizes_tagged<__no_tag, __values_or_sentinals...> {
+  using __base_t =
+      __partially_static_sizes_tagged<__no_tag, __values_or_sentinals...>;
+  using __base_t::__base_t;
 };
 
 } // namespace detail
