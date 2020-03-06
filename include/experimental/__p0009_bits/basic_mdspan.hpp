@@ -267,7 +267,8 @@ public:
     return __impl<>::template __callop<reference>(*this, indices);
   }
 
-  MDSPAN_INLINE_FUNCTION
+  // TODO @proposal-bug The proposal is missing constexpr here
+  MDSPAN_INLINE_FUNCTION constexpr
   accessor_type accessor() const { return __accessor_ref(); };
 
   //--------------------------------------------------------------------------------

@@ -48,7 +48,9 @@
 namespace stdex = std::experimental;
 
 // Only works with newer constexpr
-#if MDSPAN_HAS_CXX_14
+#if defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
+
+//==============================================================================
 
 constexpr int
 simple_static_sum_test_1(int add_to_row) {
@@ -82,6 +84,8 @@ MDSPAN_STATIC_TEST(
   stdex::mdspan<double, simple_static_sum_test_1(-1)>{nullptr}.extent(0) == 18
 );
 
+//==============================================================================
+
 constexpr int
 simple_test_1d_constexpr_in_type() {
   int data[] = {
@@ -97,4 +101,63 @@ MDSPAN_STATIC_TEST(
   simple_test_1d_constexpr_in_type() == 37
 );
 
-#endif // MDSPAN_HAS_CXX_14
+//==============================================================================
+
+constexpr int
+simple_dynamic_sum_test_2(int add_to_row) {
+  int data[] = {
+    1, 2, 3, 0,
+    4, 5, 6, 0,
+    7, 8, 9, 0
+  };
+  auto s = stdex::mdspan<int, stdex::dynamic_extent, stdex::dynamic_extent>(data, 3, 4);
+  int result = 0;
+  for(int col = 0; col < 3; ++col) {
+    for(int row = 0; row < 3; ++row) {
+      result += s(row, col) * (row + add_to_row);
+    }
+  }
+  return result;
+}
+
+MDSPAN_STATIC_TEST(
+  // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9) = 108
+  simple_dynamic_sum_test_2(1) == 108
+);
+
+MDSPAN_STATIC_TEST(
+  // -1 - 2 - 3 + 7 + 8 + 9 = 18
+  simple_dynamic_sum_test_2(-1) == 18
+);
+
+//==============================================================================
+
+constexpr int
+simple_mixed_layout_left_sum_test_3(int add_to_row) {
+  int data[] = {
+    1, 4, 7,
+    2, 5, 8,
+    3, 6, 9,
+    0, 0, 0
+  };
+  auto s = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>,
+    stdex::layout_left
+  >(data, 3, 4);
+  int result = 0;
+  for(int col = 0; col < 3; ++col) {
+    for(int row = 0; row < 3; ++row) {
+      result += s(row, col) * (row + add_to_row);
+    }
+  }
+  return result;
+}
+
+MDSPAN_STATIC_TEST(
+  // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9) = 108
+  simple_mixed_layout_left_sum_test_3(1) == 108
+);
+
+//==============================================================================
+
+#endif //defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14

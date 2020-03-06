@@ -85,7 +85,7 @@ struct __no_unique_address_emulation<
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __no_unique_address_emulation() = default;
+  constexpr __no_unique_address_emulation() noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __no_unique_address_emulation(
       __no_unique_address_emulation const &) noexcept = default;
@@ -104,7 +104,9 @@ struct __no_unique_address_emulation<
   // Explicitly make this not a reference so that the copy or move
   // constructor still gets called.
   MDSPAN_INLINE_FUNCTION
-  explicit constexpr __no_unique_address_emulation(_T) noexcept {}
+  explicit constexpr __no_unique_address_emulation(_T const& __v) noexcept : _T(__v) {}
+  MDSPAN_INLINE_FUNCTION
+  explicit constexpr __no_unique_address_emulation(_T&& __v) noexcept : _T(::std::move(__v)) {}
 };
 
 //==============================================================================
@@ -125,7 +127,7 @@ template <class _T, class _U, class _Enable = void> struct __compressed_pair {
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() = default;
+  constexpr __compressed_pair() noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -162,7 +164,7 @@ struct __compressed_pair<
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() = default;
+  constexpr __compressed_pair() noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -199,7 +201,7 @@ struct __compressed_pair<
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() = default;
+  constexpr __compressed_pair() noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -243,7 +245,7 @@ struct __compressed_pair<
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() = default;
+  constexpr __compressed_pair() noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -257,7 +259,7 @@ struct __compressed_pair<
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~__compressed_pair() noexcept = default;
   template <class _TLike, class _ULike>
-  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_TLike &&__t, _ULike &&__u)
+  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_TLike &&__t, _ULike &&__u) noexcept
       : __first_base_t(_T((_TLike &&) __t)),
         __second_base_t(_U((_ULike &&) __u)) {}
 };

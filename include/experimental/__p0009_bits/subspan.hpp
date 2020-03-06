@@ -72,18 +72,18 @@ struct _slice_wrap {
 //--------------------------------------------------------------------------------
 
 template <ptrdiff_t OldExtent, ptrdiff_t OldStaticStride>
-MDSPAN_INLINE_FUNCTION
+MDSPAN_INLINE_FUNCTION constexpr
 _slice_wrap<OldExtent, OldStaticStride, ptrdiff_t>
 _wrap_slice(ptrdiff_t val, ptrdiff_t ext, ptrdiff_t stride) { return { val, ext, stride }; }
 
 template <ptrdiff_t OldExtent, ptrdiff_t OldStaticStride>
-MDSPAN_INLINE_FUNCTION
+MDSPAN_INLINE_FUNCTION constexpr
 _slice_wrap<OldExtent, OldStaticStride, all_type>
 _wrap_slice(all_type val, ptrdiff_t ext, ptrdiff_t stride) { return { val, ext, stride }; }
 
 // TODO generalize this to anything that works with std::get<0> and std::get<1>
 template <ptrdiff_t OldExtent, ptrdiff_t OldStaticStride>
-MDSPAN_INLINE_FUNCTION
+MDSPAN_INLINE_FUNCTION constexpr
 _slice_wrap<OldExtent, OldStaticStride, std::pair<ptrdiff_t, ptrdiff_t>>
 _wrap_slice(std::pair<ptrdiff_t, ptrdiff_t> const& val, ptrdiff_t ext, ptrdiff_t stride)
 {
