@@ -200,15 +200,15 @@ template <class Layout, size_t N>
 constexpr bool
 multidimensional_single_element_stress_test() {
   return multidimensional_single_element_stress_test_impl_1<Layout>(
-    std::make_index_sequence<N>{}
+    std::make_index_sequence<N+2>{}
   );
 }
 
 MDSPAN_STATIC_TEST(
-  multidimensional_single_element_stress_test<stdex::layout_left, 22>()
+  multidimensional_single_element_stress_test<stdex::layout_left, 20>()
 );
 MDSPAN_STATIC_TEST(
-  multidimensional_single_element_stress_test<stdex::layout_right, 22>()
+  multidimensional_single_element_stress_test<stdex::layout_right, 20>()
 );
 
 #endif // MDSPAN_DISABLE_EXPENSIVE_COMPILATION_TESTS
