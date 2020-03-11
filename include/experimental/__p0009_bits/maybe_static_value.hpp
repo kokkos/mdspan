@@ -41,10 +41,13 @@
 //@HEADER
 */
 
+#include "macros.hpp"
+// This is only needed for the non-standard-layout version of partially
+// static array.
+#if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
+
 #include "dynamic_extent.hpp"
 #include "no_unique_address.hpp"
-
-#include "macros.hpp"
 
 namespace std {
 namespace experimental {
@@ -101,7 +104,7 @@ struct __maybe_static_value<_T, __is_dynamic_sentinal, __is_dynamic_sentinal,
     : __no_unique_address_emulation<_T> {
   static constexpr _T __static_value = __is_dynamic_sentinal;
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __value() const noexcept {
-    return this->__no_unique_address_emulation<_T>::__value();
+    return this->__no_unique_address_emulation<_T>::__ref();
   }
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T &__ref() noexcept {
     return this->__no_unique_address_emulation<_T>::__ref();
@@ -122,3 +125,5 @@ struct __maybe_static_value<_T, __is_dynamic_sentinal, __is_dynamic_sentinal,
 
 } // end namespace experimental
 } // end namespace std
+
+#endif // !_MDSPAN_PRESERVE_STANDARD_LAYOUT

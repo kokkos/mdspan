@@ -68,6 +68,8 @@ template <size_t _I, class _T> using __repeated_with_idxs = _T;
 
 //==============================================================================
 
+#if _MDSPAN_PRESERVE_STANDARD_LAYOUT
+
 /**
  *  PSA = "partially static array"
  *
@@ -483,6 +485,8 @@ public:
     return __partially_static_sizes_tagged<_UTag, __values_or_sentinals...>(*this);
   }
 };
+
+#endif // _MDSPAN_PRESERVE_STATIC_LAYOUT
 
 } // namespace detail
 } // end namespace experimental
