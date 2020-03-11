@@ -395,15 +395,15 @@ template <class Layout, size_t N>
 constexpr bool
 subspan_single_element_stress_test() {
   return subspan_single_element_stress_test_impl_1<Layout>(
-    std::make_index_sequence<N>{}
+    std::make_index_sequence<N+2>{}
   );
 }
 
 MDSPAN_STATIC_TEST(
-  subspan_single_element_stress_test<stdex::layout_left, 22>()
+  subspan_single_element_stress_test<stdex::layout_left, 15>()
 );
 MDSPAN_STATIC_TEST(
-  subspan_single_element_stress_test<stdex::layout_right, 22>()
+  subspan_single_element_stress_test<stdex::layout_right, 15>()
 );
 
 #endif // MDSPAN_DISABLE_EXPENSIVE_COMPILATION_TESTS
