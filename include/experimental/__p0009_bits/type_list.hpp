@@ -43,6 +43,8 @@
 
 #include "macros.hpp"
 
+#include "trait_backports.hpp" // make_index_sequence
+
 namespace std {
 namespace experimental {
 

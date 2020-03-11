@@ -211,6 +211,89 @@ MDSPAN_STATIC_TEST(
   multidimensional_single_element_stress_test<stdex::layout_right, 20>()
 );
 
+template <class Layout, size_t Idx1, size_t Idx2>
+constexpr bool
+stress_test_2d_single_element_stress_test_impl_2(
+  std::integral_constant<size_t, Idx1>,
+  std::integral_constant<size_t, Idx2>
+) {
+  using mdspan_t = stdex::basic_mdspan<
+    int, stdex::extents<Idx1, Idx2>, Layout>;
+  using dyn_mdspan_1_t = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent, Idx2>, Layout>;
+  using dyn_mdspan_2_t = stdex::basic_mdspan<
+    int, stdex::extents<Idx1, stdex::dynamic_extent>, Layout>;
+  using dyn_mdspan_t = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, Layout>;
+  int data[Idx1*Idx2] = { };
+  auto s = mdspan_t(data);
+  auto s1 = dyn_mdspan_1_t(data, Idx1);
+  auto s2 = dyn_mdspan_2_t(data, Idx2);
+  auto s12 = dyn_mdspan_t(data, Idx1, Idx2);
+  for(ptrdiff_t i = 0; i < Idx1; ++i) {
+    for(ptrdiff_t j = 0; j < Idx2; ++j) {
+      s(i, j) = s1(i, j) = s2(i, j) = s12(i, j) = 1;
+    }
+  }
+  int result = 0;
+  for(ptrdiff_t i = 0; i < Idx1; ++i) {
+    for(ptrdiff_t j = 0; j < Idx2; ++j) {
+      result += s(i, j) + s1(i, j) + s2(i, j) + s12(i, j);
+    }
+  }
+  result /= 4;
+  constexpr_assert_equal(Idx1*Idx2, result);
+  return result == Idx1 * Idx2;
+}
+
+template <class Layout, size_t Idx1, size_t... Idxs2>
+constexpr bool
+stress_test_2d_single_element_stress_test_impl_1(
+  std::integral_constant<size_t, Idx1> idx1,
+  std::integer_sequence<size_t, Idxs2...>
+)
+{
+  return _MDSPAN_FOLD_AND(
+    stress_test_2d_single_element_stress_test_impl_2<Layout>(
+      idx1, std::integral_constant<size_t, Idxs2+1>{}
+    ) /* && ... */
+  );
+}
+
+template <class Layout, size_t... Idxs1, size_t... Idxs2>
+constexpr bool
+stress_test_2d_single_element_stress_test_impl_0(
+  std::integer_sequence<size_t, Idxs1...>,
+  std::integer_sequence<size_t, Idxs2...> idxs2
+)
+{
+  return _MDSPAN_FOLD_AND(
+    stress_test_2d_single_element_stress_test_impl_1<Layout>(
+      std::integral_constant<size_t, Idxs1+1>{}, idxs2
+    ) /* && ... */
+  );
+}
+
+template <class Layout, size_t N, size_t M = N>
+constexpr bool
+stress_test_2d_single_element_stress_test() {
+  return stress_test_2d_single_element_stress_test_impl_0<Layout>(
+    std::make_index_sequence<N>{},
+    std::make_index_sequence<M>{}
+  );
+}
+
+MDSPAN_STATIC_TEST(
+  stress_test_2d_single_element_stress_test<stdex::layout_left, 8, 8>()
+);
+MDSPAN_STATIC_TEST(
+  stress_test_2d_single_element_stress_test<stdex::layout_right, 8, 8>()
+);
+// Not evaluated at constexpr time to get around limits, but still compiled
+static bool _stress_2d_result =
+  stress_test_2d_single_element_stress_test<stdex::layout_left, 6, 15>()
+  && stress_test_2d_single_element_stress_test<stdex::layout_right, 15, 6>();
+
 #endif // MDSPAN_DISABLE_EXPENSIVE_COMPILATION_TESTS
 
 
