@@ -69,6 +69,12 @@
 #  define __has_cpp_attribute(x) 0
 #endif
 
+#ifndef _MDSPAN_PRESERVE_STANDARD_LAYOUT
+// Preserve standard layout by default, but we're not removing the old version
+// that turns this off until we're sure this doesn't have an unreasonable cost
+// to the compiler or optimizer.
+#  define _MDSPAN_PRESERVE_STANDARD_LAYOUT 1
+#endif
 
 #ifndef _MDSPAN_NO_UNIQUE_ADDRESS
 #  if __has_cpp_attribute(no_unique_address) >= 201803L

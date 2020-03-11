@@ -45,11 +45,11 @@
 
 #include "macros.hpp"
 #include "static_array.hpp"
-#include "trait_backports.hpp"
+#include "standard_layout_static_array.hpp"
 #include "no_unique_address.hpp"
+#include "trait_backports.hpp" // integer_sequence, etc.
 
 #include <array>
-#include <type_traits>
 #include <cstddef>
 
 namespace std {

@@ -43,6 +43,9 @@
 
 #pragma once
 
+#include "macros.hpp"
+#if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
+
 #include "dynamic_extent.hpp"
 #include "trait_backports.hpp"
 #include "maybe_static_value.hpp"
@@ -56,11 +59,6 @@
 namespace std {
 namespace experimental {
 namespace detail {
-
-//==============================================================================
-
-template <size_t _I, class _T>
-using __repeated_with_idxs = _T;
 
 //==============================================================================
 
@@ -164,7 +162,7 @@ public:
   constexpr __partially_static_array_impl(
       __construct_partially_static_array_from_sizes_tag_t,
       __repeated_with_idxs<_Idxs, _T> const &... __vals) noexcept
-      : __base_n<_Idxs>{__vals}... {}
+      : __base_n<_Idxs>(__base_n<_Idxs>{{__vals}})... {}
 
   // Dynamic idxs only given version, which is probably going to not need to
   // supported by the time mdspan is merged into the standard, but is currently the
@@ -174,7 +172,7 @@ public:
       __construct_partially_static_array_from_sizes_tag_t,
       __construct_partially_static_array_from_sizes_tag_t,
       __repeated_with_idxs<_IdxsDynamicIdxs, _T> const &... __vals) noexcept
-      : __base_n<_IdxsDynamic>{__vals}... {}
+      : __base_n<_IdxsDynamic>(__base_n<_IdxsDynamic>{{__vals}})... {}
 
   MDSPAN_INLINE_FUNCTION constexpr explicit __partially_static_array_impl(
     array<_T, sizeof...(_Idxs)> const& __vals) noexcept
@@ -278,18 +276,29 @@ public:
 
 //==============================================================================
 
-//template <ptrdiff_t... __values_or_sentinals>
-//struct __partially_static_sizes :
-//  __partially_static_array_with_sentinal<
-//    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>
-//{
-//private:
-//  using __base_t = __partially_static_array_with_sentinal<
-//    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
-//public:
-//  using __base_t::__base_t;
-//};
+template <ptrdiff_t... __values_or_sentinals>
+struct __partially_static_sizes :
+  __partially_static_array_with_sentinal<
+    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>
+{
+private:
+  using __base_t = __partially_static_array_with_sentinal<
+    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
+public:
+  using __base_t::__base_t;
+  template <class _UTag>
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr __partially_static_sizes<__values_or_sentinals...>
+  __with_tag() const noexcept {
+    return *this;
+  }
+};
+
+// Tags are needed for the standard layout version, but not here
+template <class, ptrdiff_t... __values_or_sentinals>
+using __partially_static_sizes_tagged = __partially_static_sizes<__values_or_sentinals...>;
 
 } // namespace detail
 } // end namespace experimental
 } // namespace std
+
+#endif // !_MDSPAN_PRESERVE_STANDARD_LAYOUT
