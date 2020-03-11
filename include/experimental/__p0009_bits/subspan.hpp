@@ -252,6 +252,7 @@ struct __assign_op_slice_handler<
          __partially_static_sizes<_Offsets..., 0>,
          __partially_static_sizes<_Exts..., _OldStaticExtent>,
          __partially_static_sizes<_Strides..., _OldStaticStride>> {
+    constexpr_assert_not_equal(-1, __slice.old_stride)
     return {
       __partially_static_sizes<_Offsets..., 0>(
         __construct_partially_static_array_from_sizes_tag,
@@ -368,7 +369,7 @@ constexpr auto _subspan_impl(
         Exts, decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
       >(
         slices, src.extents().template __extent<Idxs>(),
-        decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
+        src.mapping().template __stride<Idxs>()
       )
     );
 

@@ -193,9 +193,22 @@ public:
     array<ptrdiff_t, __strides_storage_t::__size_dynamic> const& strides
   ) noexcept
     : __base_t(__base_t{__member_pair_t(e, __strides_storage_t(__construct_psa_from_dynamic_values_tag_t<>{}, strides))})
-  { }      
+  { }
 
-  // TODO conversion constructors and assignment
+  // TODO @proposal-bug @proposal-extension layout stride needs this constructor
+  // clang-format off
+  MDSPAN_FUNCTION_REQUIRES(
+    (MDSPAN_INLINE_FUNCTION constexpr explicit),
+    layout_stride_impl, (std::experimental::extents<Exts...> const& e), noexcept,
+    /* requires */ (
+      // remember that this also covers the zero strides case because an && fold on an empty pack is true
+      _MDSPAN_FOLD_AND(Strides != dynamic_extent /* && ... */)
+    )
+  ) : __base_t(__base_t{__member_pair_t(e, __strides_storage_t())})
+  { }
+  // clang-format on
+
+// TODO conversion constructors and assignment
 
   //--------------------------------------------------------------------------------
 
@@ -207,7 +220,7 @@ public:
   // TODO @proposal-bug this wording for this is (at least slightly) broken (should at least be "... stride(p[0]) == 1...")
   MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
     // TODO @testing test layout_stride is_contiguous()
-    auto rem = std::array<ptrdiff_t, sizeof...(Exts)>{ };
+    auto rem = array<ptrdiff_t, sizeof...(Exts)>{ };
     std::iota(rem.begin(), rem.end(), ptrdiff_t(0));
     auto next_idx_iter = std::find_if(
       rem.begin(), rem.end(),
