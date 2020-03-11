@@ -160,4 +160,58 @@ MDSPAN_STATIC_TEST(
 
 //==============================================================================
 
+#if defined(MDSPAN_ENABLE_EXPENSIVE_COMPILATION_TESTS) && MDSPAN_ENABLE_EXPENSIVE_COMPILATION_TESTS
+
+template <ptrdiff_t Val, size_t Idx>
+constexpr auto _repeated_ptrdiff_t = Val;
+
+template <class Layout, size_t... Idxs>
+constexpr bool
+multidimensional_single_element_stress_test_impl_2(
+  std::integer_sequence<size_t, Idxs...>
+) {
+  using mdspan_t = stdex::basic_mdspan<
+    int, stdex::extents<_repeated_ptrdiff_t<1, Idxs>...>, Layout>;
+  using dyn_mdspan_t = stdex::basic_mdspan<
+    int, stdex::extents<_repeated_ptrdiff_t<stdex::dynamic_extent, Idxs>...>, Layout>;
+  int data[] = { 42 };
+  auto s = mdspan_t(data);
+  auto s_dyn = dyn_mdspan_t(data, _repeated_ptrdiff_t<1, Idxs>...);
+  auto val = s(_repeated_ptrdiff_t<0, Idxs>...);
+  auto val_dyn = s_dyn(_repeated_ptrdiff_t<0, Idxs>...);
+  constexpr_assert_equal(42, val);
+  constexpr_assert_equal(42, val_dyn);
+  return val == 42 && val_dyn == 42;
+}
+
+template <class Layout, size_t... Sizes>
+constexpr bool
+multidimensional_single_element_stress_test_impl_1(
+  std::integer_sequence<size_t, Sizes...>
+) {
+  return _MDSPAN_FOLD_AND(
+    multidimensional_single_element_stress_test_impl_2<Layout>(
+      std::make_index_sequence<Sizes>{}
+    ) /* && ... */
+  );
+}
+
+template <class Layout, size_t N>
+constexpr bool
+multidimensional_single_element_stress_test() {
+  return multidimensional_single_element_stress_test_impl_1<Layout>(
+    std::make_index_sequence<N>{}
+  );
+}
+
+MDSPAN_STATIC_TEST(
+  multidimensional_single_element_stress_test<stdex::layout_left, 20>()
+);
+MDSPAN_STATIC_TEST(
+  multidimensional_single_element_stress_test<stdex::layout_right, 20>()
+);
+
+#endif // MDSPAN_DISABLE_EXPENSIVE_COMPILATION_TESTS
+
+
 #endif //defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14

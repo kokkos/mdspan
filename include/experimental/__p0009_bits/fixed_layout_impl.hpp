@@ -43,13 +43,13 @@
 
 #pragma once
 
+#include "macros.hpp"
+
 #include "static_array.hpp"
 #include "dynamic_extent.hpp"
 #include "extents.hpp"
-#include "macros.hpp"
+#include "trait_backports.hpp"
 
-#include <type_traits>
-#include <utility>
 #include <cstddef>
 #include <array>
 
@@ -59,30 +59,6 @@ namespace std {
 namespace experimental {
 
 namespace detail {
-
-//==============================================================================================================
-
-template <class Extents>
-struct extents_storage
-{
-public:
-  using extents_type = Extents;
-protected:
-  _MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents = {};
-public:
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents_storage() noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents_storage(extents_storage const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents_storage(extents_storage&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED extents_storage& operator=(extents_storage const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED extents_storage& operator=(extents_storage&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED ~extents_storage() noexcept = default;
-
-  MDSPAN_INLINE_FUNCTION
-  constexpr extents_storage(extents_type const& exts)
-    : __extents(exts)
-  { }  
-
-};
 
 //==============================================================================================================
 

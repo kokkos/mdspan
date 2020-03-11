@@ -49,9 +49,6 @@
 #include "extents.hpp"
 #include "trait_backports.hpp"
 
-#include <utility> // make_index_sequence
-#include <tuple> // std::apply
-
 namespace std {
 namespace experimental {
 

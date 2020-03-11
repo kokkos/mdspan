@@ -73,7 +73,7 @@
 // Preserve standard layout by default, but we're not removing the old version
 // that turns this off until we're sure this doesn't have an unreasonable cost
 // to the compiler or optimizer.
-#  define _MDSPAN_PRESERVE_STANDARD_LAYOUT 1
+#  define _MDSPAN_PRESERVE_STANDARD_LAYOUT 0
 #endif
 
 #ifndef _MDSPAN_NO_UNIQUE_ADDRESS
