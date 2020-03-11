@@ -457,7 +457,7 @@ MDSPAN_TEMPLATE_REQUIRES(
         || _MDSPAN_TRAIT(is_same, LP, layout_right)
         || detail::_is_layout_stride<LP>::value
     ) &&
-    _MDSPAN_FOLD_OR((
+    _MDSPAN_FOLD_AND((
       _MDSPAN_TRAIT(is_convertible, SliceSpecs, ptrdiff_t)
         || _MDSPAN_TRAIT(is_convertible, SliceSpecs, pair<ptrdiff_t, ptrdiff_t>)
         || _MDSPAN_TRAIT(is_convertible, SliceSpecs, all_type)
