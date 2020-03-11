@@ -45,7 +45,7 @@
 
 #include "macros.hpp"
 
-#include <cstddef>
+#include <cstddef> // ptrdiff_t
 
 namespace std {
 namespace experimental {

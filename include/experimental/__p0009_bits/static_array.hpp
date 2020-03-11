@@ -62,47 +62,31 @@ namespace detail {
 
 //==============================================================================
 
-template <class _Result, class _Seq, class _Mask>
-struct __mask_sequence_impl;
-
-template <class _T, _T... _Result, _T _S1, _T... _Seq, bool... _Mask>
-struct __mask_sequence_impl<
-  integer_sequence<_T, _Result...>,
-  integer_sequence<_T, _S1, _Seq...>,
-  integer_sequence<bool, true, _Mask...>
-> : __mask_sequence_impl<
-  integer_sequence<_T, _Result..., _S1>,
-  integer_sequence<_T, _Seq...>,
-  integer_sequence<bool, _Mask...>
-> { };
-
-template <class _T, _T... _Result, _T _S1, _T... _Seq, bool... _Mask>
-struct __mask_sequence_impl<
-  integer_sequence<_T, _Result...>,
-  integer_sequence<_T, _S1, _Seq...>,
-  integer_sequence<bool, false, _Mask...>
-> : __mask_sequence_impl<
-  integer_sequence<_T, _Result...>,
-  integer_sequence<_T, _Seq...>,
-  integer_sequence<bool, _Mask...>
-> { };
+template <class _T, _T _Val, bool _Mask> struct __mask_element {};
 
 template <class _T, _T... _Result>
-struct __mask_sequence_impl<
-  integer_sequence<_T, _Result...>,
-  integer_sequence<_T>,
-  integer_sequence<bool>
-> {
-  using type = integer_sequence<_T, _Result...>;
+struct __mask_sequence_assign_op {
+  template <_T _V>
+  __mask_sequence_assign_op<_T, _Result..., _V>
+  operator=(__mask_element<_T, _V, true>&&);
+  template <_T _V>
+  __mask_sequence_assign_op<_T, _Result...>
+  operator=(__mask_element<_T, _V, false>&&);
+  using __result = integer_sequence<_T, _Result...>;
 };
 
 template <class _Seq, class _Mask>
 struct __mask_sequence;
 
-template <class _T, _T... _Vals, class _Mask>
-struct __mask_sequence<integer_sequence<_T, _Vals...>, _Mask>
-  : __mask_sequence_impl<integer_sequence<_T>, integer_sequence<_T, _Vals...>, _Mask>
-{ };
+template <class _T, _T... _Vals, bool... _Masks>
+struct __mask_sequence<integer_sequence<_T, _Vals...>, integer_sequence<bool, _Masks...>>
+{
+  using type = typename decltype(
+    _MDSPAN_FOLD_ASSIGN_LEFT(
+      __mask_sequence_assign_op<_T>{}, /* = ... = */ __mask_element<_T, _Vals, _Masks>{}
+    )
+  )::__result;
+};
 
 //==============================================================================
 
