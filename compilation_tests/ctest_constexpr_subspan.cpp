@@ -45,10 +45,181 @@
 
 #include <experimental/mdspan>
 
-namespace stdex = std::experimental;
+namespace stdex = ::std::experimental;
 
 // Only works with newer constexpr
 #if defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
+
+//==============================================================================
+// <editor-fold desc="1D dynamic extent ptrdiff_t subspan"> {{{1
+
+template<class Layout>
+constexpr bool
+dynamic_extent_1d() {
+  int data[] = {1, 2, 3, 4, 5};
+  auto s = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
+  int result = 0;
+  for (int i = 0; i < s.extent(0); ++i) {
+    auto ss = stdex::subspan(s, i);
+    result += ss();
+  }
+  // 1 + 2 + 3 + 4 + 5
+  constexpr_assert_equal(15, result);
+  return result == 15;
+}
+
+MDSPAN_STATIC_TEST(dynamic_extent_1d<stdex::layout_left>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d<stdex::layout_right>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d<stdex::layout_stride<1>>());
+
+
+// </editor-fold> end 1D dynamic extent ptrdiff_t subspan }}}1
+//==============================================================================
+
+//==============================================================================
+// <editor-fold desc="1D dynamic extent all subspan"> {{{1
+
+template<class Layout>
+constexpr bool
+dynamic_extent_1d_all_slice() {
+  int data[] = {1, 2, 3, 4, 5};
+  auto s = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
+  int result = 0;
+  auto ss = stdex::subspan(s, stdex::all);
+  for (int i = 0; i < s.extent(0); ++i) {
+    result += ss(i);
+  }
+  // 1 + 2 + 3 + 4 + 5
+  constexpr_assert_equal(15, result);
+  return result == 15;
+}
+
+MDSPAN_STATIC_TEST(dynamic_extent_1d_all_slice<stdex::layout_left>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d_all_slice<stdex::layout_right>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d_all_slice<stdex::layout_stride<1>>());
+
+// </editor-fold> end 1D dynamic extent all subspan }}}1
+//==============================================================================
+
+//==============================================================================
+// <editor-fold desc="1D dynamic extent pair slice"> {{{1
+
+template<class Layout>
+constexpr bool
+dynamic_extent_1d_pair_full() {
+  int data[] = {1, 2, 3, 4, 5};
+  auto s = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
+  int result = 0;
+  auto ss = stdex::subspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
+  for (int i = 0; i < s.extent(0); ++i) {
+    result += ss(i);
+  }
+  constexpr_assert_equal(15, result);
+  return result == 15;
+}
+
+MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_full<stdex::layout_left>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_full<stdex::layout_right>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_full<stdex::layout_stride<1>>());
+
+template<class Layout>
+constexpr bool
+dynamic_extent_1d_pair_each() {
+  int data[] = {1, 2, 3, 4, 5};
+  auto s = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
+  int result = 0;
+  for (int i = 0; i < s.extent(0); ++i) {
+    auto ss = stdex::subspan(s,
+      std::pair<std::ptrdiff_t, std::ptrdiff_t>{i, i+1});
+    result += ss(0);
+  }
+  constexpr_assert_equal(15, result);
+  return result == 15;
+}
+
+MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<stdex::layout_left>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<stdex::layout_right>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<stdex::layout_stride<1>>());
+
+// </editor-fold> end 1D dynamic extent pair slice subspan }}}1
+//==============================================================================
+
+//==============================================================================
+// <editor-fold desc="1D dynamic extent pair, all, ptrdiff_t slice"> {{{1
+
+template<class Layout>
+constexpr bool
+dynamic_extent_1d_all_three() {
+  int data[] = {1, 2, 3, 4, 5};
+  auto s = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
+  auto s1 = stdex::subspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
+  auto s2 = stdex::subspan(s1, stdex::all);
+  int result = 0;
+  for (int i = 0; i < s.extent(0); ++i) {
+    auto ss = stdex::subspan(s2, i);
+    result += ss();
+  }
+  constexpr_assert_equal(15, result);
+  return result == 15;
+}
+
+MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<stdex::layout_left>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<stdex::layout_right>());
+MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<stdex::layout_stride<1>>());
+
+// </editor-fold> end 1D dynamic extent pair, all, ptrdifft slice }}}1
+//==============================================================================
+
+template<class Layout>
+constexpr bool
+dynamic_extent_2d_idx_idx() {
+  int data[] = { 1, 2, 3, 4, 5, 6 };
+  auto s = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, Layout>(
+      data, 2, 3);
+  int result = 0;
+  for(int row = 0; row < s.extent(0); ++row) {
+    for(int col = 0; col < s.extent(1); ++col) {
+      auto ss = stdex::subspan(s, row, col);
+      result += ss();
+    }
+  }
+  constexpr_assert_equal(21, result);
+  return result == 21;
+}
+MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_idx<stdex::layout_left>());
+MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_idx<stdex::layout_right>());
+MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_idx<stdex::layout_stride<1, 2>>());
+MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_idx<stdex::layout_stride<3, 1>>());
+
+template<class Layout>
+constexpr bool
+dynamic_extent_2d_idx_all_idx() {
+  int data[] = { 1, 2, 3, 4, 5, 6 };
+  auto s = stdex::basic_mdspan<
+    int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, Layout>(
+      data, 2, 3);
+  int result = 0;
+  for(int row = 0; row < s.extent(0); ++row) {
+    auto srow = stdex::subspan(s, row, stdex::all);
+    for(int col = 0; col < s.extent(1); ++col) {
+      auto scol = stdex::subspan(srow, col);
+      constexpr_assert_equal(scol(), srow(col));
+      result += scol();
+    }
+  }
+  constexpr_assert_equal(21, result);
+  return result == 21;
+}
+MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_left>());
+MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_right>());
+MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_stride<1, 2>>());
+MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_stride<3, 1>>());
 
 //==============================================================================
 
@@ -88,8 +259,8 @@ MDSPAN_STATIC_TEST(
 
 //==============================================================================
 
-constexpr int
-mixed_subspan_left_test_2(int add_to_row) {
+constexpr bool
+mixed_subspan_left_test_2() {
   int data[] = {
     1, 4, 7,
     2, 5, 8,
@@ -97,65 +268,75 @@ mixed_subspan_left_test_2(int add_to_row) {
     0, 0, 0,
     0, 0, 0
   };
-  auto s = stdex::mdspan<int, 3, stdex::dynamic_extent>(data, 5);
+  auto s = stdex::basic_mdspan<int,
+    stdex::extents<3, stdex::dynamic_extent>, stdex::layout_left>(data, 5);
   int result = 0;
   for(int col = 0; col < 5; ++col) {
     auto scol = stdex::subspan(s, stdex::all, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = stdex::subspan(scol, row);
-      result += srow() * (row + add_to_row);
+      result += srow() * (row + 1);
     }
   }
+  // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)= 108
+  constexpr_assert_equal(108, result);
   for(int row = 0; row < 3; ++row) {
     auto srow = stdex::subspan(s, row, stdex::all);
     for(int col = 0; col < 5; ++col) {
       auto scol = stdex::subspan(srow, col);
-      result += scol() * (row + add_to_row);
+      result += scol() * (row + 1);
     }
   }
-  return result / 2;
+  result /= 2;
+  // 2 * (1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)) / 2 = 108
+  constexpr_assert_equal(108, result);
+  return result == 108;
 }
 
-//MDSPAN_STATIC_TEST(
-//  // 2 * (1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)) / 2 = 108
-//  mixed_subspan_left_test_2(1) == 108
-//);
+MDSPAN_STATIC_TEST(
+  // 2 * (1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)) / 2 = 108
+  mixed_subspan_left_test_2()
+);
 
 //==============================================================================
 
-constexpr int
-mixed_subspan_test_3(int add_to_row) {
+template <class Layout>
+constexpr bool
+mixed_subspan_test_3() {
   int data[] = {
     1, 4, 7, 2, 5,
     8, 3, 6, 9, 0,
     0, 0, 0, 0, 0
   };
-  auto s = stdex::mdspan<int, 3, stdex::dynamic_extent>(data, 5);
+  auto s = stdex::basic_mdspan<
+    int, stdex::extents<3, stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   for(int col = 0; col < 5; ++col) {
     auto scol = stdex::subspan(s, stdex::all, col);
-    CONSTEXPR_ASSERT(scol.stride(0) == 1);
     for(int row = 0; row < 3; ++row) {
-      if(scol.extent(0) == 3 && scol.stride(0) == 1) {
-        result += scol(row) * (row + add_to_row);
-      }
-      //auto srow = stdex::subspan(scol, row);
-      //result += srow() * (row + add_to_row);
+      auto srow = stdex::subspan(scol, row);
+      result += srow() * (row + 1);
     }
   }
-  //for(int row = 0; row < 3; ++row) {
-  //  auto srow = stdex::subspan(s, row, stdex::all);
-  //  for(int col = 0; col < 5; ++col) {
-  //    auto scol = stdex::subspan(srow, col);
-  //    result += scol() * (row + add_to_row);
-  //  }
-  //}
-  return result;
+  constexpr_assert_equal(71, result);
+  for(int row = 0; row < 3; ++row) {
+    auto srow = stdex::subspan(s, row, stdex::all);
+    for(int col = 0; col < 5; ++col) {
+      auto scol = stdex::subspan(srow, col);
+      result += scol() * (row + 1);
+    }
+  }
+  result /= 2;
+  // 2 * (1 + 4 + 7 + 2 + 5 + 2*(8 + 3 + 6 + 9)) / 2 = 71
+  constexpr_assert_equal(71, result);
+  return result == 71;
 }
 
 MDSPAN_STATIC_TEST(
-  // 2 * (1 + 4 + 7 + 2 + 5 + 2*(8 + 3 + 6 + 9)) / 2 = 71
-  mixed_subspan_test_3(1) == 71
+  mixed_subspan_test_3<stdex::layout_right>()
+);
+MDSPAN_STATIC_TEST(
+  mixed_subspan_test_3<stdex::layout_stride<5, 1>>()
 );
 
 
