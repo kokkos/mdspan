@@ -205,10 +205,10 @@ multidimensional_single_element_stress_test() {
 }
 
 MDSPAN_STATIC_TEST(
-  multidimensional_single_element_stress_test<stdex::layout_left, 20>()
+  multidimensional_single_element_stress_test<stdex::layout_left, 22>()
 );
 MDSPAN_STATIC_TEST(
-  multidimensional_single_element_stress_test<stdex::layout_right, 20>()
+  multidimensional_single_element_stress_test<stdex::layout_right, 22>()
 );
 
 #endif // MDSPAN_DISABLE_EXPENSIVE_COMPILATION_TESTS

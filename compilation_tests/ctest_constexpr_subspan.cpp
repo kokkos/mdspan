@@ -339,5 +339,73 @@ MDSPAN_STATIC_TEST(
   mixed_subspan_test_3<stdex::layout_stride<5, 1>>()
 );
 
+//==============================================================================
+
+#if defined(MDSPAN_ENABLE_EXPENSIVE_COMPILATION_TESTS) && MDSPAN_ENABLE_EXPENSIVE_COMPILATION_TESTS
+
+template <ptrdiff_t Val, size_t Idx>
+constexpr auto _repeated_ptrdiff_t = Val;
+template <class T, size_t Idx>
+using _repeated_with_idxs_t = T;
+
+template <class Layout, size_t... Idxs>
+constexpr bool
+subspan_single_element_stress_test_impl_2(
+  std::integer_sequence<size_t, Idxs...>
+) {
+  using mdspan_t = stdex::basic_mdspan<
+    int, stdex::extents<_repeated_ptrdiff_t<1, Idxs>...>, Layout>;
+  using dyn_mdspan_t = stdex::basic_mdspan<
+    int, stdex::extents<_repeated_ptrdiff_t<stdex::dynamic_extent, Idxs>...>, Layout>;
+  int data[] = { 42 };
+  auto s = mdspan_t(data);
+  auto s_dyn = dyn_mdspan_t(data, _repeated_ptrdiff_t<1, Idxs>...);
+  auto ss = stdex::subspan(s, _repeated_ptrdiff_t<0, Idxs>...);
+  auto ss_dyn = stdex::subspan(s_dyn, _repeated_ptrdiff_t<0, Idxs>...);
+  auto ss_all = stdex::subspan(s, _repeated_with_idxs_t<stdex::all_type, Idxs>{}...);
+  auto ss_all_dyn = stdex::subspan(s_dyn, _repeated_with_idxs_t<stdex::all_type, Idxs>{}...);
+  auto val = ss_all(_repeated_ptrdiff_t<0, Idxs>...);
+  auto val_dyn = ss_all_dyn(_repeated_ptrdiff_t<0, Idxs>...);
+  auto ss_pair = stdex::subspan(s, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
+  auto ss_pair_dyn = stdex::subspan(s_dyn, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
+  auto val_pair = ss_pair(_repeated_ptrdiff_t<0, Idxs>...);
+  auto val_pair_dyn = ss_pair_dyn(_repeated_ptrdiff_t<0, Idxs>...);
+  constexpr_assert_equal(42, ss());
+  constexpr_assert_equal(42, ss_dyn());
+  constexpr_assert_equal(42, val);
+  constexpr_assert_equal(42, val_dyn);
+  constexpr_assert_equal(42, val_pair);
+  constexpr_assert_equal(42, val_pair_dyn);
+  return ss() == 42 && ss_dyn() == 42 && val == 42 && val_dyn == 42 && val_pair == 42 && val_pair_dyn == 42;
+}
+
+template <class Layout, size_t... Sizes>
+constexpr bool
+subspan_single_element_stress_test_impl_1(
+  std::integer_sequence<size_t, Sizes...>
+) {
+  return _MDSPAN_FOLD_AND(
+    subspan_single_element_stress_test_impl_2<Layout>(
+      std::make_index_sequence<Sizes>{}
+    ) /* && ... */
+  );
+}
+
+template <class Layout, size_t N>
+constexpr bool
+subspan_single_element_stress_test() {
+  return subspan_single_element_stress_test_impl_1<Layout>(
+    std::make_index_sequence<N>{}
+  );
+}
+
+MDSPAN_STATIC_TEST(
+  subspan_single_element_stress_test<stdex::layout_left, 22>()
+);
+MDSPAN_STATIC_TEST(
+  subspan_single_element_stress_test<stdex::layout_right, 22>()
+);
+
+#endif // MDSPAN_DISABLE_EXPENSIVE_COMPILATION_TESTS
 
 #endif // defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
