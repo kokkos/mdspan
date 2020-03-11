@@ -46,3 +46,18 @@
 #include <experimental/mdspan>
 
 namespace stdex = std::experimental;
+
+constexpr std::ptrdiff_t
+layout_stride_simple(int i) {
+  using map_t = stdex::layout_stride<stdex::dynamic_extent>::template mapping<
+    stdex::extents<3>
+  >;
+  return map_t(stdex::extents<3>{}, {1})(i);
+}
+
+MDSPAN_STATIC_TEST(
+  layout_stride_simple(0) == 0
+);
+MDSPAN_STATIC_TEST(
+  layout_stride_simple(1) == 1
+);

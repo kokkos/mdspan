@@ -206,6 +206,10 @@ struct __assign_op_slice_handler<
     _MDSPAN_FOLD_AND((_Strides == dynamic_extent || _Strides > 0) /* && ... */),
     " "
   );
+  static_assert(
+    _MDSPAN_FOLD_AND((_Offsets == dynamic_extent || _Offsets >= 0) /* && ... */),
+    " "
+  );
 
   using __offsets_storage_t = __partially_static_sizes<_Offsets...>;
   using __extents_storage_t = __partially_static_sizes<_Exts...>;
