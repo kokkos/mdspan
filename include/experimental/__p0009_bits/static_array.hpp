@@ -45,7 +45,6 @@
 
 #include "dynamic_extent.hpp"
 #include "trait_backports.hpp"
-#include "array_workaround.hpp"
 #include "maybe_static_value.hpp"
 #include "standard_layout_static_array.hpp"
 #include "type_list.hpp"

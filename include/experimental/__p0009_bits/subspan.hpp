@@ -52,7 +52,6 @@
 #include "layout_stride.hpp"
 #include "macros.hpp"
 #include "trait_backports.hpp"
-#include "array_workaround.hpp"
 
 #include <tuple> // std::apply
 #include <utility> // std::pair
