@@ -81,7 +81,7 @@ struct __standard_layout_psa;
 
 //==============================================================================
 
-// Dynamic case
+// Static case
 template <class _Tag, class _T, _T __value, _T... __values_or_sentinals,
           _T __sentinal, size_t _Idx, size_t... _Idxs>
 struct __standard_layout_psa<
