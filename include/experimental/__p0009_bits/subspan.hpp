@@ -228,7 +228,20 @@ struct __assign_op_slice_handler<
   __extents_storage_t __exts;
   __strides_storage_t __strides;
 
-  // Don't define this unless we need it; they have a cost to compile
+#if __INTEL_COMPILER <= 1800
+  MDSPAN_INLINE_FUNCTION constexpr __assign_op_slice_handler(__assign_op_slice_handler&& __other) noexcept
+    : __offsets(::std::move(__other.__offsets)), __exts(::std::move(__other.__exts)), __strides(::std::move(__other.__strides))
+  { }
+  MDSPAN_INLINE_FUNCTION constexpr __assign_op_slice_handler(
+    __offsets_storage_t&& __o,
+    __extents_storage_t&& __e,
+    __strides_storage_t&& __s
+  ) noexcept
+    : __offsets(::std::move(__o)), __exts(::std::move(__e)), __strides(::std::move(__s))
+  { }
+#endif
+
+// Don't define this unless we need it; they have a cost to compile
 #ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
   using __extents_type = ::std::experimental::extents<_Exts...>;
 #endif
@@ -237,7 +250,7 @@ struct __assign_op_slice_handler<
   template <ptrdiff_t _OldStaticExtent, ptrdiff_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, ptrdiff_t> __slice) noexcept
+  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, ptrdiff_t>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_scalar,
          __partially_static_sizes<_Offsets..., dynamic_extent>,
@@ -247,8 +260,8 @@ struct __assign_op_slice_handler<
       __partially_static_sizes<_Offsets..., dynamic_extent>(
         __construct_partially_static_array_from_sizes_tag,
         __offsets.template __get_n<_OffsetIdxs>()..., __slice.slice),
-      __exts,
-      __strides
+      ::std::move(__exts),
+      ::std::move(__strides)
     };
   }
 
@@ -256,7 +269,7 @@ struct __assign_op_slice_handler<
   template <ptrdiff_t _OldStaticExtent, ptrdiff_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, all_type> __slice) noexcept
+  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, all_type>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_all,
          __partially_static_sizes<_Offsets..., 0>,
@@ -279,7 +292,7 @@ struct __assign_op_slice_handler<
   template <ptrdiff_t _OldStaticExtent, ptrdiff_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, pair<ptrdiff_t, ptrdiff_t>> __slice) noexcept
+  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, pair<ptrdiff_t, ptrdiff_t>>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_pair,
          __partially_static_sizes<_Offsets..., dynamic_extent>,
