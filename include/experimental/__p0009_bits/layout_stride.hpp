@@ -47,6 +47,7 @@
 #include "fixed_layout_impl.hpp"
 #include "static_array.hpp"
 #include "extents.hpp"
+#include "trait_backports.hpp"
 
 #include <algorithm>
 #include <numeric>
@@ -202,7 +203,12 @@ public:
     layout_stride_impl, (std::experimental::extents<Exts...> const& e), noexcept,
     /* requires */ (
       // remember that this also covers the zero strides case because an && fold on an empty pack is true
+#if defined(__INTEL_COMPILER)
+      // Work-around for an ICE. layout_stride won't properly SFINAE with ICC, but oh well
+      true
+#else
       _MDSPAN_FOLD_AND(Strides != dynamic_extent /* && ... */)
+#endif
     )
   ) : __base_t(__base_t{__member_pair_t(e, __strides_storage_t())})
   { }
