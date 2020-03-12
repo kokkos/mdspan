@@ -61,6 +61,7 @@
 // At least in the case of clang, that error is descriptive enough to see what's
 // going on if we're careful with how we do things.
 
+#if _MDSPAN_USE_CONSTEXPR_14
 
 // A nice marker in the compiler output. Also, use std::is_constant_evaluated if we have it
 #if __cpp_lib_is_constant_evaluated > 201811
@@ -89,30 +90,42 @@ struct _____constexpr_assertion_failed_ {
       __________CONSTEXPR_ASSERTION_FAILED__________
     }
   };
+  struct _check_eq {
+    template <class T, class U>
+    constexpr bool operator()(T val, U exp) const { return val == exp; }
+  };
+  struct _check_not_eq {
+    template <class T, class U>
+    constexpr bool operator()(T val, U exp) const { return val != exp; }
+  };
+  struct _check_less {
+    template <class T, class U>
+    constexpr bool operator()(T val, U exp) const { return val != exp; }
+  };
+  struct _check_greater {
+    template <class T, class U>
+    constexpr bool operator()(T val, U exp) const { return val != exp; }
+  };
+
   template <class T>
-  constexpr auto _expected_to_be_(T _exp) const {
-    auto checker = [](auto val, T exp) { return val == exp; };
-    return _expected_impl<T, decltype(checker)>{_exp, checker, _expr_string};
+  constexpr auto _expected_to_be_true() const {
+    return _expected_impl<T, _check_eq>{true, _check_eq{}, _expr_string};
   }
   template <class T>
   constexpr auto _rhs_expected_to_be_(T _exp) const {
-    auto checker = [](auto val, T exp) { return val == exp; };
-    return _expected_impl<T, decltype(checker)>{_exp, checker, _expr_string};
+    return _expected_impl<T, _check_eq>{_exp, _check_eq{}, _expr_string};
   }
   template <class T>
   constexpr auto _rhs_expected_to_not_be_(T _exp) const {
-    auto checker = [](auto val, T exp) { return val != exp; };
-    return _expected_impl<T, decltype(checker)>{_exp, checker, _expr_string};
+    return _expected_impl<T, _check_not_eq>{_exp, _check_not_eq{}, _expr_string};
   }
   template <class T>
   constexpr auto _expected_to_be_less_than_(T _exp) const {
-    auto checker = [](auto val, T exp) { return val < exp; };
-    return _expected_impl<T, decltype(checker)>{_exp, checker, _expr_string};
+    return _expected_impl<T, _check_less>{_exp, _check_less{}, _expr_string};
   }
   template <class T>
   constexpr auto _expected_to_be_greater_than_(T _exp) const {
-    auto checker = [](auto val, T exp) { return val > exp; };
-    return _expected_impl<T, decltype(checker)>{_exp, checker, _expr_string};
+    return _expected_impl<T, _check_greater>{_exp, _check_greater{}, _expr_string};
   }
 };
 
@@ -131,6 +144,8 @@ struct _____constexpr_assertion_failed_ {
 
 #define constexpr_assert_greater_than(expr, ...) \
   _____constexpr_assertion_failed_{#__VA_ARGS__}._expected_to_be_greater_than_(expr).but_actual_value_was_((__VA_ARGS__));
+
+#endif // _MDSPAN_USE_CONSTEXPR_14
 
 // </editor-fold> end assert-like macros that don't break constexpr }}}1
 //==============================================================================

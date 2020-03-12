@@ -103,7 +103,7 @@ struct SimpleTileLayout2D {
       return row_tile_size_ * col_tile_size_;
     }
 
-    constexpr index_type
+    index_type
     tile_offset(index_type row, index_type col) const noexcept {
       // This could probably be more efficient, but for example purposes...
       auto col_tile = col / col_tile_size_;
@@ -112,7 +112,7 @@ struct SimpleTileLayout2D {
       return (col_tile * n_row_tiles() + row_tile) * tile_size();
     }
 
-    constexpr index_type
+    index_type
     offset_in_tile(index_type row, index_type col) const noexcept {
       auto t_row = row % row_tile_size_;
       auto t_col = col % col_tile_size_;

@@ -182,14 +182,15 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... Integral,
     /* requires */ (
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, index_type) /* && ... */) && sizeof...(Integral) == rank_dynamic()
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, index_type) /* && ... */)
+        && sizeof...(Integral) == rank_dynamic()
     )
   )
   MDSPAN_INLINE_FUNCTION
   constexpr explicit extents(Integral... dyn) noexcept
-    : __base_t{typename __base_t::__stored_type{
+    : __base_t(__base_t{typename __base_t::__stored_type{
         detail::__construct_partially_static_array_from_sizes_tag,
-        detail::__construct_partially_static_array_from_sizes_tag, dyn...}}
+        detail::__construct_partially_static_array_from_sizes_tag, dyn...}})
   { }
 
 
@@ -201,7 +202,8 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(std::array<IndexType, __base_t::__stored_type::__size_dynamic> const& dyn) noexcept
+  constexpr explicit
+  extents(std::array<IndexType, rank_dynamic()> const& dyn) noexcept
     : __base_t(__base_t{typename __base_t::stored_type{
         detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn}})
   { }

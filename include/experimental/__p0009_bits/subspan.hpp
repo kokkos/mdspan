@@ -91,6 +91,7 @@ _wrap_slice(std::pair<ptrdiff_t, ptrdiff_t> const& val, ptrdiff_t ext, ptrdiff_t
 
 //--------------------------------------------------------------------------------
 
+
 template <
   bool result=true,
   bool encountered_first_all=false,
@@ -168,6 +169,16 @@ struct ignore_layout_preservation : std::integral_constant<bool, false> {
   using encounter_all = ignore_layout_preservation;
   using encounter_scalar = ignore_layout_preservation;
 };
+
+template <class Layout>
+struct preserve_layout_analysis
+  : ignore_layout_preservation { };
+template <>
+struct preserve_layout_analysis<layout_right>
+  : preserve_layout_right_analysis<> { };
+template <>
+struct preserve_layout_analysis<layout_left>
+  : preserve_layout_left_analysis<> { };
 
 //--------------------------------------------------------------------------------
 
@@ -251,7 +262,6 @@ struct __assign_op_slice_handler<
          __partially_static_sizes<_Offsets..., 0>,
          __partially_static_sizes<_Exts..., _OldStaticExtent>,
          __partially_static_sizes<_Strides..., _OldStaticStride>> {
-    constexpr_assert_not_equal(-1, __slice.old_stride)
     return {
       __partially_static_sizes<_Offsets..., 0>(
         __construct_partially_static_array_from_sizes_tag,
@@ -352,16 +362,12 @@ constexpr auto _subspan_impl(
     _MDSPAN_FOLD_ASSIGN_LEFT(
       (
         detail::__assign_op_slice_handler<
-          typename conditional<
-            is_same<LP, layout_right>::value,
-            detail::preserve_layout_right_analysis<>,
-            typename conditional<
-              is_same<LP, layout_left>::value,
-              detail::preserve_layout_left_analysis<>,
-              detail::ignore_layout_preservation
-            >::type
-          >::type
-        >{}
+          detail::preserve_layout_analysis<LP>
+        >{
+          __partially_static_sizes<>{},
+          __partially_static_sizes<>{},
+          __partially_static_sizes<>{}
+        }
       ),
         /* = ... = */
       detail::_wrap_slice<
@@ -413,16 +419,12 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
       _MDSPAN_FOLD_ASSIGN_LEFT(
         (
           detail::__assign_op_slice_handler<
-            typename std::conditional<
-              std::is_same<LP, layout_right>::value,
-              detail::preserve_layout_right_analysis<>,
-              typename std::conditional<
-                std::is_same<LP, layout_left>::value,
-                detail::preserve_layout_left_analysis<>,
-                detail::ignore_layout_preservation
-              >::type
-            >::type
-          >{}
+            detail::preserve_layout_analysis<LP>
+          >{
+            __partially_static_sizes<>{},
+            __partially_static_sizes<>{},
+            __partially_static_sizes<>{}
+          }
         ),
         /* = ... = */
         detail::_wrap_slice<

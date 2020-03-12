@@ -52,11 +52,11 @@ namespace stdex = std::experimental;
 
 //================================================================================
 
-int main() {
-
+MDSPAN_INLINE_FUNCTION
+void test() {
   {
     // static sized
-    double buffer[2*3*4] = { };
+    double buffer[2 * 3 * 4] = {};
     auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::subspan(s1, 1, 1, stdex::all);
@@ -65,7 +65,7 @@ int main() {
 
   {
     // static sized
-    double buffer[2*3*4] = { };
+    double buffer[2 * 3 * 4] = {};
     auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
@@ -75,7 +75,7 @@ int main() {
 
   {
     // static sized, all subspans
-    double buffer[2*3*4] = { };
+    double buffer[2 * 3 * 4] = {};
     auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
@@ -86,7 +86,7 @@ int main() {
 
   {
     // static sized, all subspans
-    double buffer[2*3*4] = { };
+    double buffer[2 * 3 * 4] = {};
     auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
@@ -94,5 +94,12 @@ int main() {
     auto sub3 = stdex::subspan(sub2, 1);
     std::cout << std::boolalpha << (sub3() == 42) << std::endl;
   }
+}
 
+#ifdef __NVCC__
+__global__ void force_compile_test() { test(); }
+#endif
+
+int main() {
+  test();
 }

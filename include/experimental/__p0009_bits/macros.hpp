@@ -151,7 +151,7 @@
      MDSPAN_PP_REMOVE_PARENS(PAREN_PREQUALS) FNAME PAREN_PARAMS QUALS requires REQ \
      /**/
 #else
-#  define MDSPAN_CLOSE_ANGLE_REQUIRES(REQ) , int=std::enable_if_t<(REQ), int>(0)>
+#  define MDSPAN_CLOSE_ANGLE_REQUIRES(REQ) , std::enable_if_t<(REQ), int> = 0>
 #  define MDSPAN_FUNCTION_REQUIRES(PAREN_PREQUALS, FNAME, PAREN_PARAMS, QUALS, REQ) \
      MDSPAN_TEMPLATE_REQUIRES( \
        class __function_requires_ignored=void, \

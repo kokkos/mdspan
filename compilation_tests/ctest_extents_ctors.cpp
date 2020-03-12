@@ -101,7 +101,7 @@ MDSPAN_STATIC_TEST(
 MDSPAN_STATIC_TEST(
   !std::is_constructible<
     std::experimental::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>,
-    int, int
+    int
   >::value
 );
 

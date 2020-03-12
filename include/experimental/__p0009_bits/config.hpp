@@ -136,7 +136,7 @@
 #  if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) \
         || (!defined(__cpp_lib_integer_sequence) && MDSPAN_HAS_CXX_14) \
         /* as far as I can tell, libc++ seems to think this is a C++11 feature... */ \
-        || (defined(__GLIBCXX__) && __GLIBCXX__ > 20150422)
+        || ((defined(__GLIBCXX__) && __GLIBCXX__ > 20150422) && __GNUC__ < 5)
      // several compilers lie about integer_sequence working properly unless the C++14 standard is used
 #    define _MDSPAN_USE_INTEGER_SEQUENCE 1
 #  elif defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
@@ -167,6 +167,12 @@
 #  elif defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
      // appleclang seems to be missing the __cpp_lib_... macros, but doesn't seem to lie about C++14
 #    define _MDSPAN_USE_STANDARD_TRAIT_ALIASES 1
+#  endif
+#endif
+
+#ifndef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
+#  if __GNUC__ < 9
+#    define _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND 1
 #  endif
 #endif
 
