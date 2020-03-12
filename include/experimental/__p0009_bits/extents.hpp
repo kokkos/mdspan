@@ -246,7 +246,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   friend constexpr bool operator==(extents const& lhs, extents<RHS...> const& rhs) noexcept {
     return lhs._eq_impl(
-      rhs, std::integral_constant<bool, (sizeof...(Extents) == sizeof...(RHS))>{},
+      rhs, std::integral_constant<bool, (sizeof...(RHS) == rank())>{},
       make_index_sequence<sizeof...(RHS)>{}
     );
   }
@@ -255,7 +255,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   friend constexpr bool operator!=(extents const& lhs, extents<RHS...> const& rhs) noexcept {
     return lhs._not_eq_impl(
-      rhs, std::integral_constant<bool, (sizeof...(Extents) == sizeof...(RHS))>{},
+      rhs, std::integral_constant<bool, (sizeof...(RHS) == rank())>{},
       make_index_sequence<sizeof...(RHS)>{}
     );
   }
