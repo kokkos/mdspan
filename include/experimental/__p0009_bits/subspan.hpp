@@ -255,7 +255,7 @@ struct __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_scalar,
          __partially_static_sizes<_Offsets..., dynamic_extent>,
          __partially_static_sizes<_Exts...>,
-         __partially_static_sizes<_Strides...>> {
+         __partially_static_sizes<_Strides...>/* intentional space here to work around ICC bug*/> {
     return {
       __partially_static_sizes<_Offsets..., dynamic_extent>(
         __construct_partially_static_array_from_sizes_tag,
@@ -274,7 +274,7 @@ struct __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_all,
          __partially_static_sizes<_Offsets..., 0>,
          __partially_static_sizes<_Exts..., _OldStaticExtent>,
-         __partially_static_sizes<_Strides..., _OldStaticStride>> {
+         __partially_static_sizes<_Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
     return {
       __partially_static_sizes<_Offsets..., 0>(
         __construct_partially_static_array_from_sizes_tag,
@@ -297,7 +297,7 @@ struct __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_pair,
          __partially_static_sizes<_Offsets..., dynamic_extent>,
          __partially_static_sizes<_Exts..., dynamic_extent>,
-         __partially_static_sizes<_Strides..., _OldStaticStride>> {
+         __partially_static_sizes<_Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
     return {
       __partially_static_sizes<_Offsets..., dynamic_extent>(
         __construct_partially_static_array_from_sizes_tag,
