@@ -47,8 +47,9 @@
 #include "no_unique_address.hpp"
 #include "trait_backports.hpp" // enable_if
 
-#include <cstddef>
+#include <array>
 #include <utility> // integer_sequence
+#include <cstddef>
 
 namespace std {
 namespace experimental {
@@ -371,7 +372,7 @@ struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __standard_layout_psa() noexcept
-#ifdef __clang__
+#if defined(__clang__) || defined(_MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND)
   // As far as I can tell, there appears to be a bug in clang that's causing
   // this to be non-constexpr when it's defaulted.
   { }
@@ -439,8 +440,13 @@ struct __partially_static_sizes_tagged
   using __psa_impl_t = __standard_layout_psa<
       _Tag, ptrdiff_t, integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
   using __psa_impl_t::__psa_impl_t;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __partially_static_sizes_tagged() noexcept = default;
+  MDSPAN_INLINE_FUNCTION
+  constexpr __partially_static_sizes_tagged() noexcept
+#ifdef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
+    : __psa_impl_t() { }
+#else
+    = default;
+#endif
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __partially_static_sizes_tagged(
       __partially_static_sizes_tagged const &) noexcept = default;
@@ -456,9 +462,6 @@ struct __partially_static_sizes_tagged
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~__partially_static_sizes_tagged() noexcept = default;
 
-private:
-  template <ptrdiff_t...>
-  friend struct __partially_static_sizes;
   template <class _UTag>
   MDSPAN_FORCE_INLINE_FUNCTION constexpr explicit __partially_static_sizes_tagged(
     __partially_static_sizes_tagged<_UTag, __values_or_sentinals...> const& __vals
@@ -478,6 +481,11 @@ private:
   ) noexcept : __base_t(::std::move(__vals)) { }
 public:
   using __base_t::__base_t;
+
+#ifdef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
+  MDSPAN_INLINE_FUNCTION
+  constexpr __partially_static_sizes() noexcept : __base_t() { }
+#endif
   template <class _UTag>
   MDSPAN_FORCE_INLINE_FUNCTION constexpr __partially_static_sizes_tagged<
       _UTag, __values_or_sentinals...>

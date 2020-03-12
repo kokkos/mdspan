@@ -141,7 +141,7 @@ public:
   using base_t::base_t;
 
   MDSPAN_INLINE_FUNCTION constexpr typename base_t::extents_type extents() const noexcept {
-    return this->base_t::__ref();
+    return typename base_t::extents_type(this->base_t::__ref());
   };
 
   template <class... Integral>

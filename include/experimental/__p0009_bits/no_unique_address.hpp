@@ -45,7 +45,7 @@
 
 #include "macros.hpp"
 
-#include <type_traits>
+#include "trait_backports.hpp"
 
 namespace std {
 namespace experimental {
