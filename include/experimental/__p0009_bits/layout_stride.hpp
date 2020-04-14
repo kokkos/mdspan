@@ -198,19 +198,27 @@ public:
 
   // TODO @proposal-bug @proposal-extension layout stride needs this constructor
   // clang-format off
+#if defined(__INTEL_COMPILER)
+  // Work-around for an ICE. layout_stride won't properly SFINAE with ICC, but oh well
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr explicit),
     layout_stride_impl, (std::experimental::extents<Exts...> const& e), noexcept,
     /* requires */ (
       // remember that this also covers the zero strides case because an && fold on an empty pack is true
-#if defined(__INTEL_COMPILER)
-      // Work-around for an ICE. layout_stride won't properly SFINAE with ICC, but oh well
       true
-#else
-      _MDSPAN_FOLD_AND(Strides != dynamic_extent /* && ... */)
-#endif
     )
-  ) : __base_t(__base_t{__member_pair_t(e, __strides_storage_t())})
+  )
+#else
+  MDSPAN_FUNCTION_REQUIRES(
+    (MDSPAN_INLINE_FUNCTION constexpr explicit),
+    layout_stride_impl, (std::experimental::extents<Exts...> const& e), noexcept,
+    /* requires */ (
+      // remember that this also covers the zero strides case because an && fold on an empty pack is true
+      _MDSPAN_FOLD_AND(Strides != dynamic_extent /* && ... */)
+    )
+  )
+#endif
+  : __base_t(__base_t{__member_pair_t(e, __strides_storage_t())})
   { }
   // clang-format on
 

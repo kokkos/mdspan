@@ -211,7 +211,7 @@
 //==============================================================================
 // <editor-fold desc="inline variables"> {{{1
 
-#if _MDSPAN_USE_INLINE_VARIABLES
+#ifdef _MDSPAN_USE_INLINE_VARIABLES
 #  define _MDSPAN_INLINE_VARIABLE inline
 #else
 #  define _MDSPAN_INLINE_VARIABLE
@@ -610,4 +610,3 @@ struct __bools;
 
 // </editor-fold> end Pre-C++14 constexpr }}}1
 //==============================================================================
-
