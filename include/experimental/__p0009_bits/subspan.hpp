@@ -125,7 +125,7 @@ struct preserve_layout_right_analysis : integral_constant<bool, result> {
     // nothing else changes (though if they're true, it doesn't matter)
     encountered_first_all,
     encountered_first_pair
-  >;  
+  >;
 };
 
 template <
@@ -137,7 +137,7 @@ template <
 struct preserve_layout_left_analysis : integral_constant<bool, result> {
   using layout_type_if_preserved = layout_left;
   using encounter_pair = preserve_layout_left_analysis<
-    // Only the left-most slice can be a pair.  If we've encountered anything else, 
+    // Only the left-most slice can be a pair.  If we've encountered anything else,
     // we can't preserve any contiguous layout
     (encountered_first_scalar || encountered_first_all || encountered_first_pair) ? false : result,
     // These change in the expected ways
@@ -228,6 +228,7 @@ struct __assign_op_slice_handler<
   __extents_storage_t __exts;
   __strides_storage_t __strides;
 
+#ifdef __INTEL_COMPILER
 #if __INTEL_COMPILER <= 1800
   MDSPAN_INLINE_FUNCTION constexpr __assign_op_slice_handler(__assign_op_slice_handler&& __other) noexcept
     : __offsets(::std::move(__other.__offsets)), __exts(::std::move(__other.__exts)), __strides(::std::move(__other.__strides))
@@ -239,6 +240,7 @@ struct __assign_op_slice_handler<
   ) noexcept
     : __offsets(::std::move(__o)), __exts(::std::move(__e)), __strides(::std::move(__s))
   { }
+#endif
 #endif
 
 // Don't define this unless we need it; they have a cost to compile
