@@ -202,7 +202,7 @@ public:
 
   // TODO @proposal-bug @proposal-extension layout stride needs this constructor
   // clang-format off
-#if defined(__INTEL_COMPILER)
+#if defined(_MDSPAN_COMPILER_INTEL)
   // Work-around for an ICE. layout_stride won't properly SFINAE with ICC, but oh well
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr explicit),

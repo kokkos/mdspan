@@ -69,8 +69,38 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #define MDSPAN_HAS_CXX_14 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14)
 #define MDSPAN_HAS_CXX_17 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_17)
 
-#ifdef __apple_build_version__
-#  define _MDSPAN_COMPILER_APPLECLANG
+#ifndef _MDSPAN_COMPILER_CLANG
+#  if defined(__clang__)
+#    define _MDSPAN_COMPILER_CLANG __clang__
+#  endif
+#endif
+
+#if !defined(_MDSPAN_COMPILER_MSVC) && !defined(_MDSPAN_COMPILER_MSVC_CLANG)
+#  if defined(_MSC_VER)
+#    if !defined(_MDSPAN_COMPILER_CLANG)
+#      define _MDSPAN_COMPILER_MSVC _MSC_VER
+#    else
+#      define _MDSPAN_COMPILER_MSVC_CLANG _MSC_VER
+#    endif
+#  endif
+#endif
+
+#ifndef _MDSPAN_COMPILER_INTEL
+#  ifdef __INTEL_COMPILER
+#    define _MDSPAN_COMPILER_INTEL __INTEL_COMPILER
+#  endif
+#endif
+
+#ifndef _MDSPAN_COMPILER_APPLECLANG
+#  ifdef __apple_build_version__
+#    define _MDSPAN_COMPILER_APPLECLANG __apple_build_version__
+#  endif
+#endif
+
+#ifndef _MDSPAN_HAS_CUDA
+#  if defined(__CUDACC__)
+#    define _MDSPAN_HAS_CUDA __CUDACC__
+#  endif
 #endif
 
 #ifndef __has_cpp_attribute
@@ -135,7 +165,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #endif
 
 #ifndef _MDSPAN_USE_INTEGER_SEQUENCE
-#  ifdef _MSC_VER
+#  if defined(_MDSPAN_COMPILER_MSVC)
 #    if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304)
 #      define _MDSPAN_USE_INTEGER_SEQUENCE 1
 #    endif
@@ -148,7 +178,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
         || (defined(__GLIBCXX__) && __GLIBCXX__ > 20150422 && __GNUC__ < 5 && !defined(__INTEL_CXX11_MODE__))
      // several compilers lie about integer_sequence working properly unless the C++14 standard is used
 #    define _MDSPAN_USE_INTEGER_SEQUENCE 1
-#  elif defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
+#  elif defined(_MDSPAN_COMPILER_APPLE_CLANG) && MDSPAN_HAS_CXX_14
      // appleclang seems to be missing the __cpp_lib_... macros, but doesn't seem to lie about C++14 making
      // integer_sequence work
 #    define _MDSPAN_USE_INTEGER_SEQUENCE 1
@@ -156,7 +186,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #endif
 
 #ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
-#  ifdef _MSC_VER
+#  ifdef _MDSPAN_COMPILER_MSVC
 #    if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) && MDSPAN_HAS_CXX_14
 #      define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
 #    endif
@@ -180,8 +210,10 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #endif
 
 #ifndef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
-#  if __GNUC__ < 9
-#    define _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND 1
+#  ifdef __GNUC__
+#    if __GNUC__ < 9
+#      define _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND 1
+#    endif
 #  endif
 #endif
 

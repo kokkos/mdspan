@@ -76,7 +76,7 @@ struct __no_unique_address_emulation<
                 // won't be called at the right time, so don't use this
                 // specialization
                 _MDSPAN_TRAIT(is_trivially_destructible, _T)>> : 
-#ifdef _MSC_VER
+#ifdef _MDSPAN_COMPILER_MSVC
     // MSVC doesn't allow you to access public static member functions of a type
     // when you *happen* to privately inherit from that type.
     protected
