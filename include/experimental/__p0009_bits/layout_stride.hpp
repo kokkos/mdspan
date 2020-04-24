@@ -97,11 +97,11 @@ private:
   //----------------------------------------------------------------------------
 
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
-  template <class=make_index_sequence<sizeof...(Exts)>>
-  struct __impl;
-
+  template <class>
+  struct __impl_impl;
+  
   template <size_t... Idxs>
-  struct __impl<index_sequence<Idxs...>>
+  struct __impl_impl<index_sequence<Idxs...>>
   {
     template <class OtherExtents, ptrdiff_t... OtherStrides>
     MDSPAN_INLINE_FUNCTION
@@ -126,6 +126,10 @@ private:
       return __impl::_call_op_impl(self, (self.extents().template __extent<Idxs>() - 1)...) + 1;
     }
   };
+
+  // Can't use defaulted parameter in the __impl_impl template because of a bug in MSVC warning C4348.
+  using __impl = __impl_impl<make_index_sequence<sizeof...(Exts)>>;
+
 
   //----------------------------------------------------------------------------
 
@@ -285,7 +289,7 @@ public:
   )
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr ptrdiff_t operator()(Indices... idxs) const noexcept {
-    return __impl<>::_call_op_impl(*this, idxs...);
+    return __impl::_call_op_impl(*this, idxs...);
   }
 
   MDSPAN_INLINE_FUNCTION
@@ -296,7 +300,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr ptrdiff_t required_span_size() const noexcept {
     // assumes no negative strides; not sure if I'm allowed to assume that or not
-    return __impl<>::_req_span_size_impl(*this);
+    return __impl::_req_span_size_impl(*this);
   }
 
   // TODO @proposal-bug these (and other analogous operators) should be non-member functions
@@ -305,13 +309,13 @@ public:
   template<class OtherExtents, ptrdiff_t... OtherStaticStrides>
   MDSPAN_INLINE_FUNCTION
   constexpr bool operator==(layout_stride_impl<OtherExtents, OtherStaticStrides...> const& other) const noexcept {
-    return __impl<>::_eq_impl(*this, other);
+    return __impl::_eq_impl(*this, other);
   }
 
   template<class OtherExtents, ptrdiff_t... OtherStaticStrides>
   MDSPAN_INLINE_FUNCTION
   constexpr bool operator!=(layout_stride_impl<OtherExtents, OtherStaticStrides...> const& other) const noexcept {
-    return __impl<>::_not_eq_impl(*this, other);
+    return __impl::_not_eq_impl(*this, other);
   }
 
 };
