@@ -75,7 +75,19 @@ struct __no_unique_address_emulation<
                 // If the type isn't trivially destructible, its destructor
                 // won't be called at the right time, so don't use this
                 // specialization
-                _MDSPAN_TRAIT(is_trivially_destructible, _T)>> : private _T {
+                _MDSPAN_TRAIT(is_trivially_destructible, _T)>> : 
+#ifdef _MSC_VER
+    // MSVC doesn't allow you to access public static member functions of a type
+    // when you *happen* to privately inherit from that type.
+    protected
+#else
+    // But we still want this to be private if possible so that we don't accidentally 
+    // access members of _T directly rather than calling __ref() first, which wouldn't
+    // work if _T happens to be stateful and thus we're using the unspecialized definition
+    // of __no_unique_address_emulation above.
+    private
+#endif
+    _T {
   using __stored_type = _T;
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__ref() const noexcept {
     return *static_cast<_T const *>(this);

@@ -83,7 +83,6 @@ template <class _Tag, class _T, class _ValsSeq, _T __sentinal = dynamic_extent,
 struct __standard_layout_psa;
 
 //==============================================================================
-
 // Static case
 template <class _Tag, class _T, _T __value, _T... __values_or_sentinals,
           _T __sentinal, size_t _Idx, size_t... _Idxs>
