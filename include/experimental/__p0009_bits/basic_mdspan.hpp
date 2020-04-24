@@ -82,11 +82,11 @@ private:
   using __accessor_base_t = detail::__no_unique_address_emulation<AccessorPolicy, 1>;
 
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
-  template <class=make_index_sequence<sizeof...(Exts)>>
-  struct __impl;
+  template <class>
+  struct __impl_impl;
 
   template <size_t... Idxs>
-  struct __impl<index_sequence<Idxs...>>
+  struct __impl_impl<index_sequence<Idxs...>>
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ptrdiff_t __size(basic_mdspan const& __self) noexcept {
@@ -98,6 +98,9 @@ private:
       return __self.__accessor_ref().access(__self.__pointer_ref(), __self.__mapping_ref()(indices[Idxs]...));
     }
   };
+
+  // Can't use defaulted parameter in the __impl_impl template because of a bug in MSVC warning C4348.
+  using __impl = make_index_sequence<sizeof...(Exts)>;
 
 public:
   
@@ -261,7 +264,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(const array<IndexType, N>& indices) const noexcept
   {
-    return __impl<>::template __callop<reference>(*this, indices);
+    return __impl::template __callop<reference>(*this, indices);
   }
 
   // TODO @proposal-bug The proposal is missing constexpr here
@@ -278,7 +281,7 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept { return __mapping_ref().extents(); };
   MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
   MDSPAN_INLINE_FUNCTION constexpr index_type size() const noexcept {
-    return __impl<>::__size(*this);
+    return __impl::__size(*this);
   };
 
   // TODO @proposal-bug for non-unique, non-contiguous mappings this is unimplementable
