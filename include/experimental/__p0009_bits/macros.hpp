@@ -48,31 +48,35 @@
 
 #include <type_traits> // std::is_void
 
+#ifndef _MDSPAN_HOST_DEVICE
+#  if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
+#    define _MDSPAN_HOST_DEVICE __host__ __device__
+#  else
+#    define _MDSPAN_HOST_DEVICE
+#  endif
+#endif
+
 #ifndef MDSPAN_FORCE_INLINE_FUNCTION
-#  ifdef _MSC_VER // Microsoft compilers
-#    define MDSPAN_FORCE_INLINE_FUNCTION __forceinline
-#  elif defined(__CUDA_ARCH__)
-#    define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline)) __host__ __device__
+#  ifdef _MDSPAN_COMPILER_MSVC // Microsoft compilers
+#    define MDSPAN_FORCE_INLINE_FUNCTION __forceinline _MDSPAN_HOST_DEVICE
 #  else
-#    define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline))
+#    define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline)) _MDSPAN_HOST_DEVICE
 #  endif
 #endif
+
 #ifndef MDSPAN_INLINE_FUNCTION
-#  if defined(__CUDA_ARCH__)
-#    define MDSPAN_INLINE_FUNCTION inline __host__ __device__
-#  else
-#    define MDSPAN_INLINE_FUNCTION inline
-#  endif
+#  define MDSPAN_INLINE_FUNCTION inline _MDSPAN_HOST_DEVICE
 #endif
+
+// In CUDA defaulted functions do not need host device markup
 #ifndef MDSPAN_INLINE_FUNCTION_DEFAULTED
-#  define MDSPAN_INLINE_FUNCTION_DEFAULTED inline
+#  define MDSPAN_INLINE_FUNCTION_DEFAULTED
 #endif
 
 //==============================================================================
 // <editor-fold desc="Preprocessor helpers"> {{{1
 
-
-#ifdef _MSC_VER // Microsoft compilers
+#if defined(_MDSPAN_COMPILER_MSVC) // Microsoft compilers
 
 #define MDSPAN_PP_COUNT(...) \
   _MDSPAN_PP_INTERNAL_EXPAND_ARGS_PRIVATE( \
@@ -161,7 +165,7 @@
 #endif
 
 
-#ifdef _MSC_VER
+#if defined(_MDSPAN_COMPILER_MSVC)
 #  define MDSPAN_TEMPLATE_REQUIRES(...) \
       MDSPAN_PP_CAT( \
         MDSPAN_PP_CAT(MDSPAN_TEMPLATE_REQUIRES_, MDSPAN_PP_COUNT(__VA_ARGS__))\

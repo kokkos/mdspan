@@ -53,7 +53,7 @@
 //==============================================================================
 // <editor-fold desc="Variable template trait backports (e.g., is_void_v)"> {{{1
 
-#if _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
+#ifdef _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
 
 #if _MDSPAN_USE_VARIABLE_TEMPLATES
 namespace std {
