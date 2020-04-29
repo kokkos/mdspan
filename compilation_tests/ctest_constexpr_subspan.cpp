@@ -141,9 +141,12 @@ dynamic_extent_1d_pair_each() {
   return result == 15;
 }
 
+// MSVC ICE
+#ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<stdex::layout_right>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<stdex::layout_stride<1>>());
+#endif
 
 // </editor-fold> end 1D dynamic extent pair slice subspan }}}1
 //==============================================================================
@@ -168,9 +171,12 @@ dynamic_extent_1d_all_three() {
   return result == 15;
 }
 
+// MSVC ICE
+#ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<stdex::layout_right>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<stdex::layout_stride<1>>());
+#endif
 
 // </editor-fold> end 1D dynamic extent pair, all, ptrdifft slice }}}1
 //==============================================================================
@@ -216,10 +222,14 @@ dynamic_extent_2d_idx_all_idx() {
   constexpr_assert_equal(21, result);
   return result == 21;
 }
+
+// MSVC ICE
+#ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_right>());
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_stride<1, 2>>());
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_stride<3, 1>>());
+#endif
 
 //==============================================================================
 
@@ -242,6 +252,8 @@ simple_static_subspan_test_1(int add_to_row) {
   return result;
 }
 
+// MSVC ICE
+#ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(
   // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9) = 108
   simple_static_subspan_test_1(1) == 108
@@ -256,6 +268,7 @@ MDSPAN_STATIC_TEST(
   // -1 - 2 - 3 + 7 + 8 + 9 = 18
   stdex::mdspan<double, simple_static_subspan_test_1(-1)>{nullptr}.extent(0) == 18
 );
+#endif 
 
 //==============================================================================
 
@@ -293,10 +306,13 @@ mixed_subspan_left_test_2() {
   return result == 108;
 }
 
+// MSVC ICE
+#ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(
   // 2 * (1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)) / 2 = 108
   mixed_subspan_left_test_2()
 );
+#endif
 
 //==============================================================================
 
@@ -332,12 +348,15 @@ mixed_subspan_test_3() {
   return result == 71;
 }
 
+// MSVC ICE
+#ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(
   mixed_subspan_test_3<stdex::layout_right>()
 );
 MDSPAN_STATIC_TEST(
   mixed_subspan_test_3<stdex::layout_stride<5, 1>>()
 );
+#endif
 
 //==============================================================================
 

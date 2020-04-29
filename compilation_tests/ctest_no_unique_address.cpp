@@ -104,11 +104,14 @@ MDSPAN_STATIC_TEST(
   >) == 2 * sizeof(ptrdiff_t)
 );
 
+// Fails on MSVC which adds some padding 
+#ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(
   std::is_empty<stdex::layout_stride<3, 4, 5>::template mapping<
     stdex::extents<3, 4, 5>
   >>::value
 );
+#endif
 
 // </editor-fold> end layouts }}}1
 //==============================================================================
