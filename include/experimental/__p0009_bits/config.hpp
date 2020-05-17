@@ -143,9 +143,11 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #endif
 
 #ifndef _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
-#  if !(defined(__cpp_lib_type_trait_variable_templates) && __cpp_lib_type_trait_variable_templates >= 201510L) \
-          || !MDSPAN_HAS_CXX_17
-#    define _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS 1
+#  if (!(defined(__cpp_lib_type_trait_variable_templates) && __cpp_lib_type_trait_variable_templates >= 201510L) \
+          || !MDSPAN_HAS_CXX_17)
+#    if !(defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_17)
+#      define _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS 1
+#    endif
 #  endif
 #endif
 
@@ -178,7 +180,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
         || (defined(__GLIBCXX__) && __GLIBCXX__ > 20150422 && __GNUC__ < 5 && !defined(__INTEL_CXX11_MODE__))
      // several compilers lie about integer_sequence working properly unless the C++14 standard is used
 #    define _MDSPAN_USE_INTEGER_SEQUENCE 1
-#  elif defined(_MDSPAN_COMPILER_APPLE_CLANG) && MDSPAN_HAS_CXX_14
+#  elif defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
      // appleclang seems to be missing the __cpp_lib_... macros, but doesn't seem to lie about C++14 making
      // integer_sequence work
 #    define _MDSPAN_USE_INTEGER_SEQUENCE 1
