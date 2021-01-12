@@ -5,7 +5,7 @@ function(mdspan_add_benchmark EXENAME)
   target_include_directories(${EXENAME} PUBLIC
       $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/benchmarks>
   )
-endfunction(mdspan_add_benchmark)
+endfunction()
 
 find_package(benchmark REQUIRED)
 
@@ -45,7 +45,7 @@ function(mdspan_add_cuda_benchmark EXENAME)
   if(_benchmark_libs_old MATCHES "-pthread")
     target_compile_options(${EXENAME} PUBLIC "-Xcompiler=-pthread")
   endif()
-endfunction(mdspan_add_cuda_benchmark)
+endfunction()
 
 if(MDSPAN_ENABLE_OPENMP)
   find_package(OpenMP)
@@ -63,7 +63,7 @@ function(mdspan_add_openmp_benchmark EXENAME)
       message(WARNING "Not adding target ${EXENAME} because OpenMP was not found")
     endif()
   endif()
-endfunction(mdspan_add_openmp_benchmark)
+endfunction()
 
 add_subdirectory(sum)
 add_subdirectory(matvec)
