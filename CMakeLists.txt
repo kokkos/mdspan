@@ -12,7 +12,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 ################################################################################
 
 
-# Determine if fmt is built as a subproject (using add_subdirectory)
+# Determine if MDSpan is built as a subproject (using add_subdirectory)
 # or if it is the master project.
 set(MASTER_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -124,22 +124,23 @@ target_include_directories(mdspan INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
+target_compile_features(mdspan INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
 ################################################################################
 
-install(TARGETS mdspan EXPORT mdspanTargets
+install(TARGETS mdspan EXPORT MDSpanTargets
   INCLUDES DESTINATION include
 )
 
-install(EXPORT mdspanTargets
-    FILE mdspanTargets.cmake
+install(EXPORT MDSpanTargets
+    FILE MDSpanTargets.cmake
     NAMESPACE std::
-    DESTINATION lib/cmake
+    DESTINATION lib/cmake/MDSpan
 )
 
 export(TARGETS mdspan
     NAMESPACE std::
-    FILE mdspanTargets.cmake
+    FILE MDSpanTargets.cmake
 )
 
 install(DIRECTORY include/experimental DESTINATION include)
@@ -147,14 +148,14 @@ install(DIRECTORY include/experimental DESTINATION include)
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/MDSpanConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfig.cmake
-  INSTALL_DESTINATION lib/cmake
+  INSTALL_DESTINATION lib/cmake/MDSpan
 )
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfigVersion.cmake
   COMPATIBILITY SameMajorVersion
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfigVersion.cmake
-    DESTINATION lib/cmake
+  DESTINATION lib/cmake/MDSpan
 )
 
 ################################################################################
