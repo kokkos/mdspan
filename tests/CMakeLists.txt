@@ -30,6 +30,7 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
         ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
         EXCLUDE_FROM_ALL)
 
+mdspan_add_test(test_extents)
 mdspan_add_test(test_contiguous_layouts)
 mdspan_add_test(test_layout_ctors)
 mdspan_add_test(test_layout_stride)
