@@ -128,34 +128,34 @@ target_compile_features(mdspan INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
 ################################################################################
 
-install(TARGETS mdspan EXPORT MDSpanTargets
+install(TARGETS mdspan EXPORT mdspanTargets
   INCLUDES DESTINATION include
 )
 
-install(EXPORT MDSpanTargets
-    FILE MDSpanTargets.cmake
+install(EXPORT mdspanTargets
+    FILE mdspanTargets.cmake
     NAMESPACE std::
-    DESTINATION lib/cmake/MDSpan
+    DESTINATION lib/cmake/mdspan
 )
 
 export(TARGETS mdspan
     NAMESPACE std::
-    FILE MDSpanTargets.cmake
+    FILE mdspanTargets.cmake
 )
 
 install(DIRECTORY include/experimental DESTINATION include)
 
 include(CMakePackageConfigHelpers)
-configure_package_config_file(cmake/MDSpanConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfig.cmake
-  INSTALL_DESTINATION lib/cmake/MDSpan
+configure_package_config_file(cmake/mdspanConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfig.cmake
+  INSTALL_DESTINATION lib/cmake/mdspan
 )
-write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfigVersion.cmake
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/mdspanConfigVersion.cmake
   COMPATIBILITY SameMajorVersion
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/MDSpanConfigVersion.cmake
-  DESTINATION lib/cmake/MDSpan
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfigVersion.cmake
+  DESTINATION lib/cmake/mdspan
 )
 
 ################################################################################

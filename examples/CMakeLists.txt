@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12...3.19)
 project(example LANGUAGES CXX)
 
 if(NOT TARGET std::mdspan)
-  find_package(MDSpan REQUIRED)
+  find_package(mdspan REQUIRED)
 endif()
 
 function(mdspan_add_example EXENAME)
