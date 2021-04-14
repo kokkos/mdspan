@@ -11,18 +11,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 ################################################################################
 
-
-# Determine if MDSpan is built as a subproject (using add_subdirectory)
-# or if it is the master project.
-set(MASTER_PROJECT OFF)
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  set(MASTER_PROJECT ON)
-  message(STATUS "CMake version: ${CMAKE_VERSION}")
-endif()
-
-
-option(MDSPAN_ENABLE_TESTS "Enable tests." ${MASTER_PROJECT})
-option(MDSPAN_ENABLE_EXAMPLES "Build examples." ${MASTER_PROJECT})
+option(MDSPAN_ENABLE_TESTS "Enable tests." Off)
+option(MDSPAN_ENABLE_EXAMPLES "Build examples." Off)
 option(MDSPAN_ENABLE_BENCHMARKS "Enable benchmarks." Off)
 option(MDSPAN_ENABLE_COMP_BENCH "Enable compilation benchmarks." Off)
 option(MDSPAN_ENABLE_CUDA "Enable Cuda tests/benchmarks/examples if tests/benchmarks/examples are enabled." Off)
