@@ -1,8 +1,15 @@
+cmake_minimum_required(VERSION 3.12...3.19)
+
+project(example LANGUAGES CXX)
+
+if(NOT TARGET std::mdspan)
+  find_package(mdspan REQUIRED)
+endif()
 
 function(mdspan_add_example EXENAME)
   add_executable(${EXENAME} ${EXENAME}.cpp)
-  target_link_libraries(${EXENAME} mdspan)
-endfunction(mdspan_add_example)
+  target_link_libraries(${EXENAME} std::mdspan)
+endfunction()
 
 add_subdirectory(dot_product)
 add_subdirectory(subspan)
