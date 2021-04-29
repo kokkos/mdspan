@@ -119,7 +119,8 @@ TYPED_TEST(TestExtents, copy_ctor) {
 }
 
 TYPED_TEST(TestExtents, copy_assign) {
-  typename TestFixture::extents_type e = this->exts;
+  typename TestFixture::extents_type e;
+  e = this->exts;
   EXPECT_EQ(e, this->exts);
 }
 
