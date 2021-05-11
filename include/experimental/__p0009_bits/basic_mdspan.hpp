@@ -95,12 +95,12 @@ private:
     template <class ReferenceType, class IndexType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ReferenceType __callop(basic_mdspan const& __self, const array<IndexType, N>& indices) noexcept {
-      return __self.__accessor_ref().access(__self.__pointer_ref(), __self.__mapping_ref()(indices[Idxs]...));
+      return __self.__accessor_ref().access(__self.__ptr_ref(), __self.__mapping_ref()(indices[Idxs]...));
     }
   };
 
   // Can't use defaulted parameter in the __impl_impl template because of a bug in MSVC warning C4348.
-  using __impl = make_index_sequence<sizeof...(Exts)>;
+  using __impl = __impl_impl<make_index_sequence<sizeof...(Exts)>>;
 
 public:
   
