@@ -46,6 +46,7 @@
 #include "macros.hpp"
 
 #include <cstddef> // ptrdiff_t
+#include <type_traits> // add_const
 
 namespace std {
 namespace experimental {
@@ -57,6 +58,12 @@ struct accessor_basic {
   using element_type = ElementType;
   using reference = ElementType&;
   using pointer = ElementType*;
+
+  MDSPAN_INLINE_FUNCTION
+  constexpr
+  operator accessor_basic<typename add_const<ElementType>::type>() const noexcept {
+    return {};
+  }
 
   MDSPAN_INLINE_FUNCTION
   constexpr pointer
