@@ -1,0 +1,43 @@
+name: CMake
+
+on: [push, pull_request]
+
+env:
+  BUILD_TYPE: RelWithDebInfo
+
+jobs:
+  build-mdspan:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Install gtest manually
+      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{github.workspace}}/mdspan-build
+      
+    - name: Check Out
+      uses: actions/checkout@v2
+      with:
+        path: ${{github.workspace}}/mdspan-src
+      
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-build
+      run: cmake $GITHUB_WORKSPACE/mdspan-src -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON
+      
+    - name: Build
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-build
+      run: make
+      
+    - name: Test
+      working-directory: ${{github.workspace}}/mdspan-build
+      shell: bash
+      run: ctest
+            
+    - name: Install
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-build
+      run: make install
