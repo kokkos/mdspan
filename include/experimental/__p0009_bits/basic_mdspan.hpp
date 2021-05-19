@@ -95,7 +95,7 @@ private:
     template <class ReferenceType, class IndexType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ReferenceType __callop(basic_mdspan const& __self, const array<IndexType, N>& indices) noexcept {
-      return __self.__accessor_ref().access(__self.__pointer_ref(), __self.__mapping_ref()(indices[Idxs]...));
+      return __self.__accessor_ref().access(__self.__ptr_ref(), __self.__mapping_ref()(indices[Idxs]...));
     }
   };
 
@@ -103,7 +103,7 @@ private:
   using __impl = make_index_sequence<sizeof...(Exts)>;
 
 public:
-  
+
   //--------------------------------------------------------------------------------
   // Domain and codomain types
 
@@ -264,7 +264,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(const array<IndexType, N>& indices) const noexcept
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return __impl_impl<__impl>::template __callop<reference>(*this, indices);
   }
 
   // TODO @proposal-bug The proposal is missing constexpr here
