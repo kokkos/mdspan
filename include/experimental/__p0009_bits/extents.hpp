@@ -190,7 +190,7 @@ public:
   constexpr explicit extents(Integral... dyn) noexcept
     : __base_t(__base_t{typename __base_t::__stored_type{
         detail::__construct_partially_static_array_from_sizes_tag,
-        detail::__construct_partially_static_array_from_sizes_tag, dyn...}})
+        detail::__construct_partially_static_array_from_sizes_tag, static_cast<size_t>(dyn)...}})
   { }
 
 
