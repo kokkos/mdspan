@@ -57,11 +57,11 @@ namespace experimental {
 
 namespace detail {
 
-template <ptrdiff_t... Extents, ptrdiff_t... OtherExtents>
+template <size_t... Extents, size_t... OtherExtents>
 static constexpr std::false_type _check_compatible_extents(
-  std::false_type, std::integer_sequence<ptrdiff_t, Extents...>, std::integer_sequence<ptrdiff_t, OtherExtents...>
+  std::false_type, std::integer_sequence<size_t, Extents...>, std::integer_sequence<size_t, OtherExtents...>
 ) noexcept { return { }; }
-template <ptrdiff_t... Extents, ptrdiff_t... OtherExtents>
+template <size_t... Extents, size_t... OtherExtents>
 static std::integral_constant<
   bool,
   _MDSPAN_FOLD_AND(
@@ -73,21 +73,21 @@ static std::integral_constant<
   )
 >
 _check_compatible_extents(
-  std::true_type, std::integer_sequence<ptrdiff_t, Extents...>, std::integer_sequence<ptrdiff_t, OtherExtents...>
+  std::true_type, std::integer_sequence<size_t, Extents...>, std::integer_sequence<size_t, OtherExtents...>
 ) noexcept { return { }; }
 
 struct __extents_tag { };
 
 } // end namespace detail
 
-template <ptrdiff_t... Extents>
+template <size_t... Extents>
 class extents
   : private detail::__no_unique_address_emulation<
       detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>>
 {
 public:
 
-  using index_type = ptrdiff_t;
+  using size_type = size_t;
 
   using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>;
   using __base_t = detail::__no_unique_address_emulation<__storage_t>;
@@ -102,18 +102,18 @@ public:
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
   static constexpr
-  index_type _static_extent_impl(size_t n, std::integer_sequence<size_t, Idxs...>) noexcept {
+  size_type _static_extent_impl(size_t n, std::integer_sequence<size_t, Idxs...>) noexcept {
     return _MDSPAN_FOLD_PLUS_RIGHT(((Idxs == n) ? Extents : 0), /* + ... + */ 0);
   }
 
-  template <ptrdiff_t...>
+  template <size_t...>
   friend class extents;
 
 
-  template <ptrdiff_t... OtherExtents, size_t... Idxs>
+  template <size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
   constexpr bool _eq_impl(std::experimental::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return false; }
-  template <ptrdiff_t... OtherExtents, size_t... Idxs>
+  template <size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
   constexpr bool _eq_impl(
     std::experimental::extents<OtherExtents...> other,
@@ -124,10 +124,10 @@ public:
     );
   }
 
-  template <ptrdiff_t... OtherExtents, size_t... Idxs>
+  template <size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
   constexpr bool _not_eq_impl(std::experimental::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return true; }
-  template <ptrdiff_t... OtherExtents, size_t... Idxs>
+  template <size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
   constexpr bool _not_eq_impl(
     std::experimental::extents<OtherExtents...> other,
@@ -163,13 +163,13 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~extents() noexcept = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
-    ptrdiff_t... OtherExtents,
+    size_t... OtherExtents,
     /* requires */ (
       /* multi-stage check to protect from invalid pack expansion when sizes don't match? */
       decltype(detail::_check_compatible_extents(
         std::integral_constant<bool, sizeof...(Extents) == sizeof...(OtherExtents)>{},
-        std::integer_sequence<ptrdiff_t, Extents...>{},
-        std::integer_sequence<ptrdiff_t, OtherExtents...>{}
+        std::integer_sequence<size_t, Extents...>{},
+        std::integer_sequence<size_t, OtherExtents...>{}
       ))::value
     )
   )
@@ -182,7 +182,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... Integral,
     /* requires */ (
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, index_type) /* && ... */)
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */)
         && sizeof...(Integral) == rank_dynamic()
     )
   )
@@ -198,7 +198,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class IndexType,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, IndexType, index_type)
+      _MDSPAN_TRAIT(is_convertible, IndexType, size_type)
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -209,13 +209,13 @@ public:
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
-    ptrdiff_t... OtherExtents,
+    size_t... OtherExtents,
     /* requires */ (
       /* multi-stage check to protect from invalid pack expansion when sizes don't match? */
       decltype(detail::_check_compatible_extents(
         std::integral_constant<bool, sizeof...(Extents) == sizeof...(OtherExtents)>{},
-        std::integer_sequence<ptrdiff_t, Extents...>{},
-        std::integer_sequence<ptrdiff_t, OtherExtents...>{}
+        std::integer_sequence<size_t, Extents...>{},
+        std::integer_sequence<size_t, OtherExtents...>{}
       ))::value
     )
   )
@@ -230,19 +230,19 @@ public:
   
   MDSPAN_INLINE_FUNCTION
   static constexpr
-  index_type static_extent(size_t n) noexcept {
+  size_type static_extent(size_t n) noexcept {
     return _static_extent_impl(n, std::make_integer_sequence<size_t, sizeof...(Extents)>{});
   }
 
   MDSPAN_INLINE_FUNCTION
   constexpr
-  index_type extent(size_t n) const noexcept {
+  size_type extent(size_t n) const noexcept {
     return __storage().__get(n);
   }
 
   //--------------------------------------------------------------------------------
 
-  template<ptrdiff_t... RHS>
+  template<size_t... RHS>
   MDSPAN_INLINE_FUNCTION
   friend constexpr bool operator==(extents const& lhs, extents<RHS...> const& rhs) noexcept {
     return lhs._eq_impl(
@@ -251,7 +251,7 @@ public:
     );
   }
 
-  template<ptrdiff_t... RHS>
+  template<size_t... RHS>
   MDSPAN_INLINE_FUNCTION
   friend constexpr bool operator!=(extents const& lhs, extents<RHS...> const& rhs) noexcept {
     return lhs._not_eq_impl(
@@ -274,14 +274,14 @@ public:  // (but not really)
   template <size_t N>
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr
-  index_type __extent() const noexcept {
+  size_type __extent() const noexcept {
     return __storage().template __get_n<N>();
   }
 
-  template <size_t N, ptrdiff_t Default=dynamic_extent>
+  template <size_t N, size_t Default=dynamic_extent>
   MDSPAN_INLINE_FUNCTION
   static constexpr
-  index_type __static_extent() noexcept {
+  size_type __static_extent() noexcept {
     return __storage_t::template __get_static_n<N, Default>();
   }
 

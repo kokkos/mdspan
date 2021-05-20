@@ -48,20 +48,20 @@
 namespace stdex = std::experimental;
 
 template <class> struct TestExtents;
-template <ptrdiff_t... Extents, ptrdiff_t... DynamicSizes>
+template <size_t... Extents, size_t... DynamicSizes>
 struct TestExtents<std::tuple<
   stdex::extents<Extents...>,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>
+  std::integer_sequence<size_t, DynamicSizes...>
 >> : public ::testing::Test {
   using extents_type = stdex::extents<Extents...>;
-  const std::array<ptrdiff_t, sizeof...(Extents)> static_sizes { Extents... };
-  const std::array<ptrdiff_t, sizeof...(DynamicSizes)> dyn_sizes { DynamicSizes... };
+  const std::array<size_t, sizeof...(Extents)> static_sizes { Extents... };
+  const std::array<size_t, sizeof...(DynamicSizes)> dyn_sizes { DynamicSizes... };
   extents_type exts { DynamicSizes... };
 };
 
-template <ptrdiff_t... Ds>
-using _sizes = std::integer_sequence<ptrdiff_t, Ds...>;
-template <ptrdiff_t... Ds>
+template <size_t... Ds>
+using _sizes = std::integer_sequence<size_t, Ds...>;
+template <size_t... Ds>
 using _exts = stdex::extents<Ds...>;
 
 using extents_test_types =
@@ -125,12 +125,12 @@ TYPED_TEST(TestExtents, copy_assign) {
 }
 
 template <class> struct TestExtentsCompatCtors;
-template <ptrdiff_t... Extents, ptrdiff_t... DynamicSizes, ptrdiff_t... Extents2, ptrdiff_t... DynamicSizes2>
+template <size_t... Extents, size_t... DynamicSizes, size_t... Extents2, size_t... DynamicSizes2>
 struct TestExtentsCompatCtors<std::tuple<
   stdex::extents<Extents...>,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>,
+  std::integer_sequence<size_t, DynamicSizes...>,
   stdex::extents<Extents2...>,
-  std::integer_sequence<ptrdiff_t, DynamicSizes2...>
+  std::integer_sequence<size_t, DynamicSizes2...>
 >> : public ::testing::Test {
   using extents_type1 = stdex::extents<Extents...>;
   using extents_type2 = stdex::extents<Extents2...>;

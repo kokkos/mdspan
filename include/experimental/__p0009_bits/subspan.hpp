@@ -61,30 +61,30 @@ namespace experimental {
 
 namespace detail {
 
-template <ptrdiff_t OldExtent, ptrdiff_t OldStaticStride, class T>
+template <size_t OldExtent, size_t OldStaticStride, class T>
 struct _slice_wrap {
   T slice;
-  ptrdiff_t old_extent;
-  ptrdiff_t old_stride;
+  size_t old_extent;
+  size_t old_stride;
 };
 
 //--------------------------------------------------------------------------------
 
-template <ptrdiff_t OldExtent, ptrdiff_t OldStaticStride>
+template <size_t OldExtent, size_t OldStaticStride>
 MDSPAN_INLINE_FUNCTION constexpr
-_slice_wrap<OldExtent, OldStaticStride, ptrdiff_t>
-_wrap_slice(ptrdiff_t val, ptrdiff_t ext, ptrdiff_t stride) { return { val, ext, stride }; }
+_slice_wrap<OldExtent, OldStaticStride, size_t>
+_wrap_slice(size_t val, size_t ext, size_t stride) { return { val, ext, stride }; }
 
-template <ptrdiff_t OldExtent, ptrdiff_t OldStaticStride>
+template <size_t OldExtent, size_t OldStaticStride>
 MDSPAN_INLINE_FUNCTION constexpr
 _slice_wrap<OldExtent, OldStaticStride, all_type>
-_wrap_slice(all_type val, ptrdiff_t ext, ptrdiff_t stride) { return { val, ext, stride }; }
+_wrap_slice(all_type val, size_t ext, size_t stride) { return { val, ext, stride }; }
 
 // TODO generalize this to anything that works with std::get<0> and std::get<1>
-template <ptrdiff_t OldExtent, ptrdiff_t OldStaticStride>
+template <size_t OldExtent, size_t OldStaticStride>
 MDSPAN_INLINE_FUNCTION constexpr
-_slice_wrap<OldExtent, OldStaticStride, std::pair<ptrdiff_t, ptrdiff_t>>
-_wrap_slice(std::pair<ptrdiff_t, ptrdiff_t> const& val, ptrdiff_t ext, ptrdiff_t stride)
+_slice_wrap<OldExtent, OldStaticStride, std::pair<size_t, size_t>>
+_wrap_slice(std::pair<size_t, size_t> const& val, size_t ext, size_t stride)
 {
   return { val, ext, stride };
 }
@@ -196,9 +196,9 @@ struct __assign_op_slice_handler;
 /* clang-format: off */
 template <
   class _PreserveLayoutAnalysis,
-  ptrdiff_t... _Offsets,
-  ptrdiff_t... _Exts,
-  ptrdiff_t... _Strides,
+  size_t... _Offsets,
+  size_t... _Exts,
+  size_t... _Strides,
   size_t... _OffsetIdxs,
   size_t... _ExtIdxs,
   size_t... _StrideIdxs>
@@ -248,11 +248,11 @@ struct __assign_op_slice_handler<
   using __extents_type = ::std::experimental::extents<_Exts...>;
 #endif
 
-  // For ptrdiff_t slice, skip the extent and stride, but add an offset corresponding to the value
-  template <ptrdiff_t _OldStaticExtent, ptrdiff_t _OldStaticStride>
+  // For size_t slice, skip the extent and stride, but add an offset corresponding to the value
+  template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, ptrdiff_t>&& __slice) noexcept
+  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, size_t>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_scalar,
          __partially_static_sizes<_Offsets..., dynamic_extent>,
@@ -268,7 +268,7 @@ struct __assign_op_slice_handler<
   }
 
   // For a std::all, offset 0 and old extent
-  template <ptrdiff_t _OldStaticExtent, ptrdiff_t _OldStaticStride>
+  template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
   operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, all_type>&& __slice) noexcept
@@ -280,7 +280,7 @@ struct __assign_op_slice_handler<
     return {
       __partially_static_sizes<_Offsets..., 0>(
         __construct_partially_static_array_from_sizes_tag,
-        __offsets.template __get_n<_OffsetIdxs>()..., ptrdiff_t(0)),
+        __offsets.template __get_n<_OffsetIdxs>()..., size_t(0)),
       __partially_static_sizes<_Exts..., _OldStaticExtent>(
         __construct_partially_static_array_from_sizes_tag,
         __exts.template __get_n<_ExtIdxs>()..., __slice.old_extent),
@@ -291,10 +291,10 @@ struct __assign_op_slice_handler<
   }
 
   // For a std::pair, add an offset and add a new dynamic extent (strides still preserved)
-  template <ptrdiff_t _OldStaticExtent, ptrdiff_t _OldStaticStride>
+  template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, pair<ptrdiff_t, ptrdiff_t>>&& __slice) noexcept
+  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, pair<size_t, size_t>>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_pair,
          __partially_static_sizes<_Offsets..., dynamic_extent>,
@@ -365,7 +365,7 @@ struct __assign_op_slice_handler<
 
 #if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
 // Forking this because the C++11 version will be *completely* unreadable
-template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
+template <class ET, size_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
 MDSPAN_INLINE_FUNCTION
 constexpr auto _subspan_impl(
   integer_sequence<size_t, Idxs...>,
@@ -393,7 +393,7 @@ constexpr auto _subspan_impl(
       )
     );
 
-  ptrdiff_t offset_size = src.mapping()(_handled.__offsets.template __get_n<Idxs>()...);
+  size_t offset_size = src.mapping()(_handled.__offsets.template __get_n<Idxs>()...);
   auto offset_ptr = src.accessor().offset(src.data(), offset_size);
   auto map = _handled.make_layout_mapping(src.mapping());
   auto acc_pol = typename AP::offset_policy(src.accessor());
@@ -418,7 +418,7 @@ auto _subspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t, 
   };
 }
 
-template <class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
+template <class ET, size_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
 MDSPAN_INLINE_FUNCTION
 _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
   (
@@ -456,7 +456,7 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
 #endif
 
 template <class T> struct _is_layout_stride : std::false_type { };
-template <ptrdiff_t... StaticStrides> struct _is_layout_stride<
+template <size_t... StaticStrides> struct _is_layout_stride<
   layout_stride<StaticStrides...>
 > : std::true_type
 { };
@@ -467,7 +467,7 @@ template <ptrdiff_t... StaticStrides> struct _is_layout_stride<
 
 // TODO @proposal-bug sizeof...(SliceSpecs) == sizeof...(Exts) should be a constraint, not a requirement
 MDSPAN_TEMPLATE_REQUIRES(
-  class ET, ptrdiff_t... Exts, class LP, class AP, class... SliceSpecs,
+  class ET, size_t... Exts, class LP, class AP, class... SliceSpecs,
   /* requires */ (
     (
       _MDSPAN_TRAIT(is_same, LP, layout_left)
@@ -475,8 +475,8 @@ MDSPAN_TEMPLATE_REQUIRES(
         || detail::_is_layout_stride<LP>::value
     ) &&
     _MDSPAN_FOLD_AND((
-      _MDSPAN_TRAIT(is_convertible, SliceSpecs, ptrdiff_t)
-        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, pair<ptrdiff_t, ptrdiff_t>)
+      _MDSPAN_TRAIT(is_convertible, SliceSpecs, size_t)
+        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, pair<size_t, size_t>)
         || _MDSPAN_TRAIT(is_convertible, SliceSpecs, all_type)
     ) /* && ... */) &&
     sizeof...(SliceSpecs) == sizeof...(Exts)

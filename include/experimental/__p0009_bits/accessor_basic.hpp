@@ -45,7 +45,7 @@
 
 #include "macros.hpp"
 
-#include <cstddef> // ptrdiff_t
+#include <cstddef> // size_t
 
 namespace std {
 namespace experimental {
@@ -60,12 +60,12 @@ struct accessor_basic {
 
   MDSPAN_INLINE_FUNCTION
   constexpr pointer
-  offset(pointer p, ptrdiff_t i) const noexcept {
+  offset(pointer p, size_t i) const noexcept {
     return p + i;
   }
 
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference access(pointer p, ptrdiff_t i) const noexcept {
+  constexpr reference access(pointer p, size_t i) const noexcept {
     return p[i];
   }
 
