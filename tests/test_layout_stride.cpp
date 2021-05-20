@@ -49,22 +49,22 @@ namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
 template <class> struct TestLayoutStride;
-template <ptrdiff_t... Extents, ptrdiff_t... DynamicSizes, ptrdiff_t... StaticStrides, ptrdiff_t... DynamicStrides>
+template <size_t... Extents, size_t... DynamicSizes, size_t... StaticStrides, size_t... DynamicStrides>
 struct TestLayoutStride<std::tuple<
   stdex::extents<Extents...>,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>,
-  std::integer_sequence<ptrdiff_t, StaticStrides...>,
-  std::integer_sequence<ptrdiff_t, DynamicStrides...>
+  std::integer_sequence<size_t, DynamicSizes...>,
+  std::integer_sequence<size_t, StaticStrides...>,
+  std::integer_sequence<size_t, DynamicStrides...>
 >> : public ::testing::Test {
   using extents_type = stdex::extents<Extents...>;
   using mapping_type = typename stdex::layout_stride<StaticStrides...>::template mapping<extents_type>;
-  mapping_type map = { extents_type{ DynamicSizes... }, std::array<ptrdiff_t, sizeof...(DynamicStrides)>{ DynamicStrides... } };
+  mapping_type map = { extents_type{ DynamicSizes... }, std::array<size_t, sizeof...(DynamicStrides)>{ DynamicStrides... } };
 };
 
-template <ptrdiff_t... Extents>
+template <size_t... Extents>
 using _exts = stdex::extents<Extents...>;
-template <ptrdiff_t... Vals>
-using _ints = std::integer_sequence<ptrdiff_t, Vals...>;
+template <size_t... Vals>
+using _ints = std::integer_sequence<size_t, Vals...>;
 template <class E, class DSz, class SStr, class DStr>
 using layout_stride_case_t =
   std::tuple<E, DSz, SStr, DStr>;

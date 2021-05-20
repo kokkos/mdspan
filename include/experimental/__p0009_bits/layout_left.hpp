@@ -65,7 +65,7 @@ struct layout_left_idx_conditional {
 
 template <class> class layout_left_impl;
 
-template <ptrdiff_t... Exts>
+template <size_t... Exts>
 class layout_left_impl<std::experimental::extents<Exts...>>
   : public fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_left_idx_conditional>
 {

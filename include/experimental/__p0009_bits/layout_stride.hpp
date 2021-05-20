@@ -60,9 +60,9 @@ namespace experimental {
 
 namespace detail {
 
-template <class, ptrdiff_t...> class layout_stride_impl;
+template <class, size_t...> class layout_stride_impl;
 
-template <ptrdiff_t... Exts, ptrdiff_t... Strides>
+template <size_t... Exts, size_t... Strides>
 class layout_stride_impl<
   std::experimental::extents<Exts...>, Strides...
 > : private __no_unique_address_emulation<
@@ -91,7 +91,7 @@ private:
 
   //----------------------------------------------------------------------------
 
-  template <class, ptrdiff_t...>
+  template <class, size_t...>
   friend class layout_stride_impl;
 
   //----------------------------------------------------------------------------
@@ -103,12 +103,12 @@ private:
   template <size_t... Idxs>
   struct __impl_impl<index_sequence<Idxs...>>
   {
-    template <class OtherExtents, ptrdiff_t... OtherStrides>
+    template <class OtherExtents, size_t... OtherStrides>
     MDSPAN_INLINE_FUNCTION
     static constexpr bool _eq_impl(layout_stride_impl const& self, layout_stride_impl<OtherExtents, OtherStrides...> const& other) noexcept {
       return _MDSPAN_FOLD_AND((self.template __stride<Idxs>() == other.template __stride<Idxs>()) /* && ... */);
     }
-    template <class OtherExtents, ptrdiff_t... OtherStrides>
+    template <class OtherExtents, size_t... OtherStrides>
     MDSPAN_INLINE_FUNCTION
     static constexpr bool _not_eq_impl(layout_stride_impl const& self, layout_stride_impl<OtherExtents, OtherStrides...> const& other) noexcept {
       return _MDSPAN_FOLD_OR((self.template __stride<Idxs>() != other.template __stride<Idxs>()) /* || ... */);
@@ -116,7 +116,7 @@ private:
 
     template <class... Integral>
     MDSPAN_FORCE_INLINE_FUNCTION
-    static constexpr ptrdiff_t _call_op_impl(layout_stride_impl const& self, Integral... idxs) noexcept {
+    static constexpr size_t _call_op_impl(layout_stride_impl const& self, Integral... idxs) noexcept {
       return _MDSPAN_FOLD_PLUS_RIGHT((idxs * self.template __stride<Idxs>()), /* + ... + */ 0);
     }
 
@@ -144,18 +144,18 @@ public: // (but not really)
 
   template <size_t N>
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t __stride() const noexcept {
+  constexpr size_t __stride() const noexcept {
     return __strides_storage().template __get_n<N>();
   }
 
   template <size_t N>
   struct __static_stride_workaround {
-    static constexpr ptrdiff_t value = __strides_storage_t::template __get_static_n<N, dynamic_extent>();
+    static constexpr size_t value = __strides_storage_t::template __get_static_n<N, dynamic_extent>();
   };
 
   template <size_t N>
   MDSPAN_INLINE_FUNCTION
-  static constexpr ptrdiff_t __static_stride() noexcept
+  static constexpr size_t __static_stride() noexcept
   {
     return __strides_storage_t::template __get_static_n<N>();
   }
@@ -195,7 +195,7 @@ public:
   constexpr
   layout_stride_impl(
     std::experimental::extents<Exts...> const& e,
-    array<ptrdiff_t, __strides_storage_t::__size_dynamic> const& strides
+    array<size_t, __strides_storage_t::__size_dynamic> const& strides
   ) noexcept
     : __base_t(__base_t{__member_pair_t(e, __strides_storage_t(__construct_psa_from_dynamic_values_tag_t<>{}, strides))})
   { }
@@ -238,23 +238,23 @@ public:
   // TODO @proposal-bug this wording for this is (at least slightly) broken (should at least be "... stride(p[0]) == 1...")
   MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
     // TODO @testing test layout_stride is_contiguous()
-    auto rem = array<ptrdiff_t, sizeof...(Exts)>{ };
-    std::iota(rem.begin(), rem.end(), ptrdiff_t(0));
+    auto rem = array<size_t, sizeof...(Exts)>{ };
+    std::iota(rem.begin(), rem.end(), size_t(0));
     auto next_idx_iter = std::find_if(
       rem.begin(), rem.end(),
-      [&](ptrdiff_t i) { this->stride(i) == 1;  }
+      [&](size_t i) { this->stride(i) == 1;  }
     );
     if(next_idx_iter != rem.end()) {
-      ptrdiff_t prev_stride_times_prev_extent =
+      size_t prev_stride_times_prev_extent =
         this->extents().extent(*next_idx_iter) * this->stride(*next_idx_iter);
       // "remove" the index
-      constexpr ptrdiff_t removed_index_sentinel = -1;
+      constexpr size_t removed_index_sentinel = -1;
       *next_idx_iter = removed_index_sentinel;
       int found_count = 1;
       while (found_count != sizeof...(Exts)) {
         next_idx_iter = std::find_if(
           rem.begin(), rem.end(),
-          [&](ptrdiff_t i) {
+          [&](size_t i) {
             return i != removed_index_sentinel
               && this->stride(i) * this->extents().extent(i) == prev_stride_times_prev_extent;
           }
@@ -284,21 +284,21 @@ public:
     class... Indices,
     /* requires */ (
       sizeof...(Indices) == sizeof...(Exts) &&
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_constructible, Indices, ptrdiff_t) /*&& ...*/)
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_constructible, Indices, size_t) /*&& ...*/)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr ptrdiff_t operator()(Indices... idxs) const noexcept {
+  constexpr size_t operator()(Indices... idxs) const noexcept {
     return __impl::_call_op_impl(*this, idxs...);
   }
 
   MDSPAN_INLINE_FUNCTION
-  constexpr ptrdiff_t stride(size_t r) const noexcept {
+  constexpr size_t stride(size_t r) const noexcept {
     return __strides_storage().__get(r);
   }
 
   MDSPAN_INLINE_FUNCTION
-  constexpr ptrdiff_t required_span_size() const noexcept {
+  constexpr size_t required_span_size() const noexcept {
     // assumes no negative strides; not sure if I'm allowed to assume that or not
     return __impl::_req_span_size_impl(*this);
   }
@@ -306,13 +306,13 @@ public:
   // TODO @proposal-bug these (and other analogous operators) should be non-member functions
   // TODO @proposal-bug these should do more than just compare extents!
 
-  template<class OtherExtents, ptrdiff_t... OtherStaticStrides>
+  template<class OtherExtents, size_t... OtherStaticStrides>
   MDSPAN_INLINE_FUNCTION
   constexpr bool operator==(layout_stride_impl<OtherExtents, OtherStaticStrides...> const& other) const noexcept {
     return __impl::_eq_impl(*this, other);
   }
 
-  template<class OtherExtents, ptrdiff_t... OtherStaticStrides>
+  template<class OtherExtents, size_t... OtherStaticStrides>
   MDSPAN_INLINE_FUNCTION
   constexpr bool operator!=(layout_stride_impl<OtherExtents, OtherStaticStrides...> const& other) const noexcept {
     return __impl::_not_eq_impl(*this, other);
@@ -326,7 +326,7 @@ public:
 
 
 // TODO @proposal-bug layout_stride needs these non-type template parameters
-template <ptrdiff_t... StaticStrides>
+template <size_t... StaticStrides>
 struct layout_stride {
   template <class Extents>
   using mapping = detail::layout_stride_impl<

@@ -45,12 +45,13 @@
 
 #include "macros.hpp"
 
-#include <cstddef>
+#include <cstddef>  // size_t
+#include <limits>   // numeric_limits
 
 namespace std {
 namespace experimental {
 
-_MDSPAN_INLINE_VARIABLE constexpr ptrdiff_t dynamic_extent = -1;
+_MDSPAN_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<size_t>::max();
 
 } // end namespace experimental
 } // namespace std
