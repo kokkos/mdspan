@@ -196,14 +196,14 @@ public:
 
   // TODO @proposal-bug this constructor should be explicit
   MDSPAN_TEMPLATE_REQUIRES(
-    class IndexType,
+    class SizeType,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, IndexType, size_type)
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
     )
   )
   MDSPAN_INLINE_FUNCTION
   constexpr explicit
-  extents(std::array<IndexType, rank_dynamic()> const& dyn) noexcept
+  extents(std::array<SizeType, rank_dynamic()> const& dyn) noexcept
     : __base_t(__base_t{typename __base_t::__stored_type{
         detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn}})
   { }
