@@ -308,14 +308,14 @@ public:
 
   template<class OtherExtents, size_t... OtherStaticStrides>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool operator==(layout_stride_impl<OtherExtents, OtherStaticStrides...> const& other) const noexcept {
-    return __impl::_eq_impl(*this, other);
+  friend constexpr bool operator==(layout_stride_impl const& lhs, layout_stride_impl<OtherExtents, OtherStaticStrides...> const& rhs) noexcept {
+    return __impl::_eq_impl(lhs, rhs);
   }
 
   template<class OtherExtents, size_t... OtherStaticStrides>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool operator!=(layout_stride_impl<OtherExtents, OtherStaticStrides...> const& other) const noexcept {
-    return __impl::_not_eq_impl(*this, other);
+  friend constexpr bool operator!=(layout_stride_impl const& lhs, layout_stride_impl<OtherExtents, OtherStaticStrides...> const& rhs) noexcept {
+    return __impl::_not_eq_impl(lhs, rhs);
   }
 
 };
