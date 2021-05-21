@@ -267,7 +267,7 @@ struct __assign_op_slice_handler<
     };
   }
 
-  // For a std::all, offset 0 and old extent
+  // For a std::full_extent, offset 0 and old extent
   template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
