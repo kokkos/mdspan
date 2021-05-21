@@ -3,7 +3,7 @@
 // ************************************************************************
 //
 //                        Kokkos v. 2.0
-//              Copyright (2019) Sandia Corporation
+//              Copyright (2020) Sandia Corporation
 //
 // Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
 // the U.S. Government retains certain rights in this software.
@@ -41,58 +41,31 @@
 //@HEADER
 */
 
-#pragma once
+#include "ctest_common.hpp"
 
-#include "macros.hpp"
+#include <experimental/mdspan>
 
-#include <cstddef> // size_t
+#include <type_traits>
 
-namespace std {
-namespace experimental {
+namespace stdex = std::experimental;
 
-template <class ElementType>
-struct default_accessor {
-  
-  using offset_policy = default_accessor;
-  using element_type = ElementType;
-  using reference = ElementType&;
-  using pointer = ElementType*;
+//==============================================================================
+// <editor-fold desc="mdspan"> {{{1
 
-  constexpr accessor_basic() noexcept = default;
+MDSPAN_STATIC_TEST(
+  std::is_convertible<
+    stdex::mdspan<double, stdex::dynamic_extent>,
+    stdex::mdspan<double const, stdex::dynamic_extent>
+  >::value
+);
 
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherElementType,
-    /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, typename accessor_basic<OtherElementType>::pointer, pointer)
-    )
-  )
-  MDSPAN_INLINE_FUNCTION
-  constexpr accessor_basic(accessor_basic<OtherElementType>) {}
+MDSPAN_STATIC_TEST(
+  !std::is_convertible<
+    stdex::mdspan<double const, stdex::dynamic_extent>,
+    stdex::mdspan<double, stdex::dynamic_extent>
+  >::value
+);
 
-  MDSPAN_INLINE_FUNCTION
-  constexpr default_accessor() noexcept = default;
+// </editor-fold> end mdspan }}}1
+//==============================================================================
 
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherElementType,
-    /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, OtherElementType, ElementType)
-    )
-  )
-  MDSPAN_INLINE_FUNCTION
-  constexpr default_accessor(default_accessor<OtherElementType>) noexcept {}
-
-  MDSPAN_INLINE_FUNCTION
-  constexpr pointer
-  offset(pointer p, size_t i) const noexcept {
-    return p + i;
-  }
-
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference access(pointer p, size_t i) const noexcept {
-    return p[i];
-  }
-
-};
-
-} // end namespace experimental
-} // end namespace std
