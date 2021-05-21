@@ -19,4 +19,4 @@ function(add_cxx_comparison name template range)
     metabench_add_chart(${name} DATASETS ${all_datasets})
 endfunction()
 
-add_cxx_comparison(subspan_chart "cbench_subspan.cpp.erb" "[2, 4, 8, 16, 32]")
+add_cxx_comparison(submdspan_chart "cbench_submdspan.cpp.erb" "[2, 4, 8, 16, 32]")

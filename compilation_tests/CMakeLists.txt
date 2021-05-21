@@ -10,6 +10,6 @@ add_compilation_test(ctest_standard_layout)
 add_compilation_test(ctest_trivially_copyable)
 add_compilation_test(ctest_no_unique_address)
 add_compilation_test(ctest_constexpr_dereference)
-add_compilation_test(ctest_constexpr_subspan)
+add_compilation_test(ctest_constexpr_submdspan)
 add_compilation_test(ctest_constexpr_layouts)
 

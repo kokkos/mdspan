@@ -72,9 +72,9 @@ void BM_MDSpan_Sum_Subspan_3D_right(benchmark::State& state, MDSpan, DynSizes...
     benchmark::DoNotOptimize(s.data());
     value_type sum = 0;
     for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
-      auto sub_i = stdex::subspan(s, i, stdex::all, stdex::all);
+      auto sub_i = stdex::submdspan(s, i, stdex::all, stdex::all);
       for (ptrdiff_t j = 0; j < s.extent(1); ++j) {
-        auto sub_i_j = stdex::subspan(sub_i, j, stdex::all);
+        auto sub_i_j = stdex::submdspan(sub_i, j, stdex::all);
         for (ptrdiff_t k = 0; k < s.extent(2); ++k) {
           sum += sub_i_j(k);
         }
@@ -141,7 +141,7 @@ constexpr T&& _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
 
 template <class T, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
-_MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
+_MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
   stdex::basic_mdspan<T, std::experimental::extents<>, Rest...> s
 )
@@ -151,13 +151,13 @@ _MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
 
 template <class T, ptrdiff_t E, ptrdiff_t... Es, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
-_MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
+_MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
   stdex::basic_mdspan<T, std::experimental::extents<E, Es...>, Rest...> s
 )
 {
   for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
-    _impl::_do_sum_subspan(sum, stdex::subspan(
+    _impl::_do_sum_submdspan(sum, stdex::submdspan(
       s, i, _repeated_with<decltype(Es)>(stdex::all)...)
     );
   }
@@ -175,7 +175,7 @@ void BM_MDSpan_Sum_Subspan_MD_right(benchmark::State& state, MDSpan, DynSizes...
   mdspan_benchmark::fill_random(s);
   for (auto _ : state) {
     value_type sum = 0;
-    _impl::_do_sum_subspan(sum, s);
+    _impl::_do_sum_submdspan(sum, s);
     benchmark::DoNotOptimize(sum);
     benchmark::DoNotOptimize(s.data());
   }
