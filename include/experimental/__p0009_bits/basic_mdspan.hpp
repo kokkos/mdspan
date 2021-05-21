@@ -44,7 +44,7 @@
 
 #pragma once
 
-#include "accessor_basic.hpp"
+#include "default_accessor.hpp"
 #include "layout_right.hpp"
 #include "extents.hpp"
 #include "trait_backports.hpp"
@@ -57,7 +57,7 @@ template <
   class ElementType,
   class Extents,
   class LayoutPolicy = layout_right,
-  class AccessorPolicy = accessor_basic<ElementType>
+  class AccessorPolicy = default_accessor<ElementType>
 >
 class basic_mdspan;
 
