@@ -242,7 +242,7 @@ MDSPAN_STATIC_TEST(
   std::is_standard_layout<
     stdex::basic_mdspan<
       double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>,
-      stdex::layout_left, stdex::accessor_basic<double>
+      stdex::layout_left, stdex::default_accessor<double>
     >
   >::value
 );

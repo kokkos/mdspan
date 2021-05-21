@@ -51,9 +51,9 @@ namespace std {
 namespace experimental {
 
 template <class ElementType>
-struct accessor_basic {
+struct default_accessor {
   
-  using offset_policy = accessor_basic;
+  using offset_policy = default_accessor;
   using element_type = ElementType;
   using reference = ElementType&;
   using pointer = ElementType*;

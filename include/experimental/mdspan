@@ -43,7 +43,7 @@
 
 #pragma once
 
-#include "__p0009_bits/accessor_basic.hpp"
+#include "__p0009_bits/default_accessor.hpp"
 #include "__p0009_bits/full_extent_t.hpp"
 #include "__p0009_bits/basic_mdspan.hpp"
 #include "__p0009_bits/dynamic_extent.hpp"
