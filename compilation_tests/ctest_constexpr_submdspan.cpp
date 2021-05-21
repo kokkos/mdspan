@@ -87,7 +87,7 @@ dynamic_extent_1d_all_slice() {
   auto s = stdex::basic_mdspan<
     int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
-  auto ss = stdex::submdspan(s, stdex::all);
+  auto ss = stdex::submdspan(s, stdex::full_extent);
   for (int i = 0; i < s.extent(0); ++i) {
     result += ss(i);
   }
@@ -161,7 +161,7 @@ dynamic_extent_1d_all_three() {
   auto s = stdex::basic_mdspan<
     int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
   auto s1 = stdex::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
-  auto s2 = stdex::submdspan(s1, stdex::all);
+  auto s2 = stdex::submdspan(s1, stdex::full_extent);
   int result = 0;
   for (int i = 0; i < s.extent(0); ++i) {
     auto ss = stdex::submdspan(s2, i);
@@ -212,7 +212,7 @@ dynamic_extent_2d_idx_all_idx() {
       data, 2, 3);
   int result = 0;
   for(int row = 0; row < s.extent(0); ++row) {
-    auto srow = stdex::submdspan(s, row, stdex::all);
+    auto srow = stdex::submdspan(s, row, stdex::full_extent);
     for(int col = 0; col < s.extent(1); ++col) {
       auto scol = stdex::submdspan(srow, col);
       constexpr_assert_equal(scol(), srow(col));
@@ -243,7 +243,7 @@ simple_static_submdspan_test_1(int add_to_row) {
   auto s = stdex::mdspan<int, 3, 3>(data);
   int result = 0;
   for(int col = 0; col < 3; ++col) {
-    auto scol = stdex::submdspan(s, stdex::all, col);
+    auto scol = stdex::submdspan(s, stdex::full_extent, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = stdex::submdspan(scol, row);
       result += srow() * (row + add_to_row);
@@ -285,7 +285,7 @@ mixed_submdspan_left_test_2() {
     stdex::extents<3, stdex::dynamic_extent>, stdex::layout_left>(data, 5);
   int result = 0;
   for(int col = 0; col < 5; ++col) {
-    auto scol = stdex::submdspan(s, stdex::all, col);
+    auto scol = stdex::submdspan(s, stdex::full_extent, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = stdex::submdspan(scol, row);
       result += srow() * (row + 1);
@@ -294,7 +294,7 @@ mixed_submdspan_left_test_2() {
   // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)= 108
   constexpr_assert_equal(108, result);
   for(int row = 0; row < 3; ++row) {
-    auto srow = stdex::submdspan(s, row, stdex::all);
+    auto srow = stdex::submdspan(s, row, stdex::full_extent);
     for(int col = 0; col < 5; ++col) {
       auto scol = stdex::submdspan(srow, col);
       result += scol() * (row + 1);
@@ -328,7 +328,7 @@ mixed_submdspan_test_3() {
     int, stdex::extents<3, stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   for(int col = 0; col < 5; ++col) {
-    auto scol = stdex::submdspan(s, stdex::all, col);
+    auto scol = stdex::submdspan(s, stdex::full_extent, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = stdex::submdspan(scol, row);
       result += srow() * (row + 1);
@@ -336,7 +336,7 @@ mixed_submdspan_test_3() {
   }
   constexpr_assert_equal(71, result);
   for(int row = 0; row < 3; ++row) {
-    auto srow = stdex::submdspan(s, row, stdex::all);
+    auto srow = stdex::submdspan(s, row, stdex::full_extent);
     for(int col = 0; col < 5; ++col) {
       auto scol = stdex::submdspan(srow, col);
       result += scol() * (row + 1);
@@ -381,8 +381,8 @@ submdspan_single_element_stress_test_impl_2(
   auto s_dyn = dyn_mdspan_t(data, _repeated_ptrdiff_t<1, Idxs>...);
   auto ss = stdex::submdspan(s, _repeated_ptrdiff_t<0, Idxs>...);
   auto ss_dyn = stdex::submdspan(s_dyn, _repeated_ptrdiff_t<0, Idxs>...);
-  auto ss_all = stdex::submdspan(s, _repeated_with_idxs_t<stdex::all_type, Idxs>{}...);
-  auto ss_all_dyn = stdex::submdspan(s_dyn, _repeated_with_idxs_t<stdex::all_type, Idxs>{}...);
+  auto ss_all = stdex::submdspan(s, _repeated_with_idxs_t<stdex::full_extent_t, Idxs>{}...);
+  auto ss_all_dyn = stdex::submdspan(s_dyn, _repeated_with_idxs_t<stdex::full_extent_t, Idxs>{}...);
   auto val = ss_all(_repeated_ptrdiff_t<0, Idxs>...);
   auto val_dyn = ss_all_dyn(_repeated_ptrdiff_t<0, Idxs>...);
   auto ss_pair = stdex::submdspan(s, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);

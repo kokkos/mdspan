@@ -45,7 +45,7 @@
 #pragma once
 
 #include "basic_mdspan.hpp"
-#include "all_type.hpp"
+#include "full_extent_t.hpp"
 #include "dynamic_extent.hpp"
 #include "layout_left.hpp"
 #include "layout_right.hpp"
@@ -77,8 +77,8 @@ _wrap_slice(size_t val, size_t ext, size_t stride) { return { val, ext, stride }
 
 template <size_t OldExtent, size_t OldStaticStride>
 MDSPAN_INLINE_FUNCTION constexpr
-_slice_wrap<OldExtent, OldStaticStride, all_type>
-_wrap_slice(all_type val, size_t ext, size_t stride) { return { val, ext, stride }; }
+_slice_wrap<OldExtent, OldStaticStride, full_extent_t>
+_wrap_slice(full_extent_t val, size_t ext, size_t stride) { return { val, ext, stride }; }
 
 // TODO generalize this to anything that works with std::get<0> and std::get<1>
 template <size_t OldExtent, size_t OldStaticStride>
@@ -271,7 +271,7 @@ struct __assign_op_slice_handler<
   template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, all_type>&& __slice) noexcept
+  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, full_extent_t>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_all,
          __partially_static_sizes<_Offsets..., 0>,
@@ -477,7 +477,7 @@ MDSPAN_TEMPLATE_REQUIRES(
     _MDSPAN_FOLD_AND((
       _MDSPAN_TRAIT(is_convertible, SliceSpecs, size_t)
         || _MDSPAN_TRAIT(is_convertible, SliceSpecs, pair<size_t, size_t>)
-        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, all_type)
+        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, full_extent_t)
     ) /* && ... */) &&
     sizeof...(SliceSpecs) == sizeof...(Exts)
   )
