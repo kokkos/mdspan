@@ -58,7 +58,7 @@ static constexpr int global_repeat = 16;
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 
 void throw_runtime_exception(const std::string &msg) {
@@ -91,7 +91,7 @@ inline void cuda_internal_safe_call(cudaError e, const char* name,
 
 //================================================================================
 
-dim3 get_bench_thread_block(ptrdiff_t y,ptrdiff_t z) {
+dim3 get_bench_thread_block(size_t y,size_t z) {
   cudaDeviceProp cudaProp;
   int dim_z = 1;
   while(dim_z*3<z && dim_z<32) dim_z*=2;
@@ -109,7 +109,7 @@ void do_run_kernel(F f, Args... args) {
 }
 
 template <class F, class... Args>
-float run_kernel_timed(ptrdiff_t N, ptrdiff_t M, ptrdiff_t K, F&& f, Args&&... args) {
+float run_kernel_timed(size_t N, size_t M, size_t K, F&& f, Args&&... args) {
   cudaEvent_t start, stop;
   CUDA_SAFE_CALL(cudaEventCreate(&start));
   CUDA_SAFE_CALL(cudaEventCreate(&stop));
@@ -159,13 +159,13 @@ void BM_MDSpan_Cuda_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn)
   auto lambda =  
       [=] __device__ {
         for(int r = 0; r < repeats; ++r) {
-          for(ptrdiff_t i = blockIdx.x+d; i < s.extent(0)-d; i += gridDim.x) {
-            for(ptrdiff_t j = threadIdx.z+d; j < s.extent(1)-d; j += blockDim.z) {
-              for(ptrdiff_t k = threadIdx.y+d; k < s.extent(2)-d; k += blockDim.y) {
+          for(size_t i = blockIdx.x+d; i < s.extent(0)-d; i += gridDim.x) {
+            for(size_t j = threadIdx.z+d; j < s.extent(1)-d; j += blockDim.z) {
+              for(size_t k = threadIdx.y+d; k < s.extent(2)-d; k += blockDim.y) {
                 value_type sum_local = 0;
-                for(ptrdiff_t di = i-d; di < i+d+1; di++) { 
-                for(ptrdiff_t dj = j-d; dj < j+d+1; dj++) { 
-                for(ptrdiff_t dk = k-d; dk < k+d+1; dk++) { 
+                for(size_t di = i-d; di < i+d+1; di++) { 
+                for(size_t dj = j-d; dj < j+d+1; dj++) { 
+                for(size_t dk = k-d; dk < k+d+1; dk++) { 
                   sum_local += s(di, dj, dk);
                 }}}
                 o(i,j,k) = sum_local;
@@ -181,8 +181,8 @@ void BM_MDSpan_Cuda_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn)
     // units of cuda timer is milliseconds, units of iteration timer is seconds
     state.SetIterationTime(timed * 1e-3);
   }
-  ptrdiff_t num_inner_elements = (s.extent(0)-d) * (s.extent(1)-d) * (s.extent(2)-d);
-  ptrdiff_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
+  size_t num_inner_elements = (s.extent(0)-d) * (s.extent(1)-d) * (s.extent(2)-d);
+  size_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations() * repeats);
   state.counters["repeats"] = repeats; 
   
@@ -217,13 +217,13 @@ void BM_Raw_Cuda_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, 
   auto lambda = 
       [=] __device__ {
         for(int r = 0; r < repeats; ++r) {
-          for(ptrdiff_t i = blockIdx.x+d; i < x-d; i += gridDim.x) {
-            for(ptrdiff_t j = threadIdx.z+d; j < y-d; j += blockDim.z) {
-              for(ptrdiff_t k = threadIdx.y+d; k < z-d; k += blockDim.y) {
+          for(size_t i = blockIdx.x+d; i < x-d; i += gridDim.x) {
+            for(size_t j = threadIdx.z+d; j < y-d; j += blockDim.z) {
+              for(size_t k = threadIdx.y+d; k < z-d; k += blockDim.y) {
                 value_type sum_local = 0;
-                for(ptrdiff_t di = i-d; di < i+d+1; di++) { 
-                for(ptrdiff_t dj = j-d; dj < j+d+1; dj++) { 
-                for(ptrdiff_t dk = k-d; dk < k+d+1; dk++) { 
+                for(size_t di = i-d; di < i+d+1; di++) { 
+                for(size_t dj = j-d; dj < j+d+1; dj++) { 
+                for(size_t dk = k-d; dk < k+d+1; dk++) { 
                   sum_local += data[dk + dj*z + di*z*y];
                 }}}
                 data_o[k + j*z + i*z*y] = sum_local;
@@ -239,8 +239,8 @@ void BM_Raw_Cuda_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, 
     // units of cuda timer is milliseconds, units of iteration timer is seconds
     state.SetIterationTime(timed * 1e-3);
   }
-  ptrdiff_t num_inner_elements = (x-d) * (y-d) * (z-d);
-  ptrdiff_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
+  size_t num_inner_elements = (x-d) * (y-d) * (z-d);
+  size_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations() * repeats);
   state.counters["repeats"] = repeats;
 
@@ -272,13 +272,13 @@ void BM_Raw_Cuda_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y, S
   auto lambda =
     [=] __device__ {
       for(int r = 0; r < repeats; ++r) {
-        for(ptrdiff_t i = blockIdx.x+d; i < x-d; i += gridDim.x) {
-          for(ptrdiff_t j = threadIdx.z+d; j < y-d; j += blockDim.z) {
-            for(ptrdiff_t k = threadIdx.y+d; k < z-d; k += blockDim.y) {
+        for(size_t i = blockIdx.x+d; i < x-d; i += gridDim.x) {
+          for(size_t j = threadIdx.z+d; j < y-d; j += blockDim.z) {
+            for(size_t k = threadIdx.y+d; k < z-d; k += blockDim.y) {
                 value_type sum_local = 0;
-                for(ptrdiff_t di = i-d; di < i+d+1; di++) { 
-                for(ptrdiff_t dj = j-d; dj < j+d+1; dj++) { 
-                for(ptrdiff_t dk = k-d; dk < k+d+1; dk++) { 
+                for(size_t di = i-d; di < i+d+1; di++) { 
+                for(size_t dj = j-d; dj < j+d+1; dj++) { 
+                for(size_t dk = k-d; dk < k+d+1; dk++) { 
                   sum_local += data[dk*x*y + dj*x + di];
                 }}}
                 data_o[k*x*y + j*x + i] = sum_local;
@@ -295,8 +295,8 @@ void BM_Raw_Cuda_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y, S
     // units of cuda timer is milliseconds, units of iteration timer is seconds
     state.SetIterationTime(timed * 1e-3);
   }
-  ptrdiff_t num_inner_elements = (x-d) * (y-d) * (z-d);
-  ptrdiff_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
+  size_t num_inner_elements = (x-d) * (y-d) * (z-d);
+  size_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations() * repeats);
   state.counters["repeats"] = repeats;
 

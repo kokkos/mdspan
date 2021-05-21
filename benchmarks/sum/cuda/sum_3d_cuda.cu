@@ -57,7 +57,7 @@ static constexpr int warpsPerBlock = 4;
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 
 //================================================================================
@@ -177,9 +177,9 @@ void BM_MDSpan_Cuda_Sum_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
       [=] __device__ {
         for(int r = 0; r < repeats; ++r) {
           value_type sum_local = 0;
-          for(ptrdiff_t i = blockIdx.x; i < s.extent(0); i += gridDim.x) {
-            for(ptrdiff_t j = threadIdx.z; j < s.extent(1); j += blockDim.z) {
-              for(ptrdiff_t k = threadIdx.y; k < s.extent(2); k += blockDim.y) {
+          for(size_t i = blockIdx.x; i < s.extent(0); i += gridDim.x) {
+            for(size_t j = threadIdx.z; j < s.extent(1); j += blockDim.z) {
+              for(size_t k = threadIdx.y; k < s.extent(2); k += blockDim.y) {
                 sum_local += s(i, j, k);
               }
             }
@@ -224,9 +224,9 @@ void BM_Raw_Cuda_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, Size
       [=] __device__ {
         for(int r = 0; r < repeats; ++r) {
           value_type sum_local = 0;
-          for(ptrdiff_t i = blockIdx.x; i < x; i += gridDim.x) {
-            for(ptrdiff_t j = threadIdx.z; j < y; j += blockDim.z) {
-              for(ptrdiff_t k = threadIdx.y; k < z; k += blockDim.y) {
+          for(size_t i = blockIdx.x; i < x; i += gridDim.x) {
+            for(size_t j = threadIdx.z; j < y; j += blockDim.z) {
+              for(size_t k = threadIdx.y; k < z; k += blockDim.y) {
                 sum_local += data[k + j*z + i*z*y];
               }
             }
@@ -269,9 +269,9 @@ void BM_Raw_Cuda_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
     [=] __device__ {
       for(int r = 0; r < repeats; ++r) {
         value_type sum_local = 0;
-        for(ptrdiff_t i = blockIdx.x; i < x; i += gridDim.x) {
-          for(ptrdiff_t j = threadIdx.z; j < y; j += blockDim.z) {
-            for(ptrdiff_t k = threadIdx.y; k < z; k += blockDim.y) {
+        for(size_t i = blockIdx.x; i < x; i += gridDim.x) {
+          for(size_t j = threadIdx.z; j < y; j += blockDim.z) {
+            for(size_t k = threadIdx.y; k < z; k += blockDim.y) {
               sum_local += data[k*x*y + j*x + i];
             }
           }
