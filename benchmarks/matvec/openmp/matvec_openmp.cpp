@@ -58,9 +58,9 @@ static constexpr int global_repeat = 1;
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using rmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
 
 void throw_runtime_exception(const std::string &msg) {
@@ -72,8 +72,8 @@ void throw_runtime_exception(const std::string &msg) {
 template<class MDSpan>
 void OpenMP_first_touch_2D(MDSpan s) {
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
-    for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
+  for(size_t i = 0; i < s.extent(0); i ++) {
+    for(size_t j = 0; j < s.extent(1); j ++) {
       s(i,j) = 0;
     }
   }
@@ -82,7 +82,7 @@ void OpenMP_first_touch_2D(MDSpan s) {
 template<class MDSpan>
 void OpenMP_first_touch_1D(MDSpan s) {
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
+  for(size_t i = 0; i < s.extent(0); i ++) {
     s(i) = 0;
   }
 }
@@ -114,9 +114,9 @@ void BM_MDSpan_OpenMP_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... 
   mdspan_benchmark::fill_random(y);
  
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < A.extent(0); i ++) {
+  for(size_t i = 0; i < A.extent(0); i ++) {
     value_type y_i = 0;
-    for(ptrdiff_t j = 0; j < A.extent(1); j ++) {
+    for(size_t j = 0; j < A.extent(1); j ++) {
       y_i += A(i,j) * x(j);
     }
     y(i) = y_i;
@@ -129,9 +129,9 @@ void BM_MDSpan_OpenMP_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... 
     benchmark::DoNotOptimize(x.data());
     for(int r=0; r<R; r++) {
     #pragma omp parallel for
-    for(ptrdiff_t i = 0; i < A.extent(0); i ++) {
+    for(size_t i = 0; i < A.extent(0); i ++) {
       value_type y_i = 0;
-      for(ptrdiff_t j = 0; j < A.extent(1); j ++) {
+      for(size_t j = 0; j < A.extent(1); j ++) {
         y_i += A(i,j) * x(j);
       }
       y(i) += y_i;
@@ -139,7 +139,7 @@ void BM_MDSpan_OpenMP_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... 
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
+  size_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
   state.SetBytesProcessed( R * num_elements * sizeof(value_type) * state.iterations() * global_repeat);
   state.counters["repeats"] = global_repeat;
 }
@@ -172,17 +172,17 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, Dyn
   OpenMP_first_touch_1D(y);
   mdspan_benchmark::fill_random(y);
  
-  ptrdiff_t N = A.extent(0);
-  ptrdiff_t M = A.extent(1);
+  size_t N = A.extent(0);
+  size_t M = A.extent(1);
 
   value_type* p_A = A.data();
   value_type* p_x = x.data();
   value_type* p_y = y.data();
   
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < N; i ++) {
+  for(size_t i = 0; i < N; i ++) {
     value_type y_i = 0;
-    for(ptrdiff_t j = 0; j < M; j ++) {
+    for(size_t j = 0; j < M; j ++) {
       y_i += p_A[i + j * N] * x[j];
     }
     y[i] = y_i;
@@ -195,9 +195,9 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, Dyn
     benchmark::DoNotOptimize(x.data());
     for(int r=0; r<R; r++) {
     #pragma omp parallel for
-    for(ptrdiff_t i = 0; i < A.extent(0); i ++) {
+    for(size_t i = 0; i < A.extent(0); i ++) {
       value_type y_i = 0;
-      for(ptrdiff_t j = 0; j < A.extent(1); j ++) {
+      for(size_t j = 0; j < A.extent(1); j ++) {
         y_i += p_A[i + j * N] * p_x[j];
       }
       p_y[i] += y_i;
@@ -205,7 +205,7 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, Dyn
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
+  size_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
   state.SetBytesProcessed( R * num_elements * sizeof(value_type) * state.iterations() * global_repeat);
   state.counters["repeats"] = global_repeat;
 }
@@ -236,17 +236,17 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, Dy
   OpenMP_first_touch_1D(y);
   mdspan_benchmark::fill_random(y);
  
-  ptrdiff_t N = A.extent(0);
-  ptrdiff_t M = A.extent(1);
+  size_t N = A.extent(0);
+  size_t M = A.extent(1);
 
   value_type* p_A = A.data();
   value_type* p_x = x.data();
   value_type* p_y = y.data();
   
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < N; i ++) {
+  for(size_t i = 0; i < N; i ++) {
     value_type y_i = 0;
-    for(ptrdiff_t j = 0; j < M; j ++) {
+    for(size_t j = 0; j < M; j ++) {
       y_i += p_A[i * M + j] * x[j];
     }
     y[i] = y_i;
@@ -259,9 +259,9 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, Dy
     benchmark::DoNotOptimize(x.data());
     for(int r=0; r<R; r++) {
     #pragma omp parallel for
-    for(ptrdiff_t i = 0; i < A.extent(0); i ++) {
+    for(size_t i = 0; i < A.extent(0); i ++) {
       value_type y_i = 0;
-      for(ptrdiff_t j = 0; j < A.extent(1); j ++) {
+      for(size_t j = 0; j < A.extent(1); j ++) {
         y_i += p_A[i * M + j] * p_x[j];
       }
       p_y[i] += y_i;
@@ -269,7 +269,7 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, Dy
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
+  size_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
   state.SetBytesProcessed( R * num_elements * sizeof(value_type) * state.iterations() * global_repeat);
   state.counters["repeats"] = global_repeat;
 }

@@ -96,14 +96,14 @@ void _do_fill_random(
   s() = dist(gen);
 }
 
-template <class T, ptrdiff_t E, ptrdiff_t... Es, class... Rest, class RNG, class Dist>
+template <class T, size_t E, size_t... Es, class... Rest, class RNG, class Dist>
 void _do_fill_random(
   std::experimental::basic_mdspan<T, std::experimental::extents<E, Es...>, Rest...> s,
   RNG& gen,
   Dist& dist
 )
 {
-  for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
+  for(size_t i = 0; i < s.extent(0); ++i) {
     _do_fill_random(std::experimental::submdspan(s, i, _repeated_with<decltype(Es)>(std::experimental::full_extent)...), gen, dist);
   }
 }

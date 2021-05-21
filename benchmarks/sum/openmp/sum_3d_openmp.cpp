@@ -52,7 +52,7 @@
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 
 //================================================================================
@@ -73,9 +73,9 @@ void BM_MDSpan_Sum_3D_OpenMP(benchmark::State& state, MDSpan, DynSizes... dyn) {
     {
       for (int r = 0; r < repeats; ++r) {
         value_type sum = 0;
-        for (ptrdiff_t i = omp_get_thread_num(); i < s.extent(0); i += omp_get_num_threads()) {
-          for (ptrdiff_t j = 0; j < s.extent(1); ++j) {
-            for (ptrdiff_t k = 0; k < s.extent(2); ++k) {
+        for (size_t i = omp_get_thread_num(); i < s.extent(0); i += omp_get_num_threads()) {
+          for (size_t j = 0; j < s.extent(1); ++j) {
+            for (size_t k = 0; k < s.extent(2); ++k) {
               sum += s(i, j, k);
             }
           }
@@ -110,9 +110,9 @@ void BM_MDSpan_Sum_3D_loop_OpenMP(benchmark::State& state, MDSpan, DynSizes... d
     benchmark::DoNotOptimize(sums_buffer.get());
     benchmark::DoNotOptimize(s.data());
     #pragma omp parallel for default(none) shared(s, sum)
-    for (ptrdiff_t i = 0; i < s.extent(0); ++i) {
-      for (ptrdiff_t j = 0; j < s.extent(1); ++j) {
-        for (ptrdiff_t k = 0; k < s.extent(2); ++k) {
+    for (size_t i = 0; i < s.extent(0); ++i) {
+      for (size_t j = 0; j < s.extent(1); ++j) {
+        for (size_t k = 0; k < s.extent(2); ++k) {
           sum[omp_get_thread_num()] += s(i, j, k);
         }
       }
@@ -145,9 +145,9 @@ void BM_Raw_Sum_3D_OpenMP(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z)
         T sum = 0;
         benchmark::DoNotOptimize(sum);
         benchmark::DoNotOptimize(data);
-        for (ptrdiff_t i = omp_get_thread_num(); i < x; i += omp_get_num_threads()) {
-          for (ptrdiff_t j = 0; j < y; ++j) {
-            for (ptrdiff_t k = 0; k < z; ++k) {
+        for (size_t i = omp_get_thread_num(); i < x; i += omp_get_num_threads()) {
+          for (size_t j = 0; j < y; ++j) {
+            for (size_t k = 0; k < z; ++k) {
               sum += data[k + j*z + i*z*y];
             }
           }

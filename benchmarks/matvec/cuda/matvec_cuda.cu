@@ -58,9 +58,9 @@ static constexpr int global_repeat = 16;
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using rmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
 
 void throw_runtime_exception(const std::string &msg) {
@@ -101,7 +101,7 @@ void do_run_kernel(F f, Args... args) {
 }
 
 template <class F, class... Args>
-float run_kernel_timed(ptrdiff_t N, ptrdiff_t M, F&& f, Args&&... args) {
+float run_kernel_timed(size_t N, size_t M, F&& f, Args&&... args) {
   cudaEvent_t start, stop;
   CUDA_SAFE_CALL(cudaEventCreate(&start));
   CUDA_SAFE_CALL(cudaEventCreate(&stop));
@@ -150,10 +150,10 @@ void BM_MDSpan_CUDA_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... dy
   
   auto lambda =  
       [=] __device__ {
-         const ptrdiff_t i = blockIdx.x * blockDim.x + threadIdx.x;
+         const size_t i = blockIdx.x * blockDim.x + threadIdx.x;
          if(i>=A.extent(0)) return;  
          value_type y_i = 0; 
-         for(ptrdiff_t j = 0; j < A.extent(1); j ++) {
+         for(size_t j = 0; j < A.extent(1); j ++) {
            y_i += A(i,j) * x(j);
          }
          y(i) = y_i;
@@ -165,7 +165,7 @@ void BM_MDSpan_CUDA_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... dy
     // units of cuda timer is milliseconds, units of iteration timer is seconds
     state.SetIterationTime(timed * 1e-3);
   }
-  ptrdiff_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
+  size_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
   state.SetBytesProcessed( num_elements * sizeof(value_type) * state.iterations() );
   
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
@@ -188,8 +188,8 @@ void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynS
   auto x = fill_device_mdspan(MDSpanVector{}, A.extent(1));
   auto y = fill_device_mdspan(MDSpanVector{}, A.extent(0));
   
-  ptrdiff_t N = A.extent(0);
-  ptrdiff_t M = A.extent(1);
+  size_t N = A.extent(0);
+  size_t M = A.extent(1);
 
   value_type* p_A = A.data();
   value_type* p_x = x.data();
@@ -197,11 +197,11 @@ void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynS
 
   auto lambda =  
       [=] __device__ {
-         const ptrdiff_t i = blockIdx.x * blockDim.x + threadIdx.x;
+         const size_t i = blockIdx.x * blockDim.x + threadIdx.x;
          if(i>=N) return;  
          value_type y_i = 0; 
          
-         for(ptrdiff_t j = 0; j < M; j ++) {
+         for(size_t j = 0; j < M; j ++) {
            y_i += p_A[i*M+j] * p_x[j];
          }
          p_y[i] = y_i;
@@ -213,7 +213,7 @@ void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynS
     // units of cuda timer is milliseconds, units of iteration timer is seconds
     state.SetIterationTime(timed * 1e-3);
   }
-  ptrdiff_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
+  size_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
   state.SetBytesProcessed( num_elements * sizeof(value_type) * state.iterations() );
   
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
@@ -235,8 +235,8 @@ void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSi
   auto x = fill_device_mdspan(MDSpanVector{}, A.extent(1));
   auto y = fill_device_mdspan(MDSpanVector{}, A.extent(0));
   
-  ptrdiff_t N = A.extent(0);
-  ptrdiff_t M = A.extent(1);
+  size_t N = A.extent(0);
+  size_t M = A.extent(1);
 
   value_type* p_A = A.data();
   value_type* p_x = x.data();
@@ -244,11 +244,11 @@ void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSi
 
   auto lambda =  
       [=] __device__ {
-         const ptrdiff_t i = blockIdx.x * blockDim.x + threadIdx.x;
+         const size_t i = blockIdx.x * blockDim.x + threadIdx.x;
          if(i>=N) return;  
          value_type y_i = 0; 
          
-         for(ptrdiff_t j = 0; j < M; j ++) {
+         for(size_t j = 0; j < M; j ++) {
            y_i += p_A[i+j*N] * p_x[j];
          }
          p_y[i] = y_i;
@@ -260,7 +260,7 @@ void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSi
     // units of cuda timer is milliseconds, units of iteration timer is seconds
     state.SetIterationTime(timed * 1e-3);
   }
-  ptrdiff_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
+  size_t num_elements = 2 * A.extent(0) * A.extent(1) + 2 * A.extent(0);
   state.SetBytesProcessed( num_elements * sizeof(value_type) * state.iterations());
   
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
