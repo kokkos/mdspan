@@ -52,11 +52,22 @@ namespace experimental {
 
 template <class ElementType>
 struct accessor_basic {
-  
+
   using offset_policy = accessor_basic;
   using element_type = ElementType;
   using reference = ElementType&;
   using pointer = ElementType*;
+
+  constexpr accessor_basic() noexcept = default;
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherElementType,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_convertible, typename accessor_basic<OtherElementType>::pointer, pointer)
+    )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr accessor_basic(accessor_basic<OtherElementType>) {}
 
   MDSPAN_INLINE_FUNCTION
   constexpr pointer
