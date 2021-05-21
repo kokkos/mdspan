@@ -38,4 +38,5 @@ mdspan_add_test(test_contiguous_layouts)
 mdspan_add_test(test_layout_ctors)
 mdspan_add_test(test_layout_stride)
 mdspan_add_test(test_element_access)
+mdspan_add_test(test_conversion)
 
