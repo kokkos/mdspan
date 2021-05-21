@@ -69,11 +69,6 @@ struct default_accessor {
     return p[i];
   }
 
-  MDSPAN_INLINE_FUNCTION
-  constexpr pointer decay(pointer p) const noexcept {
-    return p;
-  }
-
 };
 
 } // end namespace experimental
