@@ -48,9 +48,9 @@
 namespace std {
 namespace experimental {
 
-struct all_type { };
+struct full_extent_t { explicit full_extent_t() = default; };
 
-_MDSPAN_INLINE_VARIABLE constexpr auto all = all_type{ };
+_MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 
 } // end namespace experimental
 } // namespace std
