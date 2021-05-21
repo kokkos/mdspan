@@ -39,7 +39,7 @@ Caveats
 
 This implementation is fully conforming with a few exceptions (most of which are extensions):
 
-- `layout_stride` is a template that takes static strides (which can be `std::experimental::dynamic_extent`), which enables zero-overhead subspan implementation
+- `layout_stride` is a template that takes static strides (which can be `std::experimental::dynamic_extent`), which enables zero-overhead submdspan implementation
 - zero-sized strides are allowed for `layout_stride` mappings
 - the `layout_stride` mapping comparison operators work as expected, rather than the (typo) specification in the proposal
 - the `span()` method on `basic_mdspan` is omitted for several reasons

@@ -367,7 +367,7 @@ struct __assign_op_slice_handler<
 // Forking this because the C++11 version will be *completely* unreadable
 template <class ET, size_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
 MDSPAN_INLINE_FUNCTION
-constexpr auto _subspan_impl(
+constexpr auto _submdspan_impl(
   integer_sequence<size_t, Idxs...>,
   basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
   SliceSpecs&&... slices
@@ -406,7 +406,7 @@ constexpr auto _subspan_impl(
 #else
 
 template <class ET, class AP, class Src, class Handled, size_t... Idxs>
-auto _subspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t, Idxs...>)
+auto _submdspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t, Idxs...>)
   -> basic_mdspan<
        ET, typename Handled::__extents_type, typename Handled::layout_type, typename AP::offset_policy
      >
@@ -422,14 +422,14 @@ template <class ET, size_t... Exts, class LP, class AP, class... SliceSpecs, siz
 MDSPAN_INLINE_FUNCTION
 _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
   (
-    constexpr /* auto */ _subspan_impl(
+    constexpr /* auto */ _submdspan_impl(
       std::integer_sequence<size_t, Idxs...> seq,
       basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
       SliceSpecs&&... slices
     ) noexcept
   ),
   (
-    /* return */ _subspan_impl_helper<ET, AP>(
+    /* return */ _submdspan_impl_helper<ET, AP>(
       src,
       _MDSPAN_FOLD_ASSIGN_LEFT(
         (
@@ -485,13 +485,13 @@ MDSPAN_TEMPLATE_REQUIRES(
 MDSPAN_INLINE_FUNCTION
 _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
   (
-    constexpr subspan(
+    constexpr submdspan(
       basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices
     ) noexcept
   ),
   (
     /* return */
-      detail::_subspan_impl(std::make_index_sequence<sizeof...(SliceSpecs)>{}, src, slices...) /*;*/
+      detail::_submdspan_impl(std::make_index_sequence<sizeof...(SliceSpecs)>{}, src, slices...) /*;*/
   )
 )
 /* clang-format: on */

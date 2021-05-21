@@ -104,7 +104,7 @@ void _do_fill_random(
 )
 {
   for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
-    _do_fill_random(std::experimental::subspan(s, i, _repeated_with<decltype(Es)>(std::experimental::all)...), gen, dist);
+    _do_fill_random(std::experimental::submdspan(s, i, _repeated_with<decltype(Es)>(std::experimental::all)...), gen, dist);
   }
 }
 

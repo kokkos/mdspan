@@ -12,5 +12,5 @@ function(mdspan_add_example EXENAME)
 endfunction()
 
 add_subdirectory(dot_product)
-add_subdirectory(subspan)
+add_subdirectory(submdspan)
 add_subdirectory(tiled_layout)

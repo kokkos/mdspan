@@ -11,7 +11,7 @@ int test(int* data) {
     <%= (["#{k+2}"] * n).join(", ") %>
   >(data);
   <% n.times do |i| %>
-    auto <%= "sub#{i+1}_#{k}" %> = std::experimental::subspan(
+    auto <%= "sub#{i+1}_#{k}" %> = std::experimental::submdspan(
        <%= "sub#{i}_#{k}" %>,
        1
        <%= ", std::experimental::all" * (n - i - 1) %>
