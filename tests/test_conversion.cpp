@@ -2,10 +2,11 @@
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 2.0
-//              Copyright (2019) Sandia Corporation
+//                        Kokkos v. 3.0
+//       Copyright (2020) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
 //
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+// Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,10 +24,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
+// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -41,51 +42,17 @@
 //@HEADER
 */
 
-#pragma once
 
-#include "macros.hpp"
+#include <experimental/mdspan>
 
-#include <cstddef> // ptrdiff_t
+#include <gtest/gtest.h>
 
-namespace std {
-namespace experimental {
+namespace stdex = std::experimental;
 
-template <class ElementType>
-struct accessor_basic {
-
-  using offset_policy = accessor_basic;
-  using element_type = ElementType;
-  using reference = ElementType&;
-  using pointer = ElementType*;
-
-  constexpr accessor_basic() noexcept = default;
-
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherElementType,
-    /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, typename accessor_basic<OtherElementType>::pointer, pointer)
-    )
-  )
-  MDSPAN_INLINE_FUNCTION
-  constexpr accessor_basic(accessor_basic<OtherElementType>) {}
-
-  MDSPAN_INLINE_FUNCTION
-  constexpr pointer
-  offset(pointer p, ptrdiff_t i) const noexcept {
-    return p + i;
-  }
-
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference access(pointer p, ptrdiff_t i) const noexcept {
-    return p[i];
-  }
-
-  MDSPAN_INLINE_FUNCTION
-  constexpr pointer decay(pointer p) const noexcept {
-    return p;
-  }
-
-};
-
-} // end namespace experimental
-} // end namespace std
+TEST(TestConversion, const_element) {
+    std::array<double, 6> a{};
+    stdex::mdspan<double, 2, 3> s(a.data());
+    s(0, 1) = 3.14;
+    stdex::mdspan<double const, 2, 3> c_s(s);
+    ASSERT_EQ(c_s(0, 1), 3.14);
+}
