@@ -58,17 +58,6 @@ struct default_accessor {
   using reference = ElementType&;
   using pointer = ElementType*;
 
-  constexpr accessor_basic() noexcept = default;
-
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherElementType,
-    /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, typename accessor_basic<OtherElementType>::pointer, pointer)
-    )
-  )
-  MDSPAN_INLINE_FUNCTION
-  constexpr accessor_basic(accessor_basic<OtherElementType>) {}
-
   MDSPAN_INLINE_FUNCTION
   constexpr default_accessor() noexcept = default;
 
