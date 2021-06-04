@@ -202,7 +202,7 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr explicit
+  constexpr
   extents(std::array<SizeType, rank_dynamic()> const& dyn) noexcept
     : __base_t(__base_t{typename __base_t::__stored_type{
         detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn}})
