@@ -122,7 +122,6 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
-  // TODO @proposal-bug these (and other analogous operators) should be non-member functions
   template<class OtherExtents>
   MDSPAN_INLINE_FUNCTION
   friend constexpr bool operator==(layout_left_impl const& lhs, layout_left_impl<OtherExtents> const& rhs) noexcept {

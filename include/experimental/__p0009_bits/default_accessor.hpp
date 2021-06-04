@@ -64,7 +64,7 @@ struct default_accessor {
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, OtherElementType, ElementType)
+      _MDSPAN_TRAIT(is_convertible, typename default_accessor<OtherElementType>::pointer, pointer)
     )
   )
   MDSPAN_INLINE_FUNCTION
