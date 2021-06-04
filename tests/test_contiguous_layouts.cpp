@@ -49,6 +49,7 @@
 #include <utility>
 
 namespace stdex = std::experimental;
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
 template <class Extents>
 size_t get_expected_mapping(
@@ -111,40 +112,39 @@ using layout_test_types_3d =
   ::testing::Types<
     test_3d_left_types<stdex::extents<3, 4, 5>>,
     test_3d_left_types<stdex::extents<5, 4, 3>>,
-    test_3d_left_types<stdex::extents<3, 4, stdex::dynamic_extent>, 5>,
-    test_3d_left_types<stdex::extents<5, 4, stdex::dynamic_extent>, 3>,
-    test_3d_left_types<stdex::extents<3, stdex::dynamic_extent, 5>, 4>,
-    test_3d_left_types<stdex::extents<5, stdex::dynamic_extent, 3>, 4>,
-    test_3d_left_types<stdex::extents<stdex::dynamic_extent, 4, 5>, 3>,
-    test_3d_left_types<stdex::extents<stdex::dynamic_extent, 4, 3>, 5>,
-    test_3d_left_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, 5>, 3, 4>,
-    test_3d_left_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, 3>, 5, 4>,
-    test_3d_left_types<stdex::extents<stdex::dynamic_extent, 4, stdex::dynamic_extent>, 3, 5>,
-    test_3d_left_types<stdex::extents<stdex::dynamic_extent, 4, stdex::dynamic_extent>, 5, 3>,
-    test_3d_left_types<stdex::extents<3, stdex::dynamic_extent, stdex::dynamic_extent>, 4, 5>,
-    test_3d_left_types<stdex::extents<5, stdex::dynamic_extent, stdex::dynamic_extent>, 4, 3>,
-    test_3d_left_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, 3, 4, 5>,
-    test_3d_left_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, 5, 4, 3>,
+    test_3d_left_types<stdex::extents<3, 4, dyn>, 5>,
+    test_3d_left_types<stdex::extents<5, 4, dyn>, 3>,
+    test_3d_left_types<stdex::extents<3, dyn, 5>, 4>,
+    test_3d_left_types<stdex::extents<5, dyn, 3>, 4>,
+    test_3d_left_types<stdex::extents<dyn, 4, 5>, 3>,
+    test_3d_left_types<stdex::extents<dyn, 4, 3>, 5>,
+    test_3d_left_types<stdex::extents<dyn, dyn, 5>, 3, 4>,
+    test_3d_left_types<stdex::extents<dyn, dyn, 3>, 5, 4>,
+    test_3d_left_types<stdex::extents<dyn, 4, dyn>, 3, 5>,
+    test_3d_left_types<stdex::extents<dyn, 4, dyn>, 5, 3>,
+    test_3d_left_types<stdex::extents<3, dyn, dyn>, 4, 5>,
+    test_3d_left_types<stdex::extents<5, dyn, dyn>, 4, 3>,
+    test_3d_left_types<stdex::extents<dyn, dyn, dyn>, 3, 4, 5>,
+    test_3d_left_types<stdex::extents<dyn, dyn, dyn>, 5, 4, 3>,
     test_3d_right_types<stdex::extents<3, 4, 5>>,
     test_3d_right_types<stdex::extents<5, 4, 3>>,
-    test_3d_right_types<stdex::extents<3, 4, stdex::dynamic_extent>, 5>,
-    test_3d_right_types<stdex::extents<5, 4, stdex::dynamic_extent>, 3>,
-    test_3d_right_types<stdex::extents<3, stdex::dynamic_extent, 5>, 4>,
-    test_3d_right_types<stdex::extents<5, stdex::dynamic_extent, 3>, 4>,
-    test_3d_right_types<stdex::extents<stdex::dynamic_extent, 4, 5>, 3>,
-    test_3d_right_types<stdex::extents<stdex::dynamic_extent, 4, 3>, 5>,
-    test_3d_right_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, 5>, 3, 4>,
-    test_3d_right_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, 3>, 5, 4>,
-    test_3d_right_types<stdex::extents<stdex::dynamic_extent, 4, stdex::dynamic_extent>, 3, 5>,
-    test_3d_right_types<stdex::extents<stdex::dynamic_extent, 4, stdex::dynamic_extent>, 5, 3>,
-    test_3d_right_types<stdex::extents<3, stdex::dynamic_extent, stdex::dynamic_extent>, 4, 5>,
-    test_3d_right_types<stdex::extents<5, stdex::dynamic_extent, stdex::dynamic_extent>, 4, 3>,
-    test_3d_right_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, 3, 4, 5>,
-    test_3d_right_types<stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, 5, 4, 3>
+    test_3d_right_types<stdex::extents<3, 4, dyn>, 5>,
+    test_3d_right_types<stdex::extents<5, 4, dyn>, 3>,
+    test_3d_right_types<stdex::extents<3, dyn, 5>, 4>,
+    test_3d_right_types<stdex::extents<5, dyn, 3>, 4>,
+    test_3d_right_types<stdex::extents<dyn, 4, 5>, 3>,
+    test_3d_right_types<stdex::extents<dyn, 4, 3>, 5>,
+    test_3d_right_types<stdex::extents<dyn, dyn, 5>, 3, 4>,
+    test_3d_right_types<stdex::extents<dyn, dyn, 3>, 5, 4>,
+    test_3d_right_types<stdex::extents<dyn, 4, dyn>, 3, 5>,
+    test_3d_right_types<stdex::extents<dyn, 4, dyn>, 5, 3>,
+    test_3d_right_types<stdex::extents<3, dyn, dyn>, 4, 5>,
+    test_3d_right_types<stdex::extents<5, dyn, dyn>, 4, 3>,
+    test_3d_right_types<stdex::extents<dyn, dyn, dyn>, 3, 4, 5>,
+    test_3d_right_types<stdex::extents<dyn, dyn, dyn>, 5, 4, 3>
   >;
 
 template <class T> struct TestLayout3D : TestLayout<T> { };
-
 
 TYPED_TEST_SUITE(TestLayout3D, layout_test_types_3d);
 
@@ -165,4 +165,60 @@ TYPED_TEST(TestLayout3D, mapping_works) {
 
 TYPED_TEST(TestLayout3D, required_span_size_works) {
   ASSERT_EQ(this->map.required_span_size(), 3*4*5);
+}
+
+TEST(TestLayoutLeftListInitialization, test_layout_left_list_initialization) {
+  double* data = nullptr;
+  stdex::basic_mdspan<double, stdex::extents<dyn, dyn>, stdex::layout_left> m(data, {{16, 32}});
+  ASSERT_EQ(m.rank(), 2);
+  ASSERT_EQ(m.rank_dynamic(), 2);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(m.stride(1), 16);
+  ASSERT_EQ(m.extent(0), 16);
+  ASSERT_EQ(m.extent(1), 32);
+}
+
+// GCC 10 ICEs if I stick this in the body of the below test.
+template <typename M>
+void test_layout_left_ctad_gcc_10_workaround(M m) {
+  ASSERT_EQ(m.rank(), 2);
+  ASSERT_EQ(m.rank_dynamic(), 2);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(m.stride(1), 32);
+  ASSERT_EQ(m.extent(0), 16);
+  ASSERT_EQ(m.extent(1), 32);
+}
+
+TEST(TestLayoutLeftCTAD, test_layout_right_ctad) {
+  double* data = nullptr;
+  stdex::basic_mdspan m(data, stdex::layout_left::mapping{stdex::extents{16, 32}});
+  test_layout_left_ctad_gcc_10_workaround(m);
+}
+
+TEST(TestLayoutRightListInitialization, test_layout_right_list_initialization) {
+  double* data = nullptr;
+  stdex::basic_mdspan<double, stdex::extents<dyn, dyn>, stdex::layout_right> m(data, {{16, 32}});
+  ASSERT_EQ(m.rank(), 2);
+  ASSERT_EQ(m.rank_dynamic(), 2);
+  ASSERT_EQ(m.stride(0), 32);
+  ASSERT_EQ(m.stride(1), 1);
+  ASSERT_EQ(m.extent(0), 16);
+  ASSERT_EQ(m.extent(1), 32);
+}
+
+// GCC 10 ICEs if I stick this in the body of the below test.
+template <typename M>
+void test_layout_right_ctad_gcc_10_workaround(M m) {
+  ASSERT_EQ(m.rank(), 2);
+  ASSERT_EQ(m.rank_dynamic(), 2);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(m.stride(1), 32);
+  ASSERT_EQ(m.extent(0), 16);
+  ASSERT_EQ(m.extent(1), 32);
+}
+
+TEST(TestLayoutRightCTAD, test_layout_right_ctad) {
+  double* data = nullptr;
+  stdex::basic_mdspan m(data, stdex::layout_right::mapping{stdex::extents{16, 32}});
+  test_layout_right_ctad_gcc_10_workaround(m);
 }

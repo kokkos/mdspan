@@ -194,7 +194,12 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #  endif
 #endif
 
-
+#ifndef _MDSPAN_USE_DEDUCTION_GUIDES
+#  if (defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703) \
+          || (!defined(__cpp_return_type_deduction) && MDSPAN_HAS_CXX_17)
+#    define _MDSPAN_USE_DEDUCTION_GUIDES 1
+#  endif
+#endif
 
 #ifndef _MDSPAN_USE_STANDARD_TRAIT_ALIASES
 #  if (defined(__cpp_lib_transformation_trait_aliases) && __cpp_lib_transformation_trait_aliases >= 201304) \
