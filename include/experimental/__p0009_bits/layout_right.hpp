@@ -66,7 +66,7 @@ struct layout_right_idx_conditional {
 
 template <class> class layout_right_impl;
 
-template <ptrdiff_t... Exts>
+template <size_t... Exts>
 class layout_right_impl<std::experimental::extents<Exts...>>
   : public fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_right_idx_conditional>
 {
@@ -125,14 +125,14 @@ public:
   // TODO @proposal-bug these (and other analogous operators) should be non-member functions
   template<class OtherExtents>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool operator==(layout_right_impl<OtherExtents> const& other) const noexcept {
-    return this->base_t::extents() == other.extents();
+  friend constexpr bool operator==(layout_right_impl const& lhs, layout_right_impl<OtherExtents> const& rhs) noexcept {
+    return lhs.extents() == rhs.extents();
   }
 
   template<class OtherExtents>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool operator!=(layout_right_impl<OtherExtents> const& other) const noexcept {
-    return this->base_t::extents() != other.extents();
+  friend constexpr bool operator!=(layout_right_impl const& lhs, layout_right_impl<OtherExtents> const& rhs) noexcept {
+    return lhs.extents() != rhs.extents();
   }
 
 };

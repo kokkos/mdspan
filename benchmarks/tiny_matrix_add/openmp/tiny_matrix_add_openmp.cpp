@@ -60,7 +60,7 @@ static constexpr int global_repeat = 1;
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 
 void throw_runtime_exception(const std::string &msg) {
@@ -72,9 +72,9 @@ void throw_runtime_exception(const std::string &msg) {
 template<class MDSpan>
 void OpenMP_first_touch_3D(MDSpan s) {
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
-    for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
-      for(ptrdiff_t k = 0; k < s.extent(2); k ++) {
+  for(size_t i = 0; i < s.extent(0); i ++) {
+    for(size_t j = 0; j < s.extent(1); j ++) {
+      for(size_t k = 0; k < s.extent(2); k ++) {
         s(i,j,k) = 0;
       }
     }
@@ -115,10 +115,10 @@ void BM_MDSpan_OpenMP_noloop_TinyMatrixSum(benchmark::State& state, MDSpan, DynS
         chunk_start += extra;
       }
       auto chunk_end = chunk_start + chunk_size;
-      for (ptrdiff_t i = chunk_start; i < chunk_end; ++i) {
+      for (size_t i = chunk_start; i < chunk_end; ++i) {
         for (int r = 0; r < global_repeat; r++) {
-          for (ptrdiff_t j = 0; j < s.extent(1); j++) {
-            for (ptrdiff_t k = 0; k < s.extent(2); k++) {
+          for (size_t j = 0; j < s.extent(1); j++) {
+            for (size_t k = 0; k < s.extent(2); k++) {
               o(i, j, k) += s(i, j, k);
             }
           }
@@ -127,7 +127,7 @@ void BM_MDSpan_OpenMP_noloop_TinyMatrixSum(benchmark::State& state, MDSpan, DynS
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
+  size_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
   state.SetBytesProcessed( num_elements * 3 * sizeof(value_type) * state.iterations() * global_repeat);
   state.counters["repeats"] = global_repeat;
 }
@@ -153,10 +153,10 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
   mdspan_benchmark::fill_random(o);
 
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
+  for(size_t i = 0; i < s.extent(0); i ++) {
     for(int r = 0; r<global_repeat; r++) {
-      for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
-        for(ptrdiff_t k = 0; k < s.extent(2); k ++) {
+      for(size_t j = 0; j < s.extent(1); j ++) {
+        for(size_t k = 0; k < s.extent(2); k ++) {
           o(i,j,k) += s(i,j,k);
         }
       }
@@ -167,10 +167,10 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
     benchmark::DoNotOptimize(o.data());
     benchmark::DoNotOptimize(s.data());
     #pragma omp parallel for
-    for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
+    for(size_t i = 0; i < s.extent(0); i ++) {
       for(int r = 0; r<global_repeat; r++) {
-        for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
-          for(ptrdiff_t k = 0; k < s.extent(2); k ++) {
+        for(size_t j = 0; j < s.extent(1); j ++) {
+          for(size_t k = 0; k < s.extent(2); k ++) {
             o(i,j,k) += s(i,j,k);
           }
         }
@@ -178,7 +178,7 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
+  size_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
   state.SetBytesProcessed( num_elements * 3 * sizeof(value_type) * state.iterations() * global_repeat);
   state.counters["repeats"] = global_repeat;
 }
@@ -207,10 +207,10 @@ void BM_Raw_Static_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX 
   T* o_ptr = o.data();
 
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < x; i ++) {
+  for(size_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
-        for(ptrdiff_t j = 0; j < 3; j ++) {
-          for(ptrdiff_t k = 0; k < 3; k ++) {
+        for(size_t j = 0; j < 3; j ++) {
+          for(size_t k = 0; k < 3; k ++) {
             o_ptr[k + j*3 + i*3*3] += s_ptr[k + j*3 + i*3*3];
           }
         }
@@ -221,10 +221,10 @@ void BM_Raw_Static_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX 
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
     #pragma omp parallel for
-    for(ptrdiff_t i = 0; i < 1000000; i ++) {
+    for(size_t i = 0; i < 1000000; i ++) {
       for(int r = 0; r<global_repeat; r++) {
-        for(ptrdiff_t j = 0; j < 3; j ++) {
-          for(ptrdiff_t k = 0; k < 3; k ++) {
+        for(size_t j = 0; j < 3; j ++) {
+          for(size_t k = 0; k < 3; k ++) {
             o_ptr[k + j*3 + i*3*3] += s_ptr[k + j*3 + i*3*3];
           }
         }
@@ -232,7 +232,7 @@ void BM_Raw_Static_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX 
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_inner_elements = x * y * z;
+  size_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
   state.counters["repeats"] = global_repeat;
 }
@@ -258,10 +258,10 @@ void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
   T* o_ptr = o.data();
 
 #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < x; i ++) {
+  for(size_t i = 0; i < x; i ++) {
     for(int r = 0; r<global_repeat; r++) {
-      for(ptrdiff_t j = 0; j < y; j ++) {
-        for(ptrdiff_t k = 0; k < z; k ++) {
+      for(size_t j = 0; j < y; j ++) {
+        for(size_t k = 0; k < z; k ++) {
           o_ptr[k + j*y + i*y*z] += s_ptr[k + j*y + i*y*z];
         }
       }
@@ -272,10 +272,10 @@ void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
 #pragma omp parallel for
-    for(ptrdiff_t i = 0; i < x; i ++) {
+    for(size_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
-        for(ptrdiff_t j = 0; j < y; j ++) {
-          for(ptrdiff_t k = 0; k < z; k ++) {
+        for(size_t j = 0; j < y; j ++) {
+          for(size_t k = 0; k < z; k ++) {
             o_ptr[k + j*y + i*y*z] += s_ptr[k + j*y + i*y*z];
           }
         }
@@ -283,7 +283,7 @@ void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_inner_elements = x * y * z;
+  size_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * y * global_repeat * sizeof(value_type) * state.iterations());
   state.counters["repeats"] = global_repeat;
 }
@@ -311,10 +311,10 @@ void BM_Raw_Static_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x
   T* o_ptr = o.data();
 
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < x; i ++) {
+  for(size_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
-        for(ptrdiff_t j = 0; j < 3; j ++) {
-          for(ptrdiff_t k = 0; k < 3; k ++) {
+        for(size_t j = 0; j < 3; j ++) {
+          for(size_t k = 0; k < 3; k ++) {
             o_ptr[k*x*3 + j*x + i] += s_ptr[k*x*3 + j*x + i];
           }
         }
@@ -325,10 +325,10 @@ void BM_Raw_Static_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
     #pragma omp parallel for
-    for(ptrdiff_t i = 0; i < 1000000; i ++) {
+    for(size_t i = 0; i < 1000000; i ++) {
       for(int r = 0; r<global_repeat; r++) {
-        for(ptrdiff_t j = 0; j < 3; j ++) {
-          for(ptrdiff_t k = 0; k < 3; k ++) {
+        for(size_t j = 0; j < 3; j ++) {
+          for(size_t k = 0; k < 3; k ++) {
             o_ptr[k*x*3 + j*x + i] += s_ptr[k*x*3 + j*x + i];
           }
         }
@@ -336,7 +336,7 @@ void BM_Raw_Static_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_inner_elements = x * y * z;
+  size_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
   state.counters["repeats"] = global_repeat;
 }
@@ -364,10 +364,10 @@ void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY
   T* o_ptr = o.data();
 
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < x; i ++) {
+  for(size_t i = 0; i < x; i ++) {
     for(int r = 0; r<global_repeat; r++) {
-      for(ptrdiff_t j = 0; j < y; j ++) {
-        for(ptrdiff_t k = 0; k < z; k ++) {
+      for(size_t j = 0; j < y; j ++) {
+        for(size_t k = 0; k < z; k ++) {
           o_ptr[k*x*y + j*x + i] += s_ptr[k*x*y + j*x + i];
         }
       }
@@ -378,10 +378,10 @@ void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
     #pragma omp parallel for
-    for(ptrdiff_t i = 0; i < x; i ++) {
+    for(size_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
-        for(ptrdiff_t j = 0; j < y; j ++) {
-          for(ptrdiff_t k = 0; k < z; k ++) {
+        for(size_t j = 0; j < y; j ++) {
+          for(size_t k = 0; k < z; k ++) {
             o_ptr[k*x*y + j*x + i] += s_ptr[k*x*y + j*x + i];
           }
         }
@@ -389,7 +389,7 @@ void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_inner_elements = x * y * z;
+  size_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
   state.counters["repeats"] = global_repeat;
 }
@@ -400,16 +400,16 @@ typename MDSpan::value_type*** make_3d_ptr_array(MDSpan s) {
   static_assert(std::is_same<typename MDSpan::layout_type,std::experimental::layout_right>::value,"Creating MD Ptr only works from mdspan with layout_right");
   using value_type = typename MDSpan::value_type;
   value_type*** ptr= new value_type**[s.extent(0)];
-  for(ptrdiff_t i = 0; i<s.extent(0); i++) {
+  for(size_t i = 0; i<s.extent(0); i++) {
     ptr[i] = new value_type*[s.extent(1)];
-    for(ptrdiff_t j = 0; j<s.extent(1); j++)
+    for(size_t j = 0; j<s.extent(1); j++)
       ptr[i][j]=&s(i,j,0);
   }
   return ptr;
 }
 
 template <class T>
-void free_3d_ptr_array(T*** ptr, ptrdiff_t extent_0) {
+void free_3d_ptr_array(T*** ptr, size_t extent_0) {
   for(int i=0; i<extent_0; i++)
     delete [] ptr[i];
   delete [] ptr;
@@ -435,10 +435,10 @@ void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x,
   T*** o_ptr = make_3d_ptr_array(o);
 
   #pragma omp parallel for
-  for(ptrdiff_t i = 0; i < x; i ++) {
+  for(size_t i = 0; i < x; i ++) {
     for(int r = 0; r<global_repeat; r++) {
-      for(ptrdiff_t j = 0; j < 3; j ++) {
-        for(ptrdiff_t k = 0; k < 3; k ++) {
+      for(size_t j = 0; j < 3; j ++) {
+        for(size_t k = 0; k < 3; k ++) {
           o_ptr[i][j][k] += s_ptr[i][j][k];
         }
       }
@@ -449,10 +449,10 @@ void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x,
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
     #pragma omp parallel for
-    for(ptrdiff_t i = 0; i < x; i ++) {
+    for(size_t i = 0; i < x; i ++) {
       for(int r = 0; r<global_repeat; r++) {
-        for(ptrdiff_t j = 0; j < 3; j ++) {
-          for(ptrdiff_t k = 0; k < 3; k ++) {
+        for(size_t j = 0; j < 3; j ++) {
+          for(size_t k = 0; k < 3; k ++) {
             o_ptr[i][j][k] += s_ptr[i][j][k];
           }
         }
@@ -460,7 +460,7 @@ void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x,
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_inner_elements = x * y * z;
+  size_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3 * global_repeat * sizeof(value_type) * state.iterations());
   state.counters["repeats"] = global_repeat;
   free_3d_ptr_array(s_ptr,s.extent(0));

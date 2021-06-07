@@ -58,7 +58,7 @@
 
 static constexpr int global_delta = 1;
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 
 //================================================================================
@@ -81,13 +81,13 @@ void BM_MDSpan_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(o);
-    for(ptrdiff_t i = d; i < s.extent(0)-d; i ++) {
-      for(ptrdiff_t j = d; j < s.extent(1)-d; j ++) {
-        for(ptrdiff_t k = d; k < s.extent(2)-d; k ++) {
+    for(size_t i = d; i < s.extent(0)-d; i ++) {
+      for(size_t j = d; j < s.extent(1)-d; j ++) {
+        for(size_t k = d; k < s.extent(2)-d; k ++) {
           value_type sum_local = 0;
-          for(ptrdiff_t di = i-d; di < i+d+1; di++) { 
-          for(ptrdiff_t dj = j-d; dj < j+d+1; dj++) { 
-          for(ptrdiff_t dk = k-d; dk < k+d+1; dk++) { 
+          for(size_t di = i-d; di < i+d+1; di++) { 
+          for(size_t dj = j-d; dj < j+d+1; dj++) { 
+          for(size_t dk = k-d; dk < k+d+1; dk++) { 
             sum_local += s(di, dj, dk);
           }}}
           o(i,j,k) = sum_local;
@@ -96,8 +96,8 @@ void BM_MDSpan_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_inner_elements = (s.extent(0)-d) * (s.extent(1)-d) * (s.extent(2)-d);
-  ptrdiff_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
+  size_t num_inner_elements = (s.extent(0)-d) * (s.extent(1)-d) * (s.extent(2)-d);
+  size_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations());
 }
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Stencil_3D, right_, stdex::mdspan, 80, 80, 80);
@@ -134,13 +134,13 @@ void BM_Raw_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(o_ptr);
-    for(ptrdiff_t i = d; i < x-d; i ++) {
-      for(ptrdiff_t j = d; j < y-d; j ++) {
-        for(ptrdiff_t k = d; k < z-d; k ++) {
+    for(size_t i = d; i < x-d; i ++) {
+      for(size_t j = d; j < y-d; j ++) {
+        for(size_t k = d; k < z-d; k ++) {
           value_type sum_local = 0;
-          for(ptrdiff_t di = i-d; di < i+d+1; di++) { 
-          for(ptrdiff_t dj = j-d; dj < j+d+1; dj++) { 
-          for(ptrdiff_t dk = k-d; dk < k+d+1; dk++) { 
+          for(size_t di = i-d; di < i+d+1; di++) { 
+          for(size_t dj = j-d; dj < j+d+1; dj++) { 
+          for(size_t dk = k-d; dk < k+d+1; dk++) { 
             sum_local += s_ptr[dk + dj*z + di*z*y];
           }}}
           o_ptr[k + j*z + i*z*y] = sum_local;
@@ -149,12 +149,12 @@ void BM_Raw_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_inner_elements = (x-d) * (y-d) * (z-d);
-  ptrdiff_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
+  size_t num_inner_elements = (x-d) * (y-d) * (z-d);
+  size_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations());
 }
-BENCHMARK_CAPTURE(BM_Raw_Stencil_3D_right, size_80_80_80, int(), ptrdiff_t(80), ptrdiff_t(80), ptrdiff_t(80));
-BENCHMARK_CAPTURE(BM_Raw_Stencil_3D_right, size_400_400_400, int(), ptrdiff_t(400), ptrdiff_t(400), ptrdiff_t(400));
+BENCHMARK_CAPTURE(BM_Raw_Stencil_3D_right, size_80_80_80, int(), size_t(80), size_t(80), size_t(80));
+BENCHMARK_CAPTURE(BM_Raw_Stencil_3D_right, size_400_400_400, int(), size_t(400), size_t(400), size_t(400));
 
 //================================================================================
 

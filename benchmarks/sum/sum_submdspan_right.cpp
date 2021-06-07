@@ -51,7 +51,7 @@
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, std::experimental::extents<Es...>, stdex::layout_left>;
 
 //================================================================================
@@ -71,11 +71,11 @@ void BM_MDSpan_Sum_Subspan_3D_right(benchmark::State& state, MDSpan, DynSizes...
     benchmark::DoNotOptimize(s);
     benchmark::DoNotOptimize(s.data());
     value_type sum = 0;
-    for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
-      auto sub_i = stdex::subspan(s, i, stdex::all, stdex::all);
-      for (ptrdiff_t j = 0; j < s.extent(1); ++j) {
-        auto sub_i_j = stdex::subspan(sub_i, j, stdex::all);
-        for (ptrdiff_t k = 0; k < s.extent(2); ++k) {
+    for(size_t i = 0; i < s.extent(0); ++i) {
+      auto sub_i = stdex::submdspan(s, i, stdex::full_extent, stdex::full_extent);
+      for (size_t j = 0; j < s.extent(1); ++j) {
+        auto sub_i_j = stdex::submdspan(sub_i, j, stdex::full_extent);
+        for (size_t k = 0; k < s.extent(2); ++k) {
           sum += sub_i_j(k);
         }
       }
@@ -93,23 +93,23 @@ MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_Subspan_3D_right, left_, lmdspan, 200, 200
 //================================================================================
 
 BENCHMARK_CAPTURE(
-  BM_Raw_Sum_3D_right, size_20_20_20, int(), ptrdiff_t(20), ptrdiff_t(20), ptrdiff_t(20)
+  BM_Raw_Sum_3D_right, size_20_20_20, int(), size_t(20), size_t(20), size_t(20)
 );
 BENCHMARK_CAPTURE(
-  BM_Raw_Sum_3D_right, size_200_200_200, int(), ptrdiff_t(200), ptrdiff_t(200), ptrdiff_t(200)
+  BM_Raw_Sum_3D_right, size_200_200_200, int(), size_t(200), size_t(200), size_t(200)
 );
 
 BENCHMARK_CAPTURE(
   BM_Raw_Static_Sum_3D_right, size_20_20_20, int(),
-  std::integral_constant<ptrdiff_t, 20>{},
-  std::integral_constant<ptrdiff_t, 20>{},
-  std::integral_constant<ptrdiff_t, 20>{}
+  std::integral_constant<size_t, 20>{},
+  std::integral_constant<size_t, 20>{},
+  std::integral_constant<size_t, 20>{}
 );
 BENCHMARK_CAPTURE(
   BM_Raw_Static_Sum_3D_right, size_200_200_200, int(),
-  std::integral_constant<ptrdiff_t, 200>{},
-  std::integral_constant<ptrdiff_t, 200>{},
-  std::integral_constant<ptrdiff_t, 200>{}
+  std::integral_constant<size_t, 200>{},
+  std::integral_constant<size_t, 200>{},
+  std::integral_constant<size_t, 200>{}
 );
 
 BENCHMARK_CAPTURE(
@@ -120,15 +120,15 @@ BENCHMARK_CAPTURE(
 );
 BENCHMARK_CAPTURE(
   BM_Raw_Static_Sum_3D_right_iter_left, size_20_20_20, int(),
-  std::integral_constant<ptrdiff_t, 20>{},
-  std::integral_constant<ptrdiff_t, 20>{},
-  std::integral_constant<ptrdiff_t, 20>{}
+  std::integral_constant<size_t, 20>{},
+  std::integral_constant<size_t, 20>{},
+  std::integral_constant<size_t, 20>{}
 );
 BENCHMARK_CAPTURE(
   BM_Raw_Static_Sum_3D_right_iter_left, size_200_200_200, int(),
-  std::integral_constant<ptrdiff_t, 200>{},
-  std::integral_constant<ptrdiff_t, 200>{},
-  std::integral_constant<ptrdiff_t, 200>{}
+  std::integral_constant<size_t, 200>{},
+  std::integral_constant<size_t, 200>{},
+  std::integral_constant<size_t, 200>{}
 );
 
 //================================================================================
@@ -141,7 +141,7 @@ constexpr T&& _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
 
 template <class T, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
-_MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
+_MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
   stdex::basic_mdspan<T, std::experimental::extents<>, Rest...> s
 )
@@ -149,16 +149,16 @@ _MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
   sum += s();
 }
 
-template <class T, ptrdiff_t E, ptrdiff_t... Es, class... Rest>
+template <class T, size_t E, size_t... Es, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
-_MDSPAN_CONSTEXPR_14 void _do_sum_subspan(
+_MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
   stdex::basic_mdspan<T, std::experimental::extents<E, Es...>, Rest...> s
 )
 {
-  for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
-    _impl::_do_sum_subspan(sum, stdex::subspan(
-      s, i, _repeated_with<decltype(Es)>(stdex::all)...)
+  for(size_t i = 0; i < s.extent(0); ++i) {
+    _impl::_do_sum_submdspan(sum, stdex::submdspan(
+      s, i, _repeated_with<decltype(Es)>(stdex::full_extent)...)
     );
   }
 }
@@ -175,7 +175,7 @@ void BM_MDSpan_Sum_Subspan_MD_right(benchmark::State& state, MDSpan, DynSizes...
   mdspan_benchmark::fill_random(s);
   for (auto _ : state) {
     value_type sum = 0;
-    _impl::_do_sum_subspan(sum, s);
+    _impl::_do_sum_submdspan(sum, s);
     benchmark::DoNotOptimize(sum);
     benchmark::DoNotOptimize(s.data());
   }

@@ -43,8 +43,8 @@
 
 #pragma once
 
-#include "__p0009_bits/accessor_basic.hpp"
-#include "__p0009_bits/all_type.hpp"
+#include "__p0009_bits/default_accessor.hpp"
+#include "__p0009_bits/full_extent_t.hpp"
 #include "__p0009_bits/basic_mdspan.hpp"
 #include "__p0009_bits/dynamic_extent.hpp"
 #include "__p0009_bits/extents.hpp"
@@ -54,4 +54,4 @@
 #include "__p0009_bits/layout_stride.hpp"
 #include "__p0009_bits/macros.hpp"
 #include "__p0009_bits/static_array.hpp"
-#include "__p0009_bits/subspan.hpp"
+#include "__p0009_bits/submdspan.hpp"

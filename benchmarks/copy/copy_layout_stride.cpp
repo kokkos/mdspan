@@ -63,8 +63,8 @@ void BM_MDSpan_Copy_2D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
   mdspan_benchmark::fill_random(s);
   auto dest = MDSpan{buffer2.get(), dyn...};
   for (auto _ : state) {
-    for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
-      for (ptrdiff_t j = 0; j < s.extent(1); ++j) {
+    for(size_t i = 0; i < s.extent(0); ++i) {
+      for (size_t j = 0; j < s.extent(1); ++j) {
           dest(i, j) = s(i, j);
       }
     }
@@ -100,8 +100,8 @@ void BM_MDSpan_Copy_2D_stride(benchmark::State& state, MDSpan, LayoutMapping map
   mdspan_benchmark::fill_random(s);
   auto dest = MDSpan{buffer2.get(), map};
   for (auto _ : state) {
-    for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
-      for (ptrdiff_t j = 0; j < s.extent(1); ++j) {
+    for(size_t i = 0; i < s.extent(0); ++i) {
+      for (size_t j = 0; j < s.extent(1); ++j) {
         dest(i, j) = s(i, j);
       }
     }
@@ -117,7 +117,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<100, 100>>(
     stdex::extents<100, 100>{},
     // layout right
-    std::array<ptrdiff_t, 2>{100, 1}
+    std::array<size_t, 2>{100, 1}
   )
 );
 BENCHMARK_CAPTURE(
@@ -126,7 +126,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<100, dyn>>(
     stdex::extents<100, dyn>{100},
     // layout right
-    std::array<ptrdiff_t, 2>{100, 1}
+    std::array<size_t, 2>{100, 1}
   )
 );
 BENCHMARK_CAPTURE(
@@ -135,7 +135,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, 100>>(
     stdex::extents<dyn, 100>{100},
     // layout right
-    std::array<ptrdiff_t, 2>{100, 1}
+    std::array<size_t, 2>{100, 1}
   )
 );
 BENCHMARK_CAPTURE(
@@ -144,7 +144,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
-    std::array<ptrdiff_t, 2>{100, 1}
+    std::array<size_t, 2>{100, 1}
   )
 );
 
@@ -154,7 +154,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<100, dyn>::template mapping<stdex::extents<100, 100>>(
     stdex::extents<100, 100>{},
     // layout right
-    std::array<ptrdiff_t, 1>{1}
+    std::array<size_t, 1>{1}
   )
 );
 BENCHMARK_CAPTURE(
@@ -163,7 +163,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<100, dyn>::template mapping<stdex::extents<100, dyn>>(
     stdex::extents<100, dyn>{100},
     // layout right
-    std::array<ptrdiff_t, 1>{1}
+    std::array<size_t, 1>{1}
   )
 );
 BENCHMARK_CAPTURE(
@@ -172,7 +172,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<100, dyn>::template mapping<stdex::extents<dyn, 100>>(
     stdex::extents<dyn, 100>{100},
     // layout right
-    std::array<ptrdiff_t, 1>{1}
+    std::array<size_t, 1>{1}
   )
 );
 BENCHMARK_CAPTURE(
@@ -181,7 +181,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<100, dyn>::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
-    std::array<ptrdiff_t, 1>{1}
+    std::array<size_t, 1>{1}
   )
 );
 
@@ -191,7 +191,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, 1>::template mapping<stdex::extents<100, 100>>(
     stdex::extents<100, 100>{},
     // layout right
-    std::array<ptrdiff_t, 1>{100}
+    std::array<size_t, 1>{100}
   )
 );
 BENCHMARK_CAPTURE(
@@ -200,7 +200,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, 1>::template mapping<stdex::extents<100, dyn>>(
     stdex::extents<100, dyn>{100},
     // layout right
-    std::array<ptrdiff_t, 1>{100}
+    std::array<size_t, 1>{100}
   )
 );
 BENCHMARK_CAPTURE(
@@ -209,7 +209,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, 1>::template mapping<stdex::extents<dyn, 100>>(
     stdex::extents<dyn, 100>{100},
     // layout right
-    std::array<ptrdiff_t, 1>{100}
+    std::array<size_t, 1>{100}
   )
 );
 BENCHMARK_CAPTURE(
@@ -218,7 +218,7 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, 1>::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
-    std::array<ptrdiff_t, 1>{100}
+    std::array<size_t, 1>{100}
   )
 );
 
@@ -241,8 +241,8 @@ void BM_MDSpan_Copy_2D_stride_diff_map(benchmark::State& state,
   mdspan_benchmark::fill_random(src);
   auto dest = mdspan_type{buff_dest.get(), map_dest};
   for (auto _ : state) {
-    for(ptrdiff_t i = 0; i < src.extent(0); ++i) {
-      for (ptrdiff_t j = 0; j < src.extent(1); ++j) {
+    for(size_t i = 0; i < src.extent(0); ++i) {
+      for (size_t j = 0; j < src.extent(1); ++j) {
         dest(i, j) = src(i, j);
       }
     }
@@ -258,12 +258,12 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
-    std::array<ptrdiff_t, 2>{0, 1}
+    std::array<size_t, 2>{0, 1}
   ),
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
-    std::array<ptrdiff_t, 2>{100, 1}
+    std::array<size_t, 2>{100, 1}
   )
 );
 
@@ -273,12 +273,12 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
-    std::array<ptrdiff_t, 2>{1, 0}
+    std::array<size_t, 2>{1, 0}
   ),
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
-    std::array<ptrdiff_t, 2>{100, 1}
+    std::array<size_t, 2>{100, 1}
   )
 );
 
@@ -288,12 +288,12 @@ BENCHMARK_CAPTURE(
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
-    std::array<ptrdiff_t, 2>{0, 0}
+    std::array<size_t, 2>{0, 0}
   ),
   stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
-    std::array<ptrdiff_t, 2>{100, 1}
+    std::array<size_t, 2>{100, 1}
   )
 );
 
@@ -301,7 +301,7 @@ BENCHMARK_CAPTURE(
 //================================================================================
 
 template <class T>
-void BM_Raw_Copy_1D(benchmark::State& state, T, ptrdiff_t size) {
+void BM_Raw_Copy_1D(benchmark::State& state, T, size_t size) {
   benchmark::DoNotOptimize(size);
   using value_type = T;
   auto buffer = std::make_unique<value_type[]>(size);
@@ -314,7 +314,7 @@ void BM_Raw_Copy_1D(benchmark::State& state, T, ptrdiff_t size) {
   auto buffer2 = std::make_unique<value_type[]>(size);
   value_type* dest = buffer2.get();
   for (auto _ : state) {
-    for(ptrdiff_t i = 0; i < size; ++i) {
+    for(size_t i = 0; i < size; ++i) {
       dest[i] = src[i];
     }
     benchmark::DoNotOptimize(src);
@@ -330,7 +330,7 @@ BENCHMARK_CAPTURE(
 //================================================================================
 
 template <class T>
-void BM_Raw_Copy_2D(benchmark::State& state, T, ptrdiff_t x, ptrdiff_t y) {
+void BM_Raw_Copy_2D(benchmark::State& state, T, size_t x, size_t y) {
   using value_type = T;
   auto buffer = std::make_unique<value_type[]>(x * y);
   {
@@ -342,8 +342,8 @@ void BM_Raw_Copy_2D(benchmark::State& state, T, ptrdiff_t x, ptrdiff_t y) {
   auto buffer2 = std::make_unique<value_type[]>(x * y);
   value_type* dest = buffer2.get();
   for (auto _ : state) {
-    for(ptrdiff_t i = 0; i < x; ++i) {
-      for(ptrdiff_t j = 0; j < y; ++j) {
+    for(size_t i = 0; i < x; ++i) {
+      for(size_t j = 0; j < y; ++j) {
         dest[i*y + j] = src[i*y + j];
       }
     }

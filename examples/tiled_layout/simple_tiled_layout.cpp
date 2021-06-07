@@ -59,13 +59,13 @@ struct SimpleTileLayout2D {
     static_assert(Extents::rank() == 2, "SimpleTileLayout2D is hard-coded for 2D layout");
 
     // for convenience
-    using index_type = typename Extents::index_type;
+    using size_type = typename Extents::size_type;
 
     // constructor
     mapping(
       Extents const& exts,
-      index_type row_tile,
-      index_type col_tile
+      size_type row_tile,
+      size_type col_tile
     ) noexcept
       : extents_(exts),
         row_tile_size_(row_tile),
@@ -88,23 +88,23 @@ struct SimpleTileLayout2D {
     //------------------------------------------------------------
     // Helper members (not part of the layout concept)
 
-    constexpr index_type
+    constexpr size_type
     n_row_tiles() const noexcept {
-      return extents_.extent(0) / row_tile_size_ + index_type((extents_.extent(0) % row_tile_size_) != 0);
+      return extents_.extent(0) / row_tile_size_ + size_type((extents_.extent(0) % row_tile_size_) != 0);
     }
 
-    constexpr index_type
+    constexpr size_type
     n_column_tiles() const noexcept {
-      return extents_.extent(1) / col_tile_size_ + index_type((extents_.extent(1) % col_tile_size_) != 0);
+      return extents_.extent(1) / col_tile_size_ + size_type((extents_.extent(1) % col_tile_size_) != 0);
     }
 
-    constexpr index_type
+    constexpr size_type
     tile_size() const noexcept {
       return row_tile_size_ * col_tile_size_;
     }
 
-    index_type
-    tile_offset(index_type row, index_type col) const noexcept {
+    size_type
+    tile_offset(size_type row, size_type col) const noexcept {
       // This could probably be more efficient, but for example purposes...
       auto col_tile = col / col_tile_size_;
       auto row_tile = row / row_tile_size_;
@@ -112,8 +112,8 @@ struct SimpleTileLayout2D {
       return (col_tile * n_row_tiles() + row_tile) * tile_size();
     }
 
-    index_type
-    offset_in_tile(index_type row, index_type col) const noexcept {
+    size_type
+    offset_in_tile(size_type row, size_type col) const noexcept {
       auto t_row = row % row_tile_size_;
       auto t_col = col % col_tile_size_;
       // We're hard-coding this to *row-major* within tiles
@@ -123,12 +123,12 @@ struct SimpleTileLayout2D {
     //------------------------------------------------------------
     // Required members
 
-    constexpr index_type
-    operator()(index_type row, index_type col) const noexcept {
+    constexpr size_type
+    operator()(size_type row, size_type col) const noexcept {
       return tile_offset(row, col) + offset_in_tile(row, col);
     }
 
-    constexpr index_type
+    constexpr size_type
     required_span_size() const noexcept {
       return n_row_tiles() * n_column_tiles() * tile_size();
     }
@@ -153,8 +153,8 @@ struct SimpleTileLayout2D {
    private:
 
     Extents extents_;
-    index_type row_tile_size_;
-    index_type col_tile_size_;
+    size_type row_tile_size_;
+    size_type col_tile_size_;
 
   };
 };

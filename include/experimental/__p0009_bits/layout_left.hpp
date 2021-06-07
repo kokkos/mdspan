@@ -65,7 +65,7 @@ struct layout_left_idx_conditional {
 
 template <class> class layout_left_impl;
 
-template <ptrdiff_t... Exts>
+template <size_t... Exts>
 class layout_left_impl<std::experimental::extents<Exts...>>
   : public fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_left_idx_conditional>
 {
@@ -122,17 +122,16 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
-  // TODO @proposal-bug these (and other analogous operators) should be non-member functions
   template<class OtherExtents>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool operator==(layout_left_impl<OtherExtents> const& other) const noexcept {
-    return this->base_t::extents() == other.extents();
+  friend constexpr bool operator==(layout_left_impl const& lhs, layout_left_impl<OtherExtents> const& rhs) noexcept {
+    return lhs.extents() == rhs.extents();
   }
 
   template<class OtherExtents>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool operator!=(layout_left_impl<OtherExtents> const& other) const noexcept {
-    return this->base_t::extents() != other.extents();
+  friend constexpr bool operator!=(layout_left_impl const& lhs, layout_left_impl<OtherExtents> const& rhs) noexcept {
+    return lhs.extents() != rhs.extents();
   }
 
 };

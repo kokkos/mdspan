@@ -51,7 +51,7 @@
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 
 //================================================================================
@@ -66,9 +66,9 @@ void BM_MDSpan_Sum_3D_left(benchmark::State& state, MDSpan, DynSizes... dyn) {
   mdspan_benchmark::fill_random(s);
   for (auto _ : state) {
     value_type sum = 0;
-    for (ptrdiff_t k = 0; k < s.extent(2); ++k) {
-      for (ptrdiff_t j = 0; j < s.extent(1); ++j) {
-        for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
+    for (size_t k = 0; k < s.extent(2); ++k) {
+      for (size_t j = 0; j < s.extent(1); ++j) {
+        for(size_t i = 0; i < s.extent(0); ++i) {
           sum += s(i, j, k);
         }
       }
@@ -103,15 +103,15 @@ BENCHMARK_CAPTURE(
 
 BENCHMARK_CAPTURE(
   BM_Raw_Static_Sum_3D_left, size_20_20_20, int(),
-  std::integral_constant<ptrdiff_t, 20>{},
-  std::integral_constant<ptrdiff_t, 20>{},
-  std::integral_constant<ptrdiff_t, 20>{}
+  std::integral_constant<size_t, 20>{},
+  std::integral_constant<size_t, 20>{},
+  std::integral_constant<size_t, 20>{}
 );
 BENCHMARK_CAPTURE(
   BM_Raw_Static_Sum_3D_left, size_200_200_200, int(),
-  std::integral_constant<ptrdiff_t, 200>{},
-  std::integral_constant<ptrdiff_t, 200>{},
-  std::integral_constant<ptrdiff_t, 200>{}
+  std::integral_constant<size_t, 200>{},
+  std::integral_constant<size_t, 200>{},
+  std::integral_constant<size_t, 200>{}
 );
 
 

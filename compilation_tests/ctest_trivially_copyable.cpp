@@ -56,19 +56,19 @@ struct empty1 { };
 struct empty2 { };
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::detail::__compressed_pair<empty1, empty2>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::detail::__compressed_pair<int*, empty2>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::detail::__compressed_pair<int*, stdex::detail::__compressed_pair<empty1, empty2>>
   >::value
 );
@@ -82,7 +82,7 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::detail::__partially_static_sizes<1, 2, 3>
   >::value
 );
@@ -94,43 +94,43 @@ MDSPAN_STATIC_TEST(
 // <editor-fold desc="extents"> {{{1
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::extents<1, 2, stdex::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::extents<stdex::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::extents<stdex::dynamic_extent, 1, 2, 45>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::extents<45, stdex::dynamic_extent, 1>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::extents<1, 2, 3>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::extents<42>
   >::value
 );
@@ -142,7 +142,7 @@ MDSPAN_STATIC_TEST(
 // <editor-fold desc="layouts"> {{{1
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::layout_left::template mapping<
       stdex::extents<42, stdex::dynamic_extent, 73>
     >
@@ -150,7 +150,7 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::layout_right::template mapping<
       stdex::extents<42, stdex::dynamic_extent, 73>
     >
@@ -158,7 +158,7 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::layout_right::template mapping<
       stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>
     >
@@ -166,7 +166,7 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::layout_stride<stdex::dynamic_extent, 1, 3>::template mapping<
       stdex::extents<42, stdex::dynamic_extent, 73>
     >
@@ -174,7 +174,7 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::layout_stride<stdex::dynamic_extent, 1, 3>::template mapping<
       stdex::extents<42, 27, 73>
     >
@@ -182,7 +182,7 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::layout_stride<12, 1, 3>::template mapping<
       stdex::extents<42, stdex::dynamic_extent, 73>
     >
@@ -190,7 +190,7 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::layout_stride<1, 2, 3>::template mapping<
       stdex::extents<1, 2, 3>
     >
@@ -198,7 +198,7 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::layout_stride<stdex::dynamic_extent, stdex::dynamic_extent>::template mapping<
       stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>
     >
@@ -216,7 +216,7 @@ struct layout_stride_as_member_should_be_standard_layout :
 // Fails with MSVC which adds some padding
 #ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<layout_stride_as_member_should_be_standard_layout>::value
+  std::is_trivially_copyable<layout_stride_as_member_should_be_standard_layout>::value
 );
 #endif
 
@@ -227,19 +227,19 @@ MDSPAN_STATIC_TEST(
 // <editor-fold desc="mdspan"> {{{1
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::mdspan<double, 1, 2, 3>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::mdspan<int, stdex::dynamic_extent, stdex::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
+  std::is_trivially_copyable<
     stdex::basic_mdspan<
       double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>,
       stdex::layout_left, stdex::default_accessor<double>

@@ -51,7 +51,7 @@
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 
 //================================================================================
@@ -71,9 +71,9 @@ void BM_MDSpan_Sum_3D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
     benchmark::DoNotOptimize(s);
     benchmark::DoNotOptimize(s.data());
     value_type sum = 0;
-    for(ptrdiff_t i = 0; i < s.extent(0); ++i) {
-      for (ptrdiff_t j = 0; j < s.extent(1); ++j) {
-        for (ptrdiff_t k = 0; k < s.extent(2); ++k) {
+    for(size_t i = 0; i < s.extent(0); ++i) {
+      for (size_t j = 0; j < s.extent(1); ++j) {
+        for (size_t k = 0; k < s.extent(2); ++k) {
           sum += s(i, j, k);
         }
       }
@@ -91,25 +91,25 @@ MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_right, left_, lmdspan, 200, 200, 200);
 //================================================================================
 
 BENCHMARK_CAPTURE(
-  BM_Raw_Sum_3D_right, size_20_20_20, int(), ptrdiff_t(20), ptrdiff_t(20), ptrdiff_t(20)
+  BM_Raw_Sum_3D_right, size_20_20_20, int(), size_t(20), size_t(20), size_t(20)
 );
 BENCHMARK_CAPTURE(
-  BM_Raw_Sum_3D_right, size_200_200_200, int(), ptrdiff_t(200), ptrdiff_t(200), ptrdiff_t(200)
+  BM_Raw_Sum_3D_right, size_200_200_200, int(), size_t(200), size_t(200), size_t(200)
 );
 
 //================================================================================
 
 BENCHMARK_CAPTURE(
   BM_Raw_Static_Sum_3D_right, size_20_20_20, int(),
-  std::integral_constant<ptrdiff_t, 20>{},
-  std::integral_constant<ptrdiff_t, 20>{},
-  std::integral_constant<ptrdiff_t, 20>{}
+  std::integral_constant<size_t, 20>{},
+  std::integral_constant<size_t, 20>{},
+  std::integral_constant<size_t, 20>{}
 );
 BENCHMARK_CAPTURE(
   BM_Raw_Static_Sum_3D_right, size_200_200_200, int(),
-  std::integral_constant<ptrdiff_t, 200>{},
-  std::integral_constant<ptrdiff_t, 200>{},
-  std::integral_constant<ptrdiff_t, 200>{}
+  std::integral_constant<size_t, 200>{},
+  std::integral_constant<size_t, 200>{},
+  std::integral_constant<size_t, 200>{}
 );
 
 

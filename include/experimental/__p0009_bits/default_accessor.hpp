@@ -45,15 +45,43 @@
 
 #include "macros.hpp"
 
-#include <cstddef>  // size_t
-#include <limits>   // numeric_limits
+#include <cstddef> // size_t
 
 namespace std {
 namespace experimental {
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<size_t>::max();
+template <class ElementType>
+struct default_accessor {
+  
+  using offset_policy = default_accessor;
+  using element_type = ElementType;
+  using reference = ElementType&;
+  using pointer = ElementType*;
+
+  MDSPAN_INLINE_FUNCTION
+  constexpr default_accessor() noexcept = default;
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherElementType,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_convertible, typename default_accessor<OtherElementType>::pointer, pointer)
+    )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr default_accessor(default_accessor<OtherElementType>) noexcept {}
+
+  MDSPAN_INLINE_FUNCTION
+  constexpr pointer
+  offset(pointer p, size_t i) const noexcept {
+    return p + i;
+  }
+
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference access(pointer p, size_t i) const noexcept {
+    return p[i];
+  }
+
+};
 
 } // end namespace experimental
-} // namespace std
-
-//==============================================================================================================
+} // end namespace std

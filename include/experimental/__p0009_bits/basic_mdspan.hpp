@@ -44,7 +44,7 @@
 
 #pragma once
 
-#include "accessor_basic.hpp"
+#include "default_accessor.hpp"
 #include "layout_right.hpp"
 #include "extents.hpp"
 #include "trait_backports.hpp"
@@ -57,14 +57,14 @@ template <
   class ElementType,
   class Extents,
   class LayoutPolicy = layout_right,
-  class AccessorPolicy = accessor_basic<ElementType>
+  class AccessorPolicy = default_accessor<ElementType>
 >
 class basic_mdspan;
 
 
 template <
   class ElementType,
-  ptrdiff_t... Exts,
+  size_t... Exts,
   class LayoutPolicy,
   class AccessorPolicy
 >
@@ -89,12 +89,12 @@ private:
   struct __impl_impl<index_sequence<Idxs...>>
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
-    ptrdiff_t __size(basic_mdspan const& __self) noexcept {
+    size_t __size(basic_mdspan const& __self) noexcept {
       return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().template __extent<Idxs>()), /* * ... * */ 1);
     }
-    template <class ReferenceType, class IndexType, size_t N>
+    template <class ReferenceType, class SizeType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
-    ReferenceType __callop(basic_mdspan const& __self, const array<IndexType, N>& indices) noexcept {
+    ReferenceType __callop(basic_mdspan const& __self, const array<SizeType, N>& indices) noexcept {
       return __self.__accessor_ref().access(__self.__ptr_ref(), __self.__mapping_ref()(indices[Idxs]...));
     }
   };
@@ -113,7 +113,7 @@ public:
   using mapping_type = typename layout_type::template mapping<extents_type>;
   using element_type = ElementType;
   using value_type = remove_cv_t<element_type>;
-  using index_type = ptrdiff_t;
+  using size_type = size_t;
   using difference_type = ptrdiff_t;
   using pointer = typename accessor_type::pointer;
   using reference = typename accessor_type::reference;
@@ -133,16 +133,16 @@ public:
 
   // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
-    class... IndexType,
+    class... SizeTypes,
     /* requires */ (
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, IndexType, index_type) /* && ... */) &&
-      (sizeof...(IndexType) == extents_type::rank_dynamic()) &&
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
+      (sizeof...(SizeTypes) == extents_type::rank_dynamic()) &&
       _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
     )
   )
   MDSPAN_INLINE_FUNCTION
-  explicit constexpr basic_mdspan(pointer p, IndexType... dynamic_extents)
+  explicit constexpr basic_mdspan(pointer p, SizeTypes... dynamic_extents)
     noexcept
     // TODO @proposal-bug shouldn't I be allowed to do `move(p)` here?
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents...)), accessor_type()))
@@ -150,16 +150,16 @@ public:
 
   // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
-    class IndexType, size_t N,
+    class SizeType, size_t N,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, IndexType, index_type) &&
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
       (N == extents_type::rank_dynamic()) &&
       _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
     )
   )
   MDSPAN_INLINE_FUNCTION
-  explicit constexpr basic_mdspan(pointer p, const array<IndexType, N>& dynamic_extents)
+  explicit constexpr basic_mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
     noexcept
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
@@ -201,7 +201,7 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED basic_mdspan& operator=(basic_mdspan&&) noexcept = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
-    class OtherElementType, ptrdiff_t... OtherExtents, class OtherLayoutPolicy, class OtherAccessorPolicy,
+    class OtherElementType, size_t... OtherExtents, class OtherLayoutPolicy, class OtherAccessorPolicy,
     /* requires */ (
       _MDSPAN_TRAIT(is_assignable, mapping_type, typename OtherLayoutPolicy::template mapping<std::experimental::extents<OtherExtents...>>) &&
       _MDSPAN_TRAIT(is_assignable, accessor_type, OtherAccessorPolicy) &&
@@ -231,38 +231,38 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class Index,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, Index, index_type) &&
+      _MDSPAN_TRAIT(is_convertible, Index, size_type) &&
       sizeof...(Exts) == 1
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](Index idx) const noexcept
   {
-    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(index_type(idx)));
+    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(idx)));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
-    class... IndexType,
+    class... SizeTypes,
     /* requires */ (
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, IndexType, index_type) /* && ... */) &&
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
       sizeof...(Exts) == extents_type::rank()
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator()(IndexType... indices) const noexcept
+  constexpr reference operator()(SizeTypes... indices) const noexcept
   {
-    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(index_type(indices)...));
+    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(indices)...));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
-    class IndexType, size_t N,
+    class SizeType, size_t N,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, IndexType, index_type) &&
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
       N == extents_type::rank()
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator()(const array<IndexType, N>& indices) const noexcept
+  constexpr reference operator()(const array<SizeType, N>& indices) const noexcept
   {
     return __impl::template __callop<reference>(*this, indices);
   }
@@ -276,16 +276,16 @@ public:
 
   MDSPAN_INLINE_FUNCTION static constexpr int rank() noexcept { return extents_type::rank(); }
   MDSPAN_INLINE_FUNCTION static constexpr int rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
-  MDSPAN_INLINE_FUNCTION static constexpr index_type static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
+  MDSPAN_INLINE_FUNCTION static constexpr size_type static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
 
   MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept { return __mapping_ref().extents(); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type size() const noexcept {
+  MDSPAN_INLINE_FUNCTION constexpr size_type extent(size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
+  MDSPAN_INLINE_FUNCTION constexpr size_type size() const noexcept {
     return __impl::__size(*this);
   };
 
   // TODO @proposal-bug for non-unique, non-contiguous mappings this is unimplementable
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 index_type unique_size() const noexcept {
+  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 size_type unique_size() const noexcept {
     if(__mapping_ref().is_unique()) {
       return size();
     }
@@ -315,7 +315,7 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return __mapping_ref().is_unique(); };
   MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept { return __mapping_ref().is_contiguous(); };
   MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return __mapping_ref().is_strided(); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return __mapping_ref().stride(r); };
+  MDSPAN_INLINE_FUNCTION constexpr size_type stride(size_t r) const { return __mapping_ref().stride(r); };
 
 private:
 
@@ -334,7 +334,7 @@ private:
 };
 
 
-template <class T, ptrdiff_t... Exts>
+template <class T, size_t... Exts>
 using mdspan = basic_mdspan<T, std::experimental::extents<Exts...>>;
 
 } // end namespace experimental

@@ -41,16 +41,65 @@
 //@HEADER
 */
 
-#pragma once
+#include <iostream>
+#include <experimental/mdspan>
 
-#include "macros.hpp"
+#include <iomanip>
+#include <memory>
+#include <cassert>
 
-namespace std {
-namespace experimental {
+namespace stdex = std::experimental;
 
-struct all_type { };
+//================================================================================
 
-_MDSPAN_INLINE_VARIABLE constexpr auto all = all_type{ };
+MDSPAN_INLINE_FUNCTION
+void test() {
+  {
+    // static sized
+    double buffer[2 * 3 * 4] = {};
+    auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
+    s1(1, 1, 1) = 42;
+    auto sub1 = stdex::submdspan(s1, 1, 1, stdex::full_extent);
+    std::cout << std::boolalpha << (sub1[1] == 42) << std::endl;
+  }
 
-} // end namespace experimental
-} // namespace std
+  {
+    // static sized
+    double buffer[2 * 3 * 4] = {};
+    auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
+    s1(1, 1, 1) = 42;
+    auto sub1 = stdex::submdspan(s1, 1, stdex::full_extent, stdex::full_extent);
+    auto sub2 = stdex::submdspan(sub1, 1, stdex::full_extent);
+    std::cout << std::boolalpha << (sub2[1] == 42) << std::endl;
+  }
+
+  {
+    // static sized, all submdspans
+    double buffer[2 * 3 * 4] = {};
+    auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
+    s1(1, 1, 1) = 42;
+    auto sub1 = stdex::submdspan(s1, 1, stdex::full_extent, stdex::full_extent);
+    auto sub2 = stdex::submdspan(sub1, 1, stdex::full_extent);
+    auto sub3 = stdex::submdspan(sub2, 1);
+    std::cout << std::boolalpha << (sub3() == 42) << std::endl;
+  }
+
+  {
+    // static sized, all submdspans
+    double buffer[2 * 3 * 4] = {};
+    auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
+    s1(1, 1, 1) = 42;
+    auto sub1 = stdex::submdspan(s1, 1, stdex::full_extent, stdex::full_extent);
+    auto sub2 = stdex::submdspan(sub1, 1, stdex::full_extent);
+    auto sub3 = stdex::submdspan(sub2, 1);
+    std::cout << std::boolalpha << (sub3() == 42) << std::endl;
+  }
+}
+
+#ifdef __NVCC__
+__global__ void force_compile_test() { test(); }
+#endif
+
+int main() {
+  test();
+}

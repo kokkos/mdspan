@@ -48,26 +48,26 @@
 namespace stdex = std::experimental;
 
 template <class> struct TestLayoutCtors;
-template <class Mapping, ptrdiff_t... DynamicSizes>
+template <class Mapping, size_t... DynamicSizes>
 struct TestLayoutCtors<std::tuple<
   Mapping,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>
+  std::integer_sequence<size_t, DynamicSizes...>
 >> : public ::testing::Test {
   using mapping_type = Mapping;
   using extents_type = decltype(std::declval<mapping_type>().extents());
   Mapping map = { extents_type{ DynamicSizes... } };
 };
 
-template <class Extents, ptrdiff_t... DynamicSizes>
+template <class Extents, size_t... DynamicSizes>
 using test_left_type = std::tuple<
   typename stdex::layout_left::template mapping<Extents>,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>
+  std::integer_sequence<size_t, DynamicSizes...>
 >;
 
-template <class Extents, ptrdiff_t... DynamicSizes>
+template <class Extents, size_t... DynamicSizes>
 using test_right_type = std::tuple<
   typename stdex::layout_right::template mapping<Extents>,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>
+  std::integer_sequence<size_t, DynamicSizes...>
 >;
 
 using layout_test_types =
@@ -98,12 +98,12 @@ TYPED_TEST(TestLayoutCtors, default_ctor) {
 }
 
 template <class> struct TestLayoutCompatCtors;
-template <class Mapping, ptrdiff_t... DynamicSizes, class Mapping2, ptrdiff_t... DynamicSizes2>
+template <class Mapping, size_t... DynamicSizes, class Mapping2, size_t... DynamicSizes2>
 struct TestLayoutCompatCtors<std::tuple<
   Mapping,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>,
+  std::integer_sequence<size_t, DynamicSizes...>,
   Mapping2,
-  std::integer_sequence<ptrdiff_t, DynamicSizes2...>
+  std::integer_sequence<size_t, DynamicSizes2...>
 >> : public ::testing::Test {
   using mapping_type1 = Mapping;
   using mapping_type2 = Mapping2;
@@ -123,9 +123,9 @@ using test_right_type_compatible = std::tuple<
   typename stdex::layout_right::template mapping<E1>, S1,
   typename stdex::layout_right::template mapping<E2>, S2
 >;
-template <ptrdiff_t... Ds>
-using _sizes = std::integer_sequence<ptrdiff_t, Ds...>;
-template <ptrdiff_t... Ds>
+template <size_t... Ds>
+using _sizes = std::integer_sequence<size_t, Ds...>;
+template <size_t... Ds>
 using _exts = stdex::extents<Ds...>;
 
 template <template <class, class, class, class> class _test_case_type>

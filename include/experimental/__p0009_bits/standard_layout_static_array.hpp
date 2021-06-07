@@ -430,14 +430,14 @@ struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
 
 // Same thing, but with a disambiguator so that same-base issues doesn't cause
 // a loss of standard-layout-ness.
-template <class _Tag, ptrdiff_t... __values_or_sentinals>
+template <class _Tag, size_t... __values_or_sentinals>
 struct __partially_static_sizes_tagged
     : __standard_layout_psa<
-          _Tag, ptrdiff_t,
-          integer_sequence<ptrdiff_t, __values_or_sentinals...>> {
+          _Tag, size_t,
+          integer_sequence<size_t, __values_or_sentinals...>> {
   using __tag_t = _Tag;
   using __psa_impl_t = __standard_layout_psa<
-      _Tag, ptrdiff_t, integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
+      _Tag, size_t, integer_sequence<size_t, __values_or_sentinals...>>;
   using __psa_impl_t::__psa_impl_t;
   MDSPAN_INLINE_FUNCTION
   constexpr __partially_static_sizes_tagged() noexcept
@@ -468,7 +468,7 @@ struct __partially_static_sizes_tagged
 };
 
 struct __no_tag {};
-template <ptrdiff_t... __values_or_sentinals>
+template <size_t... __values_or_sentinals>
 struct __partially_static_sizes
     : __partially_static_sizes_tagged<__no_tag, __values_or_sentinals...> {
 private:

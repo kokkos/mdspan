@@ -51,9 +51,9 @@
 namespace stdex = std::experimental;
 
 template <class Extents>
-ptrdiff_t get_expected_mapping(
+size_t get_expected_mapping(
   typename stdex::layout_left::template mapping<Extents> const& map,
-  ptrdiff_t i, ptrdiff_t j, ptrdiff_t k
+  size_t i, size_t j, size_t k
 )
 {
   auto const& extents = map.extents();
@@ -61,9 +61,9 @@ ptrdiff_t get_expected_mapping(
 }
 
 template <class Extents>
-ptrdiff_t get_expected_mapping(
+size_t get_expected_mapping(
   typename stdex::layout_right::template mapping<Extents> const& map,
-  ptrdiff_t i, ptrdiff_t j, ptrdiff_t k
+  size_t i, size_t j, size_t k
 )
 {
   auto const& extents = map.extents();
@@ -72,10 +72,10 @@ ptrdiff_t get_expected_mapping(
 
 template <class> struct TestLayout;
 
-template <class Mapping, ptrdiff_t... DynamicSizes>
+template <class Mapping, size_t... DynamicSizes>
 struct TestLayout<std::tuple<
   Mapping,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>
+  std::integer_sequence<size_t, DynamicSizes...>
 >> : public ::testing::Test
 {
   Mapping map;
@@ -90,21 +90,21 @@ struct TestLayout<std::tuple<
   }
 
   template <class... Index>
-  ptrdiff_t expected_mapping(Index... idxs) const {
+  size_t expected_mapping(Index... idxs) const {
     return get_expected_mapping(map, idxs...);
   }
 };
 
-template <class Extents, ptrdiff_t... DynamicSizes>
+template <class Extents, size_t... DynamicSizes>
 using test_3d_left_types = std::tuple<
   typename stdex::layout_left::template mapping<Extents>,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>
+  std::integer_sequence<size_t, DynamicSizes...>
 >;
 
-template <class Extents, ptrdiff_t... DynamicSizes>
+template <class Extents, size_t... DynamicSizes>
 using test_3d_right_types = std::tuple<
   typename stdex::layout_right::template mapping<Extents>,
-  std::integer_sequence<ptrdiff_t, DynamicSizes...>
+  std::integer_sequence<size_t, DynamicSizes...>
 >;
 
 using layout_test_types_3d =
@@ -149,9 +149,9 @@ template <class T> struct TestLayout3D : TestLayout<T> { };
 TYPED_TEST_SUITE(TestLayout3D, layout_test_types_3d);
 
 TYPED_TEST(TestLayout3D, mapping_works) {
-  for(ptrdiff_t i = 0; i < this->map.extents().extent(0); ++i) {
-    for(ptrdiff_t j = 0; j < this->map.extents().extent(1); ++j) {
-      for(ptrdiff_t k = 0; k < this->map.extents().extent(2); ++k) {
+  for(size_t i = 0; i < this->map.extents().extent(0); ++i) {
+    for(size_t j = 0; j < this->map.extents().extent(1); ++j) {
+      for(size_t k = 0; k < this->map.extents().extent(2); ++k) {
         EXPECT_EQ(this->map(i, j, k), this->expected_mapping(i, j, k))
           << "Incorrect mapping for index " << i << ", " << j << ", " << k
           << " with extents "

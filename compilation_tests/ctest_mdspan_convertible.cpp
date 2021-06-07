@@ -3,7 +3,7 @@
 // ************************************************************************
 //
 //                        Kokkos v. 2.0
-//              Copyright (2019) Sandia Corporation
+//              Copyright (2020) Sandia Corporation
 //
 // Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
 // the U.S. Government retains certain rights in this software.
@@ -41,65 +41,31 @@
 //@HEADER
 */
 
-#include <iostream>
+#include "ctest_common.hpp"
+
 #include <experimental/mdspan>
 
-#include <iomanip>
-#include <memory>
-#include <cassert>
+#include <type_traits>
 
 namespace stdex = std::experimental;
 
-//================================================================================
+//==============================================================================
+// <editor-fold desc="mdspan"> {{{1
 
-MDSPAN_INLINE_FUNCTION
-void test() {
-  {
-    // static sized
-    double buffer[2 * 3 * 4] = {};
-    auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
-    s1(1, 1, 1) = 42;
-    auto sub1 = stdex::subspan(s1, 1, 1, stdex::all);
-    std::cout << std::boolalpha << (sub1[1] == 42) << std::endl;
-  }
+MDSPAN_STATIC_TEST(
+  std::is_convertible<
+    stdex::mdspan<double, stdex::dynamic_extent>,
+    stdex::mdspan<double const, stdex::dynamic_extent>
+  >::value
+);
 
-  {
-    // static sized
-    double buffer[2 * 3 * 4] = {};
-    auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
-    s1(1, 1, 1) = 42;
-    auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
-    auto sub2 = stdex::subspan(sub1, 1, stdex::all);
-    std::cout << std::boolalpha << (sub2[1] == 42) << std::endl;
-  }
+MDSPAN_STATIC_TEST(
+  !std::is_convertible<
+    stdex::mdspan<double const, stdex::dynamic_extent>,
+    stdex::mdspan<double, stdex::dynamic_extent>
+  >::value
+);
 
-  {
-    // static sized, all subspans
-    double buffer[2 * 3 * 4] = {};
-    auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
-    s1(1, 1, 1) = 42;
-    auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
-    auto sub2 = stdex::subspan(sub1, 1, stdex::all);
-    auto sub3 = stdex::subspan(sub2, 1);
-    std::cout << std::boolalpha << (sub3() == 42) << std::endl;
-  }
+// </editor-fold> end mdspan }}}1
+//==============================================================================
 
-  {
-    // static sized, all subspans
-    double buffer[2 * 3 * 4] = {};
-    auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
-    s1(1, 1, 1) = 42;
-    auto sub1 = stdex::subspan(s1, 1, stdex::all, stdex::all);
-    auto sub2 = stdex::subspan(sub1, 1, stdex::all);
-    auto sub3 = stdex::subspan(sub2, 1);
-    std::cout << std::boolalpha << (sub3() == 42) << std::endl;
-  }
-}
-
-#ifdef __NVCC__
-__global__ void force_compile_test() { test(); }
-#endif
-
-int main() {
-  test();
-}

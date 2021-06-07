@@ -50,7 +50,7 @@
 
 //================================================================================
 
-template <class T, ptrdiff_t... Es>
+template <class T, size_t... Es>
 using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 
 //================================================================================
@@ -74,16 +74,16 @@ void BM_MDSpan_TinyMatrixSum_right(benchmark::State& state, MDSpan, DynSizes... 
     benchmark::DoNotOptimize(o.data());
     benchmark::DoNotOptimize(s);
     benchmark::DoNotOptimize(s.data());
-    for(ptrdiff_t i = 0; i < s.extent(0); i ++) {
-      for(ptrdiff_t j = 0; j < s.extent(1); j ++) {
-        for(ptrdiff_t k = 0; k < s.extent(2); k ++) {
+    for(size_t i = 0; i < s.extent(0); i ++) {
+      for(size_t j = 0; j < s.extent(1); j ++) {
+        for(size_t k = 0; k < s.extent(2); k ++) {
           o(i,j,k) += s(i,j,k);
         }
       }
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
+  size_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
   state.SetBytesProcessed( num_elements * 3 * sizeof(value_type) * state.iterations() );
 }
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_TinyMatrixSum_right, right_, stdex::mdspan, 1000000, 3, 3);
@@ -111,16 +111,16 @@ void BM_Raw_Static_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
   for (auto _ : state) {
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
-    for(ptrdiff_t i = 0; i < 1000000; i ++) {
-      for(ptrdiff_t j = 0; j < 3; j ++) {
-        for(ptrdiff_t k = 0; k < 3; k ++) {
+    for(size_t i = 0; i < 1000000; i ++) {
+      for(size_t j = 0; j < 3; j ++) {
+        for(size_t k = 0; k < 3; k ++) {
           o_ptr[k + j*3 + i*3*3] += s_ptr[k + j*3 + i*3*3];
         }
       }
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_inner_elements = x * y * z;
+  size_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * 3  * sizeof(value_type) * state.iterations());
 }
 BENCHMARK_CAPTURE(BM_Raw_Static_TinyMatrixSum_right, size_1000000_3_3, int(), 1000000, 3, 3);
@@ -154,19 +154,19 @@ void BM_Raw_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, Si
   for (auto _ : state) {
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
-    for(ptrdiff_t i = 0; i < x; i ++) {
-      for(ptrdiff_t j = 0; j < y; j ++) {
-        for(ptrdiff_t k = 0; k < z; k ++) {
+    for(size_t i = 0; i < x; i ++) {
+      for(size_t j = 0; j < y; j ++) {
+        for(size_t k = 0; k < z; k ++) {
           o_ptr[k + j*z + i*z*y] += s_ptr[k + j*z + i*z*y];
         }
       }
     }
     benchmark::ClobberMemory();
   }
-  ptrdiff_t num_inner_elements = x * y * z;
+  size_t num_inner_elements = x * y * z;
   state.SetBytesProcessed( num_inner_elements * y  * sizeof(value_type) * state.iterations());
 }
-BENCHMARK_CAPTURE(BM_Raw_TinyMatrixSum_right, size_1000000_3_3, int(), ptrdiff_t(1000000), ptrdiff_t(3), ptrdiff_t(3));
+BENCHMARK_CAPTURE(BM_Raw_TinyMatrixSum_right, size_1000000_3_3, int(), size_t(1000000), size_t(3), size_t(3));
 
 //================================================================================
 

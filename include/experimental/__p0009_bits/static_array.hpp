@@ -52,7 +52,7 @@
 #include "standard_layout_static_array.hpp"
 #include "type_list.hpp"
 
-#include <cstddef> // ptrdiff_t
+#include <cstddef> // size_t
 #include <utility> // integer_sequence
 #include <array>
 
@@ -260,14 +260,14 @@ public:
 
 //==============================================================================
 
-template <ptrdiff_t... __values_or_sentinals>
+template <size_t... __values_or_sentinals>
 struct __partially_static_sizes :
   __partially_static_array_with_sentinal<
-    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>
+    size_t, ::std::integer_sequence<size_t, __values_or_sentinals...>>
 {
 private:
   using __base_t = __partially_static_array_with_sentinal<
-    ptrdiff_t, ::std::integer_sequence<ptrdiff_t, __values_or_sentinals...>>;
+    size_t, ::std::integer_sequence<size_t, __values_or_sentinals...>>;
 public:
   using __base_t::__base_t;
   template <class _UTag>
@@ -278,7 +278,7 @@ public:
 };
 
 // Tags are needed for the standard layout version, but not here
-template <class, ptrdiff_t... __values_or_sentinals>
+template <class, size_t... __values_or_sentinals>
 using __partially_static_sizes_tagged = __partially_static_sizes<__values_or_sentinals...>;
 
 } // namespace detail

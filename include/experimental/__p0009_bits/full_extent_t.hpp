@@ -45,47 +45,12 @@
 
 #include "macros.hpp"
 
-#include <cstddef> // ptrdiff_t
-
 namespace std {
 namespace experimental {
 
-template <class ElementType>
-struct accessor_basic {
+struct full_extent_t { explicit full_extent_t() = default; };
 
-  using offset_policy = accessor_basic;
-  using element_type = ElementType;
-  using reference = ElementType&;
-  using pointer = ElementType*;
-
-  constexpr accessor_basic() noexcept = default;
-
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherElementType,
-    /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, typename accessor_basic<OtherElementType>::pointer, pointer)
-    )
-  )
-  MDSPAN_INLINE_FUNCTION
-  constexpr accessor_basic(accessor_basic<OtherElementType>) {}
-
-  MDSPAN_INLINE_FUNCTION
-  constexpr pointer
-  offset(pointer p, ptrdiff_t i) const noexcept {
-    return p + i;
-  }
-
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference access(pointer p, ptrdiff_t i) const noexcept {
-    return p[i];
-  }
-
-  MDSPAN_INLINE_FUNCTION
-  constexpr pointer decay(pointer p) const noexcept {
-    return p;
-  }
-
-};
+_MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 
 } // end namespace experimental
-} // end namespace std
+} // namespace std
