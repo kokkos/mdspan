@@ -43,6 +43,7 @@
 
 #pragma once
 
+#include "dynamic_extent.hpp"
 #include "macros.hpp"
 #include "no_unique_address.hpp"
 #include "trait_backports.hpp" // enable_if
