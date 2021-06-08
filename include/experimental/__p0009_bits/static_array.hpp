@@ -44,7 +44,6 @@
 #pragma once
 
 #include "macros.hpp"
-#if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
 
 #include "dynamic_extent.hpp"
 #include "trait_backports.hpp"
@@ -52,6 +51,8 @@
 #include "standard_layout_static_array.hpp"
 #include "type_list.hpp"
 
+// Needs to be after the includes above to work with the single header generator
+#if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
 #include <cstddef> // size_t
 #include <utility> // integer_sequence
 #include <array>

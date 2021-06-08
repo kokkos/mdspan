@@ -16,6 +16,7 @@ def find_file(included_name, current_file):
     return None
 
 def process_file(file_path, out_lines=[], front_matter_lines=[], processed_files=[]):
+    out_lines += "//BEGIN_FILE_INCLUDE: " + file_path + "\n"
     with open(file_path, "r") as f:
         for line in f:
             m_inc = re.match(r'#include\s*[<"](.+)[>"]\s*', line)
@@ -37,6 +38,7 @@ def process_file(file_path, out_lines=[], front_matter_lines=[], processed_files
             # otherwise, just add the line to the output
             if line[-1] != "\n": line = line + "\n"
             out_lines += [line]
+    out_lines += "//END_FILE_INCLUDE: " + file_path + "\n"
     return "".join(front_matter_lines) + "\n" + "".join(out_lines)
 
 if __name__ == "__main__":

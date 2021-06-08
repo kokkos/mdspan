@@ -42,13 +42,14 @@
 */
 
 #include "macros.hpp"
-// This is only needed for the non-standard-layout version of partially
-// static array.
-#if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
 
 #include "dynamic_extent.hpp"
 #include "no_unique_address.hpp"
 
+// This is only needed for the non-standard-layout version of partially
+// static array.
+// Needs to be after the includes above to work with the single header generator
+#if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
 namespace std {
 namespace experimental {
 
