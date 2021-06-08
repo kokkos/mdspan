@@ -187,7 +187,7 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr explicit extents(Integral... dyn) noexcept
+  constexpr extents(Integral... dyn) noexcept
     : __base_t(__base_t{typename __base_t::__stored_type{
         detail::__construct_partially_static_array_from_sizes_tag,
         detail::__construct_partially_static_array_from_sizes_tag, static_cast<size_t>(dyn)...}})
@@ -202,7 +202,7 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr explicit
+  constexpr
   extents(std::array<SizeType, rank_dynamic()> const& dyn) noexcept
     : __base_t(__base_t{typename __base_t::__stored_type{
         detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn}})
@@ -227,7 +227,7 @@ public:
   }
 
   //--------------------------------------------------------------------------------
-  
+
   MDSPAN_INLINE_FUNCTION
   static constexpr
   size_type static_extent(size_t n) noexcept {

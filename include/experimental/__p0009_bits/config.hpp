@@ -188,16 +188,16 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #endif
 
 #ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
-#  ifdef _MDSPAN_COMPILER_MSVC
-#    if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) && MDSPAN_HAS_CXX_14
-#      define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
-#    endif
-#  endif
-#endif
-#ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
 #  if (defined(__cpp_return_type_deduction) && __cpp_return_type_deduction >= 201304) \
           || (!defined(__cpp_return_type_deduction) && MDSPAN_HAS_CXX_14)
 #    define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
+#  endif
+#endif
+
+#ifndef _MDSPAN_USE_DEDUCTION_GUIDES
+#  if (defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703) \
+          || (!defined(__cpp_return_type_deduction) && MDSPAN_HAS_CXX_17)
+#    define _MDSPAN_USE_DEDUCTION_GUIDES 1
 #  endif
 #endif
 

@@ -109,3 +109,34 @@ TYPED_TEST(TestLayoutStrideAllZero, test_mapping) {
     }
   }
 }
+
+TEST(TestLayoutStrideListInitialization, test_list_initialization) {
+  double* data = nullptr;
+  stdex::basic_mdspan<double, stdex::extents<dyn, dyn>, stdex::layout_stride<dyn, dyn>> m(data, {{16, 32}, {1, 128}});
+  ASSERT_EQ(m.rank(), 2);
+  ASSERT_EQ(m.rank_dynamic(), 2);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(m.stride(1), 128);
+  ASSERT_EQ(m.extent(0), 16);
+  ASSERT_EQ(m.extent(1), 32);
+}
+
+// GCC 10 ICEs if I stick this in the body of the below test.
+template <typename M>
+void test_ctad_gcc_10_workaround(M m) {
+  ASSERT_EQ(m.rank(), 2);
+  ASSERT_EQ(m.rank_dynamic(), 2);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(m.stride(1), 128);
+  ASSERT_EQ(m.extent(0), 16);
+  ASSERT_EQ(m.extent(1), 32);
+}
+
+// This fails on GCC 9.2 and others
+/*
+TEST(TestLayoutStrideCTAD, test_ctad) {
+  double* data = nullptr;
+  stdex::basic_mdspan m(data, stdex::layout_stride<dyn, dyn>::mapping{stdex::extents{16, 32}, std::array{1, 128}});
+  test_ctad_gcc_10_workaround(m);
+}
+*/

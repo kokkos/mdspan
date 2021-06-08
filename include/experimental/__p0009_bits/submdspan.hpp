@@ -62,7 +62,7 @@ namespace experimental {
 namespace detail {
 
 template <size_t OldExtent, size_t OldStaticStride, class T>
-struct _slice_wrap {
+struct __slice_wrap {
   T slice;
   size_t old_extent;
   size_t old_stride;
@@ -72,19 +72,19 @@ struct _slice_wrap {
 
 template <size_t OldExtent, size_t OldStaticStride>
 MDSPAN_INLINE_FUNCTION constexpr
-_slice_wrap<OldExtent, OldStaticStride, size_t>
-_wrap_slice(size_t val, size_t ext, size_t stride) { return { val, ext, stride }; }
+__slice_wrap<OldExtent, OldStaticStride, size_t>
+__wrap_slice(size_t val, size_t ext, size_t stride) { return { val, ext, stride }; }
 
 template <size_t OldExtent, size_t OldStaticStride>
 MDSPAN_INLINE_FUNCTION constexpr
-_slice_wrap<OldExtent, OldStaticStride, full_extent_t>
-_wrap_slice(full_extent_t val, size_t ext, size_t stride) { return { val, ext, stride }; }
+__slice_wrap<OldExtent, OldStaticStride, full_extent_t>
+__wrap_slice(full_extent_t val, size_t ext, size_t stride) { return { val, ext, stride }; }
 
 // TODO generalize this to anything that works with std::get<0> and std::get<1>
 template <size_t OldExtent, size_t OldStaticStride>
 MDSPAN_INLINE_FUNCTION constexpr
-_slice_wrap<OldExtent, OldStaticStride, std::pair<size_t, size_t>>
-_wrap_slice(std::pair<size_t, size_t> const& val, size_t ext, size_t stride)
+__slice_wrap<OldExtent, OldStaticStride, std::pair<size_t, size_t>>
+__wrap_slice(std::pair<size_t, size_t> const& val, size_t ext, size_t stride)
 {
   return { val, ext, stride };
 }
@@ -252,7 +252,7 @@ struct __assign_op_slice_handler<
   template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, size_t>&& __slice) noexcept
+  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, size_t>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_scalar,
          __partially_static_sizes<_Offsets..., dynamic_extent>,
@@ -271,7 +271,7 @@ struct __assign_op_slice_handler<
   template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, full_extent_t>&& __slice) noexcept
+  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, full_extent_t>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_all,
          __partially_static_sizes<_Offsets..., 0>,
@@ -294,7 +294,7 @@ struct __assign_op_slice_handler<
   template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(_slice_wrap<_OldStaticExtent, _OldStaticStride, pair<size_t, size_t>>&& __slice) noexcept
+  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, pair<size_t, size_t>>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_pair,
          __partially_static_sizes<_Offsets..., dynamic_extent>,
@@ -385,7 +385,7 @@ constexpr auto _submdspan_impl(
         }
       ),
         /* = ... = */
-      detail::_wrap_slice<
+      detail::__wrap_slice<
         Exts, decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
       >(
         slices, src.extents().template __extent<Idxs>(),
@@ -442,7 +442,7 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
           }
         ),
         /* = ... = */
-        detail::_wrap_slice<
+        detail::__wrap_slice<
           Exts, decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
         >(
           slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
