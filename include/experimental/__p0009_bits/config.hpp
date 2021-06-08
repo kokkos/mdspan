@@ -61,13 +61,15 @@
 #define _MDSPAN_CPLUSPLUS __cplusplus
 #endif
 
-static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
+static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
 
 #define MDSPAN_CXX_STD_14 201402L
 #define MDSPAN_CXX_STD_17 201703L
+#define MDSPAN_CXX_STD_20 202002L
 
 #define MDSPAN_HAS_CXX_14 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14)
 #define MDSPAN_HAS_CXX_17 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_17)
+#define MDSPAN_HAS_CXX_20 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_20)
 
 #ifndef _MDSPAN_COMPILER_CLANG
 #  if defined(__clang__)
@@ -194,10 +196,17 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_DEDUCTION_GUIDES
+#ifndef _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
 #  if (defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703) \
-          || (!defined(__cpp_return_type_deduction) && MDSPAN_HAS_CXX_17)
-#    define _MDSPAN_USE_DEDUCTION_GUIDES 1
+          || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_17)
+#    define _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
+#  endif
+#endif
+
+#ifndef _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION
+#  if (defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201907) \
+          || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_20)
+#    define _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION 1
 #  endif
 #endif
 
