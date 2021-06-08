@@ -119,6 +119,7 @@ TEST(TestLayoutStrideListInitialization, test_list_initialization) {
   ASSERT_EQ(m.stride(1), 128);
   ASSERT_EQ(m.extent(0), 16);
   ASSERT_EQ(m.extent(1), 32);
+  ASSERT_FALSE(m.is_contiguous());
 }
 
 // GCC 10 ICEs if I stick this in the body of the below test.
