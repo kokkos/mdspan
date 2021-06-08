@@ -344,7 +344,7 @@ struct __assign_op_slice_handler<
     ),
     (
       /* return */ layout_stride::template mapping<::std::experimental::extents<_Exts...>>
-        ::__make_layout_stride_impl(::std::move(__exts), ::std::move(__strides)) /* ; */
+        ::__make_mapping(::std::move(__exts), ::std::move(__strides)) /* ; */
     )
   )
 
