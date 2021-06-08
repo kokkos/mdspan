@@ -68,7 +68,7 @@ class layout_stride_impl<
 > : private __no_unique_address_emulation<
       __compressed_pair<
         ::std::experimental::extents<Exts...>,
-        ::std::experimental::detail::dextents<sizeof...(Exts)>
+        ::std::experimental::dextents<sizeof...(Exts)>
       >
     >
 {
@@ -80,7 +80,7 @@ private:
 
   //----------------------------------------------------------------------------
 
-  using __strides_storage_t = ::std::experimental::detail::dextents<sizeof...(Exts)>;
+  using __strides_storage_t = ::std::experimental::dextents<sizeof...(Exts)>;
   using __member_pair_t = __compressed_pair<extents_type, __strides_storage_t>;
   using __base_t = __no_unique_address_emulation<__member_pair_t>;
 
@@ -99,7 +99,7 @@ private:
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
   template <class>
   struct __impl_impl;
-  
+
   template <size_t... Idxs>
   struct __impl_impl<index_sequence<Idxs...>>
   {

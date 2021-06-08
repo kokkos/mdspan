@@ -56,10 +56,9 @@ namespace stdex = ::std::experimental;
 template<class Layout>
 constexpr bool
 dynamic_extent_1d() {
-  using ext_t = stdex::extents<stdex::dynamic_extent>;
   int data[] = {1, 2, 3, 4, 5};
   auto s = stdex::basic_mdspan<
-    int, ext_t, Layout>(data, 5);
+    int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   for (int i = 0; i < s.extent(0); ++i) {
     auto ss = stdex::submdspan(s, i);

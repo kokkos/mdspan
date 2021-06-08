@@ -295,7 +295,8 @@ public:  // (but not really)
 
 };
 
-// CT: Initial implementation for dextents proposed in: P2299
+// CT: Initial implementation for dextents proposed in: P2299R3
+// Using this as storage type for layout_stride strides
 namespace detail {
   template<size_t Rank, size_t ... Args>
   struct __dextents_from_rank {
@@ -305,9 +306,10 @@ namespace detail {
   struct __dextents_from_rank<0,Args...> {
     using type = extents<Args...>;
   };
-
-  template<size_t Rank>
-  using dextents = typename __dextents_from_rank<Rank>::type;
 } // end namespace detail
+
+template<size_t Rank>
+using dextents = typename detail::__dextents_from_rank<Rank>::type;
+
 } // end namespace experimental
 } // namespace std
