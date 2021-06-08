@@ -61,6 +61,7 @@ template <size_t... Extents, size_t... OtherExtents>
 static constexpr std::false_type _check_compatible_extents(
   std::false_type, std::integer_sequence<size_t, Extents...>, std::integer_sequence<size_t, OtherExtents...>
 ) noexcept { return { }; }
+
 template <size_t... Extents, size_t... OtherExtents>
 static std::integral_constant<
   bool,
@@ -109,7 +110,6 @@ public:
   template <size_t...>
   friend class extents;
 
-
   template <size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
   constexpr bool _eq_impl(std::experimental::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return false; }
@@ -143,9 +143,7 @@ public:
     : __base_t(::std::move(__b))
   { }
 
-
 public:
-
 
   MDSPAN_INLINE_FUNCTION
   static constexpr size_t rank() noexcept { return sizeof...(Extents); }
@@ -295,21 +293,31 @@ public:  // (but not really)
 
 };
 
-// CT: Initial implementation for dextents proposed in: P2299R3
-// Using this as storage type for layout_stride strides
 namespace detail {
-  template<size_t Rank, size_t ... Args>
-  struct __dextents_from_rank {
-    using type = typename __dextents_from_rank<Rank-1, dynamic_extent, Args ...>::type;
-  };
-  template<size_t ... Args>
-  struct __dextents_from_rank<0,Args...> {
-    using type = extents<Args...>;
-  };
+
+template <size_t Rank, typename Extents = extents<>>
+struct __make_dextents;
+
+template <size_t Rank, size_t... Extents>
+struct __make_dextents<Rank, extents<Extents...>> {
+  using type = typename __make_dextents<Rank - 1, extents<dynamic_extent, Extents...>>::type;
+};
+
+template <size_t... Extents>
+struct __make_dextents<0, extents<Extents...>> {
+  using type = extents<Extents...>;
+};
+
 } // end namespace detail
 
-template<size_t Rank>
-using dextents = typename detail::__dextents_from_rank<Rank>::type;
+template <size_t Rank>
+using dextents = typename detail::__make_dextents<Rank>::type;
+
+#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+template <class... SizeTypes>
+extents(SizeTypes...)
+  -> extents<detail::__make_dynamic_extent<SizeTypes>()...>;
+#endif
 
 } // end namespace experimental
 } // namespace std
