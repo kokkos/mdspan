@@ -317,7 +317,7 @@ struct __assign_op_slice_handler<
   using layout_type = typename conditional<
     _PreserveLayoutAnalysis::value,
     typename _PreserveLayoutAnalysis::layout_type_if_preserved,
-    layout_stride<_Strides...>
+    layout_stride
   >::type;
 
   // TODO noexcept specification
@@ -340,10 +340,10 @@ struct __assign_op_slice_handler<
   _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
     (
       _MDSPAN_CONSTEXPR_14 /* auto */
-      _make_layout_mapping_impl(layout_stride<_Strides...>) noexcept
+      _make_layout_mapping_impl(layout_stride) noexcept
     ),
     (
-      /* return */ layout_stride<_Strides...>::template mapping<::std::experimental::extents<_Exts...>>
+      /* return */ layout_stride::template mapping<::std::experimental::extents<_Exts...>>
         ::__make_layout_stride_impl(::std::move(__exts), ::std::move(__strides)) /* ; */
     )
   )
@@ -386,7 +386,7 @@ constexpr auto _submdspan_impl(
       ),
         /* = ... = */
       detail::__wrap_slice<
-        Exts, decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
+        Exts, dynamic_extent
       >(
         slices, src.extents().template __extent<Idxs>(),
         src.mapping().template __stride<Idxs>()
@@ -443,7 +443,7 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
         ),
         /* = ... = */
         detail::__wrap_slice<
-          Exts, decltype(src.mapping())::template __static_stride_workaround<Idxs>::value
+          Exts, dynamic_extent
         >(
           slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
         )
@@ -456,8 +456,9 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
 #endif
 
 template <class T> struct _is_layout_stride : std::false_type { };
-template <size_t... StaticStrides> struct _is_layout_stride<
-  layout_stride<StaticStrides...>
+template<>
+struct _is_layout_stride<
+  layout_stride
 > : std::true_type
 { };
 
