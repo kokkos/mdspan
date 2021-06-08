@@ -242,7 +242,7 @@ public:
     std::iota(rem.begin(), rem.end(), size_t(0));
     auto next_idx_iter = std::find_if(
       rem.begin(), rem.end(),
-      [&](size_t i) { this->stride(i) == 1;  }
+      [&](size_t i) { return this->stride(i) == 1;  }
     );
     if(next_idx_iter != rem.end()) {
       size_t prev_stride_times_prev_extent =

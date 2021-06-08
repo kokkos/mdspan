@@ -176,6 +176,7 @@ TEST(TestLayoutLeftListInitialization, test_layout_left_list_initialization) {
   ASSERT_EQ(m.stride(1), 16);
   ASSERT_EQ(m.extent(0), 16);
   ASSERT_EQ(m.extent(1), 32);
+  ASSERT_TRUE(m.is_contiguous());
 }
 
 // GCC 10 ICEs if I stick this in the body of the below test.
@@ -207,6 +208,7 @@ TEST(TestLayoutRightListInitialization, test_layout_right_list_initialization) {
   ASSERT_EQ(m.stride(1), 1);
   ASSERT_EQ(m.extent(0), 16);
   ASSERT_EQ(m.extent(1), 32);
+  ASSERT_TRUE(m.is_contiguous());
 }
 
 // GCC 10 ICEs if I stick this in the body of the below test.
