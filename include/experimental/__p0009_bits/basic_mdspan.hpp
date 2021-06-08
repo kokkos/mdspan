@@ -334,15 +334,6 @@ private:
 };
 
 #if _MDSPAN_USE_DEDUCTION_GUIDES
-namespace detail {
-
-template <class>
-constexpr auto __make_dynamic_extent() {
-  return dynamic_extent;
-}
-
-} // end namespace detail
-
 template <class ElementType, class... Integrals>
 explicit basic_mdspan(ElementType*, Integrals...)
   -> basic_mdspan<ElementType, extents<detail::__make_dynamic_extent<Integrals>()...>>;

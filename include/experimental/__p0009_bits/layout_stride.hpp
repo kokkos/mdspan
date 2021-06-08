@@ -156,7 +156,7 @@ public: // (but not really)
   static constexpr layout_stride_impl
   __make_layout_stride_impl(
     __partially_static_sizes<Exts...>&& __exts,
-    auto&& __strs
+    __partially_static_sizes<__make_dynamic_extent_integral<Exts>()...>&& __strs
   ) noexcept {
     // call the private constructor we created for this purpose
     return layout_stride_impl(
