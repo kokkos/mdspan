@@ -41,8 +41,7 @@
 //@HEADER
 */
 
-#ifndef _MDSPAN_INCLUDE_EXPERIMENTAL_BITS_CONFIG_HPP_
-#define _MDSPAN_INCLUDE_EXPERIMENTAL_BITS_CONFIG_HPP_
+#pragma once
 
 #ifndef __has_include
 #  define __has_include(x) 0
@@ -232,5 +231,3 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
 #    endif
 #  endif
 #endif
-
-#endif // _MDSPAN_INCLUDE_EXPERIMENTAL_BITS_CONFIG_HPP_
