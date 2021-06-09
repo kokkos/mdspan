@@ -59,9 +59,9 @@ static constexpr int global_repeat = 1;
 //================================================================================
 
 template <class T, size_t... Es>
-using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+using lmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
+using rmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
 
 void throw_runtime_exception(const std::string &msg) {
   std::ostringstream o;
@@ -112,7 +112,7 @@ void BM_MDSpan_OpenMP_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... 
   auto y = MDSpanVector{buffer_y.get(), A.extent(0)};
   OpenMP_first_touch_1D(y);
   mdspan_benchmark::fill_random(y);
- 
+
   #pragma omp parallel for
   for(size_t i = 0; i < A.extent(0); i ++) {
     value_type y_i = 0;
@@ -171,14 +171,14 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, Dyn
   auto y = MDSpanVector{buffer_y.get(), A.extent(0)};
   OpenMP_first_touch_1D(y);
   mdspan_benchmark::fill_random(y);
- 
+
   size_t N = A.extent(0);
   size_t M = A.extent(1);
 
   value_type* p_A = A.data();
   value_type* p_x = x.data();
   value_type* p_y = y.data();
-  
+
   #pragma omp parallel for
   for(size_t i = 0; i < N; i ++) {
     value_type y_i = 0;
@@ -235,14 +235,14 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, Dy
   auto y = MDSpanVector{buffer_y.get(), A.extent(0)};
   OpenMP_first_touch_1D(y);
   mdspan_benchmark::fill_random(y);
- 
+
   size_t N = A.extent(0);
   size_t M = A.extent(1);
 
   value_type* p_A = A.data();
   value_type* p_x = x.data();
   value_type* p_y = y.data();
-  
+
   #pragma omp parallel for
   for(size_t i = 0; i < N; i ++) {
     value_type y_i = 0;

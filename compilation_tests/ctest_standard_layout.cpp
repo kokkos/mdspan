@@ -195,20 +195,20 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    stdex::mdspan<double, 1, 2, 3>
+    stdex::mdspan<double, stdex::extents<1, 2, 3>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    stdex::mdspan<int, stdex::dynamic_extent, stdex::dynamic_extent>
+    stdex::mdspan<int, stdex::dextents<2>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    stdex::basic_mdspan<
-      double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>,
+    stdex::mdspan<
+      double, stdex::dextents<2>,
       stdex::layout_left, stdex::default_accessor<double>
     >
   >::value

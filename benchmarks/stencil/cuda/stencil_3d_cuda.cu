@@ -59,7 +59,9 @@ static constexpr int global_repeat = 16;
 //================================================================================
 
 template <class T, size_t... Es>
-using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+using lmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+template <class T, size_t... Es>
+using rmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
 
 void throw_runtime_exception(const std::string &msg) {
   std::ostringstream o;
@@ -135,7 +137,7 @@ MDSpan fill_device_mdspan(MDSpan, DynSizes... dyn) {
   );
   auto host_mdspan = MDSpan{host_buffer.get(), dyn...};
   mdspan_benchmark::fill_random(host_mdspan);
-  
+
   value_type* device_buffer = nullptr;
   CUDA_SAFE_CALL(cudaMalloc(&device_buffer, buffer_size * sizeof(value_type)));
   CUDA_SAFE_CALL(cudaMemcpy(
@@ -152,20 +154,20 @@ void BM_MDSpan_Cuda_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn)
   using value_type = typename MDSpan::value_type;
   auto s = fill_device_mdspan(MDSpan{}, dyn...);
   auto o = fill_device_mdspan(MDSpan{}, dyn...);
-  
+
   int d = global_delta;
   int repeats = global_repeat==0? (s.extent(0)*s.extent(1)*s.extent(2) > (100*100*100) ? 50 : 1000) : global_repeat;
 
-  auto lambda =  
+  auto lambda =
       [=] __device__ {
         for(int r = 0; r < repeats; ++r) {
           for(size_t i = blockIdx.x+d; i < s.extent(0)-d; i += gridDim.x) {
             for(size_t j = threadIdx.z+d; j < s.extent(1)-d; j += blockDim.z) {
               for(size_t k = threadIdx.y+d; k < s.extent(2)-d; k += blockDim.y) {
                 value_type sum_local = 0;
-                for(size_t di = i-d; di < i+d+1; di++) { 
-                for(size_t dj = j-d; dj < j+d+1; dj++) { 
-                for(size_t dk = k-d; dk < k+d+1; dk++) { 
+                for(size_t di = i-d; di < i+d+1; di++) {
+                for(size_t dj = j-d; dj < j+d+1; dj++) {
+                for(size_t dk = k-d; dk < k+d+1; dk++) {
                   sum_local += s(di, dj, dk);
                 }}}
                 o(i,j,k) = sum_local;
@@ -184,14 +186,14 @@ void BM_MDSpan_Cuda_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn)
   size_t num_inner_elements = (s.extent(0)-d) * (s.extent(1)-d) * (s.extent(2)-d);
   size_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations() * repeats);
-  state.counters["repeats"] = repeats; 
-  
+  state.counters["repeats"] = repeats;
+
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
   CUDA_SAFE_CALL(cudaFree(s.data()));
 }
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, right_, stdex::mdspan, 80, 80, 80);
+MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, right_, rmdspan, 80, 80, 80);
 MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, left_, lmdspan, 80, 80, 80);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, right_, stdex::mdspan, 400, 400, 400);
+MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, right_, rmdspan, 400, 400, 400);
 MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, left_, lmdspan, 400, 400, 400);
 
 //================================================================================
@@ -204,7 +206,7 @@ void BM_Raw_Cuda_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, 
   value_type* data_o = nullptr;
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{};
     auto s = fill_device_mdspan(wrapped, x*y*z);
     data = s.data();
     auto o = fill_device_mdspan(wrapped, x*y*z);
@@ -214,16 +216,16 @@ void BM_Raw_Cuda_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, 
   int d = global_delta;
   int repeats = global_repeat==0? (x*y*z > (100*100*100) ? 50 : 1000) : global_repeat;
 
-  auto lambda = 
+  auto lambda =
       [=] __device__ {
         for(int r = 0; r < repeats; ++r) {
           for(size_t i = blockIdx.x+d; i < x-d; i += gridDim.x) {
             for(size_t j = threadIdx.z+d; j < y-d; j += blockDim.z) {
               for(size_t k = threadIdx.y+d; k < z-d; k += blockDim.y) {
                 value_type sum_local = 0;
-                for(size_t di = i-d; di < i+d+1; di++) { 
-                for(size_t dj = j-d; dj < j+d+1; dj++) { 
-                for(size_t dk = k-d; dk < k+d+1; dk++) { 
+                for(size_t di = i-d; di < i+d+1; di++) {
+                for(size_t dj = j-d; dj < j+d+1; dj++) {
+                for(size_t dk = k-d; dk < k+d+1; dk++) {
                   sum_local += data[dk + dj*z + di*z*y];
                 }}}
                 data_o[k + j*z + i*z*y] = sum_local;
@@ -260,7 +262,7 @@ void BM_Raw_Cuda_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y, S
   value_type* data_o = nullptr;
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{};
     auto s = fill_device_mdspan(wrapped, x*y*z);
     data = s.data();
     auto o = fill_device_mdspan(wrapped, x*y*z);
@@ -276,9 +278,9 @@ void BM_Raw_Cuda_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y, S
           for(size_t j = threadIdx.z+d; j < y-d; j += blockDim.z) {
             for(size_t k = threadIdx.y+d; k < z-d; k += blockDim.y) {
                 value_type sum_local = 0;
-                for(size_t di = i-d; di < i+d+1; di++) { 
-                for(size_t dj = j-d; dj < j+d+1; dj++) { 
-                for(size_t dk = k-d; dk < k+d+1; dk++) { 
+                for(size_t di = i-d; di < i+d+1; di++) {
+                for(size_t dj = j-d; dj < j+d+1; dj++) {
+                for(size_t dk = k-d; dk < k+d+1; dk++) {
                   sum_local += data[dk*x*y + dj*x + di];
                 }}}
                 data_o[k*x*y + j*x + i] = sum_local;

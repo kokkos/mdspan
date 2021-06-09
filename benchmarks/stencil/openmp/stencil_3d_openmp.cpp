@@ -63,7 +63,9 @@ static constexpr int global_repeat = 16;
 //================================================================================
 
 template <class T, size_t... Es>
-using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+using lmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+template <class T, size_t... Es>
+using rmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
 
 void throw_runtime_exception(const std::string &msg) {
   std::ostringstream o;
@@ -108,9 +110,9 @@ void BM_MDSpan_OpenMP_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dy
     for(size_t j = d; j < s.extent(1)-d; j ++) {
       for(size_t k = d; k < s.extent(2)-d; k ++) {
         value_type sum_local = 0;
-        for(size_t di = i-d; di < i+d+1; di++) { 
-        for(size_t dj = j-d; dj < j+d+1; dj++) { 
-        for(size_t dk = k-d; dk < k+d+1; dk++) { 
+        for(size_t di = i-d; di < i+d+1; di++) {
+        for(size_t dj = j-d; dj < j+d+1; dj++) {
+        for(size_t dk = k-d; dk < k+d+1; dk++) {
           sum_local += s(di, dj, dk);
         }}}
         o(i,j,k) = sum_local;
@@ -124,9 +126,9 @@ void BM_MDSpan_OpenMP_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dy
       for(size_t j = d; j < s.extent(1)-d; j ++) {
         for(size_t k = d; k < s.extent(2)-d; k ++) {
           value_type sum_local = 0;
-          for(size_t di = i-d; di < i+d+1; di++) { 
-          for(size_t dj = j-d; dj < j+d+1; dj++) { 
-          for(size_t dk = k-d; dk < k+d+1; dk++) { 
+          for(size_t di = i-d; di < i+d+1; di++) {
+          for(size_t dj = j-d; dj < j+d+1; dj++) {
+          for(size_t dk = k-d; dk < k+d+1; dk++) {
             sum_local += s(di, dj, dk);
           }}}
           o(i,j,k) = sum_local;
@@ -138,9 +140,9 @@ void BM_MDSpan_OpenMP_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dy
   size_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations());
 }
-MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, right_, stdex::mdspan, 80, 80, 80);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, right_, rmdspan, 80, 80, 80);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, left_, lmdspan, 80, 80, 80);
-MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, right_, stdex::mdspan, 400, 400, 400);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, right_, rmdspan, 400, 400, 400);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, left_, lmdspan, 400, 400, 400);
 
 //================================================================================
@@ -148,7 +150,7 @@ MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_Stencil_3D, left_, lmdspan, 400, 400, 4
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>;  
+  using MDSpan = stdex::mdspan<T, stdex::dextents<3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
 
@@ -171,9 +173,9 @@ void BM_Raw_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y
     for(size_t j = d; j < y-d; j ++) {
       for(size_t k = d; k < z-d; k ++) {
         value_type sum_local = 0;
-        for(size_t di = i-d; di < i+d+1; di++) { 
-        for(size_t dj = j-d; dj < j+d+1; dj++) { 
-        for(size_t dk = k-d; dk < k+d+1; dk++) { 
+        for(size_t di = i-d; di < i+d+1; di++) {
+        for(size_t dj = j-d; dj < j+d+1; dj++) {
+        for(size_t dk = k-d; dk < k+d+1; dk++) {
           sum_local += s_ptr[dk + dj*z + di*z*y];
         }}}
         o_ptr[k + j*z + i*z*y] = sum_local;
@@ -187,9 +189,9 @@ void BM_Raw_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y
       for(size_t j = d; j < y-d; j ++) {
         for(size_t k = d; k < z-d; k ++) {
           value_type sum_local = 0;
-          for(size_t di = i-d; di < i+d+1; di++) { 
-          for(size_t dj = j-d; dj < j+d+1; dj++) { 
-          for(size_t dk = k-d; dk < k+d+1; dk++) { 
+          for(size_t di = i-d; di < i+d+1; di++) {
+          for(size_t dj = j-d; dj < j+d+1; dj++) {
+          for(size_t dk = k-d; dk < k+d+1; dk++) {
             sum_local += s_ptr[dk + dj*z + di*z*y];
           }}}
           o_ptr[k + j*z + i*z*y] = sum_local;
@@ -209,7 +211,7 @@ BENCHMARK_CAPTURE(BM_Raw_OpenMP_Stencil_3D_right, size_400_400_400, int(), 400, 
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_OpenMP_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>;  
+  using MDSpan = stdex::mdspan<T, stdex::dextents<3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
 
@@ -232,9 +234,9 @@ void BM_Raw_OpenMP_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y,
     for(size_t j = d; j < y-d; j ++) {
       for(size_t k = d; k < z-d; k ++) {
         value_type sum_local = 0;
-        for(size_t di = i-d; di < i+d+1; di++) { 
-        for(size_t dj = j-d; dj < j+d+1; dj++) { 
-        for(size_t dk = k-d; dk < k+d+1; dk++) { 
+        for(size_t di = i-d; di < i+d+1; di++) {
+        for(size_t dj = j-d; dj < j+d+1; dj++) {
+        for(size_t dk = k-d; dk < k+d+1; dk++) {
           sum_local += s_ptr[dk*x*y + dj*x + di];
         }}}
         o_ptr[k*x*y + j*x + i] = sum_local;
@@ -248,9 +250,9 @@ void BM_Raw_OpenMP_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y,
       for(size_t j = d; j < y-d; j ++) {
         for(size_t k = d; k < z-d; k ++) {
           value_type sum_local = 0;
-          for(size_t di = i-d; di < i+d+1; di++) { 
-          for(size_t dj = j-d; dj < j+d+1; dj++) { 
-          for(size_t dk = k-d; dk < k+d+1; dk++) { 
+          for(size_t di = i-d; di < i+d+1; di++) {
+          for(size_t dj = j-d; dj < j+d+1; dj++) {
+          for(size_t dk = k-d; dk < k+d+1; dk++) {
             sum_local += s_ptr[dk*x*y + dj*x + di];
           }}}
           o_ptr[k*x*y + j*x + i] = sum_local;
@@ -288,7 +290,7 @@ void free_3d_ptr_array(T*** ptr, size_t extent_0) {
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_RawMDPtr_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>;  
+  using MDSpan = stdex::mdspan<T, stdex::dextents<3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
 
@@ -311,9 +313,9 @@ void BM_RawMDPtr_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, Si
     for(size_t j = d; j < y-d; j ++) {
       for(size_t k = d; k < z-d; k ++) {
         value_type sum_local = 0;
-        for(size_t di = i-d; di < i+d+1; di++) { 
-        for(size_t dj = j-d; dj < j+d+1; dj++) { 
-        for(size_t dk = k-d; dk < k+d+1; dk++) { 
+        for(size_t di = i-d; di < i+d+1; di++) {
+        for(size_t dj = j-d; dj < j+d+1; dj++) {
+        for(size_t dk = k-d; dk < k+d+1; dk++) {
           sum_local += s_ptr[0][0][0];
         }}}
         o_ptr[i][j][k] = sum_local;
@@ -327,9 +329,9 @@ void BM_RawMDPtr_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, Si
       for(size_t j = d; j < y-d; j ++) {
         for(size_t k = d; k < z-d; k ++) {
           value_type sum_local = 0;
-          for(size_t di = i-d; di < i+d+1; di++) { 
-          for(size_t dj = j-d; dj < j+d+1; dj++) { 
-          for(size_t dk = k-d; dk < k+d+1; dk++) { 
+          for(size_t di = i-d; di < i+d+1; di++) {
+          for(size_t dj = j-d; dj < j+d+1; dj++) {
+          for(size_t dk = k-d; dk < k+d+1; dk++) {
             sum_local += s_ptr[di][dj][dk];
           }}}
           o_ptr[i][j][k] = sum_local;

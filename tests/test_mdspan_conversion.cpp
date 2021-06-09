@@ -51,9 +51,9 @@ namespace stdex = std::experimental;
 
 TEST(TestMdspanConversionConst, test_mdspan_conversion_const) {
   std::array<double, 6> a{};
-  stdex::mdspan<double, 2, 3> s(a.data());
-  ASSERT_EQ(s.data(), a.data());   
+  stdex::mdspan<double, stdex::extents<2, 3>> s(a.data());
+  ASSERT_EQ(s.data(), a.data());
   s(0, 1) = 3.14;
-  stdex::mdspan<double const, 2, 3> c_s(s);
+  stdex::mdspan<double const, stdex::extents<2, 3>> c_s(s);
   ASSERT_EQ(c_s(0, 1), 3.14);
 }

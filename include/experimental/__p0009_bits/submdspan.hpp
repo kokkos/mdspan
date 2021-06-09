@@ -44,7 +44,7 @@
 
 #pragma once
 
-#include "basic_mdspan.hpp"
+#include "mdspan.hpp"
 #include "full_extent_t.hpp"
 #include "dynamic_extent.hpp"
 #include "layout_left.hpp"
@@ -369,7 +369,7 @@ template <class ET, size_t... Exts, class LP, class AP, class... SliceSpecs, siz
 MDSPAN_INLINE_FUNCTION
 constexpr auto _submdspan_impl(
   integer_sequence<size_t, Idxs...>,
-  basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
+  mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
   SliceSpecs&&... slices
 ) noexcept
 {
@@ -397,7 +397,7 @@ constexpr auto _submdspan_impl(
   auto offset_ptr = src.accessor().offset(src.data(), offset_size);
   auto map = _handled.make_layout_mapping(src.mapping());
   auto acc_pol = typename AP::offset_policy(src.accessor());
-  return basic_mdspan<
+  return mdspan<
     ET, decltype(map.extents()), typename decltype(_handled)::layout_type, decltype(acc_pol)
   >(
     std::move(offset_ptr), std::move(map), std::move(acc_pol)
@@ -407,7 +407,7 @@ constexpr auto _submdspan_impl(
 
 template <class ET, class AP, class Src, class Handled, size_t... Idxs>
 auto _submdspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t, Idxs...>)
-  -> basic_mdspan<
+  -> mdspan<
        ET, typename Handled::__extents_type, typename Handled::layout_type, typename AP::offset_policy
      >
 {
@@ -424,7 +424,7 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
   (
     constexpr /* auto */ _submdspan_impl(
       std::integer_sequence<size_t, Idxs...> seq,
-      basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
+      mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
       SliceSpecs&&... slices
     ) noexcept
   ),
@@ -487,7 +487,7 @@ MDSPAN_INLINE_FUNCTION
 _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
   (
     constexpr submdspan(
-      basic_mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices
+      mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices
     ) noexcept
   ),
   (

@@ -80,8 +80,8 @@ template <
   class ExtsB, class LayB, class AccB
 >
 T dot_product(
-  stdex::basic_mdspan<T, ExtsA, LayA, AccA> a,
-  stdex::basic_mdspan<T, ExtsB, LayB, AccB> b
+  stdex::mdspan<T, ExtsA, LayA, AccA> a,
+  stdex::mdspan<T, ExtsB, LayB, AccB> b
 ) //requires ExtsA::rank() == ExtsB::rank() && ExtsA::rank() == 2
 {
   T result = 0;
@@ -100,7 +100,7 @@ template <
   class ExtsA, class LayA, class AccA
 >
 void fill_in_order(
-  stdex::basic_mdspan<T, ExtsA, LayA, AccA> a
+  stdex::mdspan<T, ExtsA, LayA, AccA> a
 ) // requires ExtsA::rank() == 2
 {
   T count = 0;
@@ -120,8 +120,8 @@ constexpr int cols = 3;
 
 int main() {
   {
-    using span_2d_dynamic = stdex::basic_mdspan<int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, stdex::layout_right>;
-    using span_2d_dynamic_left = stdex::basic_mdspan<int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, stdex::layout_left>;
+    using span_2d_dynamic = stdex::mdspan<int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, stdex::layout_right>;
+    using span_2d_dynamic_left = stdex::mdspan<int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, stdex::layout_left>;
 
     auto data_a = std::make_unique<int[]>(rows * cols);
     auto data_b = std::make_unique<int[]>(rows * cols);
@@ -130,13 +130,13 @@ int main() {
     auto b = span_2d_dynamic_left(data_b.get(), rows, cols);
     fill_in_order(a);
     fill_in_order(b);
-    
+
     std::cout << dot_product(a, b) << std::endl;
   }
 
   {
-    using span_2d_10_10 = stdex::basic_mdspan<int, stdex::extents<rows, cols>, stdex::layout_right>;
-    using span_2d_10_10_left = stdex::basic_mdspan<int, stdex::extents<rows, cols>, stdex::layout_right>;
+    using span_2d_10_10 = stdex::mdspan<int, stdex::extents<rows, cols>, stdex::layout_right>;
+    using span_2d_10_10_left = stdex::mdspan<int, stdex::extents<rows, cols>, stdex::layout_right>;
 
     auto data_a = std::make_unique<int[]>(100);
     auto data_b = std::make_unique<int[]>(100);
@@ -145,7 +145,7 @@ int main() {
     auto b = span_2d_10_10_left(data_b.get());
     fill_in_order(a);
     fill_in_order(b);
-    
+
     std::cout << dot_product(a, b) << std::endl;
   }
 

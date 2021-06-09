@@ -57,8 +57,7 @@ template<class Layout>
 constexpr bool
 dynamic_extent_1d() {
   int data[] = {1, 2, 3, 4, 5};
-  auto s = stdex::basic_mdspan<
-    int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
+  auto s = stdex::mdspan<int, stdex::dextents<1>, Layout>(data, 5);
   int result = 0;
   for (int i = 0; i < s.extent(0); ++i) {
     auto ss = stdex::submdspan(s, i);
@@ -83,7 +82,7 @@ template<class Layout>
 constexpr bool
 dynamic_extent_1d_all_slice() {
   int data[] = {1, 2, 3, 4, 5};
-  auto s = stdex::basic_mdspan<
+  auto s = stdex::mdspan<
     int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   auto ss = stdex::submdspan(s, stdex::full_extent);
@@ -108,7 +107,7 @@ template<class Layout>
 constexpr bool
 dynamic_extent_1d_pair_full() {
   int data[] = {1, 2, 3, 4, 5};
-  auto s = stdex::basic_mdspan<
+  auto s = stdex::mdspan<
     int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   auto ss = stdex::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
@@ -126,7 +125,7 @@ template<class Layout>
 constexpr bool
 dynamic_extent_1d_pair_each() {
   int data[] = {1, 2, 3, 4, 5};
-  auto s = stdex::basic_mdspan<
+  auto s = stdex::mdspan<
     int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   for (int i = 0; i < s.extent(0); ++i) {
@@ -154,7 +153,7 @@ template<class Layout>
 constexpr bool
 dynamic_extent_1d_all_three() {
   int data[] = {1, 2, 3, 4, 5};
-  auto s = stdex::basic_mdspan<
+  auto s = stdex::mdspan<
     int, stdex::extents<stdex::dynamic_extent>, Layout>(data, 5);
   auto s1 = stdex::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
   auto s2 = stdex::submdspan(s1, stdex::full_extent);
@@ -180,7 +179,7 @@ template<class Layout>
 constexpr bool
 dynamic_extent_2d_idx_idx() {
   int data[] = { 1, 2, 3, 4, 5, 6 };
-  auto s = stdex::basic_mdspan<
+  auto s = stdex::mdspan<
     int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, Layout>(
       data, 2, 3);
   int result = 0;
@@ -200,7 +199,7 @@ template<class Layout>
 constexpr bool
 dynamic_extent_2d_idx_all_idx() {
   int data[] = { 1, 2, 3, 4, 5, 6 };
-  auto s = stdex::basic_mdspan<
+  auto s = stdex::mdspan<
     int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, Layout>(
       data, 2, 3);
   int result = 0;
@@ -231,7 +230,7 @@ simple_static_submdspan_test_1(int add_to_row) {
     4, 5, 6,
     7, 8, 9
   };
-  auto s = stdex::mdspan<int, 3, 3>(data);
+  auto s = stdex::mdspan<int, stdex::extents<3, 3>>(data);
   int result = 0;
   for(int col = 0; col < 3; ++col) {
     auto scol = stdex::submdspan(s, stdex::full_extent, col);
@@ -257,9 +256,9 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   // -1 - 2 - 3 + 7 + 8 + 9 = 18
-  stdex::mdspan<double, simple_static_submdspan_test_1(-1)>{nullptr}.extent(0) == 18
+  stdex::mdspan<double, stdex::extents<simple_static_submdspan_test_1(-1)>>{nullptr}.extent(0) == 18
 );
-#endif 
+#endif
 
 //==============================================================================
 
@@ -272,7 +271,7 @@ mixed_submdspan_left_test_2() {
     0, 0, 0,
     0, 0, 0
   };
-  auto s = stdex::basic_mdspan<int,
+  auto s = stdex::mdspan<int,
     stdex::extents<3, stdex::dynamic_extent>, stdex::layout_left>(data, 5);
   int result = 0;
   for(int col = 0; col < 5; ++col) {
@@ -315,7 +314,7 @@ mixed_submdspan_test_3() {
     8, 3, 6, 9, 0,
     0, 0, 0, 0, 0
   };
-  auto s = stdex::basic_mdspan<
+  auto s = stdex::mdspan<
     int, stdex::extents<3, stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   for(int col = 0; col < 5; ++col) {
@@ -360,9 +359,9 @@ constexpr bool
 submdspan_single_element_stress_test_impl_2(
   std::integer_sequence<size_t, Idxs...>
 ) {
-  using mdspan_t = stdex::basic_mdspan<
+  using mdspan_t = stdex::mdspan<
     int, stdex::extents<_repeated_ptrdiff_t<1, Idxs>...>, Layout>;
-  using dyn_mdspan_t = stdex::basic_mdspan<
+  using dyn_mdspan_t = stdex::mdspan<
     int, stdex::extents<_repeated_ptrdiff_t<stdex::dynamic_extent, Idxs>...>, Layout>;
   int data[] = { 42 };
   auto s = mdspan_t(data);

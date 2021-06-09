@@ -59,7 +59,7 @@ simple_static_sum_test_1(int add_to_row) {
     4, 5, 6,
     7, 8, 9
   };
-  auto s = stdex::mdspan<int, 3, 3>(data);
+  auto s = stdex::mdspan<int, stdex::extents<3, 3>>(data);
   int result = 0;
   for(int col = 0; col < 3; ++col) {
     for(int row = 0; row < 3; ++row) {
@@ -81,7 +81,7 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   // -1 - 2 - 3 + 7 + 8 + 9 = 18
-  stdex::mdspan<double, simple_static_sum_test_1(-1)>{nullptr}.extent(0) == 18
+  stdex::mdspan<double, stdex::extents<simple_static_sum_test_1(-1)>>{nullptr}.extent(0) == 18
 );
 
 //==============================================================================
@@ -92,7 +92,7 @@ simple_test_1d_constexpr_in_type() {
     1, 2, 3, 4, 5, 6, 7, 8, 9,
     10, 11, 12, 13, 14, 15, 16, 17, 18
   };
-  auto s = stdex::mdspan<int, simple_static_sum_test_1(-1)>(data);
+  auto s = stdex::mdspan<int, stdex::extents<simple_static_sum_test_1(-1)>>(data);
   // 4 + 14 + 18 + 1 = 37
   return s[3] + s[13] + s[17] + s[0];
 }
@@ -110,7 +110,7 @@ simple_dynamic_sum_test_2(int add_to_row) {
     4, 5, 6, 0,
     7, 8, 9, 0
   };
-  auto s = stdex::mdspan<int, stdex::dynamic_extent, stdex::dynamic_extent>(data, 3, 4);
+  auto s = stdex::mdspan<int, stdex::dextents<2>>(data, 3, 4);
   int result = 0;
   for(int col = 0; col < 3; ++col) {
     for(int row = 0; row < 3; ++row) {
@@ -140,7 +140,7 @@ simple_mixed_layout_left_sum_test_3(int add_to_row) {
     3, 6, 9,
     0, 0, 0
   };
-  auto s = stdex::basic_mdspan<
+  auto s = stdex::mdspan<
     int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>,
     stdex::layout_left
   >(data, 3, 4);
@@ -170,9 +170,9 @@ constexpr bool
 multidimensional_single_element_stress_test_impl_2(
   std::integer_sequence<size_t, Idxs...>
 ) {
-  using mdspan_t = stdex::basic_mdspan<
+  using mdspan_t = stdex::mdspan<
     int, stdex::extents<_repeated_ptrdiff_t<1, Idxs>...>, Layout>;
-  using dyn_mdspan_t = stdex::basic_mdspan<
+  using dyn_mdspan_t = stdex::mdspan<
     int, stdex::extents<_repeated_ptrdiff_t<stdex::dynamic_extent, Idxs>...>, Layout>;
   int data[] = { 42 };
   auto s = mdspan_t(data);
@@ -217,13 +217,13 @@ stress_test_2d_single_element_stress_test_impl_2(
   std::integral_constant<size_t, Idx1>,
   std::integral_constant<size_t, Idx2>
 ) {
-  using mdspan_t = stdex::basic_mdspan<
+  using mdspan_t = stdex::mdspan<
     int, stdex::extents<Idx1, Idx2>, Layout>;
-  using dyn_mdspan_1_t = stdex::basic_mdspan<
+  using dyn_mdspan_1_t = stdex::mdspan<
     int, stdex::extents<stdex::dynamic_extent, Idx2>, Layout>;
-  using dyn_mdspan_2_t = stdex::basic_mdspan<
+  using dyn_mdspan_2_t = stdex::mdspan<
     int, stdex::extents<Idx1, stdex::dynamic_extent>, Layout>;
-  using dyn_mdspan_t = stdex::basic_mdspan<
+  using dyn_mdspan_t = stdex::mdspan<
     int, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>, Layout>;
   int data[Idx1*Idx2] = { };
   auto s = mdspan_t(data);
