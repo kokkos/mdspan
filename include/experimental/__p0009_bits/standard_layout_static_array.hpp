@@ -204,9 +204,9 @@ struct __standard_layout_psa<
 #endif
   { }
 
-  template <size_t _N>
+  template <class _U, size_t _N>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
-      array<_T, _N> const &__vals) noexcept
+      array<_U, _N> const &__vals) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __next_{
 #else
@@ -220,10 +220,10 @@ struct __standard_layout_psa<
 #endif
   { }
 
-  template <size_t _IDynamic, size_t _NDynamic>
+  template <class _U, size_t _IDynamic, size_t _NDynamic>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
       __construct_psa_from_dynamic_values_tag_t<_IDynamic> __tag,
-      array<_T, _NDynamic> const &__vals) noexcept
+      array<_U, _NDynamic> const &__vals) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __next_{
 #else
@@ -369,15 +369,15 @@ struct __standard_layout_psa<
                               __construct_partially_static_array_from_sizes_tag,
                               __vals...)) {}
 
-  template <size_t _N>
+  template <class _U, size_t _N>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
-      array<_T, _N> const &__vals) noexcept
+      array<_U, _N> const &__vals) noexcept
       : __value_pair(::std::get<_Idx>(__vals), __vals) {}
 
-  template <size_t _IDynamic, size_t _NDynamic>
+  template <class _U, size_t _IDynamic, size_t _NDynamic>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
       __construct_psa_from_dynamic_values_tag_t<_IDynamic> __tag,
-      array<_T, _NDynamic> const &__vals) noexcept
+      array<_U, _NDynamic> const &__vals) noexcept
       : __value_pair(
             ::std::get<_IDynamic>(__vals),
             __next_t(__construct_psa_from_dynamic_values_tag_t<_IDynamic + 1>{},
@@ -476,14 +476,14 @@ struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
       __construct_partially_static_array_from_sizes_tag_t,
       __construct_partially_static_array_from_sizes_tag_t) noexcept {}
 
-  template <size_t _N>
+  template <class _U, size_t _N>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
-      array<_T, _N> const &) noexcept {}
+      array<_U, _N> const &) noexcept {}
 
-  template <size_t _IDynamic, size_t _NDynamic>
+  template <class _U, size_t _IDynamic, size_t _NDynamic>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
       __construct_psa_from_dynamic_values_tag_t<_IDynamic> __tag,
-      array<_T, _NDynamic> const &) noexcept {}
+      array<_U, _NDynamic> const &) noexcept {}
 
   template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal,
             class _UIdxsSeq>
