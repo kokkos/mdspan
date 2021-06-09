@@ -60,8 +60,6 @@
 #define _MDSPAN_CPLUSPLUS __cplusplus
 #endif
 
-static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
-
 #define MDSPAN_CXX_STD_14 201402L
 #define MDSPAN_CXX_STD_17 201703L
 #define MDSPAN_CXX_STD_20 202002L
@@ -69,6 +67,8 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
 #define MDSPAN_HAS_CXX_14 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14)
 #define MDSPAN_HAS_CXX_17 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_17)
 #define MDSPAN_HAS_CXX_20 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_20)
+
+static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++11 or later.");
 
 #ifndef _MDSPAN_COMPILER_CLANG
 #  if defined(__clang__)
