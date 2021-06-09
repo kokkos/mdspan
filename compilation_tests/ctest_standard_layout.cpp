@@ -52,27 +52,6 @@ namespace stdex = std::experimental;
 //==============================================================================
 // <editor-fold desc="helper utilities"> {{{1
 
-struct empty1 { };
-struct empty2 { };
-
-MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
-    stdex::detail::__compressed_pair<empty1, empty2>
-  >::value
-);
-
-MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
-    stdex::detail::__compressed_pair<int*, empty2>
-  >::value
-);
-
-MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
-    stdex::detail::__compressed_pair<int*, stdex::detail::__compressed_pair<empty1, empty2>>
-  >::value
-);
-
 MDSPAN_STATIC_TEST(
   !std::is_base_of<stdex::extents<1, 2, 3>, stdex::detail::__partially_static_sizes<1, 2, 3>>::value
 );

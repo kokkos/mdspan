@@ -43,10 +43,14 @@
 
 #pragma once
 
-#include "dynamic_extent.hpp"
 #include "macros.hpp"
-#include "no_unique_address.hpp"
+#include "dynamic_extent.hpp"
 #include "trait_backports.hpp" // enable_if
+#include "compressed_pair.hpp"
+
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#  include "no_unique_address.hpp"
+#endif
 
 #include <array>
 #include <utility> // integer_sequence
@@ -90,22 +94,39 @@ template <class _Tag, class _T, _T __value, _T... __values_or_sentinals,
 struct __standard_layout_psa<
     _Tag, _T, integer_sequence<_T, __value, __values_or_sentinals...>,
     __sentinal, integer_sequence<size_t, _Idx, _Idxs...>>
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : private __no_unique_address_emulation<__standard_layout_psa<
           _Tag, _T, integer_sequence<_T, __values_or_sentinals...>, __sentinal,
-          integer_sequence<size_t, _Idxs...>>> {
+          integer_sequence<size_t, _Idxs...>>>
+#endif
+{
+
   //--------------------------------------------------------------------------
 
   using __next_t =
       __standard_layout_psa<_Tag, _T,
                             integer_sequence<_T, __values_or_sentinals...>,
                             __sentinal, integer_sequence<size_t, _Idxs...>>;
+
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+  _MDSPAN_NO_UNIQUE_ADDRESS __next_t __next_;
+#else
   using __base_t = __no_unique_address_emulation<__next_t>;
+#endif
 
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 __next_t &__next() noexcept {
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    return __next_;
+#else
     return this->__base_t::__ref();
+#endif
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr __next_t const &__next() const noexcept {
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    return __next_;
+#else
     return this->__base_t::__ref();
+#endif
   }
 
   static constexpr auto __size = sizeof...(_Idxs) + 1;
@@ -148,8 +169,18 @@ struct __standard_layout_psa<
   constexpr __standard_layout_psa(
       __construct_partially_static_array_from_sizes_tag_t, _T const & /*__val*/,
       __repeated_with_idxs<_Idxs, _T> const &... __vals) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __next_{
+#else
       : __base_t(__base_t{__next_t(
-            __construct_partially_static_array_from_sizes_tag, __vals...)}) {}
+#endif
+          __construct_partially_static_array_from_sizes_tag, __vals...
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+  { }
 
   // Dynamic idxs only given version, which is probably going to not need to
   // supported by the time mdspan is merged into the standard, but is currently
@@ -159,34 +190,77 @@ struct __standard_layout_psa<
       __construct_partially_static_array_from_sizes_tag_t,
       __construct_partially_static_array_from_sizes_tag_t,
       _Ts const &... __vals) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __next_{
+#else
       : __base_t(__base_t{__next_t(
-            __construct_partially_static_array_from_sizes_tag,
-            __construct_partially_static_array_from_sizes_tag, __vals...)}) {}
+#endif
+          __construct_partially_static_array_from_sizes_tag,
+          __construct_partially_static_array_from_sizes_tag, __vals...
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+  { }
 
   template <size_t _N>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
       array<_T, _N> const &__vals) noexcept
-      : __base_t(__base_t{__next_t(__vals)}) {}
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __next_{
+#else
+      : __base_t(__base_t{__next_t(
+#endif
+          __vals
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+  { }
 
   template <size_t _IDynamic, size_t _NDynamic>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
       __construct_psa_from_dynamic_values_tag_t<_IDynamic> __tag,
       array<_T, _NDynamic> const &__vals) noexcept
-      : __base_t(__base_t{__next_t(__tag, __vals)}) {}
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __next_{
+#else
+      : __base_t(__base_t{__next_t(
+#endif
+          __tag, __vals
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+  { }
 
   template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal,
             class _IdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
       __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _IdxsSeq> const
           &__rhs) noexcept
-      : __base_t(__base_t{__next_t(__rhs.__next())}) {}
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __next_{
+#else
+      : __base_t(__base_t{__next_t(
+#endif
+          __rhs.__next()
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+  { }
 
   //--------------------------------------------------------------------------
 
   // See https://godbolt.org/z/_KSDNX for a summary-by-example of why this is
-  // necessary.  The we're using inheritance here instead of an alias template
-  // is because we have to deduce __values_or_sentinals in several places, and
-  // alias templates doen't permit that in this context.
+  // necessary. We're using inheritance here instead of an alias template
+  // because we have to deduce __values_or_sentinals in several places, and
+  // alias templates don't permit that in this context.
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr __standard_layout_psa const &__enable_psa_conversion() const
       noexcept {
@@ -195,7 +269,7 @@ struct __standard_layout_psa<
 
   template <size_t _I, enable_if_t<_I != _Idx, int> = 0>
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __get_n() const noexcept {
-    return this->__base_t::__ref().template __get_n<_I>();
+    return __next().template __get_n<_I>();
   }
   template <size_t _I, enable_if_t<_I == _Idx, int> = 1>
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __get_n() const noexcept {
@@ -204,7 +278,7 @@ struct __standard_layout_psa<
   template <size_t _I, enable_if_t<_I != _Idx, int> = 0>
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 void
   __set_n(_T const &__rhs) noexcept {
-    this->__base_t::__ref().__set_value(__rhs);
+    __next().__set_value(__rhs);
   }
   template <size_t _I, enable_if_t<_I == _Idx, int> = 1>
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 void
@@ -221,7 +295,7 @@ struct __standard_layout_psa<
     return __next_t::template __get_static_n<_I, __default>();
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __get(size_t __n) const noexcept {
-    return __value * (_T(_Idx == __n)) + this->__base_t::__ref().__get(__n);
+    return __value * (_T(_Idx == __n)) + __next().__get(__n);
   }
 
   //--------------------------------------------------------------------------

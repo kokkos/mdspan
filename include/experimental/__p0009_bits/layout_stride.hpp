@@ -49,6 +49,11 @@
 #include "extents.hpp"
 #include "trait_backports.hpp"
 #include "depend_on_instantiation.hpp"
+#include "compressed_pair.hpp"
+
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#  include "no_unique_address.hpp"
+#endif
 
 #include <algorithm>
 #include <numeric>
@@ -66,15 +71,20 @@ struct layout_stride {
   template <size_t... Exts>
   class mapping<
     std::experimental::extents<Exts...>
-  > : private detail::__no_unique_address_emulation<
+  > 
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : private detail::__no_unique_address_emulation<
         detail::__compressed_pair<
           ::std::experimental::extents<Exts...>,
           ::std::experimental::dextents<sizeof...(Exts)>
         >
       >
+#endif
   {
   public:
+
     using extents_type = experimental::extents<Exts...>;
+
   private:
 
     using idx_seq = make_index_sequence<sizeof...(Exts)>;
@@ -83,12 +93,29 @@ struct layout_stride {
 
     using __strides_storage_t = ::std::experimental::dextents<sizeof...(Exts)>;
     using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
+
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    _MDSPAN_NO_UNIQUE_ADDRESS __member_pair_t __members;
+#else
     using __base_t = detail::__no_unique_address_emulation<__member_pair_t>;
+#endif
 
     MDSPAN_FORCE_INLINE_FUNCTION constexpr __strides_storage_t const&
-    __strides_storage() const noexcept { return this->__base_t::__ref().__second(); }
+    __strides_storage() const noexcept {
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      return __members.__second();
+#else
+      return this->__base_t::__ref().__second();
+#endif
+    }
     MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 __strides_storage_t&
-    __strides_storage() noexcept { return this->__base_t::__ref().__second(); }
+    __strides_storage() noexcept {
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      return __members.__second();
+#else
+      return this->__base_t::__ref().__second();
+#endif
+    }
 
     //----------------------------------------------------------------------------
 
@@ -134,10 +161,13 @@ struct layout_stride {
 
     //----------------------------------------------------------------------------
 
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     MDSPAN_INLINE_FUNCTION constexpr explicit
-    mapping(
-      __base_t&& __b
-    ) : __base_t(::std::move(__b)) {}
+    mapping(__member_pair_t&& __m) : __members(::std::move(__m)) {}
+#else
+    MDSPAN_INLINE_FUNCTION constexpr explicit
+    mapping(__base_t&& __b) : __base_t(::std::move(__b)) {}
+#endif
 
     //----------------------------------------------------------------------------
 
@@ -161,12 +191,16 @@ struct layout_stride {
     ) noexcept {
       // call the private constructor we created for this purpose
       return mapping(
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         __base_t{
+#endif
           __member_pair_t(
             extents_type::__make_extents_impl(::std::move(__exts)),
             __strides_storage_t{::std::move(__strs)}
           )
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
+#endif
       );
     }
 
@@ -190,14 +224,28 @@ struct layout_stride {
       std::experimental::extents<Exts...> const& e,
       array<size_t, __strides_storage_t::rank()> const& strides
     ) noexcept
-      : __base_t(__base_t{__member_pair_t(e, __strides_storage_t(strides))})
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __members{
+#else
+      : __base_t(__base_t{__member_pair_t(
+#endif
+          e, __strides_storage_t(strides)
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
     { }
 
 
     //--------------------------------------------------------------------------------
 
     MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept {
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      return __members.__first();
+#else 
       return this->__base_t::__ref().__first();
+#endif
     };
 
     MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }

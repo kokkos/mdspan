@@ -119,7 +119,7 @@ struct layout_right {
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping& operator=(mapping<OtherExtents> const& other)
     {
-      this->base_t::__ref() = other.extents();
+      this->base_t::__extents() = other.extents();
       return *this;
     }
     //--------------------------------------------------------------------------------

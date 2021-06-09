@@ -116,8 +116,9 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
 #  define _MDSPAN_PRESERVE_STANDARD_LAYOUT 1
 #endif
 
-#ifndef _MDSPAN_NO_UNIQUE_ADDRESS
+#ifndef _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
 #  if __has_cpp_attribute(no_unique_address) >= 201803L
+#    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
 #    define _MDSPAN_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #  else
 #    define _MDSPAN_NO_UNIQUE_ADDRESS
@@ -197,15 +198,19 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
 #endif
 
 #ifndef _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
-#  if (defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703) \
-          || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_17)
+// GCC 10's CTAD seems sufficiently broken to prevent its use.
+#  if (!defined(__GNUC__) || __GNUC__ >= 11) \
+      && ((defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703) \
+         || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_17))
 #    define _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
 #  endif
 #endif
 
 #ifndef _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION
-#  if (defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201907) \
-          || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_20)
+// GCC 10's CTAD seems sufficiently broken to prevent its use.
+#  if (!defined(__GNUC__) || __GNUC__ >= 11) \
+      && ((defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201907) \
+          || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_20))
 #    define _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION 1
 #  endif
 #endif

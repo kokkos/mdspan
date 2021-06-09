@@ -48,6 +48,7 @@
 #include "layout_right.hpp"
 #include "extents.hpp"
 #include "trait_backports.hpp"
+#include "compressed_pair.hpp"
 
 namespace std {
 namespace experimental {
@@ -76,10 +77,6 @@ class basic_mdspan<
 >
 {
 private:
-
-  using __mapping_base_t = detail::__no_unique_address_emulation<
-    typename LayoutPolicy::template mapping<experimental::extents<Exts...>>, 0>;
-  using __accessor_base_t = detail::__no_unique_address_emulation<AccessorPolicy, 1>;
 
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
   template <class>

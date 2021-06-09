@@ -46,8 +46,11 @@
 #include "macros.hpp"
 #include "static_array.hpp"
 #include "standard_layout_static_array.hpp"
-#include "no_unique_address.hpp"
 #include "trait_backports.hpp" // integer_sequence, etc.
+
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#  include "no_unique_address.hpp"
+#endif
 
 #include <array>
 #include <cstddef>
@@ -83,22 +86,41 @@ struct __extents_tag { };
 
 template <size_t... Extents>
 class extents
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   : private detail::__no_unique_address_emulation<
       detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>>
+#endif
 {
 public:
 
   using size_type = size_t;
 
   using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>;
+
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+  _MDSPAN_NO_UNIQUE_ADDRESS __storage_t __storage_;
+#else
   using __base_t = detail::__no_unique_address_emulation<__storage_t>;
+#endif
 
  private:
 
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-  __storage_t& __storage() noexcept { return this->__base_t::__ref(); }
+  __storage_t& __storage() noexcept {
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    return __storage_;
+#else
+    return this->__base_t::__ref();
+#endif
+  }
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr __storage_t const& __storage() const noexcept { return this->__base_t::__ref(); }
+  constexpr __storage_t const& __storage() const noexcept {
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    return __storage_;
+#else
+    return this->__base_t::__ref();
+#endif
+  }
 
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -134,14 +156,16 @@ public:
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_OR(
-      (this->__base_t::template __get_n<Idxs>() != other.template __get_n<Idxs>()) /* || ... */
+      (this->__storage_t::template __get_n<Idxs>() != other.template __get_n<Idxs>()) /* || ... */
     );
   }
 
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   MDSPAN_INLINE_FUNCTION constexpr explicit
   extents(__base_t&& __b) noexcept
     : __base_t(::std::move(__b))
   { }
+#endif
 
 public:
 
@@ -174,7 +198,17 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr extents(const extents<OtherExtents...>& __other)
     noexcept
-    : __base_t(__base_t{__storage_t{__other.__storage().__enable_psa_conversion()}})
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __storage_{
+#else
+    : __base_t(__base_t{__storage_t{
+#endif
+        __other.__storage().__enable_psa_conversion()
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      }})
+#endif  
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -186,9 +220,18 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr extents(Integral... dyn) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __storage_{
+#else
     : __base_t(__base_t{typename __base_t::__stored_type{
+#endif
         detail::__construct_partially_static_array_from_sizes_tag,
-        detail::__construct_partially_static_array_from_sizes_tag, static_cast<size_t>(dyn)...}})
+        detail::__construct_partially_static_array_from_sizes_tag, static_cast<size_t>(dyn)...
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      }})
+#endif
   { }
 
 
@@ -202,8 +245,17 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr
   extents(std::array<SizeType, rank_dynamic()> const& dyn) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __storage_{
+#else
     : __base_t(__base_t{typename __base_t::__stored_type{
-        detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn}})
+#endif
+        detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      }})
+#endif
   { }
 
   // Need this constructor for some submdspan implementation stuff
@@ -211,7 +263,17 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr explicit
   extents(__storage_t const& sto ) noexcept
-   : __base_t(__base_t{sto})
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __storage_{
+#else
+    : __base_t(__base_t{
+#endif
+        sto
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      })
+#endif
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -274,7 +336,15 @@ public:  // (but not really)
     // context, but we have to do it to handle the case where the extents and the
     // strides could accidentally end up with the same types in their hierarchies
     // somehow (which would cause layout_stride::mapping to not be standard_layout)
-    return extents(__base_t{::std::move(__bs.template __with_tag<detail::__extents_tag>())});
+    return extents(
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      __base_t{
+#endif
+        ::std::move(__bs.template __with_tag<detail::__extents_tag>())
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#endif
+    );
   }
 
   template <size_t N>
