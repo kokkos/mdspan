@@ -80,10 +80,10 @@ private:
 
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
   template <class>
-  struct __impl_impl;
+  struct __deduction_workaround;
 
   template <size_t... Idxs>
-  struct __impl_impl<index_sequence<Idxs...>>
+  struct __deduction_workaround<index_sequence<Idxs...>>
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     size_t __size(basic_mdspan const& __self) noexcept {
@@ -96,8 +96,8 @@ private:
     }
   };
 
-  // Can't use defaulted parameter in the __impl_impl template because of a bug in MSVC warning C4348.
-  using __impl = __impl_impl<make_index_sequence<sizeof...(Exts)>>;
+  // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
+  using __impl = __deduction_workaround<make_index_sequence<sizeof...(Exts)>>;
 
 public:
 

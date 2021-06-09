@@ -143,10 +143,10 @@ struct layout_stride {
 
     // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
     template <class>
-    struct __impl_deduction_workaround;
+    struct __deduction_workaround;
 
     template <size_t... Idxs>
-    struct __impl_deduction_workaround<index_sequence<Idxs...>>
+    struct __deduction_workaround<index_sequence<Idxs...>>
     {
       template <class OtherExtents>
       MDSPAN_INLINE_FUNCTION
@@ -172,8 +172,8 @@ struct layout_stride {
       }
     };
 
-    // Can't use defaulted parameter in the __impl_deduction_workaround template because of a bug in MSVC warning C4348.
-    using __impl = __impl_deduction_workaround<make_index_sequence<sizeof...(Exts)>>;
+    // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
+    using __impl = __deduction_workaround<make_index_sequence<sizeof...(Exts)>>;
 
 
     //----------------------------------------------------------------------------
