@@ -210,7 +210,7 @@ TEST(TestLayoutLeftListInitialization, test_layout_left_list_initialization) {
   ASSERT_TRUE(m.is_contiguous());
 }
 
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestLayoutLeftCTAD, test_layout_left_ctad) {
   stdex::layout_left::mapping m{stdex::extents{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
@@ -234,7 +234,7 @@ TEST(TestLayoutRightListInitialization, test_layout_right_list_initialization) {
   ASSERT_TRUE(m.is_contiguous());
 }
 
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestLayoutRightCTAD, test_layout_right_ctad) {
   stdex::layout_right::mapping m{stdex::extents{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);

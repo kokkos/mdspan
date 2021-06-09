@@ -185,7 +185,7 @@ TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_conv
   ASSERT_EQ(e.extent(1), 2);
 }
 
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestExtentsCTADPack, test_extents_ctad_pack) {
   stdex::extents m0;
   ASSERT_EQ(m0.rank(), 0);
@@ -212,7 +212,7 @@ TEST(TestExtentsCTADPack, test_extents_ctad_pack) {
 
 // TODO: It appears to currently be impossible to write a deduction guide that
 // makes this work.
-/* 
+/*
 TEST(TestExtentsCTADStdArray, test_extents_ctad_std_array) {
   stdex::extents m0{std::array<size_t, 0>{}};
   ASSERT_EQ(m0.rank(), 0);

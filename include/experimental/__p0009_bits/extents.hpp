@@ -384,7 +384,7 @@ struct __make_dextents<0, ::std::experimental::extents<ExtentsPack...>> {
 template <size_t Rank>
 using dextents = typename detail::__make_dextents<Rank>::type;
 
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 template <class... SizeTypes>
 extents(SizeTypes...)
   -> extents<detail::__make_dynamic_extent<SizeTypes>()...>;

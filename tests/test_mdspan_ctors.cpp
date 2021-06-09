@@ -113,7 +113,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
   ASSERT_FALSE(m.is_contiguous());
 }
 
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestMdspanCTADExtentsPack, test_mdspan_ctad_extents_pack) {
   std::array<int, 1> d{42};
   stdex::mdspan m(d.data(), 64, 128);

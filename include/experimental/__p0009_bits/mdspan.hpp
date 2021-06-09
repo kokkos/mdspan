@@ -324,7 +324,7 @@ private:
 
 };
 
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 MDSPAN_TEMPLATE_REQUIRES(
   class ElementType, class... SizeTypes,
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */)

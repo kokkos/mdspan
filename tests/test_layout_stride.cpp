@@ -108,7 +108,7 @@ TEST(TestLayoutStrideListInitialization, test_list_initialization) {
 }
 
 // This fails on GCC 9.2 and others
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestLayoutStrideCTAD, test_ctad) {
   stdex::layout_stride::mapping m0{stdex::extents{16, 32}, stdex::extents{1, 128}};
   ASSERT_EQ(m0.extents().rank(), 2);
