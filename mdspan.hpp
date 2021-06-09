@@ -2527,9 +2527,9 @@ public:
 
 #endif // _MDSPAN_PRESERVE_STATIC_LAYOUT
 
-} // namespace detail
+} // end namespace detail
 } // end namespace experimental
-} // namespace std
+} // end namespace std
 //END_FILE_INCLUDE: /home/runner/work/kokkos-mdspan/kokkos-mdspan/include/experimental/__p0009_bits/standard_layout_static_array.hpp
 //BEGIN_FILE_INCLUDE: /home/runner/work/kokkos-mdspan/kokkos-mdspan/include/experimental/__p0009_bits/type_list.hpp
 /*
@@ -2876,9 +2876,9 @@ public:
 template <class, size_t... __values_or_sentinals>
 using __partially_static_sizes_tagged = __partially_static_sizes<__values_or_sentinals...>;
 
-} // namespace detail
+} // end namespace detail
 } // end namespace experimental
-} // namespace std
+} // end namespace std
 
 #endif // !_MDSPAN_PRESERVE_STANDARD_LAYOUT
 //END_FILE_INCLUDE: /home/runner/work/kokkos-mdspan/kokkos-mdspan/include/experimental/__p0009_bits/static_array.hpp
@@ -3085,7 +3085,7 @@ public:
       }
 #else
       }})
-#endif  
+#endif
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -3242,17 +3242,18 @@ public:  // (but not really)
 
 namespace detail {
 
-template <size_t Rank, typename Extents = extents<>>
+template <size_t Rank, class Extents = ::std::experimental::extents<>>
 struct __make_dextents;
 
-template <size_t Rank, size_t... Extents>
-struct __make_dextents<Rank, extents<Extents...>> {
-  using type = typename __make_dextents<Rank - 1, extents<dynamic_extent, Extents...>>::type;
+template <size_t Rank, size_t... ExtentsPack>
+struct __make_dextents<Rank, ::std::experimental::extents<ExtentsPack...>> {
+  using type = typename __make_dextents<Rank - 1,
+    ::std::experimental::extents<::std::experimental::dynamic_extent, ExtentsPack...>>::type;
 };
 
-template <size_t... Extents>
-struct __make_dextents<0, extents<Extents...>> {
-  using type = extents<Extents...>;
+template <size_t... ExtentsPack>
+struct __make_dextents<0, ::std::experimental::extents<ExtentsPack...>> {
+  using type = ::std::experimental::extents<ExtentsPack...>;
 };
 
 } // end namespace detail
@@ -3266,8 +3267,32 @@ extents(SizeTypes...)
   -> extents<detail::__make_dynamic_extent<SizeTypes>()...>;
 #endif
 
+namespace detail {
+
+template <class T>
+struct __is_extents : ::std::false_type {};
+
+template <size_t... ExtentsPack>
+struct __is_extents<::std::experimental::extents<ExtentsPack...>> : ::std::true_type {};
+
+template <class T>
+static constexpr bool __is_extents_v = __is_extents<T>::value;
+
+
+template <typename Extents>
+struct __extents_to_partially_static_sizes;
+
+template <size_t... ExtentsPack>
+struct __extents_to_partially_static_sizes<::std::experimental::extents<ExtentsPack...>> {
+  using type = detail::__partially_static_sizes<ExtentsPack...>;
+};
+
+template <typename Extents>
+using __extents_to_partially_static_sizes_t = typename __extents_to_partially_static_sizes<Extents>::type;
+
+} // end namespace detail
 } // end namespace experimental
-} // namespace std
+} // end namespace std
 //END_FILE_INCLUDE: /home/runner/work/kokkos-mdspan/kokkos-mdspan/include/experimental/__p0009_bits/extents.hpp
 
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -3278,7 +3303,6 @@ extents(SizeTypes...)
 
 namespace std {
 namespace experimental {
-
 namespace detail {
 
 //==============================================================================================================
@@ -3297,7 +3321,7 @@ protected:
   _MDSPAN_NO_UNIQUE_ADDRESS experimental::extents<Exts...> __extents_;
 #else
   using __base_t = __no_unique_address_emulation<experimental::extents<Exts...>>;
-#endif 
+#endif
 
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
   experimental::extents<Exts...>& __extents() noexcept {
@@ -3551,37 +3575,14 @@ struct layout_right_idx_conditional {
 
 struct layout_right {
   template <class Extents>
-  class mapping {
-  public:
-    static_assert(detail::__depend_on_instantiation_v<Extents, false>, "layout_right::mapping instantiated with invalid extents type.");
-
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
-    // GCC currently rejects deduction guides for member template classes at
-    // class scope, so we can't write the deduction guide we need for mappings.
-    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100983
-    //
-    // For this layout, we shouldn't need a deduction guide; the automatic ones
-    // should work. But, in our implementation we've chosen to leave the primary
-    // template empty and put the implementation in the specialization below.
-    // Unfortunately, it seems that the primary template is the one used for
-    // deduction.
-    //
-    // But, by cleverly adding a constructor declaration to the primary that
-    // serves as a pseudo deduction guide, we can get the automatic deduction
-    // guide to do the right thing.
-    MDSPAN_INLINE_FUNCTION
-    constexpr mapping(Extents const&) noexcept = delete;
-#endif
-  };
-
-  template <size_t... Exts>
-  class mapping<std::experimental::extents<Exts...>>
-    : public detail::fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, detail::layout_right_idx_conditional>
+  class mapping
+    : public detail::fixed_layout_common_impl<Extents, make_index_sequence<Extents::rank()>, detail::layout_right_idx_conditional>
   {
   private:
 
-    using idx_seq = make_index_sequence<sizeof...(Exts)>;
-    using base_t = detail::fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, detail::layout_right_idx_conditional>;
+    static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_left::mapping must be instantiated with a specialization of std::experimental::extents.");
+
+    using base_t = detail::fixed_layout_common_impl<Extents, make_index_sequence<Extents::rank()>, detail::layout_right_idx_conditional>;
 
     template <class>
     friend class mapping;
@@ -3607,11 +3608,17 @@ struct layout_right {
     // TODO @proposal-bug This isn't a requirement in the proposal.
     using typename base_t::extents_type;
 
+    // This has to be here for CTAD; just inheriting the base class constructor
+    // isn't sufficient.
+    constexpr mapping(Extents const& __exts) noexcept
+      : base_t(__exts)
+    { }
+
     // TODO noexcept specification
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
+        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
@@ -3623,7 +3630,7 @@ struct layout_right {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
         /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
+        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
@@ -4030,37 +4037,14 @@ struct layout_left_idx_conditional {
 
 struct layout_left {
   template <class Extents>
-  class mapping {
-  public:
-    static_assert(detail::__depend_on_instantiation_v<Extents, false>, "layout_left::mapping instantiated with invalid extents type.");
-
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
-    // GCC currently rejects deduction guides for member template classes at
-    // class scope, so we can't write the deduction guide we need for mappings.
-    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100983
-    //
-    // For this layout, we shouldn't need a deduction guide; the automatic ones
-    // should work. But, in our implementation we've chosen to leave the primary
-    // template empty and put the implementation in the specialization below.
-    // Unfortunately, it seems that the primary template is the one used for
-    // deduction.
-    //
-    // But, by cleverly adding a constructor declaration to the primary that
-    // serves as a pseudo deduction guide, we can get the automatic deduction
-    // guide to do the right thing.
-    MDSPAN_INLINE_FUNCTION
-    constexpr mapping(Extents const&) noexcept = delete;
-#endif
-  };
-
-  template <size_t... Exts>
-  class mapping<std::experimental::extents<Exts...>>
-    : public detail::fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, detail::layout_left_idx_conditional>
+  class mapping
+    : public detail::fixed_layout_common_impl<Extents, make_index_sequence<Extents::rank()>, detail::layout_left_idx_conditional>
   {
   private:
 
-    using idx_seq = make_index_sequence<sizeof...(Exts)>;
-    using base_t = detail::fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, detail::layout_left_idx_conditional>;
+    static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_left::mapping must be instantiated with a specialization of std::experimental::extents.");
+
+    using base_t = detail::fixed_layout_common_impl<Extents, make_index_sequence<Extents::rank()>, detail::layout_left_idx_conditional>;
 
     template <class>
     friend class mapping;
@@ -4086,11 +4070,17 @@ struct layout_left {
     // TODO @proposal-bug This isn't a requirement in the proposal.
     using typename base_t::extents_type;
 
+    // This has to be here for CTAD; just inheriting the base class constructor
+    // isn't sufficient.
+    constexpr mapping(Extents const& __exts) noexcept
+      : base_t(__exts)
+    { }
+
     // TODO noexcept specification
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
+        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
@@ -4102,7 +4092,7 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
+        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
@@ -4190,38 +4180,21 @@ namespace experimental {
 
 struct layout_stride {
   template <class Extents>
-  class mapping {
-    static_assert(detail::__depend_on_instantiation_v<Extents, false>, "layout_stride::mapping instantiated with invalid extents type.");
-
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
-    // GCC currently rejects deduction guides for member template classes at
-    // class scope, so we can't write the deduction guide we need for mappings.
-    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100983
-    //
-    // (Un)fortunately, with an oh-so-clever constructor declaration in the
-    // primary that serves as a pseudo deduction guide, we can get the
-    // automatic deduction guide to do the right thing.
-    MDSPAN_INLINE_FUNCTION
-    constexpr mapping(Extents const&, dextents<Extents::rank()> const&) noexcept = delete;
-#endif
-  };
-
-  template <size_t... Exts>
-  class mapping<
-    std::experimental::extents<Exts...>
-  >
+  class mapping
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : private detail::__no_unique_address_emulation<
         detail::__compressed_pair<
-          ::std::experimental::extents<Exts...>,
-          ::std::experimental::dextents<sizeof...(Exts)>
+          Extents,
+          ::std::experimental::dextents<Extents::rank()>
         >
       >
 #endif
   {
   public:
+    // This could be a `requires`, but I think it's better and clearer as a `static_assert`.
+    static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_stride::mapping must be instantiated with a specialization of std::experimental::extents.");
 
-    using extents_type = experimental::extents<Exts...>;
+    using extents_type = Extents;
 
     // TODO @proposal-bug This isn't a requirement of layouts in the proposal,
     // but we need it for `mdspan`'s deduction guides for its mapping
@@ -4230,11 +4203,9 @@ struct layout_stride {
 
   private:
 
-    using idx_seq = make_index_sequence<sizeof...(Exts)>;
-
     //----------------------------------------------------------------------------
 
-    using __strides_storage_t = ::std::experimental::dextents<sizeof...(Exts)>;
+    using __strides_storage_t = ::std::experimental::dextents<Extents::rank()>;
     using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -4299,7 +4270,7 @@ struct layout_stride {
     };
 
     // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
-    using __impl = __deduction_workaround<make_index_sequence<sizeof...(Exts)>>;
+    using __impl = __deduction_workaround<make_index_sequence<Extents::rank()>>;
 
 
     //----------------------------------------------------------------------------
@@ -4315,22 +4286,19 @@ struct layout_stride {
     //----------------------------------------------------------------------------
 
   public: // (but not really)
-    template <size_t N>
-    struct __static_stride_workaround {
-      static constexpr size_t value = dynamic_extent;
-    };
 
-    template <size_t N>
-    MDSPAN_FORCE_INLINE_FUNCTION
+    template <size_t R>
+    MDSPAN_INLINE_FUNCTION
     constexpr size_t __stride() const noexcept {
-      return __strides_storage().extent(N);
+      return __strides_storage().extent(R);
     }
 
     MDSPAN_INLINE_FUNCTION
     static constexpr mapping
     __make_mapping(
-      detail::__partially_static_sizes<Exts...>&& __exts,
-      detail::__partially_static_sizes<detail::__make_dynamic_extent_integral<Exts>()...>&& __strs
+      detail::__extents_to_partially_static_sizes_t<Extents>&& __exts,
+      detail::__extents_to_partially_static_sizes_t<
+        ::std::experimental::dextents<Extents::rank()>>&& __strs
     ) noexcept {
       // call the private constructor we created for this purpose
       return mapping(
@@ -4366,8 +4334,8 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION
     constexpr
     mapping(
-      std::experimental::extents<Exts...> const& e,
-      std::experimental::dextents<__strides_storage_t::rank()> const& strides
+      Extents const& e,
+      ::std::experimental::dextents<Extents::rank()> const& strides
     ) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
@@ -4397,7 +4365,7 @@ struct layout_stride {
     // TODO @proposal-bug this wording for this is (at least slightly) broken (should at least be "... stride(p[0]) == 1...")
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
       // TODO @testing test layout_stride is_contiguous()
-      auto rem = array<size_t, sizeof...(Exts)>{ };
+      auto rem = array<size_t, Extents::rank()>{ };
       std::iota(rem.begin(), rem.end(), size_t(0));
       auto next_idx_iter = std::find_if(
         rem.begin(), rem.end(),
@@ -4410,7 +4378,7 @@ struct layout_stride {
         constexpr size_t removed_index_sentinel = -1;
         *next_idx_iter = removed_index_sentinel;
         int found_count = 1;
-        while (found_count != sizeof...(Exts)) {
+        while (found_count != Extents::rank()) {
           next_idx_iter = std::find_if(
             rem.begin(), rem.end(),
             [&](size_t i) {
@@ -4425,7 +4393,7 @@ struct layout_stride {
             prev_stride_times_prev_extent = stride(*next_idx_iter) * this->extents().extent(*next_idx_iter);
           } else { break; }
         }
-        return found_count == sizeof...(Exts);
+        return found_count == Extents::rank();
       }
       return false;
     }
@@ -4440,7 +4408,7 @@ struct layout_stride {
     MDSPAN_TEMPLATE_REQUIRES(
       class... Indices,
       /* requires */ (
-        sizeof...(Indices) == sizeof...(Exts) &&
+        sizeof...(Indices) == Extents::rank() &&
         _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_constructible, Indices, size_t) /*&& ...*/)
       )
     )
