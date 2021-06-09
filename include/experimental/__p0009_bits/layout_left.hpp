@@ -69,7 +69,26 @@ struct layout_left_idx_conditional {
 struct layout_left {
   template <class Extents>
   class mapping {
+  public:
     static_assert(detail::__depend_on_instantiation_v<Extents, false>, "layout_left::mapping instantiated with invalid extents type.");
+
+#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+    // GCC currently rejects deduction guides for member template classes at
+    // class scope, so we can't write the deduction guide we need for mappings.
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100983
+    //
+    // For this layout, we shouldn't need a deduction guide; the automatic ones
+    // should work. But, in our implementation we've chosen to leave the primary
+    // template empty and put the implementation in the specialization below.
+    // Unfortunately, it seems that the primary template is the one used for
+    // deduction.
+    //
+    // But, by cleverly adding a constructor declaration to the primary that
+    // serves as a pseudo deduction guide, we can get the automatic deduction
+    // guide to do the right thing.
+    MDSPAN_INLINE_FUNCTION
+    constexpr mapping(Extents const&) noexcept = delete;
+#endif
   };
 
   template <size_t... Exts>
@@ -97,6 +116,14 @@ struct layout_left {
 
     using base_t::base_t;
 
+    // TODO @proposal-bug This isn't a requirement of layouts in the proposal,
+    // but we need it for `mdspan`'s deduction guides for its mapping
+    // constructors.
+    using layout = layout_left;
+
+    // TODO @proposal-bug This isn't a requirement in the proposal.
+    using typename base_t::extents_type;
+
     // TODO noexcept specification
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
@@ -108,7 +135,6 @@ struct layout_left {
     mapping(mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
       : base_t(other.extents())
     { }
-
 
     // TODO noexcept specification
     MDSPAN_TEMPLATE_REQUIRES(
@@ -142,7 +168,7 @@ struct layout_left {
     }
 
   };
-}; 
+};
 
 } // end namespace experimental
 } // end namespace std

@@ -176,6 +176,15 @@ TYPED_TEST(TestExtentsCompatCtors, compatible_assign_2) {
   EXPECT_EQ(this->exts1, this->exts2);
 }
 
+TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_convertible_to_size_t) {
+  std::array<int, 2> i{2, 2};
+  stdex::dextents<2> e{i};
+  ASSERT_EQ(e.rank(), 2);
+  ASSERT_EQ(e.rank_dynamic(), 2);
+  ASSERT_EQ(e.extent(0), 2);
+  ASSERT_EQ(e.extent(1), 2);
+}
+
 #if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
 TEST(TestExtentsCTADPack, test_extents_ctad_pack) {
   stdex::extents m0;

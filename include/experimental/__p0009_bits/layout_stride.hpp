@@ -66,12 +66,24 @@ struct layout_stride {
   template <class Extents>
   class mapping {
     static_assert(detail::__depend_on_instantiation_v<Extents, false>, "layout_stride::mapping instantiated with invalid extents type.");
+
+#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+    // GCC currently rejects deduction guides for member template classes at
+    // class scope, so we can't write the deduction guide we need for mappings.
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100983
+    //
+    // (Un)fortunately, with an oh-so-clever constructor declaration in the
+    // primary that serves as a pseudo deduction guide, we can get the
+    // automatic deduction guide to do the right thing.
+    MDSPAN_INLINE_FUNCTION
+    constexpr mapping(Extents const&, dextents<Extents::rank()> const&) noexcept = delete;
+#endif
   };
 
   template <size_t... Exts>
   class mapping<
     std::experimental::extents<Exts...>
-  > 
+  >
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : private detail::__no_unique_address_emulation<
         detail::__compressed_pair<
@@ -84,6 +96,11 @@ struct layout_stride {
   public:
 
     using extents_type = experimental::extents<Exts...>;
+
+    // TODO @proposal-bug This isn't a requirement of layouts in the proposal,
+    // but we need it for `mdspan`'s deduction guides for its mapping
+    // constructors.
+    using layout = layout_stride;
 
   private:
 
@@ -217,19 +234,21 @@ struct layout_stride {
     mapping& operator=(mapping&&) noexcept = default;
     MDSPAN_INLINE_FUNCTION_DEFAULTED ~mapping() noexcept = default;
 
-    // TODO @proposal-bug layout stride needs this constructor
+    // TODO @proposal-bug In the proposal, the constructor doesn't take a
+    // `dextents`, and doesn't accept any `array` with elements convertible to
+    // `size_t`.
     MDSPAN_INLINE_FUNCTION
     constexpr
     mapping(
       std::experimental::extents<Exts...> const& e,
-      array<size_t, __strides_storage_t::rank()> const& strides
+      std::experimental::dextents<__strides_storage_t::rank()> const& strides
     ) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
-          e, __strides_storage_t(strides)
+          e, __strides_storage_t{strides}
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
@@ -243,7 +262,7 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept {
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return __members.__first();
-#else 
+#else
       return this->__base_t::__ref().__first();
 #endif
     };

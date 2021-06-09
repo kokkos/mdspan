@@ -330,10 +330,27 @@ private:
 
 };
 
-#if _MDSPAN_USE_DEDUCTION_GUIDES
-template <class ElementType, class... Integrals>
-explicit basic_mdspan(ElementType*, Integrals...)
-  -> basic_mdspan<ElementType, extents<detail::__make_dynamic_extent<Integrals>()...>>;
+#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+MDSPAN_TEMPLATE_REQUIRES(
+  class ElementType, class... SizeTypes,
+  /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */)
+)
+explicit basic_mdspan(ElementType*, SizeTypes...)
+  -> basic_mdspan<ElementType, dextents<sizeof...(SizeTypes)>>;
+
+template <class ElementType, class SizeType, size_t N>
+explicit basic_mdspan(ElementType*, const array<SizeType, N>&)
+  -> basic_mdspan<ElementType, dextents<N>>;
+
+// TODO @proposal-bug Layout mappings in the proposal are not required to have `extents_type`.
+template <class ElementType, class MappingType>
+basic_mdspan(ElementType*, const MappingType&)
+  -> basic_mdspan<ElementType, typename MappingType::extents_type, typename MappingType::layout>;
+
+// TODO @proposal-bug Layout mappings in the proposal are not required to have `extents_type`.
+template <class ElementType, class MappingType, class AccessorType>
+basic_mdspan(ElementType*, const MappingType&, const AccessorType&)
+  -> basic_mdspan<ElementType, typename MappingType::extents_type, typename MappingType::layout, AccessorType>;
 #endif
 
 template <class T, size_t... Exts>

@@ -35,9 +35,9 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 
 mdspan_add_test(test_extents)
 mdspan_add_test(test_contiguous_layouts)
-mdspan_add_test(test_ctors)
+mdspan_add_test(test_mdspan_ctors)
+mdspan_add_test(test_mdspan_conversion)
 mdspan_add_test(test_layout_ctors)
 mdspan_add_test(test_layout_stride)
 mdspan_add_test(test_element_access)
-mdspan_add_test(test_conversion)
 
