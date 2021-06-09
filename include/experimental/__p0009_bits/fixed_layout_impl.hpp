@@ -61,7 +61,6 @@
 
 namespace std {
 namespace experimental {
-
 namespace detail {
 
 //==============================================================================================================
@@ -80,7 +79,7 @@ protected:
   _MDSPAN_NO_UNIQUE_ADDRESS experimental::extents<Exts...> __extents_;
 #else
   using __base_t = __no_unique_address_emulation<experimental::extents<Exts...>>;
-#endif 
+#endif
 
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
   experimental::extents<Exts...>& __extents() noexcept {

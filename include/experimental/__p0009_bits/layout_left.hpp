@@ -68,37 +68,14 @@ struct layout_left_idx_conditional {
 
 struct layout_left {
   template <class Extents>
-  class mapping {
-  public:
-    static_assert(detail::__depend_on_instantiation_v<Extents, false>, "layout_left::mapping instantiated with invalid extents type.");
-
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
-    // GCC currently rejects deduction guides for member template classes at
-    // class scope, so we can't write the deduction guide we need for mappings.
-    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100983
-    //
-    // For this layout, we shouldn't need a deduction guide; the automatic ones
-    // should work. But, in our implementation we've chosen to leave the primary
-    // template empty and put the implementation in the specialization below.
-    // Unfortunately, it seems that the primary template is the one used for
-    // deduction.
-    //
-    // But, by cleverly adding a constructor declaration to the primary that
-    // serves as a pseudo deduction guide, we can get the automatic deduction
-    // guide to do the right thing.
-    MDSPAN_INLINE_FUNCTION
-    constexpr mapping(Extents const&) noexcept = delete;
-#endif
-  };
-
-  template <size_t... Exts>
-  class mapping<std::experimental::extents<Exts...>>
-    : public detail::fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, detail::layout_left_idx_conditional>
+  class mapping
+    : public detail::fixed_layout_common_impl<Extents, make_index_sequence<Extents::rank()>, detail::layout_left_idx_conditional>
   {
   private:
 
-    using idx_seq = make_index_sequence<sizeof...(Exts)>;
-    using base_t = detail::fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, detail::layout_left_idx_conditional>;
+    static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_left::mapping must be instantiated with a specialization of std::experimental::extents.");
+
+    using base_t = detail::fixed_layout_common_impl<Extents, make_index_sequence<Extents::rank()>, detail::layout_left_idx_conditional>;
 
     template <class>
     friend class mapping;
@@ -124,11 +101,17 @@ struct layout_left {
     // TODO @proposal-bug This isn't a requirement in the proposal.
     using typename base_t::extents_type;
 
+    // This has to be here for CTAD; just inheriting the base class constructor
+    // isn't sufficient.
+    constexpr mapping(Extents const& __exts) noexcept
+      : base_t(__exts)
+    { }
+
     // TODO noexcept specification
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
+        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
@@ -140,7 +123,7 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
+        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14

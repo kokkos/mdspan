@@ -570,6 +570,6 @@ public:
 
 #endif // _MDSPAN_PRESERVE_STATIC_LAYOUT
 
-} // namespace detail
+} // end namespace detail
 } // end namespace experimental
-} // namespace std
+} // end namespace std

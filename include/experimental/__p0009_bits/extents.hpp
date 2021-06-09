@@ -208,7 +208,7 @@ public:
       }
 #else
       }})
-#endif  
+#endif
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -365,17 +365,18 @@ public:  // (but not really)
 
 namespace detail {
 
-template <size_t Rank, typename Extents = extents<>>
+template <size_t Rank, class Extents = ::std::experimental::extents<>>
 struct __make_dextents;
 
-template <size_t Rank, size_t... Extents>
-struct __make_dextents<Rank, extents<Extents...>> {
-  using type = typename __make_dextents<Rank - 1, extents<dynamic_extent, Extents...>>::type;
+template <size_t Rank, size_t... ExtentsPack>
+struct __make_dextents<Rank, ::std::experimental::extents<ExtentsPack...>> {
+  using type = typename __make_dextents<Rank - 1,
+    ::std::experimental::extents<::std::experimental::dynamic_extent, ExtentsPack...>>::type;
 };
 
-template <size_t... Extents>
-struct __make_dextents<0, extents<Extents...>> {
-  using type = extents<Extents...>;
+template <size_t... ExtentsPack>
+struct __make_dextents<0, ::std::experimental::extents<ExtentsPack...>> {
+  using type = ::std::experimental::extents<ExtentsPack...>;
 };
 
 } // end namespace detail
@@ -389,5 +390,29 @@ extents(SizeTypes...)
   -> extents<detail::__make_dynamic_extent<SizeTypes>()...>;
 #endif
 
+namespace detail {
+
+template <class T>
+struct __is_extents : ::std::false_type {};
+
+template <size_t... ExtentsPack>
+struct __is_extents<::std::experimental::extents<ExtentsPack...>> : ::std::true_type {};
+
+template <class T>
+static constexpr bool __is_extents_v = __is_extents<T>::value;
+
+
+template <typename Extents>
+struct __extents_to_partially_static_sizes;
+
+template <size_t... ExtentsPack>
+struct __extents_to_partially_static_sizes<::std::experimental::extents<ExtentsPack...>> {
+  using type = detail::__partially_static_sizes<ExtentsPack...>;
+};
+
+template <typename Extents>
+using __extents_to_partially_static_sizes_t = typename __extents_to_partially_static_sizes<Extents>::type;
+
+} // end namespace detail
 } // end namespace experimental
-} // namespace std
+} // end namespace std

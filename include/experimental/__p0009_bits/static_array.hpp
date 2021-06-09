@@ -282,8 +282,8 @@ public:
 template <class, size_t... __values_or_sentinals>
 using __partially_static_sizes_tagged = __partially_static_sizes<__values_or_sentinals...>;
 
-} // namespace detail
+} // end namespace detail
 } // end namespace experimental
-} // namespace std
+} // end namespace std
 
 #endif // !_MDSPAN_PRESERVE_STANDARD_LAYOUT
