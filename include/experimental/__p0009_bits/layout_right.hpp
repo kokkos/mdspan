@@ -46,7 +46,6 @@
 #include "macros.hpp"
 #include "fixed_layout_impl.hpp"
 #include "trait_backports.hpp"
-#include "depend_on_instantiation.hpp"
 
 namespace std {
 namespace experimental {

@@ -48,7 +48,6 @@
 #include "static_array.hpp"
 #include "extents.hpp"
 #include "trait_backports.hpp"
-#include "depend_on_instantiation.hpp"
 #include "compressed_pair.hpp"
 
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
