@@ -199,7 +199,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
 
 #ifndef _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
 // GCC 10's CTAD seems sufficiently broken to prevent its use.
-#  if (!defined(__GNUC__) || __GNUC__ >= 11) \
+#  if (defined(_MDSPAN_COMPILER_CLANG) || !defined(__GNUC__) || __GNUC__ >= 11) \
       && ((defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703) \
          || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_17))
 #    define _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
@@ -208,7 +208,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
 
 #ifndef _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION
 // GCC 10's CTAD seems sufficiently broken to prevent its use.
-#  if (!defined(__GNUC__) || __GNUC__ >= 11) \
+#  if (defined(_MDSPAN_COMPILER_CLANG) || !defined(__GNUC__) || __GNUC__ >= 11) \
       && ((defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201907) \
           || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_20))
 #    define _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION 1
