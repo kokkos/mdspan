@@ -19,7 +19,7 @@ def process_file(file_path, out_lines=[], front_matter_lines=[], processed_files
     out_lines += "//BEGIN_FILE_INCLUDE: " + file_path + "\n"
     with open(file_path, "r") as f:
         for line in f:
-            m_inc = re.match(r'#include\s*[<"](.+)[>"]\s*', line)
+            m_inc = re.match(r'# *include\s*[<"](.+)[>"]\s*', line)
             if m_inc:
                 inc_name = m_inc.group(1)
                 inc_path = find_file(inc_name, file_path)
