@@ -57,7 +57,7 @@ struct TestLayoutStride<std::tuple<
   std::integer_sequence<size_t, DynamicStrides...>
 >> : public ::testing::Test {
   using extents_type = stdex::extents<Extents...>;
-  using mapping_type = typename stdex::layout_stride<StaticStrides...>::template mapping<extents_type>;
+  using mapping_type = typename stdex::layout_stride::template mapping<extents_type>;
   mapping_type map = { extents_type{ DynamicSizes... }, std::array<size_t, sizeof...(DynamicStrides)>{ DynamicStrides... } };
 };
 
@@ -74,21 +74,7 @@ using extents_ddd_t = stdex::extents<dyn, dyn, dyn>;
 using zero_stride_maps =
   ::testing::Types<
     layout_stride_case_t<extents_345_t, _ints<>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>,
-    layout_stride_case_t<extents_345_t, _ints<>, _ints<dyn, dyn, 0>, _ints<0, 0>>,
-    layout_stride_case_t<extents_345_t, _ints<>, _ints<dyn, 0, dyn>, _ints<0, 0>>,
-    layout_stride_case_t<extents_345_t, _ints<>, _ints<0, dyn, dyn>, _ints<0, 0>>,
-    layout_stride_case_t<extents_345_t, _ints<>, _ints<dyn, 0, 0>, _ints<0>>,
-    layout_stride_case_t<extents_345_t, _ints<>, _ints<0, dyn, 0>, _ints<0>>,
-    layout_stride_case_t<extents_345_t, _ints<>, _ints<0, 0, dyn>, _ints<0>>,
-    layout_stride_case_t<extents_345_t, _ints<>, _ints<0, 0, 0>, _ints<>>,
-    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>,
-    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<dyn, dyn, 0>, _ints<0, 0>>,
-    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<dyn, 0, dyn>, _ints<0, 0>>,
-    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<0, dyn, dyn>, _ints<0, 0>>,
-    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<dyn, 0, 0>, _ints<0>>,
-    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<0, dyn, 0>, _ints<0>>,
-    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<0, 0, dyn>, _ints<0>>,
-    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<0, 0, 0>, _ints<>>
+    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>
   >;
 
 template <class T>
@@ -112,7 +98,7 @@ TYPED_TEST(TestLayoutStrideAllZero, test_mapping) {
 
 TEST(TestLayoutStrideListInitialization, test_list_initialization) {
   double* data = nullptr;
-  stdex::basic_mdspan<double, stdex::extents<dyn, dyn>, stdex::layout_stride<dyn, dyn>> m(data, {{16, 32}, {1, 128}});
+  stdex::basic_mdspan<double, stdex::extents<dyn, dyn>, stdex::layout_stride> m(data, {{16, 32}, {1, 128}});
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.stride(0), 1);

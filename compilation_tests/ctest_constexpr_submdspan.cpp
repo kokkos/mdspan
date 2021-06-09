@@ -71,7 +71,6 @@ dynamic_extent_1d() {
 
 MDSPAN_STATIC_TEST(dynamic_extent_1d<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d<stdex::layout_right>());
-MDSPAN_STATIC_TEST(dynamic_extent_1d<stdex::layout_stride<1>>());
 
 
 // </editor-fold> end 1D dynamic extent ptrdiff_t submdspan }}}1
@@ -98,7 +97,6 @@ dynamic_extent_1d_all_slice() {
 
 MDSPAN_STATIC_TEST(dynamic_extent_1d_all_slice<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_all_slice<stdex::layout_right>());
-MDSPAN_STATIC_TEST(dynamic_extent_1d_all_slice<stdex::layout_stride<1>>());
 
 // </editor-fold> end 1D dynamic extent all submdspan }}}1
 //==============================================================================
@@ -123,7 +121,6 @@ dynamic_extent_1d_pair_full() {
 
 MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_full<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_full<stdex::layout_right>());
-MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_full<stdex::layout_stride<1>>());
 
 template<class Layout>
 constexpr bool
@@ -145,7 +142,6 @@ dynamic_extent_1d_pair_each() {
 #ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<stdex::layout_right>());
-MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<stdex::layout_stride<1>>());
 #endif
 
 // </editor-fold> end 1D dynamic extent pair slice submdspan }}}1
@@ -175,7 +171,6 @@ dynamic_extent_1d_all_three() {
 #ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<stdex::layout_right>());
-MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<stdex::layout_stride<1>>());
 #endif
 
 // </editor-fold> end 1D dynamic extent pair, all, ptrdifft slice }}}1
@@ -200,8 +195,6 @@ dynamic_extent_2d_idx_idx() {
 }
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_idx<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_idx<stdex::layout_right>());
-MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_idx<stdex::layout_stride<1, 2>>());
-MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_idx<stdex::layout_stride<3, 1>>());
 
 template<class Layout>
 constexpr bool
@@ -227,8 +220,6 @@ dynamic_extent_2d_idx_all_idx() {
 #ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_right>());
-MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_stride<1, 2>>());
-MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<stdex::layout_stride<3, 1>>());
 #endif
 
 //==============================================================================
@@ -352,9 +343,6 @@ mixed_submdspan_test_3() {
 #ifndef _MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(
   mixed_submdspan_test_3<stdex::layout_right>()
-);
-MDSPAN_STATIC_TEST(
-  mixed_submdspan_test_3<stdex::layout_stride<5, 1>>()
 );
 #endif
 

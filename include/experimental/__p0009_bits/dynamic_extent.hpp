@@ -53,6 +53,20 @@ namespace experimental {
 
 _MDSPAN_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<size_t>::max();
 
+namespace detail {
+
+template <class>
+constexpr auto __make_dynamic_extent() {
+  return dynamic_extent;
+}
+
+template <size_t>
+constexpr auto __make_dynamic_extent_integral() {
+  return dynamic_extent;
+}
+
+} // end namespace detail
+
 } // end namespace experimental
 } // namespace std
 

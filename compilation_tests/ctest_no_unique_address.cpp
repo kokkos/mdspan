@@ -89,7 +89,7 @@ MDSPAN_STATIC_TEST(
 MDSPAN_STATIC_TEST(
   sizeof(stdex::layout_left::template mapping<
     stdex::extents<42, stdex::dynamic_extent, 73>
-  >) == sizeof(ptrdiff_t)
+  >) == sizeof(size_t)
 );
 
 MDSPAN_STATIC_TEST(
@@ -99,19 +99,11 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
-  sizeof(stdex::layout_stride<stdex::dynamic_extent, 1, 3>::template mapping<
+  sizeof(stdex::layout_stride::template mapping<
     stdex::extents<42, stdex::dynamic_extent, 73>
-  >) == 2 * sizeof(ptrdiff_t)
+  >) == 4 * sizeof(size_t)
 );
 
-// Fails on MSVC which adds some padding 
-#ifndef _MDSPAN_COMPILER_MSVC
-MDSPAN_STATIC_TEST(
-  std::is_empty<stdex::layout_stride<3, 4, 5>::template mapping<
-    stdex::extents<3, 4, 5>
-  >>::value
-);
-#endif
 
 // </editor-fold> end layouts }}}1
 //==============================================================================

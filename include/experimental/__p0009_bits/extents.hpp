@@ -208,6 +208,14 @@ public:
         detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn}})
   { }
 
+  // Need this constructor for some submdspan implementation stuff
+  // for the layout_stride case where I use an extents object for strides
+  MDSPAN_INLINE_FUNCTION
+  constexpr explicit
+  extents(__storage_t const& sto ) noexcept
+   : __base_t(__base_t{sto})
+  { }
+
   MDSPAN_TEMPLATE_REQUIRES(
     size_t... OtherExtents,
     /* requires */ (
@@ -286,6 +294,22 @@ public:  // (but not really)
   }
 
 };
+
+// CT: Initial implementation for dextents proposed in: P2299R3
+// Using this as storage type for layout_stride strides
+namespace detail {
+  template<size_t Rank, size_t ... Args>
+  struct __dextents_from_rank {
+    using type = typename __dextents_from_rank<Rank-1, dynamic_extent, Args ...>::type;
+  };
+  template<size_t ... Args>
+  struct __dextents_from_rank<0,Args...> {
+    using type = extents<Args...>;
+  };
+} // end namespace detail
+
+template<size_t Rank>
+using dextents = typename detail::__dextents_from_rank<Rank>::type;
 
 } // end namespace experimental
 } // namespace std
