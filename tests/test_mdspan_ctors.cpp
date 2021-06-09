@@ -126,7 +126,6 @@ TEST(TestMdspanCTADExtentsPack, test_mdspan_ctad_extents_pack) {
 }
 
 // TODO @proposal-bug We're missing a `mdspan(T*, extents)` constructor.
-/*
 TEST(TestMdspanCTADExtentsObject, test_mdspan_ctad_extents_object) {
   std::array<int, 1> d{42};
   stdex::mdspan m{d.data(), stdex::extents{64, 128}};
@@ -137,7 +136,6 @@ TEST(TestMdspanCTADExtentsObject, test_mdspan_ctad_extents_object) {
   ASSERT_EQ(m.extent(1), 128);
   ASSERT_TRUE(m.is_contiguous());
 }
-*/
 
 TEST(TestMdspanCTADExtentsStdArray, test_mdspan_ctad_extents_std_array) {
   std::array<int, 1> d{42};

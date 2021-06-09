@@ -53,30 +53,16 @@
 namespace std {
 namespace experimental {
 
-
 template <
   class ElementType,
   class Extents,
   class LayoutPolicy = layout_right,
   class AccessorPolicy = default_accessor<ElementType>
 >
-class mdspan;
-
-
-template <
-  class ElementType,
-  size_t... Exts,
-  class LayoutPolicy,
-  class AccessorPolicy
->
-class mdspan<
-  ElementType,
-  std::experimental::extents<Exts...>,
-  LayoutPolicy,
-  AccessorPolicy
->
+class mdspan
 {
 private:
+  static_assert(detail::__is_extents_v<Extents>, "std::experimental::mdspan's Extents template parameter must be a specialization of std::experimental::extents.");
 
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
   template <class>
@@ -96,15 +82,12 @@ private:
     }
   };
 
-  // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
-  using __impl = __deduction_workaround<make_index_sequence<sizeof...(Exts)>>;
-
 public:
 
   //--------------------------------------------------------------------------------
   // Domain and codomain types
 
-  using extents_type = std::experimental::extents<Exts...>;
+  using extents_type = Extents;
   using layout_type = LayoutPolicy;
   using accessor_type = AccessorPolicy;
   using mapping_type = typename layout_type::template mapping<extents_type>;
@@ -116,6 +99,9 @@ public:
   using reference = typename accessor_type::reference;
 
 private:
+
+  // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
+  using __impl = __deduction_workaround<make_index_sequence<extents_type::rank()>>;
 
   using __map_acc_pair_t = detail::__compressed_pair<mapping_type, accessor_type>;
 
@@ -156,9 +142,17 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
+  // TODO @proposal-bug Why is this explicit?
   explicit constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
     noexcept
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
+  { }
+
+  MDSPAN_INLINE_FUNCTION
+  // TODO @proposal-bug This is missing from the proposal.
+  explicit constexpr mdspan(pointer p, const extents_type& exts)
+    noexcept
+    : __members(p, __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
   // TODO noexcept specification
@@ -208,7 +202,7 @@ public:
       //   && static_extent(r) != dynamic_extent is true, then
       //   other.static_extent(r) == static_extent(r) is true."
       // (this is just the convertiblity constraint on extents...)
-      _MDSPAN_TRAIT(is_convertible, std::experimental::extents<Exts...>, std::experimental::extents<OtherExtents...>)
+      _MDSPAN_TRAIT(is_convertible, extents_type, std::experimental::extents<OtherExtents...>)
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -229,7 +223,7 @@ public:
     class Index,
     /* requires */ (
       _MDSPAN_TRAIT(is_convertible, Index, size_type) &&
-      sizeof...(Exts) == 1
+      extents_type::rank() == 1
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -242,7 +236,7 @@ public:
     class... SizeTypes,
     /* requires */ (
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
-      sizeof...(Exts) == extents_type::rank()
+      extents_type::rank() == sizeof...(SizeTypes)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -336,11 +330,18 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */)
 )
 explicit mdspan(ElementType*, SizeTypes...)
-  -> mdspan<ElementType, dextents<sizeof...(SizeTypes)>>;
+  -> mdspan<ElementType, ::std::experimental::dextents<sizeof...(SizeTypes)>>;
 
 template <class ElementType, class SizeType, size_t N>
-explicit mdspan(ElementType*, const array<SizeType, N>&)
-  -> mdspan<ElementType, dextents<N>>;
+explicit mdspan(ElementType*, const ::std::array<SizeType, N>&)
+  -> mdspan<ElementType, ::std::experimental::dextents<N>>;
+
+// This one is necessary because all the constructors take `pointer`s, not
+// `ElementType*`s, and `pointer` is taken from `accessor_type::pointer`, which
+// seems to throw off automatic deduction guides.
+template <class ElementType, size_t... ExtentsPack>
+explicit mdspan(ElementType*, const extents<ExtentsPack...>&)
+  -> mdspan<ElementType, ::std::experimental::extents<ExtentsPack...>>;
 
 // TODO @proposal-bug Layout mappings in the proposal are not required to have `extents_type`.
 template <class ElementType, class MappingType>
