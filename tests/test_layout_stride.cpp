@@ -97,33 +97,60 @@ TYPED_TEST(TestLayoutStrideAllZero, test_mapping) {
 }
 
 TEST(TestLayoutStrideListInitialization, test_list_initialization) {
-  double* data = nullptr;
-  stdex::basic_mdspan<double, stdex::extents<dyn, dyn>, stdex::layout_stride> m(data, {{16, 32}, {1, 128}});
-  ASSERT_EQ(m.rank(), 2);
-  ASSERT_EQ(m.rank_dynamic(), 2);
+  stdex::layout_stride::mapping<stdex::extents<dyn, dyn>> m{{16, 32}, {1, 128}};
+  ASSERT_EQ(m.extents().rank(), 2);
+  ASSERT_EQ(m.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m.extents().extent(0), 16);
+  ASSERT_EQ(m.extents().extent(1), 32);
   ASSERT_EQ(m.stride(0), 1);
   ASSERT_EQ(m.stride(1), 128);
-  ASSERT_EQ(m.extent(0), 16);
-  ASSERT_EQ(m.extent(1), 32);
   ASSERT_FALSE(m.is_contiguous());
 }
 
-// GCC 10 ICEs if I stick this in the body of the below test.
-template <typename M>
-void test_ctad_gcc_10_workaround(M m) {
-  ASSERT_EQ(m.rank(), 2);
-  ASSERT_EQ(m.rank_dynamic(), 2);
-  ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(m.stride(1), 128);
-  ASSERT_EQ(m.extent(0), 16);
-  ASSERT_EQ(m.extent(1), 32);
-}
-
 // This fails on GCC 9.2 and others
-/*
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestLayoutStrideCTAD, test_ctad) {
-  double* data = nullptr;
-  stdex::basic_mdspan m(data, stdex::layout_stride<dyn, dyn>::mapping{stdex::extents{16, 32}, std::array{1, 128}});
-  test_ctad_gcc_10_workaround(m);
-}
+  stdex::layout_stride::mapping m0{stdex::extents{16, 32}, stdex::extents{1, 128}};
+  ASSERT_EQ(m0.extents().rank(), 2);
+  ASSERT_EQ(m0.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m0.extents().extent(0), 16);
+  ASSERT_EQ(m0.extents().extent(1), 32);
+  ASSERT_EQ(m0.stride(0), 1);
+  ASSERT_EQ(m0.stride(1), 128);
+  ASSERT_FALSE(m0.is_contiguous());
+
+  stdex::layout_stride::mapping m1{stdex::extents{16, 32}, std::array{1, 128}};
+  ASSERT_EQ(m1.extents().rank(), 2);
+  ASSERT_EQ(m1.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m1.extents().extent(0), 16);
+  ASSERT_EQ(m1.extents().extent(1), 32);
+  ASSERT_EQ(m1.stride(0), 1);
+  ASSERT_EQ(m1.stride(1), 128);
+  ASSERT_FALSE(m1.is_contiguous());
+
+// TODO These won't work with our current implementation, because the array will
+// be deduced as the extent type, leading to a `static_assert`. We can probably
+// get around this with a clever refactoring, or by using an alias template for
+// `mapping` and deduction guides.
+/*
+  stdex::layout_stride::mapping m2{std::array{16, 32}, stdex::extents{1, 128}};
+  ASSERT_EQ(m2.extents().rank(), 2);
+  ASSERT_EQ(m2.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m2.extents().extent(0), 16);
+  ASSERT_EQ(m2.extents().extent(1), 32);
+  ASSERT_EQ(m2.stride(0), 1);
+  ASSERT_EQ(m2.stride(1), 128);
+  ASSERT_FALSE(m2.is_contiguous());
+
+  stdex::layout_stride::mapping m3{std::array{16, 32}, std::array{1, 128}};
+  ASSERT_EQ(m3.extents().rank(), 2);
+  ASSERT_EQ(m3.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m3.extents().extent(0), 16);
+  ASSERT_EQ(m3.extents().extent(1), 32);
+  ASSERT_EQ(m3.stride(0), 1);
+  ASSERT_EQ(m3.stride(1), 128);
+  ASSERT_FALSE(m3.is_contiguous());
 */
+}
+#endif
+

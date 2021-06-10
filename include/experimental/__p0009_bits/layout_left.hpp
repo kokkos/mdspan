@@ -63,87 +63,94 @@ struct layout_left_idx_conditional {
   };
 };
 
-template <class> class layout_left_impl;
-
-template <size_t... Exts>
-class layout_left_impl<std::experimental::extents<Exts...>>
-  : public fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_left_idx_conditional>
-{
-private:
-
-using idx_seq = make_index_sequence<sizeof...(Exts)>;
-  using base_t = fixed_layout_common_impl<std::experimental::extents<Exts...>, make_index_sequence<sizeof...(Exts)>, layout_left_idx_conditional>;
-
-  template <class>
-  friend class layout_left_impl;
-
-public:
-
-  //--------------------------------------------------------------------------------
-
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_left_impl() noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_left_impl(layout_left_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr layout_left_impl(layout_left_impl&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED layout_left_impl& operator=(layout_left_impl const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED layout_left_impl& operator=(layout_left_impl&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED ~layout_left_impl() noexcept = default;
-
-  using base_t::base_t;
-
-  // TODO noexcept specification
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherExtents,
-    /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
-    )
-  )
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-  layout_left_impl(layout_left_impl<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
-    : base_t(other.extents())
-  { }
-
-
-  // TODO noexcept specification
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherExtents,
-    /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, OtherExtents, std::experimental::extents<Exts...>)
-    )
-  )
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-  layout_left_impl& operator=(layout_left_impl<OtherExtents> const& other)
-  {
-    this->base_t::__ref() = other.extents();
-    return *this;
-  }
-  //--------------------------------------------------------------------------------
-
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
-
-  template<class OtherExtents>
-  MDSPAN_INLINE_FUNCTION
-  friend constexpr bool operator==(layout_left_impl const& lhs, layout_left_impl<OtherExtents> const& rhs) noexcept {
-    return lhs.extents() == rhs.extents();
-  }
-
-  template<class OtherExtents>
-  MDSPAN_INLINE_FUNCTION
-  friend constexpr bool operator!=(layout_left_impl const& lhs, layout_left_impl<OtherExtents> const& rhs) noexcept {
-    return lhs.extents() != rhs.extents();
-  }
-
-};
-
-} // namespace detail 
-//==============================================================================
+} // end namespace detail
 
 struct layout_left {
   template <class Extents>
-  using mapping = detail::layout_left_impl<Extents>;
-};
+  class mapping
+    : public detail::fixed_layout_common_impl<Extents, make_index_sequence<Extents::rank()>, detail::layout_left_idx_conditional>
+  {
+  private:
 
+    static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_left::mapping must be instantiated with a specialization of std::experimental::extents.");
+
+    using base_t = detail::fixed_layout_common_impl<Extents, make_index_sequence<Extents::rank()>, detail::layout_left_idx_conditional>;
+
+    template <class>
+    friend class mapping;
+
+  public:
+
+    //--------------------------------------------------------------------------------
+
+    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping() noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping const&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping&&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping const&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping&&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED ~mapping() noexcept = default;
+
+    using base_t::base_t;
+
+    // TODO @proposal-bug This isn't a requirement of layouts in the proposal,
+    // but we need it for `mdspan`'s deduction guides for its mapping
+    // constructors.
+    using layout = layout_left;
+
+    // TODO @proposal-bug This isn't a requirement in the proposal.
+    using typename base_t::extents_type;
+
+    // This has to be here for CTAD; just inheriting the base class constructor
+    // isn't sufficient.
+    constexpr mapping(Extents const& __exts) noexcept
+      : base_t(__exts)
+    { }
+
+    // TODO noexcept specification
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherExtents,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
+      )
+    )
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
+      : base_t(other.extents())
+    { }
+
+    // TODO noexcept specification
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherExtents,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
+      )
+    )
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping& operator=(mapping<OtherExtents> const& other)
+    {
+      this->base_t::__extents() = other.extents();
+      return *this;
+    }
+    //--------------------------------------------------------------------------------
+
+    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
+    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
+    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
+
+    template<class OtherExtents>
+    MDSPAN_INLINE_FUNCTION
+    friend constexpr bool operator==(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
+      return lhs.extents() == rhs.extents();
+    }
+
+    template<class OtherExtents>
+    MDSPAN_INLINE_FUNCTION
+    friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
+      return lhs.extents() != rhs.extents();
+    }
+
+  };
+};
 
 } // end namespace experimental
 } // end namespace std

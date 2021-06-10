@@ -88,7 +88,7 @@ T&& _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
 
 template <class T, class... Rest, class RNG, class Dist>
 void _do_fill_random(
-  std::experimental::basic_mdspan<T, std::experimental::extents<>, Rest...> s,
+  std::experimental::mdspan<T, std::experimental::extents<>, Rest...> s,
   RNG& gen,
   Dist& dist
 )
@@ -98,7 +98,7 @@ void _do_fill_random(
 
 template <class T, size_t E, size_t... Es, class... Rest, class RNG, class Dist>
 void _do_fill_random(
-  std::experimental::basic_mdspan<T, std::experimental::extents<E, Es...>, Rest...> s,
+  std::experimental::mdspan<T, std::experimental::extents<E, Es...>, Rest...> s,
   RNG& gen,
   Dist& dist
 )
@@ -111,7 +111,7 @@ void _do_fill_random(
 } // end namespace _impl
 
 template <class T, class E, class... Rest>
-void fill_random(std::experimental::basic_mdspan<T, E, Rest...> s, long long seed = 1234) {
+void fill_random(std::experimental::mdspan<T, E, Rest...> s, long long seed = 1234) {
   std::mt19937 gen(seed);
   auto val_dist = std::uniform_int_distribution<>(0, 127);
   _impl::_do_fill_random(s, gen, val_dist);

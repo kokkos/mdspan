@@ -11,6 +11,7 @@ function(mdspan_add_example EXENAME)
   target_link_libraries(${EXENAME} std::mdspan)
 endfunction()
 
+add_subdirectory(godbolt_starter)
 add_subdirectory(dot_product)
 add_subdirectory(submdspan)
 add_subdirectory(tiled_layout)

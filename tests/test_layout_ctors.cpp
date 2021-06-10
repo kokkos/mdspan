@@ -46,6 +46,7 @@
 #include <gtest/gtest.h>
 
 namespace stdex = std::experimental;
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
 template <class> struct TestLayoutCtors;
 template <class Mapping, size_t... DynamicSizes>
@@ -75,14 +76,14 @@ using layout_test_types =
     test_left_type<stdex::extents<10>>,
     test_right_type<stdex::extents<10>>,
     //----------
-    test_left_type<stdex::extents<stdex::dynamic_extent>, 10>,
-    test_right_type<stdex::extents<stdex::dynamic_extent>, 10>,
+    test_left_type<stdex::extents<dyn>, 10>,
+    test_right_type<stdex::extents<dyn>, 10>,
     //----------
-    test_left_type<stdex::extents<stdex::dynamic_extent, 10>, 5>,
-    test_left_type<stdex::extents<5, stdex::dynamic_extent>, 10>,
+    test_left_type<stdex::extents<dyn, 10>, 5>,
+    test_left_type<stdex::extents<5, dyn>, 10>,
     test_left_type<stdex::extents<5, 10>>,
-    test_right_type<stdex::extents<stdex::dynamic_extent, 10>, 5>,
-    test_right_type<stdex::extents<5, stdex::dynamic_extent>, 10>,
+    test_right_type<stdex::extents<dyn, 10>, 5>,
+    test_right_type<stdex::extents<5, dyn>, 10>,
     test_right_type<stdex::extents<5, 10>>
   >;
 
@@ -131,18 +132,18 @@ using _exts = stdex::extents<Ds...>;
 template <template <class, class, class, class> class _test_case_type>
 using compatible_layout_test_types =
   ::testing::Types<
-    _test_case_type<_exts<stdex::dynamic_extent>, _sizes<10>, _exts<10>, _sizes<>>,
+    _test_case_type<_exts<dyn>, _sizes<10>, _exts<10>, _sizes<>>,
     //--------------------
-    _test_case_type<_exts<stdex::dynamic_extent, 10>, _sizes<5>, _exts<5, stdex::dynamic_extent>, _sizes<10>>,
-    _test_case_type<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent>, _sizes<10>>,
-    _test_case_type<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<stdex::dynamic_extent, 10>, _sizes<5>>,
-    _test_case_type<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, 10>, _sizes<>>,
-    _test_case_type<_exts<5, 10>, _sizes<>, _exts<5, stdex::dynamic_extent>, _sizes<10>>,
-    _test_case_type<_exts<5, 10>, _sizes<>, _exts<stdex::dynamic_extent, 10>, _sizes<5>>,
+    _test_case_type<_exts<dyn, 10>, _sizes<5>, _exts<5, dyn>, _sizes<10>>,
+    _test_case_type<_exts<dyn, dyn>, _sizes<5, 10>, _exts<5, dyn>, _sizes<10>>,
+    _test_case_type<_exts<dyn, dyn>, _sizes<5, 10>, _exts<dyn, 10>, _sizes<5>>,
+    _test_case_type<_exts<dyn, dyn>, _sizes<5, 10>, _exts<5, 10>, _sizes<>>,
+    _test_case_type<_exts<5, 10>, _sizes<>, _exts<5, dyn>, _sizes<10>>,
+    _test_case_type<_exts<5, 10>, _sizes<>, _exts<dyn, 10>, _sizes<5>>,
     //--------------------
-    _test_case_type<_exts<stdex::dynamic_extent, stdex::dynamic_extent, 15>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>>,
-    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>>,
-    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10, 15>>
+    _test_case_type<_exts<dyn, dyn, 15>, _sizes<5, 10>, _exts<5, dyn, 15>, _sizes<10>>,
+    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<5, dyn, 15>, _sizes<10>>,
+    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<dyn, dyn, dyn>, _sizes<5, 10, 15>>
   >;
 
 using left_compatible_test_types = compatible_layout_test_types<test_left_type_compatible>;
@@ -197,3 +198,51 @@ TYPED_TEST(TestLayoutRightCompatCtors, compatible_assign_2) {
   this->map2 = this->map1;
   ASSERT_EQ(this->map1.extents(), this->map2.extents());
 }
+
+TEST(TestLayoutLeftListInitialization, test_layout_left_list_initialization) {
+  stdex::layout_left::mapping<stdex::extents<dyn, dyn>> m{{16, 32}};
+  ASSERT_EQ(m.extents().rank(), 2);
+  ASSERT_EQ(m.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m.extents().extent(0), 16);
+  ASSERT_EQ(m.extents().extent(1), 32);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(m.stride(1), 16);
+  ASSERT_TRUE(m.is_contiguous());
+}
+
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+TEST(TestLayoutLeftCTAD, test_layout_left_ctad) {
+  stdex::layout_left::mapping m{stdex::extents{16, 32}};
+  ASSERT_EQ(m.extents().rank(), 2);
+  ASSERT_EQ(m.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m.extents().extent(0), 16);
+  ASSERT_EQ(m.extents().extent(1), 32);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(m.stride(1), 16);
+  ASSERT_TRUE(m.is_contiguous());
+}
+#endif
+
+TEST(TestLayoutRightListInitialization, test_layout_right_list_initialization) {
+  stdex::layout_right::mapping<stdex::extents<dyn, dyn>> m{{16, 32}};
+  ASSERT_EQ(m.extents().rank(), 2);
+  ASSERT_EQ(m.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m.extents().extent(0), 16);
+  ASSERT_EQ(m.extents().extent(1), 32);
+  ASSERT_EQ(m.stride(0), 32);
+  ASSERT_EQ(m.stride(1), 1);
+  ASSERT_TRUE(m.is_contiguous());
+}
+
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+TEST(TestLayoutRightCTAD, test_layout_right_ctad) {
+  stdex::layout_right::mapping m{stdex::extents{16, 32}};
+  ASSERT_EQ(m.extents().rank(), 2);
+  ASSERT_EQ(m.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m.extents().extent(0), 16);
+  ASSERT_EQ(m.extents().extent(1), 32);
+  ASSERT_EQ(m.stride(0), 32);
+  ASSERT_EQ(m.stride(1), 1);
+  ASSERT_TRUE(m.is_contiguous());
+}
+#endif

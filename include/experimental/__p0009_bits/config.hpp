@@ -41,8 +41,7 @@
 //@HEADER
 */
 
-#ifndef _MDSPAN_INCLUDE_EXPERIMENTAL_BITS_CONFIG_HPP_
-#define _MDSPAN_INCLUDE_EXPERIMENTAL_BITS_CONFIG_HPP_
+#pragma once
 
 #ifndef __has_include
 #  define __has_include(x) 0
@@ -61,13 +60,15 @@
 #define _MDSPAN_CPLUSPLUS __cplusplus
 #endif
 
-static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
-
 #define MDSPAN_CXX_STD_14 201402L
 #define MDSPAN_CXX_STD_17 201703L
+#define MDSPAN_CXX_STD_20 202002L
 
 #define MDSPAN_HAS_CXX_14 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14)
 #define MDSPAN_HAS_CXX_17 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_17)
+#define MDSPAN_HAS_CXX_20 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_20)
+
+static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++11 or later.");
 
 #ifndef _MDSPAN_COMPILER_CLANG
 #  if defined(__clang__)
@@ -114,8 +115,9 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #  define _MDSPAN_PRESERVE_STANDARD_LAYOUT 1
 #endif
 
-#ifndef _MDSPAN_NO_UNIQUE_ADDRESS
+#ifndef _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
 #  if __has_cpp_attribute(no_unique_address) >= 201803L
+#    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
 #    define _MDSPAN_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #  else
 #    define _MDSPAN_NO_UNIQUE_ADDRESS
@@ -194,10 +196,21 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_DEDUCTION_GUIDES
-#  if (defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703) \
-          || (!defined(__cpp_return_type_deduction) && MDSPAN_HAS_CXX_17)
-#    define _MDSPAN_USE_DEDUCTION_GUIDES 1
+#ifndef _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+// GCC 10's CTAD seems sufficiently broken to prevent its use.
+#  if (defined(_MDSPAN_COMPILER_CLANG) || !defined(__GNUC__) || __GNUC__ >= 11) \
+      && ((defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703) \
+         || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_17))
+#    define _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
+#  endif
+#endif
+
+#ifndef _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION
+// GCC 10's CTAD seems sufficiently broken to prevent its use.
+#  if (defined(_MDSPAN_COMPILER_CLANG) || !defined(__GNUC__) || __GNUC__ >= 11) \
+      && ((defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201907) \
+          || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_20))
+#    define _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION 1
 #  endif
 #endif
 
@@ -218,5 +231,3 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "MDSpan requires C++11 or later.");
 #    endif
 #  endif
 #endif
-
-#endif // _MDSPAN_INCLUDE_EXPERIMENTAL_BITS_CONFIG_HPP_

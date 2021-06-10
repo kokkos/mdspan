@@ -52,27 +52,6 @@ namespace stdex = std::experimental;
 //==============================================================================
 // <editor-fold desc="helper utilities"> {{{1
 
-struct empty1 { };
-struct empty2 { };
-
-MDSPAN_STATIC_TEST(
-  std::is_trivially_copyable<
-    stdex::detail::__compressed_pair<empty1, empty2>
-  >::value
-);
-
-MDSPAN_STATIC_TEST(
-  std::is_trivially_copyable<
-    stdex::detail::__compressed_pair<int*, empty2>
-  >::value
-);
-
-MDSPAN_STATIC_TEST(
-  std::is_trivially_copyable<
-    stdex::detail::__compressed_pair<int*, stdex::detail::__compressed_pair<empty1, empty2>>
-  >::value
-);
-
 MDSPAN_STATIC_TEST(
   !std::is_base_of<stdex::extents<1, 2, 3>, stdex::detail::__partially_static_sizes<1, 2, 3>>::value
 );
@@ -212,19 +191,19 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::mdspan<double, 1, 2, 3>
+    stdex::mdspan<double, stdex::extents<1, 2, 3>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::mdspan<int, stdex::dynamic_extent, stdex::dynamic_extent>
+    stdex::mdspan<int, stdex::dextents<2>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::basic_mdspan<
+    stdex::mdspan<
       double, stdex::extents<stdex::dynamic_extent, stdex::dynamic_extent>,
       stdex::layout_left, stdex::default_accessor<double>
     >

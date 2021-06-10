@@ -46,8 +46,11 @@
 #include "macros.hpp"
 #include "static_array.hpp"
 #include "standard_layout_static_array.hpp"
-#include "no_unique_address.hpp"
 #include "trait_backports.hpp" // integer_sequence, etc.
+
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#  include "no_unique_address.hpp"
+#endif
 
 #include <array>
 #include <cstddef>
@@ -61,6 +64,7 @@ template <size_t... Extents, size_t... OtherExtents>
 static constexpr std::false_type _check_compatible_extents(
   std::false_type, std::integer_sequence<size_t, Extents...>, std::integer_sequence<size_t, OtherExtents...>
 ) noexcept { return { }; }
+
 template <size_t... Extents, size_t... OtherExtents>
 static std::integral_constant<
   bool,
@@ -82,22 +86,41 @@ struct __extents_tag { };
 
 template <size_t... Extents>
 class extents
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   : private detail::__no_unique_address_emulation<
       detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>>
+#endif
 {
 public:
 
   using size_type = size_t;
 
   using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>;
+
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+  _MDSPAN_NO_UNIQUE_ADDRESS __storage_t __storage_;
+#else
   using __base_t = detail::__no_unique_address_emulation<__storage_t>;
+#endif
 
  private:
 
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-  __storage_t& __storage() noexcept { return this->__base_t::__ref(); }
+  __storage_t& __storage() noexcept {
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    return __storage_;
+#else
+    return this->__base_t::__ref();
+#endif
+  }
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr __storage_t const& __storage() const noexcept { return this->__base_t::__ref(); }
+  constexpr __storage_t const& __storage() const noexcept {
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    return __storage_;
+#else
+    return this->__base_t::__ref();
+#endif
+  }
 
   template <size_t... Idxs>
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -108,7 +131,6 @@ public:
 
   template <size_t...>
   friend class extents;
-
 
   template <size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
@@ -134,18 +156,18 @@ public:
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_OR(
-      (this->__base_t::template __get_n<Idxs>() != other.template __get_n<Idxs>()) /* || ... */
+      (this->__storage_t::template __get_n<Idxs>() != other.template __get_n<Idxs>()) /* || ... */
     );
   }
 
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   MDSPAN_INLINE_FUNCTION constexpr explicit
   extents(__base_t&& __b) noexcept
     : __base_t(::std::move(__b))
   { }
-
+#endif
 
 public:
-
 
   MDSPAN_INLINE_FUNCTION
   static constexpr size_t rank() noexcept { return sizeof...(Extents); }
@@ -176,7 +198,17 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr extents(const extents<OtherExtents...>& __other)
     noexcept
-    : __base_t(__base_t{__storage_t{__other.__storage().__enable_psa_conversion()}})
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __storage_{
+#else
+    : __base_t(__base_t{__storage_t{
+#endif
+        __other.__storage().__enable_psa_conversion()
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      }})
+#endif
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -188,9 +220,18 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr extents(Integral... dyn) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __storage_{
+#else
     : __base_t(__base_t{typename __base_t::__stored_type{
+#endif
         detail::__construct_partially_static_array_from_sizes_tag,
-        detail::__construct_partially_static_array_from_sizes_tag, static_cast<size_t>(dyn)...}})
+        detail::__construct_partially_static_array_from_sizes_tag, static_cast<size_t>(dyn)...
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      }})
+#endif
   { }
 
 
@@ -204,8 +245,17 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr
   extents(std::array<SizeType, rank_dynamic()> const& dyn) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __storage_{
+#else
     : __base_t(__base_t{typename __base_t::__stored_type{
-        detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn}})
+#endif
+        detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      }})
+#endif
   { }
 
   // Need this constructor for some submdspan implementation stuff
@@ -213,7 +263,17 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr explicit
   extents(__storage_t const& sto ) noexcept
-   : __base_t(__base_t{sto})
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __storage_{
+#else
+    : __base_t(__base_t{
+#endif
+        sto
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      })
+#endif
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -276,7 +336,15 @@ public:  // (but not really)
     // context, but we have to do it to handle the case where the extents and the
     // strides could accidentally end up with the same types in their hierarchies
     // somehow (which would cause layout_stride::mapping to not be standard_layout)
-    return extents(__base_t{::std::move(__bs.template __with_tag<detail::__extents_tag>())});
+    return extents(
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      __base_t{
+#endif
+        ::std::move(__bs.template __with_tag<detail::__extents_tag>())
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#endif
+    );
   }
 
   template <size_t N>
@@ -295,21 +363,56 @@ public:  // (but not really)
 
 };
 
-// CT: Initial implementation for dextents proposed in: P2299R3
-// Using this as storage type for layout_stride strides
 namespace detail {
-  template<size_t Rank, size_t ... Args>
-  struct __dextents_from_rank {
-    using type = typename __dextents_from_rank<Rank-1, dynamic_extent, Args ...>::type;
-  };
-  template<size_t ... Args>
-  struct __dextents_from_rank<0,Args...> {
-    using type = extents<Args...>;
-  };
+
+template <size_t Rank, class Extents = ::std::experimental::extents<>>
+struct __make_dextents;
+
+template <size_t Rank, size_t... ExtentsPack>
+struct __make_dextents<Rank, ::std::experimental::extents<ExtentsPack...>> {
+  using type = typename __make_dextents<Rank - 1,
+    ::std::experimental::extents<::std::experimental::dynamic_extent, ExtentsPack...>>::type;
+};
+
+template <size_t... ExtentsPack>
+struct __make_dextents<0, ::std::experimental::extents<ExtentsPack...>> {
+  using type = ::std::experimental::extents<ExtentsPack...>;
+};
+
 } // end namespace detail
 
-template<size_t Rank>
-using dextents = typename detail::__dextents_from_rank<Rank>::type;
+template <size_t Rank>
+using dextents = typename detail::__make_dextents<Rank>::type;
 
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+template <class... SizeTypes>
+extents(SizeTypes...)
+  -> extents<detail::__make_dynamic_extent<SizeTypes>()...>;
+#endif
+
+namespace detail {
+
+template <class T>
+struct __is_extents : ::std::false_type {};
+
+template <size_t... ExtentsPack>
+struct __is_extents<::std::experimental::extents<ExtentsPack...>> : ::std::true_type {};
+
+template <class T>
+static constexpr bool __is_extents_v = __is_extents<T>::value;
+
+
+template <typename Extents>
+struct __extents_to_partially_static_sizes;
+
+template <size_t... ExtentsPack>
+struct __extents_to_partially_static_sizes<::std::experimental::extents<ExtentsPack...>> {
+  using type = detail::__partially_static_sizes<ExtentsPack...>;
+};
+
+template <typename Extents>
+using __extents_to_partially_static_sizes_t = typename __extents_to_partially_static_sizes<Extents>::type;
+
+} // end namespace detail
 } // end namespace experimental
-} // namespace std
+} // end namespace std

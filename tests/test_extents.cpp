@@ -175,3 +175,69 @@ TYPED_TEST(TestExtentsCompatCtors, compatible_assign_2) {
   this->exts2 = this->exts1;
   EXPECT_EQ(this->exts1, this->exts2);
 }
+
+TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_convertible_to_size_t) {
+  std::array<int, 2> i{2, 2};
+  stdex::dextents<2> e{i};
+  ASSERT_EQ(e.rank(), 2);
+  ASSERT_EQ(e.rank_dynamic(), 2);
+  ASSERT_EQ(e.extent(0), 2);
+  ASSERT_EQ(e.extent(1), 2);
+}
+
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+TEST(TestExtentsCTADPack, test_extents_ctad_pack) {
+  stdex::extents m0;
+  ASSERT_EQ(m0.rank(), 0);
+  ASSERT_EQ(m0.rank_dynamic(), 0);
+
+  stdex::extents m1(64);
+  ASSERT_EQ(m1.rank(), 1);
+  ASSERT_EQ(m1.rank_dynamic(), 1);
+  ASSERT_EQ(m1.extent(0), 64);
+
+  stdex::extents m2(64, 128);
+  ASSERT_EQ(m2.rank(), 2);
+  ASSERT_EQ(m2.rank_dynamic(), 2);
+  ASSERT_EQ(m2.extent(0), 64);
+  ASSERT_EQ(m2.extent(1), 128);
+
+  stdex::extents m3(64, 128, 256);
+  ASSERT_EQ(m3.rank(), 3);
+  ASSERT_EQ(m3.rank_dynamic(), 3);
+  ASSERT_EQ(m3.extent(0), 64);
+  ASSERT_EQ(m3.extent(1), 128);
+  ASSERT_EQ(m3.extent(2), 256);
+}
+
+// TODO: It appears to currently be impossible to write a deduction guide that
+// makes this work.
+/*
+TEST(TestExtentsCTADStdArray, test_extents_ctad_std_array) {
+  stdex::extents m0{std::array<size_t, 0>{}};
+  ASSERT_EQ(m0.rank(), 0);
+  ASSERT_EQ(m0.rank_dynamic(), 0);
+
+  // TODO: `extents` should accept an array of any type convertible to `size_t`.
+  stdex::extents m1{std::array{64UL}};
+  ASSERT_EQ(m1.rank(), 1);
+  ASSERT_EQ(m1.rank_dynamic(), 1);
+  ASSERT_EQ(m1.extent(0), 64);
+
+  // TODO: `extents` should accept an array of any type convertible to `size_t`.
+  stdex::extents m2{std::array{64UL, 128UL}};
+  ASSERT_EQ(m2.rank(), 2);
+  ASSERT_EQ(m2.rank_dynamic(), 2);
+  ASSERT_EQ(m2.extent(0), 64);
+  ASSERT_EQ(m2.extent(1), 128);
+
+  // TODO: `extents` should accept an array of any type convertible to `size_t`.
+  stdex::extents m3{std::array{64UL, 128UL, 256UL}};
+  ASSERT_EQ(m3.rank(), 3);
+  ASSERT_EQ(m3.rank_dynamic(), 3);
+  ASSERT_EQ(m3.extent(0), 64);
+  ASSERT_EQ(m3.extent(1), 128);
+  ASSERT_EQ(m3.extent(2), 256);
+}
+*/
+#endif

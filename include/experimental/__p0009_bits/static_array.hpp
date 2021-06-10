@@ -44,7 +44,6 @@
 #pragma once
 
 #include "macros.hpp"
-#if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
 
 #include "dynamic_extent.hpp"
 #include "trait_backports.hpp"
@@ -52,6 +51,8 @@
 #include "standard_layout_static_array.hpp"
 #include "type_list.hpp"
 
+// Needs to be after the includes above to work with the single header generator
+#if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
 #include <cstddef> // size_t
 #include <utility> // integer_sequence
 #include <array>
@@ -281,8 +282,8 @@ public:
 template <class, size_t... __values_or_sentinals>
 using __partially_static_sizes_tagged = __partially_static_sizes<__values_or_sentinals...>;
 
-} // namespace detail
+} // end namespace detail
 } // end namespace experimental
-} // namespace std
+} // end namespace std
 
 #endif // !_MDSPAN_PRESERVE_STANDARD_LAYOUT

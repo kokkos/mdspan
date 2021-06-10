@@ -235,7 +235,7 @@
 #else
 #  define _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
     auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) \
-      -> typename std::remove_cv<typename std::remove_reference<decltype(BODY)>::type>::type \
+      -> std::remove_cv_t<std::remove_reference_t<decltype(BODY)>> \
     { return MDSPAN_PP_REMOVE_PARENS(BODY); }
 #  define _MDSPAN_DEDUCE_DECLTYPE_AUTO_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
     auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) \

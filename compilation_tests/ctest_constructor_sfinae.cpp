@@ -54,14 +54,14 @@ namespace stdex = std::experimental;
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::mdspan<int, 2, stdex::dynamic_extent>,
+        stdex::mdspan<int, stdex::extents<2, stdex::dynamic_extent>>,
         int*, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::mdspan<double, stdex::dynamic_extent, 2, stdex::dynamic_extent>,
+        stdex::mdspan<double, stdex::extents<stdex::dynamic_extent, 2, stdex::dynamic_extent>>,
         double*, unsigned, int
     >::value
 );
@@ -75,14 +75,14 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        stdex::mdspan<int, 2, stdex::dynamic_extent>,
+        stdex::mdspan<int, stdex::extents<2, stdex::dynamic_extent>>,
         double*, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        stdex::mdspan<int, 2, stdex::dynamic_extent>,
+        stdex::mdspan<int, stdex::extents<2, stdex::dynamic_extent>>,
         int*, int, int
     >::value
 );

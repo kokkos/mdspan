@@ -53,7 +53,9 @@
 //================================================================================
 
 template <class T, size_t... Es>
-using lmdspan = stdex::basic_mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+using lmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+template <class T, size_t... Es>
+using rmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
 
 //================================================================================
 
@@ -89,9 +91,9 @@ void BM_MDSpan_Sum_3D_OpenMP(benchmark::State& state, MDSpan, DynSizes... dyn) {
   state.counters["repeats"] = repeats;
 }
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, left_, lmdspan, 20, 20, 20);
-MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, right_, stdex::mdspan, 20, 20, 20);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, right_, rmdspan, 20, 20, 20);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, left_, lmdspan, 200, 200, 200);
-MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, right_, stdex::mdspan, 200, 200, 200);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, right_, rmdspan, 200, 200, 200);
 
 //================================================================================
 
@@ -121,7 +123,7 @@ void BM_MDSpan_Sum_3D_loop_OpenMP(benchmark::State& state, MDSpan, DynSizes... d
   }
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
-MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_loop_OpenMP, right_, stdex::mdspan, 200, 200, 200);
+MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_loop_OpenMP, right_, rmdspan, 200, 200, 200);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_loop_OpenMP, left_, lmdspan, 200, 200, 200);
 
 //================================================================================
@@ -131,7 +133,7 @@ void BM_Raw_Sum_3D_OpenMP(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z)
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dynamic_extent>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
 

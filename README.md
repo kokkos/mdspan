@@ -1,8 +1,9 @@
-
 Reference `mdspan` implementation
 ==========================================
 
 The ISO-C++ proposal [P0009](https://wg21.link/p0009) will add support for non-owning multi-dimensional array references to the C++ standard library.  This repository aims to provide a production-quality implementation of the proposal as written (with a few caveats, see below) in preparation for the addition of `mdspan` to the standard.  Please feel free to use this, file bugs when it breaks, and let us know how it works for you :-)
+
+[Try it out on Godbolt](https://godbolt.org/z/ehErvsTce){: .btn }
 
 Using `mdspan`
 --------------
@@ -20,7 +21,7 @@ Features in Addition To C++ Standard
 Building and Installation
 -------------------------
 
-This implementation is header-only, with compiler features detected using feature test macros, so you can just use it directly with no building or installation.  If you would like to run the included tests or benchmarks, you'll need CMake. 
+This implementation is header-only, with compiler features detected using feature test macros, so you can just use it directly with no building or installation.  If you would like to run the included tests or benchmarks, you'll need CMake.
 
 ### Running tests
 

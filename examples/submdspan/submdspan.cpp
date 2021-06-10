@@ -57,7 +57,7 @@ void test() {
   {
     // static sized
     double buffer[2 * 3 * 4] = {};
-    auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
+    auto s1 = stdex::mdspan<double, stdex::extents<2, 3, 4>>(buffer);
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::submdspan(s1, 1, 1, stdex::full_extent);
     std::cout << std::boolalpha << (sub1[1] == 42) << std::endl;
@@ -66,7 +66,7 @@ void test() {
   {
     // static sized
     double buffer[2 * 3 * 4] = {};
-    auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
+    auto s1 = stdex::mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::submdspan(s1, 1, stdex::full_extent, stdex::full_extent);
     auto sub2 = stdex::submdspan(sub1, 1, stdex::full_extent);
@@ -76,7 +76,7 @@ void test() {
   {
     // static sized, all submdspans
     double buffer[2 * 3 * 4] = {};
-    auto s1 = stdex::mdspan<double, 2, 3, 4>(buffer);
+    auto s1 = stdex::mdspan<double, stdex::extents<2, 3, 4>>(buffer);
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::submdspan(s1, 1, stdex::full_extent, stdex::full_extent);
     auto sub2 = stdex::submdspan(sub1, 1, stdex::full_extent);
@@ -87,7 +87,7 @@ void test() {
   {
     // static sized, all submdspans
     double buffer[2 * 3 * 4] = {};
-    auto s1 = stdex::basic_mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
+    auto s1 = stdex::mdspan<double, stdex::extents<2, 3, 4>, stdex::layout_left>(buffer);
     s1(1, 1, 1) = 42;
     auto sub1 = stdex::submdspan(s1, 1, stdex::full_extent, stdex::full_extent);
     auto sub2 = stdex::submdspan(sub1, 1, stdex::full_extent);
