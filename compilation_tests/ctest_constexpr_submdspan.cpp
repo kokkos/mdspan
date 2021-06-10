@@ -243,7 +243,7 @@ simple_static_submdspan_test_1(int add_to_row) {
 }
 
 // MSVC ICE
-#ifndef _MDSPAN_COMPILER_MSVC
+#if !defined(_MDSPAN_COMPILER_MSVC) && (!defined(__GNUC__) || (__GNUC__>=6 && __GNUC_MINOR__>=4))
 MDSPAN_STATIC_TEST(
   // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9) = 108
   simple_static_submdspan_test_1(1) == 108
@@ -297,7 +297,7 @@ mixed_submdspan_left_test_2() {
 }
 
 // MSVC ICE
-#ifndef _MDSPAN_COMPILER_MSVC
+#if !defined(_MDSPAN_COMPILER_MSVC) && (!defined(__GNUC__) || (__GNUC__>=6 && __GNUC_MINOR__>=4))
 MDSPAN_STATIC_TEST(
   // 2 * (1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)) / 2 = 108
   mixed_submdspan_left_test_2()

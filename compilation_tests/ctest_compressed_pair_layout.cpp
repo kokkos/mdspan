@@ -70,9 +70,9 @@ template <class T, size_t Size,
           trivially_copyableness TriviallyCopyable = trivially_copyable>
 void test() {
   MDSPAN_STATIC_TEST(sizeof(T) == Size);
-  MDSPAN_STATIC_TEST(std::is_empty_v<T> == Empty);
-  MDSPAN_STATIC_TEST(std::is_standard_layout_v<T> == StandardLayout);
-  MDSPAN_STATIC_TEST(std::is_trivially_copyable_v<T> == TriviallyCopyable);
+  MDSPAN_STATIC_TEST(std::is_empty<T>::value == Empty);
+  MDSPAN_STATIC_TEST(std::is_standard_layout<T>::value == StandardLayout);
+  MDSPAN_STATIC_TEST(std::is_trivially_copyable<T>::value == TriviallyCopyable);
 }
 
 template <class T, class U>
