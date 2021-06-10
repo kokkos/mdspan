@@ -79,10 +79,12 @@ MDSPAN_STATIC_TEST(
   simple_static_sum_test_1(-1) == 18
 );
 
+#if !defined(__INTEL_COMPILER) || (__INTEL_COMPILER>=1800)
 MDSPAN_STATIC_TEST(
   // -1 - 2 - 3 + 7 + 8 + 9 = 18
   stdex::mdspan<double, stdex::extents<simple_static_sum_test_1(-1)>>{nullptr}.extent(0) == 18
 );
+#endif
 
 //==============================================================================
 
