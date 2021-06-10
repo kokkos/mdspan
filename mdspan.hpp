@@ -228,7 +228,7 @@
 #define MDSPAN_HAS_CXX_17 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_17)
 #define MDSPAN_HAS_CXX_20 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_20)
 
-static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++11 or later.");
+static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or later.");
 
 #ifndef _MDSPAN_COMPILER_CLANG
 #  if defined(__clang__)
@@ -314,8 +314,8 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++11 or 
 #endif
 
 #ifndef _MDSPAN_USE_VARIABLE_TEMPLATES
-#  if (defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304) \
-        || (!defined(__cpp_variable_templates) && MDSPAN_HAS_CXX_14)
+#  if (defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304 && MDSPAN_HAS_CXX_17) \
+        || (!defined(__cpp_variable_templates) && MDSPAN_HAS_CXX_17)
 #    define _MDSPAN_USE_VARIABLE_TEMPLATES 1
 #  endif
 #endif // _MDSPAN_USE_VARIABLE_TEMPLATES
