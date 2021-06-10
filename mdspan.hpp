@@ -25,7 +25,7 @@
 #include <tuple> // std::apply
 #include <utility> // std::pair
 
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/mdspan
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/mdspan
 /*
 //@HEADER
 // ************************************************************************
@@ -70,7 +70,7 @@
 */
 
 
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/default_accessor.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/default_accessor.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -115,7 +115,7 @@
 */
 
 
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/macros.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/macros.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -161,7 +161,7 @@
 
 
 
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/config.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/config.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -220,8 +220,6 @@
 #define _MDSPAN_CPLUSPLUS __cplusplus
 #endif
 
-static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
-
 #define MDSPAN_CXX_STD_14 201402L
 #define MDSPAN_CXX_STD_17 201703L
 #define MDSPAN_CXX_STD_20 202002L
@@ -229,6 +227,8 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
 #define MDSPAN_HAS_CXX_14 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14)
 #define MDSPAN_HAS_CXX_17 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_17)
 #define MDSPAN_HAS_CXX_20 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_20)
+
+static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++11 or later.");
 
 #ifndef _MDSPAN_COMPILER_CLANG
 #  if defined(__clang__)
@@ -391,7 +391,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= 201102L, "mdspan requires C++11 or later.");
 #    endif
 #  endif
 #endif
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/config.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/config.hpp
 
 
 #ifndef _MDSPAN_HOST_DEVICE
@@ -960,7 +960,7 @@ struct __bools;
 
 // </editor-fold> end Pre-C++14 constexpr }}}1
 //==============================================================================
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/macros.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/macros.hpp
 
 
 namespace std {
@@ -1001,8 +1001,8 @@ struct default_accessor {
 
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/default_accessor.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/full_extent_t.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/default_accessor.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/full_extent_t.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -1057,8 +1057,8 @@ _MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 
 } // end namespace experimental
 } // namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/full_extent_t.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/mdspan.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/full_extent_t.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/mdspan.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -1104,7 +1104,7 @@ _MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 
 
 
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/layout_right.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_right.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -1149,53 +1149,7 @@ _MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 */
 
 
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/fixed_layout_impl.hpp
-/*
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 2.0
-//              Copyright (2019) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
-//@HEADER
-*/
-
-
-
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/static_array.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/fixed_layout_impl.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -1241,7 +1195,53 @@ _MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 
 
 
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/dynamic_extent.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/static_array.hpp
+/*
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 2.0
+//              Copyright (2019) Sandia Corporation
+//
+// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+// the U.S. Government retains certain rights in this software.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+// 1. Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the Corporation nor the names of the
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
+// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
+//
+// ************************************************************************
+//@HEADER
+*/
+
+
+
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/dynamic_extent.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -1311,8 +1311,8 @@ constexpr auto __make_dynamic_extent_integral() {
 } // namespace std
 
 //==============================================================================================================
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/dynamic_extent.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/trait_backports.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/dynamic_extent.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/trait_backports.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -1469,8 +1469,8 @@ using enable_if_t = typename enable_if<_B, _T>::type;
 //==============================================================================
 
 #endif //MDSPAN_INCLUDE_EXPERIMENTAL_BITS_TRAIT_BACKPORTS_HPP_
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/trait_backports.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/maybe_static_value.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/trait_backports.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/maybe_static_value.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -1517,7 +1517,7 @@ using enable_if_t = typename enable_if<_B, _T>::type;
 
 
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/no_unique_address.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/no_unique_address.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -1642,7 +1642,7 @@ struct __no_unique_address_emulation<
 } // end namespace detail
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/no_unique_address.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/no_unique_address.hpp
 #endif
 
 // This is only needed for the non-standard-layout version of partially
@@ -1746,8 +1746,8 @@ struct __maybe_static_value<_T, __is_dynamic_sentinal, __is_dynamic_sentinal,
 } // end namespace std
 
 #endif // !_MDSPAN_PRESERVE_STANDARD_LAYOUT
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/maybe_static_value.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/standard_layout_static_array.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/maybe_static_value.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/standard_layout_static_array.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -1792,7 +1792,7 @@ struct __maybe_static_value<_T, __is_dynamic_sentinal, __is_dynamic_sentinal,
 */
 
 
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/compressed_pair.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/compressed_pair.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -2007,7 +2007,7 @@ struct __compressed_pair<
 } // end namespace detail
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/compressed_pair.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/compressed_pair.hpp
 
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #endif
@@ -2530,8 +2530,8 @@ public:
 } // end namespace detail
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/standard_layout_static_array.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/type_list.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/standard_layout_static_array.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/type_list.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -2646,7 +2646,7 @@ struct __type_at<3, __type_list<_T0, _T1, _T2, _T3, _Ts...>> {
 
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/type_list.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/type_list.hpp
 
 // Needs to be after the includes above to work with the single header generator
 #if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
@@ -2881,8 +2881,8 @@ using __partially_static_sizes_tagged = __partially_static_sizes<__values_or_sen
 } // end namespace std
 
 #endif // !_MDSPAN_PRESERVE_STANDARD_LAYOUT
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/static_array.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/extents.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/static_array.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/extents.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -3261,7 +3261,7 @@ struct __make_dextents<0, ::std::experimental::extents<ExtentsPack...>> {
 template <size_t Rank>
 using dextents = typename detail::__make_dextents<Rank>::type;
 
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 template <class... SizeTypes>
 extents(SizeTypes...)
   -> extents<detail::__make_dynamic_extent<SizeTypes>()...>;
@@ -3293,7 +3293,7 @@ using __extents_to_partially_static_sizes_t = typename __extents_to_partially_st
 } // end namespace detail
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/extents.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/extents.hpp
 
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #endif
@@ -3491,69 +3491,7 @@ public:  // (but not really)
 
 } // end namespace experimental
 } // namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/fixed_layout_impl.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/depend_on_instantiation.hpp
-/*
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 2.0
-//              Copyright (2019) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
-//@HEADER
-*/
-
-
-namespace std {
-namespace experimental {
-namespace detail {
-
-template <typename T, bool B>
-struct __depend_on_instantiation {
-  static constexpr bool value = B;
-};
-
-template <typename T, bool B>
-constexpr bool __depend_on_instantiation_v = __depend_on_instantiation<T, B>::value;
-
-} // namespace detail
-} // end namespace experimental
-} // end namespace std
-
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/depend_on_instantiation.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/fixed_layout_impl.hpp
 
 namespace std {
 namespace experimental {
@@ -3663,7 +3601,7 @@ struct layout_right {
 
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/layout_right.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_right.hpp
 
 namespace std {
 namespace experimental {
@@ -3939,7 +3877,7 @@ private:
 
 };
 
-#if _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 MDSPAN_TEMPLATE_REQUIRES(
   class ElementType, class... SizeTypes,
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */)
@@ -3971,8 +3909,8 @@ mdspan(ElementType*, const MappingType&, const AccessorType&)
 
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/mdspan.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/layout_left.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/mdspan.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -4125,8 +4063,8 @@ struct layout_left {
 
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/layout_left.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/layout_stride.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_stride.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -4449,8 +4387,8 @@ struct layout_stride {
 
 } // end namespace experimental
 } // end namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/layout_stride.hpp
-//BEGIN_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/submdspan.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_stride.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/submdspan.hpp
 /*
 //@HEADER
 // ************************************************************************
@@ -4941,7 +4879,7 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
 
 } // end namespace experimental
 } // namespace std
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/__p0009_bits/submdspan.hpp
-//END_FILE_INCLUDE: /home/wash/development/standards/mdspan/include/experimental/mdspan
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/submdspan.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/mdspan
 #endif // _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
 
