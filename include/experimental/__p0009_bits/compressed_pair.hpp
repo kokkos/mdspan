@@ -171,8 +171,15 @@ struct __compressed_pair<
     enable_if_t<_MDSPAN_TRAIT(is_empty, _T) && _MDSPAN_TRAIT(is_empty, _U)>>
     // We need to use the __no_unique_address_emulation wrapper here to avoid
     // base class ambiguities.
+#ifdef _MDSPAN_COMPILER_MSVC
+// MSVC doesn't allow you to access public static member functions of a type
+// when you *happen* to privately inherit from that type.
+    : protected __no_unique_address_emulation<_T, 0>,
+      protected __no_unique_address_emulation<_U, 1>
+#else
     : private __no_unique_address_emulation<_T, 0>,
       private __no_unique_address_emulation<_U, 1>
+#endif
 {
   using __first_base_t = __no_unique_address_emulation<_T, 0>;
   using __second_base_t = __no_unique_address_emulation<_U, 1>;
