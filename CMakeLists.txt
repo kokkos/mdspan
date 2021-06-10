@@ -20,7 +20,7 @@ option(MDSPAN_ENABLE_OPENMP "Enable OpenMP benchmarks if benchmarks are enabled.
 
 # Option to override which C++ standard to use
 set(MDSPAN_CXX_STANDARD DETECT CACHE STRING "Override the default CXX_STANDARD to compile with.")
-set_property(CACHE MDSPAN_CXX_STANDARD PROPERTY STRINGS DETECT 11 14 17 20)
+set_property(CACHE MDSPAN_CXX_STANDARD PROPERTY STRINGS DETECT 14 17 20)
 
 option(MDSPAN_ENABLE_CONCEPTS "Try to enable concepts support by giving extra flags." On)
 
@@ -41,9 +41,6 @@ elseif(MDSPAN_CXX_STANDARD STREQUAL "14")
   else()
     message(FATAL_ERROR "Requested MDSPAN_CXX_STANDARD \"14\" not supported by provided C++ compiler")
   endif()
-elseif(MDSPAN_CXX_STANDARD STREQUAL "11")
-  message(STATUS "Using C++11 standard")
-  set(CMAKE_CXX_STANDARD 11)
 elseif(MDSPAN_CXX_STANDARD STREQUAL "20")
   if("cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     message(STATUS "Using C++20 standard")
@@ -61,11 +58,8 @@ else()
   elseif("cxx_std_14" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     set(CMAKE_CXX_STANDARD 14)
     message(STATUS "Detected support for C++14 standard")
-  elseif("cxx_std_11" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-    set(CMAKE_CXX_STANDARD 11)
-    message(STATUS "Newest supported C++ standard detected is C++11.")
   else()
-    message(FATAL_ERROR "Cannot detect CXX_STANDARD of C++11 or newer.")
+    message(FATAL_ERROR "Cannot detect CXX_STANDARD of C++14 or newer.")
   endif()
 endif()
 

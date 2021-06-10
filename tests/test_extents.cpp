@@ -54,8 +54,10 @@ struct TestExtents<std::tuple<
   std::integer_sequence<size_t, DynamicSizes...>
 >> : public ::testing::Test {
   using extents_type = stdex::extents<Extents...>;
-  const std::array<size_t, sizeof...(Extents)> static_sizes { Extents... };
-  const std::array<size_t, sizeof...(DynamicSizes)> dyn_sizes { DynamicSizes... };
+  // Double Braces here to make it work with GCC 5
+  // Otherwise: "error: array must be initialized with a brace-enclosed initializer"
+  const std::array<size_t, sizeof...(Extents)> static_sizes {{ Extents... }};
+  const std::array<size_t, sizeof...(DynamicSizes)> dyn_sizes {{ DynamicSizes... }};
   extents_type exts { DynamicSizes... };
 };
 
