@@ -17,6 +17,7 @@ option(MDSPAN_ENABLE_BENCHMARKS "Enable benchmarks." Off)
 option(MDSPAN_ENABLE_COMP_BENCH "Enable compilation benchmarks." Off)
 option(MDSPAN_ENABLE_CUDA "Enable Cuda tests/benchmarks/examples if tests/benchmarks/examples are enabled." Off)
 option(MDSPAN_ENABLE_OPENMP "Enable OpenMP benchmarks if benchmarks are enabled." On)
+option(MDSPAN_USE_SYSTEM_GTEST "Use system-installed GoogleTest library for tests." Off)
 
 # Option to override which C++ standard to use
 set(MDSPAN_CXX_STANDARD DETECT CACHE STRING "Override the default CXX_STANDARD to compile with.")
