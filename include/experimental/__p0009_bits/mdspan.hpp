@@ -110,11 +110,10 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.cons], mdspan constructors, assignment, and destructor
 
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan() noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(const mdspan&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(mdspan&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan() = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(const mdspan&) = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(mdspan&&) = default;
 
-  // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
@@ -126,12 +125,13 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   explicit constexpr mdspan(pointer p, SizeTypes... dynamic_extents)
-    noexcept
+    noexcept(
+      noexcept(is_nothrow_default_constructible_v<pointer>) &&
+      noexcept(is_nothrow_constructible_v<mapping_type, SizeTypes...>))
     // TODO @proposal-bug shouldn't I be allowed to do `move(p)` here?
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents...)), accessor_type()))
   { }
 
-  // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
@@ -144,7 +144,11 @@ public:
   MDSPAN_INLINE_FUNCTION
   // TODO @proposal-bug Why is this explicit?
   explicit constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
-    noexcept
+    noexcept(noexcept(apply(
+        [&p](auto tuple_extents) { return mdspan(p, tuple_extents); },
+        []<size_t... ArrayIndices> (index_sequence<ArrayIndices...>) {
+          return make_tuple(dynamic_extents[ArrayIndices]...);
+        } (make_index_sequence<N>()))))
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
