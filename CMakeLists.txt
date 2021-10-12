@@ -108,7 +108,6 @@ target_include_directories(mdspan INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-target_compile_features(mdspan INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
 ################################################################################
 
