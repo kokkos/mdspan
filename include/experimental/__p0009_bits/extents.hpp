@@ -156,7 +156,7 @@ public:
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_OR(
-      (this->__storage_t::template __get_n<Idxs>() != other.template __get_n<Idxs>()) /* || ... */
+      (__storage().template __get_n<Idxs>() != other.__storage().template __get_n<Idxs>()) /* || ... */
     );
   }
 
