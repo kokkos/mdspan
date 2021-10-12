@@ -233,6 +233,24 @@ struct layout_stride {
 #endif
     { }
 
+    template<class OtherExtents>
+    MDSPAN_INLINE_FUNCTION
+    constexpr
+    mapping(
+      const mapping<OtherExtents>& rhs
+    ) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __members{
+#else
+      : __base_t(__base_t{__member_pair_t(
+#endif
+          rhs.extents(), __strides_storage_t{rhs.__strides_storage()}
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+    { }
 
     //--------------------------------------------------------------------------------
 
