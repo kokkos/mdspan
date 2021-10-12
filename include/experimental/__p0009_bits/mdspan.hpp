@@ -51,6 +51,7 @@
 #include "compressed_pair.hpp"
 
 #include <tuple>
+#include <utility> // apply
 
 namespace std {
 namespace experimental {
@@ -146,11 +147,11 @@ public:
   MDSPAN_INLINE_FUNCTION
   // TODO @proposal-bug Why is this explicit?
   explicit constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
-    noexcept(noexcept(apply(
-        [&p](auto tuple_extents) { return mdspan(p, tuple_extents); },
-        []<size_t... ArrayIndices> (index_sequence<ArrayIndices...>) {
-          return make_tuple(dynamic_extents[ArrayIndices]...);
-        } (make_index_sequence<N>()))))
+    noexcept(noexcept(
+      is_nothrow_constructible_v<
+        mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>,
+        pointer,
+        extents_type>))
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
