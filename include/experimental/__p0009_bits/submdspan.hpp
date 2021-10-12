@@ -124,38 +124,33 @@ struct preserve_layout_right_analysis : integral_constant<bool, result> {
   >;
 };
 
+// a layout left remains a layout left if it is indexed by 0 or more all,
+// then optionally a pair and finally 0 or more scalars
 template <
   bool result=true,
-  bool encountered_first_scalar=false,
-  bool encountered_first_all=false,
-  bool encountered_first_pair=false
+  bool encountered_only_all=true
 >
 struct preserve_layout_left_analysis : integral_constant<bool, result> {
   using layout_type_if_preserved = layout_left;
   using encounter_pair = preserve_layout_left_analysis<
-    // Only the left-most slice can be a pair.  If we've encountered anything else,
-    // we can't preserve any contiguous layout
-    (encountered_first_scalar || encountered_first_all || encountered_first_pair) ? false : result,
-    // These change in the expected ways
-    encountered_first_scalar,
-    encountered_first_all,
-    true
+    // if we encounter a pair, the layout remains a layout left only if it was one before
+    // and that only all were encountered until now
+    result && encountered_only_all,
+    // if we encounter a pair, we didn't encounter all only
+    false
   >;
   using encounter_all = preserve_layout_left_analysis<
-    // If there's a scalar to the left of us, we can't preserve contiguous
-    encountered_first_scalar ? false : result,
-    // These change in the expected ways
-    encountered_first_scalar,
-    true,
-    encountered_first_pair
+    // if we encounter a all, the layout remains a layout left only if it was one before
+    // and that only all were encountered until now
+    result && encountered_only_all,
+    // if we encounter a all, the fact that we encountered scalars all doesn't change
+    encountered_only_all
   >;
   using encounter_scalar = preserve_layout_left_analysis<
-    // If there's a scalar to the left of us, we can't preserve contiguous
+    // if we encounter a scalar, the layout remains a layout left if it was one before
     result,
-    // These change in the expected ways
-    true,
-    encountered_first_all,
-    encountered_first_pair
+    // if we encounter a scalar, we didn't encounter scalars only
+    false
   >;
 };
 
