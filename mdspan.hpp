@@ -3033,7 +3033,7 @@ public:
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_OR(
-      (this->__storage_t::template __get_n<Idxs>() != other.template __get_n<Idxs>()) /* || ... */
+      (__storage().template __get_n<Idxs>() != other.__storage().template __get_n<Idxs>()) /* || ... */
     );
   }
 
@@ -4289,6 +4289,24 @@ struct layout_stride {
 #endif
     { }
 
+    template<class OtherExtents>
+    MDSPAN_INLINE_FUNCTION
+    constexpr
+    mapping(
+      const mapping<OtherExtents>& rhs
+    ) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __members{
+#else
+      : __base_t(__base_t{__member_pair_t(
+#endif
+          rhs.extents(), __strides_storage_t{rhs.__strides_storage()}
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+    { }
 
     //--------------------------------------------------------------------------------
 
