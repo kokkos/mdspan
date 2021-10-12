@@ -92,39 +92,35 @@ __wrap_slice(std::pair<size_t, size_t> const& val, size_t ext, size_t stride)
 //--------------------------------------------------------------------------------
 
 
+// a layout right remains a layout right if it is indexed by 0 or more scalars,
+// then optionally a pair and finally 0 or more all
 template <
+  // what we encountered until now preserves the layout right
   bool result=true,
-  bool encountered_first_all=false,
-  bool encountered_first_pair=false
+  // we only encountered 0 or more scalars, no pair or all
+  bool encountered_only_scalar=true
 >
 struct preserve_layout_right_analysis : integral_constant<bool, result> {
   using layout_type_if_preserved = layout_right;
   using encounter_pair = preserve_layout_right_analysis<
-    // If the pair isn't the right-most slice (i.e., if there was a previous pair),
-    // we can't preserve any contiguous layout.  Nothing else should matter
-    (encountered_first_pair ? false : result),
-    // Whether or not we've encountered the first all doesn't change, though it
-    // doesn't really matter, since anything to the right of this leads to a false
-    // result
-    encountered_first_all,
-    // This is a pair, so we've encountered at least one
-    true
+    // if we encounter a pair, the layout remains a layout right only if it was one before
+    // and that only scalars were encountered until now
+    result && encountered_only_scalar,
+    // if we encounter a pair, we didn't encounter scalars only
+    false
   >;
   using encounter_all = preserve_layout_right_analysis<
-    // encountering an all changes nothing unless we've already encountered a pair
-    (encountered_first_pair ? false : result),
-    // This is an all, so we've encountered at least one
-    true,
-    // nothing changes about this last one
-    encountered_first_pair
+    // if we encounter a all, the layout remains a layout right if it was one before
+    result,
+    // if we encounter a all, we didn't encounter scalars only
+    false
   >;
   using encounter_scalar = preserve_layout_right_analysis<
-    // if there's a scalar to the right of any non-scalar slice, we can't preserve
-    // any contiguous layout:
-    (encountered_first_all || encountered_first_pair) ? false : result,
-    // nothing else changes (though if they're true, it doesn't matter)
-    encountered_first_all,
-    encountered_first_pair
+    // if we encounter a scalar, the layout remains a layout right only if it was one before
+    // and that only scalars were encountered until now
+    result && encountered_only_scalar,
+    // if we encounter a scalar, the fact that we encountered scalars only doesn't change
+    encountered_only_scalar
   >;
 };
 
