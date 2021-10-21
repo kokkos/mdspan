@@ -42,6 +42,7 @@
 */
 
 #include <experimental/mdspan>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -52,6 +53,30 @@ TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_data_carray) {
   int data[1] = {42};
   stdex::mdspan<int, stdex::extents<1>> m(data);
   ASSERT_EQ(m.data(), data);
+  ASSERT_EQ(m.rank(), 1);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  ASSERT_EQ(m.extent(0), 1);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(m(0), 42);
+  ASSERT_TRUE(m.is_contiguous());
+}
+
+TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
+  std::array<int, 1> d = {42};
+  stdex::mdspan<int, stdex::extents<1>> m(d.data());
+  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.rank(), 1);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  ASSERT_EQ(m.extent(0), 1);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(m(0), 42);
+  ASSERT_TRUE(m.is_contiguous());
+}
+
+TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
+  std::vector<int> d = {42};
+  stdex::mdspan<int, stdex::extents<1>> m(d.data());
+  ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
