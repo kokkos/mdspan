@@ -4232,6 +4232,12 @@ struct layout_stride {
       return __strides_storage().extent(R);
     }
 
+    template <size_t... Idxs>
+    MDSPAN_INLINE_FUNCTION
+    constexpr array< size_t, Extents::rank() > __strides(std::index_sequence<Idxs...>) const noexcept {
+      return {__strides_storage().template __extent<Idxs>()...};
+    }
+
     MDSPAN_INLINE_FUNCTION
     static constexpr mapping
     __make_mapping(
@@ -4377,6 +4383,11 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION
     constexpr size_t stride(size_t r) const noexcept {
       return __strides_storage().extent(r);
+    }
+
+    MDSPAN_INLINE_FUNCTION
+    constexpr array< size_t, Extents::rank() > strides() const noexcept {
+      return __strides(std::make_index_sequence<Extents::rank()>());
     }
 
     MDSPAN_INLINE_FUNCTION
