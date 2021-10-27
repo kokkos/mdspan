@@ -104,6 +104,7 @@ TEST(TestLayoutStrideListInitialization, test_list_initialization) {
   ASSERT_EQ(m.extents().extent(1), 32);
   ASSERT_EQ(m.stride(0), 1);
   ASSERT_EQ(m.stride(1), 128);
+  ASSERT_EQ(m.strides(), (std::array<std::size_t, 2>{1, 128}));
   ASSERT_FALSE(m.is_contiguous());
 }
 
@@ -117,6 +118,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m0.extents().extent(1), 32);
   ASSERT_EQ(m0.stride(0), 1);
   ASSERT_EQ(m0.stride(1), 128);
+  ASSERT_EQ(m0.strides(), (std::array<std::size_t, 2>{1, 128}));
   ASSERT_FALSE(m0.is_contiguous());
 
   stdex::layout_stride::mapping m1{stdex::extents{16, 32}, std::array{1, 128}};
@@ -126,6 +128,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m1.extents().extent(1), 32);
   ASSERT_EQ(m1.stride(0), 1);
   ASSERT_EQ(m1.stride(1), 128);
+  ASSERT_EQ(m1.strides(), (std::array<std::size_t, 2>{1, 128}));
   ASSERT_FALSE(m1.is_contiguous());
 
 // TODO These won't work with our current implementation, because the array will
