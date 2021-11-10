@@ -102,7 +102,7 @@ TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_la
 
 TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_layout_stride) {
   std::array<int, 1> d{42};
-  stdex::mdspan<int, stdex::extents<dyn, dyn>, stdex::layout_stride> m{d.data(), {stdex::extents{16, 32}, std::array{1, 128}}};
+  stdex::mdspan<int, stdex::extents<dyn, dyn>, stdex::layout_stride> m{d.data(), {stdex::dextents<2>{16, 32}, std::array<std::size_t, 2>{1, 128}}};
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);

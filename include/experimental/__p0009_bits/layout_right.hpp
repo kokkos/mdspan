@@ -110,9 +110,12 @@ struct layout_right {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_constructible, OtherExtents, Extents)
       )
     )
+#ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
+    explicit (!is_convertible<OtherExtents, Extents>::value)
+#endif
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
       : base_t(other.extents())
@@ -122,7 +125,7 @@ struct layout_right {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
         /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_assignable, OtherExtents, Extents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14

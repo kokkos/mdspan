@@ -129,14 +129,14 @@ MDSPAN_STATIC_TEST(
 
 
 MDSPAN_STATIC_TEST(
-  std::is_convertible<
+  std::is_constructible<
     stdex::extents<2, stdex::dynamic_extent>,
     stdex::extents<2, 3>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
-  !std::is_convertible<
+  !std::is_constructible<
     stdex::extents<3, stdex::dynamic_extent>,
     stdex::extents<2, 3>
   >::value

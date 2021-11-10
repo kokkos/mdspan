@@ -126,6 +126,22 @@ public:
       })
 #endif
   { }
+  template<std::size_t ... OtherExts>
+  MDSPAN_INLINE_FUNCTION
+  constexpr /* implicit */ __extents_storage_impl(experimental::extents<OtherExts...> const& __exts) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __extents_{
+#else
+    : __base_t(__base_t{
+#endif
+    // Need to convert extents here potentially explicit
+        extents_type(__exts)
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      })
+#endif
+  { }
 
   // The layouts need to be implicitly convertible from extents (as currently specified),
   // which means we need to make this not explicit here
