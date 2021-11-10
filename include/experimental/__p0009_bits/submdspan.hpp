@@ -466,7 +466,6 @@ struct _is_layout_stride<
 
 //==============================================================================
 
-// TODO @proposal-bug sizeof...(SliceSpecs) == sizeof...(Exts) should be a constraint, not a requirement
 MDSPAN_TEMPLATE_REQUIRES(
   class ET, size_t... Exts, class LP, class AP, class... SliceSpecs,
   /* requires */ (

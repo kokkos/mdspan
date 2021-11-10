@@ -236,7 +236,6 @@ public:
   { }
 
 
-  // TODO @proposal-bug this constructor should be explicit
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType,
     /* requires */ (

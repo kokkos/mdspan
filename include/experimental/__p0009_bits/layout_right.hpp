@@ -92,12 +92,8 @@ struct layout_right {
 
     using base_t::base_t;
 
-    // TODO @proposal-bug This isn't a requirement of layouts in the proposal,
-    // but we need it for `mdspan`'s deduction guides for its mapping
-    // constructors.
-    using layout = layout_right;
+    using layout_type = layout_right;
 
-    // TODO @proposal-bug This isn't a requirement in the proposal.
     using typename base_t::extents_type;
 
     // This has to be here for CTAD; just inheriting the base class constructor
@@ -106,7 +102,6 @@ struct layout_right {
       : base_t(__exts)
     { }
 
-    // TODO noexcept specification
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
@@ -115,11 +110,10 @@ struct layout_right {
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs to () due to ,
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping(mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
+    mapping(mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
       : base_t(other.extents())
     { }
 
-    // TODO noexcept specification
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
         /* requires */ (
@@ -127,7 +121,7 @@ struct layout_right {
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping& operator=(mapping<OtherExtents> const& other)
+    mapping& operator=(mapping<OtherExtents> const& other) noexcept
     {
       this->base_t::__extents() = other.extents();
       return *this;
@@ -138,18 +132,19 @@ struct layout_right {
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
-    // TODO @proposal-bug these (and other analogous operators) should be non-member functions
     template<class OtherExtents>
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator==(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
       return lhs.extents() == rhs.extents();
     }
 
+    #ifndef MDSPAN_HAS_CXX20
     template<class OtherExtents>
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
       return lhs.extents() != rhs.extents();
     }
+    #endif
 
   };
 };

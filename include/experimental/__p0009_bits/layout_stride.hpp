@@ -80,10 +80,7 @@ struct layout_stride {
     using size_type = typename Extents::size_type;
     using extents_type = Extents;
 
-    // TODO @proposal-bug This isn't a requirement of layouts in the proposal,
-    // but we need it for `mdspan`'s deduction guides for its mapping
-    // constructors.
-    using layout = layout_stride;
+    using layout_type = layout_stride;
 
   private:
 
@@ -263,7 +260,6 @@ struct layout_stride {
     };
 
     MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
-    // TODO @proposal-bug this wording for this is (at least slightly) broken (should at least be "... stride(p[0]) == 1...")
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
       // TODO @testing test layout_stride is_contiguous()
       auto rem = array<size_t, Extents::rank()>{ };
@@ -334,20 +330,19 @@ struct layout_stride {
       return span_size;
     }
 
-    // TODO @proposal-bug these (and other analogous operators) should be non-member functions
-    // TODO @proposal-bug these should do more than just compare extents!
-
     template<class OtherExtents>
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator==(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
       return __impl::_eq_impl(lhs, rhs);
     }
 
+#ifdef MDSPAN_HAS_CXX20
     template<class OtherExtents>
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
       return __impl::_not_eq_impl(lhs, rhs);
     }
+#endif
 
   };
 };
