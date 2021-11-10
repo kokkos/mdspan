@@ -113,9 +113,7 @@ struct layout_left {
         _MDSPAN_TRAIT(is_constructible, OtherExtents, Extents)
       )
     )
-#ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
-    explicit (!is_convertible<OtherExtents, Extents>::value)
-#endif
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
       : base_t(other.extents())

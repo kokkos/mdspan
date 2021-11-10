@@ -232,8 +232,10 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_CONDITIONAL_EXPLICIT
+#ifndef MDSPAN_CONDITIONAL_EXPLICIT
 #  if (defined(MDSPAN_HAS_CXX_20))
-#    define _MDSPAN_USE_CONDITIONAL_EXPLICIT 1
+#    define MDSPAN_CONDITIONAL_EXPLICIT(COND) explicit(COND)
+#  else
+#    define MDSPAN_CONDITIONAL_EXPLICIT(COND)
 #  endif
 #endif
