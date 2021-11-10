@@ -3863,7 +3863,7 @@ public:
 
 private:
 
-  detail::__compressed_pair<pointer, __map_acc_pair_t> __members;
+  detail::__compressed_pair<pointer, __map_acc_pair_t> __members{};
 
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 pointer& __ptr_ref() noexcept { return __members.__first(); }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr pointer const& __ptr_ref() const noexcept { return __members.__first(); }
@@ -4392,8 +4392,13 @@ struct layout_stride {
 
     MDSPAN_INLINE_FUNCTION
     constexpr size_t required_span_size() const noexcept {
-      // assumes no negative strides; not sure if I'm allowed to assume that or not
-      return __impl::_req_span_size_impl(*this);
+      size_t span_size = 1;
+      for(unsigned r = 0; r < Extents::rank(); r++) {
+        // Return early if any of the extents are zero
+        if(extents().extent(r)==0) return 0;
+        span_size = std::max(span_size, extents().extent(r) * __strides_storage().extent(r));
+      }
+      return span_size;
     }
 
     // TODO @proposal-bug these (and other analogous operators) should be non-member functions
