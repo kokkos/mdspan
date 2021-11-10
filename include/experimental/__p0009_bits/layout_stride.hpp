@@ -212,9 +212,6 @@ struct layout_stride {
     mapping& operator=(mapping&&) noexcept = default;
     MDSPAN_INLINE_FUNCTION_DEFAULTED ~mapping() noexcept = default;
 
-    // TODO @proposal-bug In the proposal, the constructor doesn't take a
-    // `dextents`, and doesn't accept any `array` with elements convertible to
-    // `size_t`.
     template<class IntegralType>
     MDSPAN_INLINE_FUNCTION
     constexpr
