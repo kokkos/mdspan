@@ -310,7 +310,7 @@ public:
 
 private:
 
-  detail::__compressed_pair<pointer, __map_acc_pair_t> __members;
+  detail::__compressed_pair<pointer, __map_acc_pair_t> __members{};
 
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 pointer& __ptr_ref() noexcept { return __members.__first(); }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr pointer const& __ptr_ref() const noexcept { return __members.__first(); }
