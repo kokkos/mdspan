@@ -391,6 +391,14 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #    endif
 #  endif
 #endif
+
+#ifndef MDSPAN_CONDITIONAL_EXPLICIT
+#  if (defined(MDSPAN_HAS_CXX_20))
+#    define MDSPAN_CONDITIONAL_EXPLICIT(COND) explicit(COND)
+#  else
+#    define MDSPAN_CONDITIONAL_EXPLICIT(COND)
+#  endif
+#endif
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/config.hpp
 
 
@@ -3073,6 +3081,7 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
+  MDSPAN_CONDITIONAL_EXPLICIT((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent)) || ...))
   constexpr extents(const extents<OtherExtents...>& __other)
     noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -3096,7 +3105,7 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(Integral... dyn) noexcept
+  explicit constexpr extents(Integral... dyn) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : __storage_{
 #else
@@ -3368,6 +3377,22 @@ public:
       })
 #endif
   { }
+  template<std::size_t ... OtherExts>
+  MDSPAN_INLINE_FUNCTION
+  constexpr /* implicit */ __extents_storage_impl(experimental::extents<OtherExts...> const& __exts) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __extents_{
+#else
+    : __base_t(__base_t{
+#endif
+    // Need to convert extents here potentially explicit
+        extents_type(__exts)
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      })
+#endif
+  { }
 
   // The layouts need to be implicitly convertible from extents (as currently specified),
   // which means we need to make this not explicit here
@@ -3556,9 +3581,10 @@ struct layout_right {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_constructible, OtherExtents, Extents)
       )
     )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs to () due to ,
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
       : base_t(other.extents())
@@ -3568,7 +3594,7 @@ struct layout_right {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
         /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_assignable, OtherExtents, Extents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
@@ -3667,7 +3693,6 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(const mdspan&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(mdspan&&) noexcept = default;
 
-  // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
@@ -3684,7 +3709,6 @@ public:
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents...)), accessor_type()))
   { }
 
-  // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
@@ -3695,20 +3719,17 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  // TODO @proposal-bug Why is this explicit?
-  explicit constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
+  constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
     noexcept
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
   MDSPAN_INLINE_FUNCTION
-  // TODO @proposal-bug This is missing from the proposal.
-  explicit constexpr mdspan(pointer p, const extents_type& exts)
+  constexpr mdspan(pointer p, const extents_type& exts)
     noexcept
     : __members(p, __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
-  // TODO noexcept specification
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdspan, (pointer p, const mapping_type& m), noexcept,
@@ -3716,13 +3737,11 @@ public:
   ) : __members(p, __map_acc_pair_t(m, accessor_type()))
   { }
 
-  // TODO noexcept specification
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const mapping_type& m, const accessor_type& a) noexcept
     : __members(p, __map_acc_pair_t(m, a))
   { }
 
-  // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
     /* requires */ (
@@ -4019,9 +4038,10 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_constructible, OtherExtents, Extents)
       )
     )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
       : base_t(other.extents())
@@ -4031,7 +4051,7 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_assignable, OtherExtents, Extents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
@@ -4133,6 +4153,7 @@ struct layout_stride {
     // This could be a `requires`, but I think it's better and clearer as a `static_assert`.
     static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_stride::mapping must be instantiated with a specialization of std::experimental::extents.");
 
+    using size_type = typename Extents::size_type;
     using extents_type = Extents;
 
     // TODO @proposal-bug This isn't a requirement of layouts in the proposal,
@@ -4273,14 +4294,12 @@ struct layout_stride {
     mapping& operator=(mapping&&) noexcept = default;
     MDSPAN_INLINE_FUNCTION_DEFAULTED ~mapping() noexcept = default;
 
-    // TODO @proposal-bug In the proposal, the constructor doesn't take a
-    // `dextents`, and doesn't accept any `array` with elements convertible to
-    // `size_t`.
+    template<class IntegralType>
     MDSPAN_INLINE_FUNCTION
     constexpr
     mapping(
       Extents const& e,
-      ::std::experimental::dextents<Extents::rank()> const& strides
+      ::std::array<IntegralType, Extents::rank()> const& strides
     ) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
@@ -4296,6 +4315,7 @@ struct layout_stride {
     { }
 
     template<class OtherExtents>
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION
     constexpr
     mapping(
