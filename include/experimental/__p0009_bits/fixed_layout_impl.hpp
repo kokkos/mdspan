@@ -111,7 +111,6 @@ public:
 
   // The layouts need to be implicitly convertible from extents (as currently specified),
   // which means we need to make this not explicit here
-  // TODO @proposal-bug make this explicit?
   MDSPAN_INLINE_FUNCTION
   constexpr /* implicit */ __extents_storage_impl(extents_type const& __exts) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -142,24 +141,6 @@ public:
       })
 #endif
   { }
-
-  // The layouts need to be implicitly convertible from extents (as currently specified),
-  // which means we need to make this not explicit here
-  // TODO @proposal-bug this one isn't in the proposal?
-//  MDSPAN_INLINE_FUNCTION
-//  constexpr /* implicit */ __extents_storage_impl(extents_type&& __exts) noexcept
-//#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-//    : __extents_{
-//#else
-//    : __base_t(__base_t{
-//#endif
-//        std::move(__exts)
-//#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-//      }
-//#else
-//      })
-//#endif
-//  { }
 
   template <size_t N>
   MDSPAN_FORCE_INLINE_FUNCTION

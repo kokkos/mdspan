@@ -110,9 +110,9 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.cons], mdspan constructors, assignment, and destructor
 
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan() noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(const mdspan&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(mdspan&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan() = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(const mdspan&) = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(mdspan&&) = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
@@ -125,7 +125,6 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   explicit constexpr mdspan(pointer p, SizeTypes... dynamic_extents)
-    noexcept
     // TODO @proposal-bug shouldn't I be allowed to do `move(p)` here?
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents...)), accessor_type()))
   { }
@@ -141,36 +140,33 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
-    noexcept
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const extents_type& exts)
-    noexcept
     : __members(p, __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
-    mdspan, (pointer p, const mapping_type& m), noexcept,
+    mdspan, (pointer p, const mapping_type& m), ,
     /* requires */ (_MDSPAN_TRAIT(is_default_constructible, accessor_type))
   ) : __members(p, __map_acc_pair_t(m, accessor_type()))
   { }
 
   MDSPAN_INLINE_FUNCTION
-  constexpr mdspan(pointer p, const mapping_type& m, const accessor_type& a) noexcept
+  constexpr mdspan(pointer p, const mapping_type& m, const accessor_type& a)
     : __members(p, __map_acc_pair_t(m, a))
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, typename OtherLayoutPolicy::template mapping<OtherExtents>, mapping_type) &&
-      _MDSPAN_TRAIT(is_convertible, OtherAccessor, accessor_type) &&
-      _MDSPAN_TRAIT(is_convertible, typename OtherAccessor::pointer, pointer) &&
-      // TODO @proposal-bug there is a redundant constraint in the proposal; the convertibility of the extents is effectively stated twice
-      _MDSPAN_TRAIT(is_convertible, OtherExtents, extents_type)
+      _MDSPAN_TRAIT(is_constructible, mapping_type, typename OtherLayoutPolicy::template mapping<OtherExtents>) &&
+      _MDSPAN_TRAIT(is_constructible, accessor_type, OtherAccessor) &&
+      _MDSPAN_TRAIT(is_constructible, pointer, typename OtherAccessor::pointer) &&
+      _MDSPAN_TRAIT(is_constructible, extents_type, OtherExtents)
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -179,10 +175,10 @@ public:
   { }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~mdspan() noexcept = default;
+  ~mdspan() = default;
 
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mdspan& operator=(const mdspan&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mdspan& operator=(mdspan&&) noexcept = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mdspan& operator=(const mdspan&) = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mdspan& operator=(mdspan&&) = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType, size_t... OtherExtents, class OtherLayoutPolicy, class OtherAccessorPolicy,
@@ -195,13 +191,13 @@ public:
       //   && static_extent(r) != dynamic_extent is true, then
       //   other.static_extent(r) == static_extent(r) is true."
       // (this is just the convertiblity constraint on extents...)
-      _MDSPAN_TRAIT(is_convertible, extents_type, std::experimental::extents<OtherExtents...>)
+      _MDSPAN_TRAIT(is_assignable, extents_type, std::experimental::extents<OtherExtents...>)
     )
   )
   MDSPAN_INLINE_FUNCTION
   _MDSPAN_CONSTEXPR_14 mdspan& operator=(
     const mdspan<OtherElementType, std::experimental::extents<OtherExtents...>, OtherLayoutPolicy, OtherAccessorPolicy>& other
-  ) noexcept(/* TODO noexcept specification */ true)
+  )
   {
     __ptr_ref() = other.__ptr_ref();
     __mapping_ref() = other.__mapping_ref();
@@ -251,7 +247,6 @@ public:
     return __impl::template __callop<reference>(*this, indices);
   }
 
-  // TODO @proposal-bug The proposal is missing constexpr here
   MDSPAN_INLINE_FUNCTION constexpr
   accessor_type accessor() const { return __accessor_ref(); };
 
@@ -281,10 +276,6 @@ public:
       return __mapping_ref().required_span_size();
     }
   }
-
-  // [mdspan.basic.codomain], mdspan observers of the codomain
-  // TODO span (or just `codomain` function, as discussed)
-  // constexpr span<element_type> span() const noexcept;
 
   MDSPAN_INLINE_FUNCTION constexpr pointer data() const noexcept { return __ptr_ref(); };
 
@@ -322,29 +313,27 @@ MDSPAN_TEMPLATE_REQUIRES(
   class ElementType, class... SizeTypes,
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */)
 )
-explicit mdspan(ElementType*, SizeTypes...)
+mdspan(ElementType*, SizeTypes...)
   -> mdspan<ElementType, ::std::experimental::dextents<sizeof...(SizeTypes)>>;
 
 template <class ElementType, class SizeType, size_t N>
-explicit mdspan(ElementType*, const ::std::array<SizeType, N>&)
+mdspan(ElementType*, const ::std::array<SizeType, N>&)
   -> mdspan<ElementType, ::std::experimental::dextents<N>>;
 
 // This one is necessary because all the constructors take `pointer`s, not
 // `ElementType*`s, and `pointer` is taken from `accessor_type::pointer`, which
 // seems to throw off automatic deduction guides.
 template <class ElementType, size_t... ExtentsPack>
-explicit mdspan(ElementType*, const extents<ExtentsPack...>&)
+mdspan(ElementType*, const extents<ExtentsPack...>&)
   -> mdspan<ElementType, ::std::experimental::extents<ExtentsPack...>>;
 
-// TODO @proposal-bug Layout mappings in the proposal are not required to have `extents_type`.
 template <class ElementType, class MappingType>
 mdspan(ElementType*, const MappingType&)
-  -> mdspan<ElementType, typename MappingType::extents_type, typename MappingType::layout>;
+  -> mdspan<ElementType, typename MappingType::extents_type, typename MappingType::layout_type>;
 
-// TODO @proposal-bug Layout mappings in the proposal are not required to have `extents_type`.
-template <class ElementType, class MappingType, class AccessorType>
-mdspan(ElementType*, const MappingType&, const AccessorType&)
-  -> mdspan<ElementType, typename MappingType::extents_type, typename MappingType::layout, AccessorType>;
+template <class MappingType, class AccessorType>
+mdspan(const typename AccessorType::pointer, const MappingType&, const AccessorType&)
+  -> mdspan<typename AccessorType::element_type, typename MappingType::extents_type, typename MappingType::layout_type, AccessorType>;
 #endif
 
 } // end namespace experimental
