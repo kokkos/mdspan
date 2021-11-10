@@ -126,34 +126,48 @@ TYPED_TEST(TestExtents, copy_assign) {
   EXPECT_EQ(e, this->exts);
 }
 
+// Only types can be part of the gtest type iteration
+// so i need this wrapper to wrap around true/false values
+template<bool Val1, bool Val2>
+struct _BoolPairDeducer {
+  static constexpr bool val1 = Val1;
+  static constexpr bool val2 = Val2;
+};
+
+
 template <class> struct TestExtentsCompatCtors;
-template <size_t... Extents, size_t... DynamicSizes, size_t... Extents2, size_t... DynamicSizes2>
+template <size_t... Extents, size_t... DynamicSizes, size_t... Extents2, size_t... DynamicSizes2, bool ImplicitExts1ToExts2, bool ImplicitExts2ToExts1>
 struct TestExtentsCompatCtors<std::tuple<
   stdex::extents<Extents...>,
   std::integer_sequence<size_t, DynamicSizes...>,
   stdex::extents<Extents2...>,
-  std::integer_sequence<size_t, DynamicSizes2...>
+  std::integer_sequence<size_t, DynamicSizes2...>,
+  _BoolPairDeducer<ImplicitExts1ToExts2,ImplicitExts2ToExts1>
 >> : public ::testing::Test {
   using extents_type1 = stdex::extents<Extents...>;
   using extents_type2 = stdex::extents<Extents2...>;
   extents_type1 exts1 { DynamicSizes... };
   extents_type2 exts2 { DynamicSizes2... };
+  static constexpr bool implicit_exts1_to_exts2 = ImplicitExts1ToExts2;
+  static constexpr bool implicit_exts2_to_exts1 = ImplicitExts2ToExts1;
+
 };
 
 using compatible_extents_test_types =
   ::testing::Types<
-    std::tuple<_exts<stdex::dynamic_extent>, _sizes<10>, _exts<10>, _sizes<>>,
+    std::tuple<_exts<stdex::dynamic_extent>, _sizes<10>, _exts<10>, _sizes<>, _BoolPairDeducer<false,true>>,
+    std::tuple<_exts<10>, _sizes<>, _exts<stdex::dynamic_extent>, _sizes<10>, _BoolPairDeducer<true,false>>,
     //--------------------
-    std::tuple<_exts<stdex::dynamic_extent, 10>, _sizes<5>, _exts<5, stdex::dynamic_extent>, _sizes<10>>,
-    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent>, _sizes<10>>,
-    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<stdex::dynamic_extent, 10>, _sizes<5>>,
-    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, 10>, _sizes<>>,
-    std::tuple<_exts<5, 10>, _sizes<>, _exts<5, stdex::dynamic_extent>, _sizes<10>>,
-    std::tuple<_exts<5, 10>, _sizes<>, _exts<stdex::dynamic_extent, 10>, _sizes<5>>,
+    std::tuple<_exts<stdex::dynamic_extent, 10>, _sizes<5>, _exts<5, stdex::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, false>>,
+    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, true>>,
+    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<stdex::dynamic_extent, 10>, _sizes<5>,  _BoolPairDeducer<false, true>>,
+    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, 10>, _sizes<>,  _BoolPairDeducer<false, true>>,
+    std::tuple<_exts<5, 10>, _sizes<>, _exts<5, stdex::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<true, false>>,
+    std::tuple<_exts<5, 10>, _sizes<>, _exts<stdex::dynamic_extent, 10>, _sizes<5>,  _BoolPairDeducer<true, false>>,
     //--------------------
-    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent, 15>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>>,
-    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>>,
-    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10, 15>>
+    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent, 15>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>,  _BoolPairDeducer<false, true>>,
+    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>,  _BoolPairDeducer<true, false>>,
+    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10, 15>,  _BoolPairDeducer<true, false>>
   >;
 
 TYPED_TEST_SUITE(TestExtentsCompatCtors, compatible_extents_test_types);
@@ -176,6 +190,48 @@ TYPED_TEST(TestExtentsCompatCtors, compatible_assign_1) {
 TYPED_TEST(TestExtentsCompatCtors, compatible_assign_2) {
   this->exts2 = this->exts1;
   EXPECT_EQ(this->exts1, this->exts2);
+}
+
+
+template<class Extents, bool>
+struct ImplicitConversionToExts;
+template<class Extents>
+struct ImplicitConversionToExts<Extents,true> {
+  static  bool convert(Extents) {
+    return true;
+  }
+};
+template<class Extents>
+struct ImplicitConversionToExts<Extents,false> {
+  template<class E>
+  static  bool convert(E) {
+    return false;
+  }
+};
+
+
+TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
+  bool exts1_convertible_exts2 =
+    std::is_convertible<typename TestFixture::extents_type1,
+                        typename TestFixture::extents_type2>::value;
+  bool exts2_convertible_exts1 =
+    std::is_convertible<typename TestFixture::extents_type2,
+                        typename TestFixture::extents_type1>::value;
+
+  bool exts1_implicit_exts2 = ImplicitConversionToExts<
+                               typename TestFixture::extents_type2,
+                                        TestFixture::implicit_exts1_to_exts2>::convert(this->exts1);
+
+  bool exts2_implicit_exts1 = ImplicitConversionToExts<
+                               typename TestFixture::extents_type1,
+                                        TestFixture::implicit_exts2_to_exts1>::convert(this->exts2);
+
+#ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
+  EXPECT_EQ(exts1_convertible_exts2,exts1_implicit_exts2);
+  EXPECT_EQ(exts2_convertible_exts1,exts2_implicit_exts1);
+  EXPECT_EQ(exts1_convertible_exts2,TestFixture::implicit_exts1_to_exts2);
+  EXPECT_EQ(exts2_convertible_exts1,TestFixture::implicit_exts2_to_exts1);
+#endif
 }
 
 TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_convertible_to_size_t) {

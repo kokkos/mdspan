@@ -196,6 +196,9 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
+#if defined(_MDSPAN_USE_CONDITIONAL_EXPLICIT)
+  explicit((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent)) || ...))
+#endif
   constexpr extents(const extents<OtherExtents...>& __other)
     noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -219,7 +222,7 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(Integral... dyn) noexcept
+  explicit constexpr extents(Integral... dyn) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : __storage_{
 #else

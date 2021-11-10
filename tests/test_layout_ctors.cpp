@@ -199,8 +199,8 @@ TYPED_TEST(TestLayoutRightCompatCtors, compatible_assign_2) {
   ASSERT_EQ(this->map1.extents(), this->map2.extents());
 }
 
-TEST(TestLayoutLeftListInitialization, test_layout_left_list_initialization) {
-  stdex::layout_left::mapping<stdex::extents<dyn, dyn>> m{{16, 32}};
+TEST(TestLayoutLeftListInitialization, test_layout_left_extent_initialization) {
+  stdex::layout_left::mapping<stdex::extents<dyn, dyn>> m{stdex::dextents<2>{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);
@@ -223,8 +223,8 @@ TEST(TestLayoutLeftCTAD, test_layout_left_ctad) {
 }
 #endif
 
-TEST(TestLayoutRightListInitialization, test_layout_right_list_initialization) {
-  stdex::layout_right::mapping<stdex::extents<dyn, dyn>> m{{16, 32}};
+TEST(TestLayoutRightListInitialization, test_layout_right_extent_initialization) {
+  stdex::layout_right::mapping<stdex::extents<dyn, dyn>> m{stdex::dextents<2>{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);

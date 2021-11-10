@@ -143,14 +143,14 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   // TODO @proposal-bug Why is this explicit?
-  explicit constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
+  constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
     noexcept
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
   MDSPAN_INLINE_FUNCTION
   // TODO @proposal-bug This is missing from the proposal.
-  explicit constexpr mdspan(pointer p, const extents_type& exts)
+  constexpr mdspan(pointer p, const extents_type& exts)
     noexcept
     : __members(p, __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
