@@ -55,7 +55,7 @@ layout_stride_simple(int i) {
   using map_t = stdex::layout_stride::template mapping<
     stdex::extents<3>
   >;
-  return map_t(stdex::extents<3>{}, {1})(i);
+  return map_t(stdex::extents<3>{}, std::array<size_t,1>{1})(i);
 }
 
 MDSPAN_STATIC_TEST(

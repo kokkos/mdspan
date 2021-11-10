@@ -97,7 +97,7 @@ TYPED_TEST(TestLayoutStrideAllZero, test_mapping) {
 }
 
 TEST(TestLayoutStrideListInitialization, test_list_initialization) {
-  stdex::layout_stride::mapping<stdex::extents<dyn, dyn>> m{{16, 32}, {1, 128}};
+  stdex::layout_stride::mapping<stdex::extents<dyn, dyn>> m{stdex::dextents<2>{16, 32}, std::array<int,2>{1, 128}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);
@@ -111,6 +111,8 @@ TEST(TestLayoutStrideListInitialization, test_list_initialization) {
 // This fails on GCC 9.2 and others
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestLayoutStrideCTAD, test_ctad) {
+  // This is not possible wiht the array constructor we actually provide
+  /*
   stdex::layout_stride::mapping m0{stdex::extents{16, 32}, stdex::extents{1, 128}};
   ASSERT_EQ(m0.extents().rank(), 2);
   ASSERT_EQ(m0.extents().rank_dynamic(), 2);
@@ -120,6 +122,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m0.stride(1), 128);
   ASSERT_EQ(m0.strides(), (std::array<std::size_t, 2>{1, 128}));
   ASSERT_FALSE(m0.is_contiguous());
+  */
 
   stdex::layout_stride::mapping m1{stdex::extents{16, 32}, std::array{1, 128}};
   ASSERT_EQ(m1.extents().rank(), 2);

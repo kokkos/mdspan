@@ -77,6 +77,7 @@ struct layout_stride {
     // This could be a `requires`, but I think it's better and clearer as a `static_assert`.
     static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_stride::mapping must be instantiated with a specialization of std::experimental::extents.");
 
+    using size_type = typename Extents::size_type;
     using extents_type = Extents;
 
     // TODO @proposal-bug This isn't a requirement of layouts in the proposal,
@@ -217,14 +218,12 @@ struct layout_stride {
     mapping& operator=(mapping&&) noexcept = default;
     MDSPAN_INLINE_FUNCTION_DEFAULTED ~mapping() noexcept = default;
 
-    // TODO @proposal-bug In the proposal, the constructor doesn't take a
-    // `dextents`, and doesn't accept any `array` with elements convertible to
-    // `size_t`.
+    template<class IntegralType>
     MDSPAN_INLINE_FUNCTION
     constexpr
     mapping(
       Extents const& e,
-      ::std::experimental::dextents<Extents::rank()> const& strides
+      ::std::array<IntegralType, Extents::rank()> const& strides
     ) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
@@ -240,6 +239,7 @@ struct layout_stride {
     { }
 
     template<class OtherExtents>
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION
     constexpr
     mapping(

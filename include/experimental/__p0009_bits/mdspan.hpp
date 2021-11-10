@@ -114,7 +114,6 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(const mdspan&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(mdspan&&) noexcept = default;
 
-  // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
@@ -131,7 +130,6 @@ public:
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents...)), accessor_type()))
   { }
 
-  // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
@@ -142,20 +140,17 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  // TODO @proposal-bug Why is this explicit?
-  explicit constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
+  constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
     noexcept
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
   MDSPAN_INLINE_FUNCTION
-  // TODO @proposal-bug This is missing from the proposal.
-  explicit constexpr mdspan(pointer p, const extents_type& exts)
+  constexpr mdspan(pointer p, const extents_type& exts)
     noexcept
     : __members(p, __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
-  // TODO noexcept specification
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdspan, (pointer p, const mapping_type& m), noexcept,
@@ -163,13 +158,11 @@ public:
   ) : __members(p, __map_acc_pair_t(m, accessor_type()))
   { }
 
-  // TODO noexcept specification
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const mapping_type& m, const accessor_type& a) noexcept
     : __members(p, __map_acc_pair_t(m, a))
   { }
 
-  // TODO noexcept specification
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
     /* requires */ (
