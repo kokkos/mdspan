@@ -236,6 +236,7 @@ struct layout_stride {
     { }
 
     template<class OtherExtents>
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION
     constexpr
     mapping(
