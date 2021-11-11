@@ -3762,18 +3762,6 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.mapping], mdspan mapping domain multidimensional index to access codomain element
 
-  MDSPAN_TEMPLATE_REQUIRES(
-    class Index,
-    /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, Index, size_type) &&
-      extents_type::rank() == 1
-    )
-  )
-  MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator[](Index idx) const noexcept
-  {
-    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(idx)));
-  }
 
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
@@ -3783,7 +3771,7 @@ public:
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator()(SizeTypes... indices) const noexcept
+  constexpr reference operator[](SizeTypes... indices) const noexcept
   {
     return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(indices)...));
   }
@@ -3796,7 +3784,7 @@ public:
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator()(const array<SizeType, N>& indices) const noexcept
+  constexpr reference operator[](const array<SizeType, N>& indices) const noexcept
   {
     return __impl::template __callop<reference>(*this, indices);
   }
