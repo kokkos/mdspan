@@ -145,24 +145,20 @@ public:
 
   MDSPAN_INLINE_FUNCTION
   constexpr __partially_static_array_impl(
-      __construct_partially_static_array_from_sizes_tag_t,
+      __construct_partially_static_array_from_all_sizes_tag_t,
       __repeated_with_idxs<_Idxs, _T> const &... __vals) noexcept
       : __base_n<_Idxs>(__base_n<_Idxs>{{__vals}})... {}
 
-  // Dynamic idxs only given version, which is probably going to not need to
-  // supported by the time mdspan is merged into the standard, but is currently the
-  // way this is specified.  Use a repeated tag for the old semantics
   MDSPAN_INLINE_FUNCTION
   constexpr __partially_static_array_impl(
-      __construct_partially_static_array_from_sizes_tag_t,
-      __construct_partially_static_array_from_sizes_tag_t,
+      __construct_partially_static_array_from_dynamic_sizes_tag_t,
       __repeated_with_idxs<_IdxsDynamicIdxs, _T> const &... __vals) noexcept
       : __base_n<_IdxsDynamic>(__base_n<_IdxsDynamic>{{__vals}})... {}
 
   MDSPAN_INLINE_FUNCTION constexpr explicit __partially_static_array_impl(
     array<_T, sizeof...(_Idxs)> const& __vals) noexcept
     : __partially_static_array_impl(
-        __construct_partially_static_array_from_sizes_tag,
+        __construct_partially_static_array_from_all_sizes_tag,
         ::std::get<_Idxs>(__vals)...) {}
 
   // clang-format off
@@ -173,8 +169,7 @@ public:
     /* requires */
       (sizeof...(_Idxs) != __size_dynamic)
   ): __partially_static_array_impl(
-       __construct_partially_static_array_from_sizes_tag,
-       __construct_partially_static_array_from_sizes_tag,
+       __construct_partially_static_array_from_dynamic_sizes_tag,
        ::std::get<_IdxsDynamicIdxs>(__vals)...) {}
   // clang-format on
 
@@ -185,7 +180,7 @@ public:
       _U, _UValsSeq, __u_sentinal, _UIdxsSeq,
      _UIdxsDynamicSeq, _UIdxsDynamicIdxsSeq> const &__rhs) noexcept
     : __partially_static_array_impl(
-        __construct_partially_static_array_from_sizes_tag,
+        __construct_partially_static_array_from_all_sizes_tag,
         __rhs.template __get_n<_Idxs>()...) {}
 
   //--------------------------------------------------------------------------

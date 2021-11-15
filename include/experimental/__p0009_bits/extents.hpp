@@ -216,18 +216,21 @@ public:
     class... Integral,
     /* requires */ (
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */)
-        && sizeof...(Integral) == rank_dynamic()
+        && ((sizeof...(Integral) == rank_dynamic()) ||
+            (sizeof...(Integral) == rank()))
     )
   )
   MDSPAN_INLINE_FUNCTION
-  explicit constexpr extents(Integral... dyn) noexcept
+  explicit constexpr extents(Integral... exts) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : __storage_{
 #else
     : __base_t(__base_t{typename __base_t::__stored_type{
 #endif
-        detail::__construct_partially_static_array_from_sizes_tag,
-        detail::__construct_partially_static_array_from_sizes_tag, static_cast<size_t>(dyn)...
+      std::conditional_t<sizeof...(Integral)==rank_dynamic(),
+        detail::__construct_partially_static_array_from_dynamic_sizes_tag_t,
+        detail::__construct_partially_static_array_from_all_sizes_tag_t>(),
+        static_cast<size_t>(exts)...
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       }
 #else
@@ -237,20 +240,24 @@ public:
 
 
   MDSPAN_TEMPLATE_REQUIRES(
-    class SizeType,
+    class SizeType, size_t N,
     /* requires */ (
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
     )
   )
+  MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr
-  extents(std::array<SizeType, rank_dynamic()> const& dyn) noexcept
+  extents(std::array<SizeType, N> const& exts) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : __storage_{
 #else
     : __base_t(__base_t{typename __base_t::__stored_type{
 #endif
-        detail::__construct_psa_from_dynamic_values_tag_t<>{}, dyn
+      std::conditional_t<N==rank_dynamic(),
+        detail::__construct_psa_from_dynamic_values_tag_t<0>,
+        detail::__construct_psa_from_all_values_tag_t>(),
+        std::array<SizeType,N>{exts}
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       }
 #else
