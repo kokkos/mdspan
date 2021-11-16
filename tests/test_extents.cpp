@@ -230,12 +230,31 @@ TYPED_TEST(TestExtentsCompatCtors, compatible_construct_2) {
 }
 
 TYPED_TEST(TestExtentsCompatCtors, compatible_assign_1) {
-  this->exts1 = this->exts2;
+#if MDSPAN_HAS_CXX_17
+  if constexpr(std::is_convertible_v<typename TestFixture::extents_type2,
+                           typename TestFixture::extents_type1>) {
+    this->exts1 = this->exts2;
+  } else {
+    this->exts1 = typename TestFixture::extents_type1(this->exts2);
+  }
+#else
+  this->exts1 = typename TestFixture::extents_type1(this->exts2);
+#endif
   EXPECT_EQ(this->exts1, this->exts2);
+
 }
 
 TYPED_TEST(TestExtentsCompatCtors, compatible_assign_2) {
-  this->exts2 = this->exts1;
+#if MDSPAN_HAS_CXX_17
+  if constexpr(std::is_convertible_v<typename TestFixture::extents_type1,
+                           typename TestFixture::extents_type2>) {
+    this->exts2 = this->exts1;
+  } else {
+    this->exts2 = typename TestFixture::extents_type2(this->exts1);
+  }
+#else
+  this->exts2 = typename TestFixture::extents_type2(this->exts1);
+#endif
   EXPECT_EQ(this->exts1, this->exts2);
 }
 

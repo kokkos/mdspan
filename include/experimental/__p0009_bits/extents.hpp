@@ -283,24 +283,6 @@ public:
 #endif
   { }
 
-  MDSPAN_TEMPLATE_REQUIRES(
-    size_t... OtherExtents,
-    /* requires */ (
-      /* multi-stage check to protect from invalid pack expansion when sizes don't match? */
-      decltype(detail::_check_compatible_extents(
-        std::integral_constant<bool, sizeof...(Extents) == sizeof...(OtherExtents)>{},
-        std::integer_sequence<size_t, Extents...>{},
-        std::integer_sequence<size_t, OtherExtents...>{}
-      ))::value
-    )
-  )
-  MDSPAN_INLINE_FUNCTION
-  _MDSPAN_CONSTEXPR_14 extents& operator=(const extents<OtherExtents...>& other) noexcept
-  {
-    __storage() = other.__storage().__enable_psa_conversion();
-    return *this;
-  }
-
   //--------------------------------------------------------------------------------
 
   MDSPAN_INLINE_FUNCTION
@@ -326,6 +308,7 @@ public:
     );
   }
 
+#ifndef MDSPAN_HAS_CXX_20
   template<size_t... RHS>
   MDSPAN_INLINE_FUNCTION
   friend constexpr bool operator!=(extents const& lhs, extents<RHS...> const& rhs) noexcept {
@@ -334,6 +317,7 @@ public:
       make_index_sequence<sizeof...(RHS)>{}
     );
   }
+#endif
 
 public:  // (but not really)
 

@@ -117,13 +117,13 @@ struct layout_right {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
         /* requires */ (
-        _MDSPAN_TRAIT(is_assignable, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
       )
     )
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping& operator=(mapping<OtherExtents> const& other) noexcept
     {
-      this->base_t::__extents() = other.extents();
+      this->base_t::__extents() = Extents(other.extents());
       return *this;
     }
     //--------------------------------------------------------------------------------
