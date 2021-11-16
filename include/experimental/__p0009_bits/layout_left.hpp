@@ -129,6 +129,26 @@ struct layout_left {
     { }
 
     MDSPAN_TEMPLATE_REQUIRES(
+      class OtherMapping,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_stride) &&
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) 
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((Extents::rank()!=0)) // needs two () due to comma
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(OtherMapping const& other) // NOLINT(google-explicit-constructor)
+      :__extents(other.extents())
+    {
+       size_t stride = 1;
+       for(size_type r=0; r<__extents.rank(); r++) {
+         if(stride != other.stride(r))
+           throw(std::runtime_error("Assigning layout_stride to layout_left with invalid strides."));
+         stride *= __extents.extent(r);
+       }
+    }
+
+    MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
         _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
