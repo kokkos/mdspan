@@ -151,12 +151,59 @@ struct TestExtentsCompatCtors<std::tuple<
   static constexpr bool implicit_exts1_to_exts2 = ImplicitExts1ToExts2;
   static constexpr bool implicit_exts2_to_exts1 = ImplicitExts2ToExts1;
 
+  // Idx starts at rank()
+  template<class Exts, size_t Idx, bool construct_all, bool Static>
+  struct make_extents;
+
+  // Construct all extents - doesn't matter if idx is static or not
+  template<class Exts, size_t Idx, bool Static>
+  struct make_extents<Exts,Idx,true,Static>
+  {
+    template<class ... SizeTypes>
+    static Exts construct(SizeTypes...sizes) {
+      return make_extents<Exts, Idx-1,true,Static>::construct(Idx*5, sizes...);
+    }
+  };
+
+  // Construct dynamic extents - opnly add a parameter if the current index is not static
+  template<class Exts, size_t Idx>
+  struct make_extents<Exts,Idx,false,false>
+  {
+    template<class ... SizeTypes>
+    static Exts construct(SizeTypes...sizes) {
+      return make_extents<Exts, Idx-1,false,(Idx>1?Exts::static_extent(Idx-2)!=stdex::dynamic_extent:true)>::construct(Idx*5, sizes...);
+    }
+  };
+  template<class Exts, size_t Idx>
+  struct make_extents<Exts,Idx,false,true>
+  {
+    template<class ... SizeTypes>
+    static Exts construct(SizeTypes...sizes) {
+      return make_extents<Exts, Idx-1,false,(Idx>1?Exts::static_extent(Idx-2)!=stdex::dynamic_extent:true)>::construct(sizes...);
+    }
+  };
+
+  // End case
+  template<class Exts>
+  struct make_extents<Exts,0,false,true> {
+    template<class ... SizeTypes>
+    static Exts construct(SizeTypes...sizes) {
+       return Exts{sizes...};
+    }
+  };
+  template<class Exts>
+  struct make_extents<Exts,0,true,true> {
+    template<class ... SizeTypes>
+    static Exts construct(SizeTypes...sizes) {
+       return Exts{sizes...};
+    }
+  };
 };
 
 using compatible_extents_test_types =
   ::testing::Types<
-    std::tuple<_exts<stdex::dynamic_extent>, _sizes<10>, _exts<10>, _sizes<>, _BoolPairDeducer<false,true>>,
-    std::tuple<_exts<10>, _sizes<>, _exts<stdex::dynamic_extent>, _sizes<10>, _BoolPairDeducer<true,false>>,
+    std::tuple<_exts<stdex::dynamic_extent>, _sizes<5>, _exts<5>, _sizes<>, _BoolPairDeducer<false,true>>,
+    std::tuple<_exts<5>, _sizes<>, _exts<stdex::dynamic_extent>, _sizes<5>, _BoolPairDeducer<true,false>>,
     //--------------------
     std::tuple<_exts<stdex::dynamic_extent, 10>, _sizes<5>, _exts<5, stdex::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, false>>,
     std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, true>>,
@@ -241,6 +288,80 @@ TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_conv
   ASSERT_EQ(e.rank_dynamic(), 2);
   ASSERT_EQ(e.extent(0), 2);
   ASSERT_EQ(e.extent(1), 2);
+}
+
+TYPED_TEST(TestExtentsCompatCtors, construct_from_dynamic_sizes) {
+  using e1_t = TestFixture::extents_type1;
+  constexpr bool e1_last_ext_static = e1_t::rank()>0?e1_t::static_extent(e1_t::rank()-1)!=stdex::dynamic_extent:true;
+  e1_t e1 = TestFixture::template make_extents<e1_t,e1_t::rank(),false,e1_last_ext_static>::construct();
+  for(int r=0; r<e1.rank(); r++)
+    ASSERT_EQ(e1.extent(r), (r+1)*5);
+
+  using e2_t = TestFixture::extents_type2;
+  constexpr bool e2_last_ext_static = e2_t::rank()>0?e2_t::static_extent(e2_t::rank()-1)!=stdex::dynamic_extent:true;
+  e2_t e2 = TestFixture::template make_extents<e2_t,e2_t::rank(),false,e2_last_ext_static>::construct();
+  for(int r=0; r<e2.rank(); r++)
+    ASSERT_EQ(e2.extent(r), (r+1)*5);
+}
+
+TYPED_TEST(TestExtentsCompatCtors, construct_from_all_sizes) {
+  using e1_t = TestFixture::extents_type1;
+  e1_t e1 = TestFixture::template make_extents<e1_t,e1_t::rank(),true,true>::construct();
+  for(int r=0; r<e1.rank(); r++)
+    ASSERT_EQ(e1.extent(r), (r+1)*5);
+
+  using e2_t = TestFixture::extents_type2;
+  e2_t e2 = TestFixture::template make_extents<e2_t,e1_t::rank(),true,true>::construct();
+  for(int r=0; r<e2.rank(); r++)
+    ASSERT_EQ(e2.extent(r), (r+1)*5);
+}
+
+TYPED_TEST(TestExtentsCompatCtors, construct_from_dynamic_array) {
+  using e1_t = TestFixture::extents_type1;
+  std::array<int, e1_t::rank_dynamic()> ext1_array_dynamic;
+
+  int dyn_idx = 0;
+  for(int r=0; r<e1_t::rank(); r++) {
+    if(e1_t::static_extent(r)==stdex::dynamic_extent) {
+      ext1_array_dynamic[dyn_idx] = (r+1)*5;
+      dyn_idx++;
+    }
+  }
+  e1_t e1(ext1_array_dynamic);
+  for(int r=0; r<e1.rank(); r++)
+    ASSERT_EQ(e1.extent(r), (r+1)*5);
+
+  using e2_t = TestFixture::extents_type2;
+  std::array<int, e2_t::rank_dynamic()> ext2_array_dynamic;
+
+  dyn_idx = 0;
+  for(int r=0; r<e2_t::rank(); r++) {
+    if(e2_t::static_extent(r)==stdex::dynamic_extent) {
+      ext2_array_dynamic[dyn_idx] = (r+1)*5;
+      dyn_idx++;
+    }
+  }
+  e2_t e2(ext2_array_dynamic);
+  for(int r=0; r<e2.rank(); r++)
+    ASSERT_EQ(e2.extent(r), (r+1)*5);
+}
+
+TYPED_TEST(TestExtentsCompatCtors, construct_from_all_array) {
+  using e1_t = TestFixture::extents_type1;
+  std::array<int, e1_t::rank()> ext1_array_all;
+
+  for(int r=0; r<e1_t::rank(); r++) ext1_array_all[r] = (r+1)*5;
+  e1_t e1(ext1_array_all);
+  for(int r=0; r<e1.rank(); r++)
+    ASSERT_EQ(e1.extent(r), (r+1)*5);
+
+  using e2_t = TestFixture::extents_type2;
+  std::array<int, e2_t::rank()> ext2_array_all;
+
+  for(int r=0; r<e2_t::rank(); r++) ext2_array_all[r] = (r+1)*5;
+  e2_t e2(ext2_array_all);
+  for(int r=0; r<e2.rank(); r++)
+    ASSERT_EQ(e2.extent(r), (r+1)*5);
 }
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
