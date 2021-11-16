@@ -44,8 +44,8 @@
 #pragma once
 
 #include "macros.hpp"
-#include "fixed_layout_impl.hpp"
 #include "trait_backports.hpp"
+#include "extents.hpp"
 
 namespace std {
 namespace experimental {
@@ -181,7 +181,7 @@ struct layout_left {
     }
 
 private:
-   Extents __extents{};
+   _MDSPAN_NO_UNIQUE_ADDRESS Extents __extents{};
 
   };
 };
