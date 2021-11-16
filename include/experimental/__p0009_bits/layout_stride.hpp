@@ -44,7 +44,6 @@
 #pragma once
 
 #include "macros.hpp"
-#include "fixed_layout_impl.hpp"
 #include "static_array.hpp"
 #include "extents.hpp"
 #include "trait_backports.hpp"
