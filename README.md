@@ -36,7 +36,15 @@ Caveats
 
 This implementation is fully conforming with a few exceptions (most of which are extensions):
 
-- the `layout_stride` mapping comparison operators work as expected, rather than the (typo) specification in the proposal
+### All Standards
+- implements `operator()` not `operator[]`
+
+### C++17 and C++14
+- the conditional explicit markup is missing, making certain constructors implicit
+  - most notably you can implicitly convert from dynamic extent to static extent, which you can't in C++20 mode
+
+### C++14
+- deduction guides don't exist
 
 Acknowledgements
 ================
