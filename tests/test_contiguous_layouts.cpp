@@ -166,3 +166,85 @@ TYPED_TEST(TestLayout3D, mapping_works) {
 TYPED_TEST(TestLayout3D, required_span_size_works) {
   ASSERT_EQ(this->map.required_span_size(), 3*4*5);
 }
+
+template<bool val>
+struct bool_wrapper {
+  static constexpr bool values = val;
+};
+template<class Layout1, class Layout2, class Extents1, class Extents2, bool Implicit, size_t ... AllSizes>
+using test_layout_conversion =
+  std::tuple<Layout1, Layout2, Extents1, Extents2,
+             std::integer_sequence<size_t, AllSizes...>,
+             bool_wrapper<Implicit>>;
+
+
+using layout_conversion_test_types =
+  ::testing::Types<
+     test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,dyn>,             stdex::extents<5,dyn>,           true, 5,0> // intentional 0 here to test degenerated
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,10>,              stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5,dyn>,               stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5,dyn>,               stdex::extents<5,dyn>,           true, 5,10>
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,10,15,dyn,25>,    stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,dyn>,             stdex::extents<5,dyn>,           true, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,10>,              stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5,dyn>,               stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5,dyn>,               stdex::extents<5,dyn>,           true, 5,10>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,10,15,dyn,25>,    stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+  >;
+
+template<class T> struct TestLayoutConversion;
+
+template<class Layout1, class Layout2, class Extents1, class Extents2, bool Implicit, size_t ... AllSizes>
+struct TestLayoutConversion<
+  std::tuple<Layout1,
+             Layout2,
+             Extents1,
+             Extents2,
+             std::integer_sequence<size_t, AllSizes...>,
+             bool_wrapper<Implicit>>>  : public ::testing::Test {
+  static constexpr bool implicit = Implicit;
+  using layout_1_t = Layout1;
+  using exts_1_t = Extents1;
+  using map_1_t = Layout1::template mapping<exts_1_t>;
+  using layout_2_t = Layout2;
+  using exts_2_t = Extents2;
+  using map_2_t = Layout2::template mapping<exts_2_t>;
+  exts_1_t exts1 { AllSizes... };
+  exts_2_t exts2 { AllSizes... };
+
+  map_1_t implicit_conv(map_1_t map) const {
+    return map;
+  }
+};
+
+TYPED_TEST_SUITE(TestLayoutConversion, layout_conversion_test_types);
+
+TYPED_TEST(TestLayoutConversion, implicit_conversion) {
+  typename TestFixture::map_2_t map2(this->exts2);
+  typename TestFixture::map_1_t map1;
+  static_assert(this->implicit==std::is_convertible<typename TestFixture::exts_2_t, typename TestFixture::exts_1_t>::value);
+  #ifdef MDSPAN_HAS_CXX_17
+  if constexpr(this->implicit)
+    map1 = this->implicit_conv(map2);
+  else
+  #endif
+    map1 = typename TestFixture::map_1_t(map2);
+
+  for(int r=0; r<this->exts1.rank(); r++) {
+    ASSERT_EQ(map1.extents().extent(r), map2.extents().extent(r));
+    ASSERT_EQ(map1.stride(r), map2.stride(r));
+  }
+}
+
