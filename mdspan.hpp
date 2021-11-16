@@ -3270,6 +3270,7 @@ namespace std {
 namespace experimental {
 
 //==============================================================================
+struct layout_left;
 
 struct layout_right {
   template <class Extents>
@@ -3336,6 +3337,20 @@ struct layout_right {
     { }
 
     MDSPAN_TEMPLATE_REQUIRES(
+      class OtherMapping,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_left) &&
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
+        (Extents::rank() <= 1)
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<typename OtherMapping::extents_type, Extents>::value)) // needs two () due to comma
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(OtherMapping const& other) noexcept // NOLINT(google-explicit-constructor)
+      :__extents(other.extents())
+    { }
+
+    MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
         _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
@@ -3360,13 +3375,13 @@ struct layout_right {
 
     constexpr size_type stride(size_t i) const noexcept {
       size_type value = 1;
-      for(int r=Extents::rank()-1; r>i; r--) value*=__extents.extent(r);
+      for(size_type r=Extents::rank()-1; r>i; r--) value*=__extents.extent(r);
       return value;
     }
 
     constexpr size_type required_span_size() const noexcept {
       size_type value = 1;
-      for(int r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
+      for(size_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
       return value;
     }
 
@@ -3751,6 +3766,7 @@ namespace std {
 namespace experimental {
 
 //==============================================================================
+struct layout_right;
 
 struct layout_left {
   template <class Extents>
@@ -3814,6 +3830,20 @@ struct layout_left {
     { }
 
     MDSPAN_TEMPLATE_REQUIRES(
+      class OtherMapping,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_right) &&
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
+        (Extents::rank() <= 1)
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<typename OtherMapping::extents_type, Extents>::value)) // needs two () due to comma
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(OtherMapping const& other) noexcept // NOLINT(google-explicit-constructor)
+      :__extents(other.extents())
+    { }
+
+    MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
         _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
@@ -3838,19 +3868,20 @@ struct layout_left {
 
     constexpr size_type stride(size_t i) const noexcept {
       size_type value = 1;
-      for(int r=0; r<i; r++) value*=__extents.extent(r);
+      for(size_type r=0; r<i; r++) value*=__extents.extent(r);
       return value;
     }
 
     constexpr size_type required_span_size() const noexcept {
       size_type value = 1;
-      for(int r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
+      for(size_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
       return value;
     }
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
+
     MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
     MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept { return true; }
     MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
