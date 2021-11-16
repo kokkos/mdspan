@@ -180,6 +180,7 @@ using test_layout_conversion =
 
 using layout_conversion_test_types =
   ::testing::Types<
+    // Left <=> Left conversion
      test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            true, 5,10>
@@ -191,6 +192,7 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+    // Right <=> Right conversion
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            true, 5,10>
@@ -202,6 +204,15 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+    // Left <=> Right conversion
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
+    ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
+    ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
+    ,test_layout_conversion<stdex::layout_left,  stdex::layout_left , stdex::extents<>,                    stdex::extents<>,                true>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<>,                    stdex::extents<>,                true>
+    ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<>,                    stdex::extents<>,                true>
+
   >;
 
 template<class T> struct TestLayoutConversion;
