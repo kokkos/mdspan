@@ -260,7 +260,7 @@ struct __assign_op_slice_handler<
          __partially_static_sizes<_Strides...>/* intentional space here to work around ICC bug*/> {
     return {
       __partially_static_sizes<_Offsets..., dynamic_extent>(
-        __construct_partially_static_array_from_all_sizes_tag,
+        __construct_psa_from_all_exts_values_tag,
         __offsets.template __get_n<_OffsetIdxs>()..., __slice.slice),
       ::std::move(__exts),
       ::std::move(__strides)
@@ -279,13 +279,13 @@ struct __assign_op_slice_handler<
          __partially_static_sizes<_Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
     return {
       __partially_static_sizes<_Offsets..., 0>(
-        __construct_partially_static_array_from_all_sizes_tag,
+        __construct_psa_from_all_exts_values_tag,
         __offsets.template __get_n<_OffsetIdxs>()..., size_t(0)),
       __partially_static_sizes<_Exts..., _OldStaticExtent>(
-        __construct_partially_static_array_from_all_sizes_tag,
+        __construct_psa_from_all_exts_values_tag,
         __exts.template __get_n<_ExtIdxs>()..., __slice.old_extent),
       __partially_static_sizes<_Strides..., _OldStaticStride>(
-        __construct_partially_static_array_from_all_sizes_tag,
+        __construct_psa_from_all_exts_values_tag,
         __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
     };
   }
@@ -302,13 +302,13 @@ struct __assign_op_slice_handler<
          __partially_static_sizes<_Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
     return {
       __partially_static_sizes<_Offsets..., dynamic_extent>(
-        __construct_partially_static_array_from_all_sizes_tag,
+        __construct_psa_from_all_exts_values_tag,
         __offsets.template __get_n<_OffsetIdxs>()..., ::std::get<0>(__slice.slice)),
       __partially_static_sizes<_Exts..., dynamic_extent>(
-        __construct_partially_static_array_from_all_sizes_tag,
+        __construct_psa_from_all_exts_values_tag,
         __exts.template __get_n<_ExtIdxs>()..., ::std::get<1>(__slice.slice) - ::std::get<0>(__slice.slice)),
       __partially_static_sizes<_Strides..., _OldStaticStride>(
-        __construct_partially_static_array_from_all_sizes_tag,
+        __construct_psa_from_all_exts_values_tag,
         __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
     };
   }

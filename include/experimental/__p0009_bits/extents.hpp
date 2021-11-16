@@ -228,8 +228,8 @@ public:
     : __base_t(__base_t{typename __base_t::__stored_type{
 #endif
       std::conditional_t<sizeof...(Integral)==rank_dynamic(),
-        detail::__construct_partially_static_array_from_dynamic_sizes_tag_t,
-        detail::__construct_partially_static_array_from_all_sizes_tag_t>(),
+        detail::__construct_psa_from_dynamic_exts_values_tag_t,
+        detail::__construct_psa_from_all_exts_values_tag_t>(),
         static_cast<size_t>(exts)...
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       }
@@ -255,8 +255,8 @@ public:
     : __base_t(__base_t{typename __base_t::__stored_type{
 #endif
       std::conditional_t<N==rank_dynamic(),
-        detail::__construct_psa_from_dynamic_values_tag_t<0>,
-        detail::__construct_psa_from_all_values_tag_t>(),
+        detail::__construct_psa_from_dynamic_exts_array_tag_t<0>,
+        detail::__construct_psa_from_all_exts_array_tag_t>(),
         std::array<SizeType,N>{exts}
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       }
