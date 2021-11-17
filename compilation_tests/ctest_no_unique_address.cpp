@@ -92,11 +92,13 @@ MDSPAN_STATIC_TEST(
   >) == sizeof(size_t)
 );
 
+#if defined(__GNUC__) && (__GNUC__>8)
 MDSPAN_STATIC_TEST(
   std::is_empty<stdex::layout_right::template mapping<
     stdex::extents<42, 123, 73>
   >>::value
 );
+#endif
 
 MDSPAN_STATIC_TEST(
   sizeof(stdex::layout_stride::template mapping<

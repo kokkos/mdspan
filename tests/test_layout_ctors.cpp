@@ -180,7 +180,7 @@ TYPED_TEST(TestLayoutRightCompatCtors, compatible_construct_2) {
 }
 
 TYPED_TEST(TestLayoutLeftCompatCtors, compatible_assign_1) {
-  #ifdef MDSPAN_HAS_CXX_17
+  #if MDSPAN_HAS_CXX_17
   if constexpr (std::is_convertible_v<typename TestFixture::mapping_type2, typename TestFixture::mapping_type1>)
     this->map1 = this->map2;
   else
@@ -190,7 +190,7 @@ TYPED_TEST(TestLayoutLeftCompatCtors, compatible_assign_1) {
 }
 
 TYPED_TEST(TestLayoutRightCompatCtors, compatible_assign_1) {
-  #ifdef MDSPAN_HAS_CXX_17
+  #if MDSPAN_HAS_CXX_17
   if constexpr (std::is_convertible_v<typename TestFixture::mapping_type2, typename TestFixture::mapping_type1>)
     this->map1 = this->map2;
   else
@@ -200,7 +200,7 @@ TYPED_TEST(TestLayoutRightCompatCtors, compatible_assign_1) {
 }
 
 TYPED_TEST(TestLayoutLeftCompatCtors, compatible_assign_2) {
-  #ifdef MDSPAN_HAS_CXX_17
+  #if MDSPAN_HAS_CXX_17
   if constexpr (std::is_convertible_v<typename TestFixture::mapping_type1, typename TestFixture::mapping_type2>)
     this->map2 = this->map1;
   else
@@ -210,7 +210,7 @@ TYPED_TEST(TestLayoutLeftCompatCtors, compatible_assign_2) {
 }
 
 TYPED_TEST(TestLayoutRightCompatCtors, compatible_assign_2) {
-  #ifdef MDSPAN_HAS_CXX_17
+  #if MDSPAN_HAS_CXX_17
   if constexpr (std::is_convertible_v<typename TestFixture::mapping_type1, typename TestFixture::mapping_type2>)
     this->map2 = this->map1;
   else

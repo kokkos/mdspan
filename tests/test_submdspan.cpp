@@ -96,7 +96,7 @@ TEST(TestSubmdspanLayoutRightStaticSizedPairs, test_submdspan_layout_right_stati
   std::vector<int> d(2 * 3 * 4, 0);
   stdex::mdspan<int, stdex::extents<2, 3, 4>> m(d.data());
   m(1, 1, 1) = 42;
-  auto sub0 = stdex::submdspan(m, std::pair{1, 2}, std::pair{1, 3}, std::pair{1, 4});
+  auto sub0 = stdex::submdspan(m, std::pair<int,int>{1, 2}, std::pair<int,int>{1, 3}, std::pair<int,int>{1, 4});
   ASSERT_EQ(sub0.rank(),         3);
   ASSERT_EQ(sub0.rank_dynamic(), 3);
   ASSERT_EQ(sub0.extent(0),      1);

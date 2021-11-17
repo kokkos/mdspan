@@ -297,10 +297,10 @@ struct TestLayoutConversion<
   static constexpr bool implicit = Implicit;
   using layout_1_t = Layout1;
   using exts_1_t = Extents1;
-  using map_1_t = Layout1::template mapping<exts_1_t>;
+  using map_1_t = typename Layout1::template mapping<exts_1_t>;
   using layout_2_t = Layout2;
   using exts_2_t = Extents2;
-  using map_2_t = Layout2::template mapping<exts_2_t>;
+  using map_2_t = typename Layout2::template mapping<exts_2_t>;
   exts_1_t exts1 { AllSizes... };
   exts_2_t exts2 { AllSizes... };
 
@@ -358,7 +358,7 @@ TYPED_TEST(TestLayoutConversion, implicit_conversion) {
   );
   static_assert(std::is_convertible<typename TestFixture::map_2_t, typename TestFixture::map_1_t>::value ==
                 this->implicit);
-  #ifdef MDSPAN_HAS_CXX_17
+  #if MDSPAN_HAS_CXX_17
   if constexpr(this->implicit)
     map1 = this->implicit_conv(map2);
   else
