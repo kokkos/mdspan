@@ -370,12 +370,12 @@ submdspan_single_element_stress_test_impl_2(
   auto ss_dyn = stdex::submdspan(s_dyn, _repeated_ptrdiff_t<0, Idxs>...);
   auto ss_all = stdex::submdspan(s, _repeated_with_idxs_t<stdex::full_extent_t, Idxs>{}...);
   auto ss_all_dyn = stdex::submdspan(s_dyn, _repeated_with_idxs_t<stdex::full_extent_t, Idxs>{}...);
-  auto val = __MDSPAN_OP(ss_all, _repeated_ptrdiff_t<0, Idxs>...);
-  auto val_dyn = __MDSPAN_OP(ss_all_dyn, _repeated_ptrdiff_t<0, Idxs>...);
+  auto val = __MDSPAN_OP(ss_all, (_repeated_ptrdiff_t<0, Idxs>...));
+  auto val_dyn = __MDSPAN_OP(ss_all_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
   auto ss_pair = stdex::submdspan(s, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
   auto ss_pair_dyn = stdex::submdspan(s_dyn, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
-  auto val_pair = __MDSPAN_OP(ss_pair, _repeated_ptrdiff_t<0, Idxs>...);
-  auto val_pair_dyn = __MDSPAN_OP(ss_pair_dyn, _repeated_ptrdiff_t<0, Idxs>...);
+  auto val_pair = __MDSPAN_OP(ss_pair, (_repeated_ptrdiff_t<0, Idxs>...));
+  auto val_pair_dyn = __MDSPAN_OP(ss_pair_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
   constexpr_assert_equal(42, ss());
   constexpr_assert_equal(42, ss_dyn());
   constexpr_assert_equal(42, val);
