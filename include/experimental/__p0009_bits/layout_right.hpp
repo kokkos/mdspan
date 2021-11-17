@@ -46,7 +46,7 @@
 #include "macros.hpp"
 #include "trait_backports.hpp"
 #include "extents.hpp"
-#include "stdexcept"
+#include <stdexcept>
 
 namespace std {
 namespace experimental {
@@ -139,7 +139,7 @@ struct layout_right {
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping)
       )
     )
-    MDSPAN_CONDITIONAL_EXPLICIT((Extents::rank()!=0)) // needs two () due to comma
+    MDSPAN_CONDITIONAL_EXPLICIT((Extents::rank()!=0))
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(OtherMapping const& other) // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
@@ -147,7 +147,7 @@ struct layout_right {
        size_t stride = 1;
        for(size_type r=__extents.rank(); r>0; r--) {
          if(stride != other.stride(r-1))
-           throw(std::runtime_error("Assigning layout_stride to layout_right with invalid strides."));
+           throw std::runtime_error("Assigning layout_stride to layout_right with invalid strides.");
          stride *= __extents.extent(r-1);
        }
     }
