@@ -340,6 +340,7 @@ TYPED_TEST_SUITE(TestLayoutConversion, layout_conversion_test_types);
 TYPED_TEST(TestLayoutConversion, implicit_conversion) {
   typename TestFixture::map_2_t map2 = this->create_map2(this->exts2);
   typename TestFixture::map_1_t map1;
+  #if MDSPAN_HAS_CXX_20
   static_assert(this->implicit ==
    (
     (
@@ -358,7 +359,6 @@ TYPED_TEST(TestLayoutConversion, implicit_conversion) {
   );
   static_assert(std::is_convertible<typename TestFixture::map_2_t, typename TestFixture::map_1_t>::value ==
                 this->implicit);
-  #if MDSPAN_HAS_CXX_17
   if constexpr(this->implicit)
     map1 = this->implicit_conv(map2);
   else
