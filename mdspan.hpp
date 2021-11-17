@@ -17,6 +17,7 @@
 #include <array>
 #include <array>
 #include <cstddef>
+#include <stdexcept>
 #include <algorithm>
 #include <numeric>
 #include <array>
@@ -3271,6 +3272,7 @@ namespace experimental {
 
 //==============================================================================
 struct layout_left;
+struct layout_stride;
 
 struct layout_right {
   template <class Extents>
@@ -3349,6 +3351,25 @@ struct layout_right {
     mapping(OtherMapping const& other) noexcept // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     { }
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherMapping,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_stride) &&
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping)
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((Extents::rank()!=0))
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(OtherMapping const& other) // NOLINT(google-explicit-constructor)
+      :__extents(other.extents())
+    {
+       size_t stride = 1;
+       for(size_type r=__extents.rank(); r>0; r--) {
+         if(stride != other.stride(r-1))
+           throw std::runtime_error("Assigning layout_stride to layout_right with invalid strides.");
+         stride *= __extents.extent(r-1);
+       }
+    }
 
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
@@ -3716,210 +3737,6 @@ mdspan(const typename AccessorType::pointer, const MappingType&, const AccessorT
 } // end namespace experimental
 } // end namespace std
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/mdspan.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
-/*
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 2.0
-//              Copyright (2019) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
-//@HEADER
-*/
-
-
-
-namespace std {
-namespace experimental {
-
-//==============================================================================
-struct layout_right;
-
-struct layout_left {
-  template <class Extents>
-  class mapping {
-  private:
-
-    static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_left::mapping must be instantiated with a specialization of std::experimental::extents.");
-
-    template <class>
-    friend class mapping;
-
-    // i0+(i1 + E(1)*(i2 + E(2)*i3))
-    template <size_t r, size_t Rank>
-    struct __rank_count {};
-
-    template <size_t r, size_t Rank, class I, class... Indices>
-    constexpr size_t __compute_offset(
-      __rank_count<r,Rank>, const I& i, Indices... idx) const {
-      return __compute_offset(__rank_count<r+1,Rank>(), idx...) *
-                 __extents.template __extent<r>() + i;
-    }
-
-    template<class I>
-    constexpr size_t __compute_offset(
-      __rank_count<Extents::rank()-1,Extents::rank()>, const I& i) const {
-      return i;
-    }
-
-    constexpr size_t __compute_offset(__rank_count<0,0>) const { return 0; }
-
-  public:
-
-    //--------------------------------------------------------------------------------
-
-    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping() noexcept = default;
-    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping const&) noexcept = default;
-    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping&&) noexcept = default;
-    MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping const&) noexcept = default;
-    MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping&&) noexcept = default;
-    MDSPAN_INLINE_FUNCTION_DEFAULTED ~mapping() noexcept = default;
-
-
-    using layout_type = layout_left;
-    using extents_type = Extents;
-    using size_type = typename Extents::size_type;
-
-    constexpr mapping(Extents const& __exts) noexcept
-      :__extents(__exts)
-    { }
-
-    MDSPAN_TEMPLATE_REQUIRES(
-      class OtherExtents,
-      /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, OtherExtents, Extents)
-      )
-    )
-    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping(mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
-    { }
-
-    MDSPAN_TEMPLATE_REQUIRES(
-      class OtherMapping,
-      /* requires */ (
-        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_right) &&
-        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
-        (Extents::rank() <= 1)
-      )
-    )
-    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<typename OtherMapping::extents_type, Extents>::value)) // needs two () due to comma
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping(OtherMapping const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
-    { }
-
-    MDSPAN_TEMPLATE_REQUIRES(
-      class OtherExtents,
-      /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
-      )
-    )
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping& operator=(mapping<OtherExtents> const& other) noexcept
-    {
-      __extents = Extents(other.extents());
-      return *this;
-    }
-    //--------------------------------------------------------------------------------
-
-    template <class... Indices>
-    constexpr size_type operator()(Indices... idxs) const noexcept {
-      return __compute_offset(__rank_count<0, Extents::rank()>(), idxs...);
-    }
-
-    constexpr Extents extents() const noexcept {
-      return __extents;
-    }
-
-    constexpr size_type stride(size_t i) const noexcept {
-      size_type value = 1;
-      for(size_type r=0; r<i; r++) value*=__extents.extent(r);
-      return value;
-    }
-
-    constexpr size_type required_span_size() const noexcept {
-      size_type value = 1;
-      for(size_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
-      return value;
-    }
-
-    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
-    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
-    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
-
-    MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
-    MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept { return true; }
-    MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
-
-    template<class OtherExtents>
-    MDSPAN_INLINE_FUNCTION
-    friend constexpr bool operator==(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
-      return lhs.extents() == rhs.extents();
-    }
-
-    // In C++ 20 the not equal exists if equal is found
-#ifndef MDSPAN_HAS_CXX20
-    template<class OtherExtents>
-    MDSPAN_INLINE_FUNCTION
-    friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
-      return lhs.extents() != rhs.extents();
-    }
-#endif
-
-    // Not really public, but currently needed to implement fully constexpr useable submdspan:
-    template<size_t N, size_t ... E, size_t ... Idx>
-    constexpr size_type __get_stride(std::experimental::extents<E...>,integer_sequence<size_t, Idx...>) const {
-      return _MDSPAN_FOLD_TIMES_RIGHT((Idx<N? __extents.template __extent<Idx>():1),1);
-    }
-    template<size_t N>
-    constexpr size_type __stride() const noexcept {
-      return __get_stride<N>(__extents, make_index_sequence<__extents.rank()>());
-    }
-
-private:
-   _MDSPAN_NO_UNIQUE_ADDRESS Extents __extents{};
-
-  };
-};
-
-} // end namespace experimental
-} // end namespace std
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_stride.hpp
 /*
 //@HEADER
@@ -4060,6 +3877,11 @@ struct layout_stride {
         // assumes no negative strides; not sure if I'm allowed to assume that or not
         return __impl::_call_op_impl(self, (self.extents().template __extent<Idxs>() - 1)...) + 1;
       }
+
+      template<class OtherMapping>
+      static constexpr __strides_storage_t fill_strides(const OtherMapping& map) {
+        return __strides_storage_t(map.stride(Idxs)...);
+      }
     };
 
     // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
@@ -4167,6 +3989,31 @@ struct layout_stride {
 #endif
     { }
 
+
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherMapping,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
+        OtherMapping::is_always_unique() &&
+        OtherMapping::is_always_strided()
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<typename OtherMapping::extents_type, Extents>::value)) // needs two () due to comma
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(OtherMapping const& other) noexcept // NOLINT(google-explicit-constructor)
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __members{
+#else
+      : __base_t(__base_t{__member_pair_t(
+#endif
+          other.extents(), __strides_storage_t(__impl::fill_strides(other))
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+    {}
+
     //--------------------------------------------------------------------------------
 
     MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept {
@@ -4180,6 +4027,7 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
       // TODO @testing test layout_stride is_contiguous()
+
       auto rem = array<size_t, Extents::rank()>{ };
       std::iota(rem.begin(), rem.end(), size_t(0));
       auto next_idx_iter = std::find_if(
@@ -4198,7 +4046,7 @@ struct layout_stride {
             rem.begin(), rem.end(),
             [&](size_t i) {
               return i != removed_index_sentinel
-                && this->stride(i) * this->extents().extent(i) == prev_stride_times_prev_extent;
+                && this->extents().extent(i) == prev_stride_times_prev_extent;
             }
           );
           if (next_idx_iter != rem.end()) {
@@ -4273,6 +4121,230 @@ struct layout_stride {
 } // end namespace experimental
 } // end namespace std
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_stride.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
+/*
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 2.0
+//              Copyright (2019) Sandia Corporation
+//
+// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+// the U.S. Government retains certain rights in this software.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+// 1. Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the Corporation nor the names of the
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
+// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
+//
+// ************************************************************************
+//@HEADER
+*/
+
+
+
+namespace std {
+namespace experimental {
+
+//==============================================================================
+struct layout_right;
+
+struct layout_left {
+  template <class Extents>
+  class mapping {
+  private:
+
+    static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_left::mapping must be instantiated with a specialization of std::experimental::extents.");
+
+    template <class>
+    friend class mapping;
+
+    // i0+(i1 + E(1)*(i2 + E(2)*i3))
+    template <size_t r, size_t Rank>
+    struct __rank_count {};
+
+    template <size_t r, size_t Rank, class I, class... Indices>
+    constexpr size_t __compute_offset(
+      __rank_count<r,Rank>, const I& i, Indices... idx) const {
+      return __compute_offset(__rank_count<r+1,Rank>(), idx...) *
+                 __extents.template __extent<r>() + i;
+    }
+
+    template<class I>
+    constexpr size_t __compute_offset(
+      __rank_count<Extents::rank()-1,Extents::rank()>, const I& i) const {
+      return i;
+    }
+
+    constexpr size_t __compute_offset(__rank_count<0,0>) const { return 0; }
+
+  public:
+
+    //--------------------------------------------------------------------------------
+
+    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping() noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping const&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping&&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping const&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping&&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED ~mapping() noexcept = default;
+
+
+    using layout_type = layout_left;
+    using extents_type = Extents;
+    using size_type = typename Extents::size_type;
+
+    constexpr mapping(Extents const& __exts) noexcept
+      :__extents(__exts)
+    { }
+
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherExtents,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, OtherExtents, Extents)
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
+      :__extents(other.extents())
+    { }
+
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherMapping,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_right) &&
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
+        (Extents::rank() <= 1)
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<typename OtherMapping::extents_type, Extents>::value)) // needs two () due to comma
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(OtherMapping const& other) noexcept // NOLINT(google-explicit-constructor)
+      :__extents(other.extents())
+    { }
+
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherMapping,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_stride) &&
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) 
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((Extents::rank()!=0))
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(OtherMapping const& other) // NOLINT(google-explicit-constructor)
+      :__extents(other.extents())
+    {
+       size_t stride = 1;
+       for(size_type r=0; r<__extents.rank(); r++) {
+         if(stride != other.stride(r))
+           throw std::runtime_error("Assigning layout_stride to layout_left with invalid strides.");
+         stride *= __extents.extent(r);
+       }
+    }
+
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherExtents,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
+      )
+    )
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping& operator=(mapping<OtherExtents> const& other) noexcept
+    {
+      __extents = Extents(other.extents());
+      return *this;
+    }
+    //--------------------------------------------------------------------------------
+
+    template <class... Indices>
+    constexpr size_type operator()(Indices... idxs) const noexcept {
+      return __compute_offset(__rank_count<0, Extents::rank()>(), idxs...);
+    }
+
+    constexpr Extents extents() const noexcept {
+      return __extents;
+    }
+
+    constexpr size_type stride(size_t i) const noexcept {
+      size_type value = 1;
+      for(size_type r=0; r<i; r++) value*=__extents.extent(r);
+      return value;
+    }
+
+    constexpr size_type required_span_size() const noexcept {
+      size_type value = 1;
+      for(size_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
+      return value;
+    }
+
+    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
+    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return true; }
+    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
+
+    MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
+    MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept { return true; }
+    MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
+
+    template<class OtherExtents>
+    MDSPAN_INLINE_FUNCTION
+    friend constexpr bool operator==(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
+      return lhs.extents() == rhs.extents();
+    }
+
+    // In C++ 20 the not equal exists if equal is found
+#ifndef MDSPAN_HAS_CXX20
+    template<class OtherExtents>
+    MDSPAN_INLINE_FUNCTION
+    friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
+      return lhs.extents() != rhs.extents();
+    }
+#endif
+
+    // Not really public, but currently needed to implement fully constexpr useable submdspan:
+    template<size_t N, size_t ... E, size_t ... Idx>
+    constexpr size_type __get_stride(std::experimental::extents<E...>,integer_sequence<size_t, Idx...>) const {
+      return _MDSPAN_FOLD_TIMES_RIGHT((Idx<N? __extents.template __extent<Idx>():1),1);
+    }
+    template<size_t N>
+    constexpr size_type __stride() const noexcept {
+      return __get_stride<N>(__extents, make_index_sequence<__extents.rank()>());
+    }
+
+private:
+   _MDSPAN_NO_UNIQUE_ADDRESS Extents __extents{};
+
+  };
+};
+
+} // end namespace experimental
+} // end namespace std
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/submdspan.hpp
 /*
 //@HEADER
