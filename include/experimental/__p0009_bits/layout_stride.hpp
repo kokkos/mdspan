@@ -263,6 +263,7 @@ struct layout_stride {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherMapping,
       /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, typename OtherMapping::extents_type) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
         OtherMapping::is_always_unique() &&
         OtherMapping::is_always_strided()
@@ -377,7 +378,7 @@ struct layout_stride {
       return __impl::_eq_impl(lhs, rhs);
     }
 
-#ifdef MDSPAN_HAS_CXX20
+#if MDSPAN_HAS_CXX_20
     template<class OtherExtents>
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {

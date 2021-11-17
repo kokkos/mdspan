@@ -242,6 +242,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
+      (N == rank() || N == rank_dynamic()) &&
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
     )
   )

@@ -52,7 +52,7 @@ namespace experimental {
 
 template <class ElementType>
 struct default_accessor {
-  
+
   using offset_policy = default_accessor;
   using element_type = ElementType;
   using reference = ElementType&;
@@ -64,7 +64,7 @@ struct default_accessor {
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, typename default_accessor<OtherElementType>::pointer, pointer)
+      _MDSPAN_TRAIT(is_convertible, typename default_accessor<OtherElementType>::element_type(*)[], element_type(*)[])
     )
   )
   MDSPAN_INLINE_FUNCTION
