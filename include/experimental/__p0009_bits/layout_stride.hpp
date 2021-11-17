@@ -263,6 +263,7 @@ struct layout_stride {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherMapping,
       /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, typename OtherMapping::extents_type) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
         OtherMapping::is_always_unique() &&
         OtherMapping::is_always_strided()

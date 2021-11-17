@@ -105,7 +105,7 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
@@ -117,6 +117,7 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherMapping,
       /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, typename OtherMapping::extents_type) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_right) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
         (Extents::rank() <= 1)
@@ -131,8 +132,9 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherMapping,
       /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, typename OtherMapping::extents_type) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_stride) &&
-        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) 
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((Extents::rank()!=0))
@@ -148,18 +150,6 @@ struct layout_left {
        }
     }
 
-    MDSPAN_TEMPLATE_REQUIRES(
-      class OtherExtents,
-      /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
-      )
-    )
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping& operator=(mapping<OtherExtents> const& other) noexcept
-    {
-      __extents = Extents(other.extents());
-      return *this;
-    }
     //--------------------------------------------------------------------------------
 
     template <class... Indices>
