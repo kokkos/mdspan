@@ -57,7 +57,7 @@ TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_data_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(m(0), 42);
+  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
   ASSERT_TRUE(m.is_contiguous());
 }
 
@@ -69,7 +69,7 @@ TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(m(0), 42);
+  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
   ASSERT_TRUE(m.is_contiguous());
 }
 
@@ -81,7 +81,7 @@ TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(m(0), 42);
+  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
   ASSERT_TRUE(m.is_contiguous());
 }
 
@@ -150,7 +150,6 @@ TEST(TestMdspanCTADExtentsPack, test_mdspan_ctad_extents_pack) {
   ASSERT_TRUE(m.is_contiguous());
 }
 
-// TODO @proposal-bug We're missing a `mdspan(T*, extents)` constructor.
 TEST(TestMdspanCTADExtentsObject, test_mdspan_ctad_extents_object) {
   std::array<int, 1> d{42};
   stdex::mdspan m{d.data(), stdex::extents{64, 128}};
