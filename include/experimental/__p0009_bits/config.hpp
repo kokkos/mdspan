@@ -243,12 +243,16 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #ifndef MDSPAN_USE_BRACKET_OPERATOR
 #  if defined(__cpp_multidimensional_subscript)
 #    define MDSPAN_USE_BRACKET_OPERATOR 1
+#  else
+#    define MDSPAN_USE_BRACKET_OPERATOR 0
 #  endif
 #endif
 
 #ifndef MDSPAN_USE_PAREN_OPERATOR
 #  if !MDSPAN_USE_BRACKET_OPERATOR
 #    define MDSPAN_USE_PAREN_OPERATOR 1
+#  else
+#    define MDSPAN_USE_PAREN_OPERATOR 0
 #  endif
 #endif
 

@@ -188,7 +188,7 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.mapping], mdspan mapping domain multidimensional index to access codomain element
 
-  #ifdef MDSPAN_USE_BRACKET_OPERATOR
+  #if MDSPAN_USE_BRACKET_OPERATOR
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
@@ -216,7 +216,7 @@ public:
     return __impl::template __callop<reference>(*this, indices);
   }
 
-  #if !defined(MDSPAN_USE_BRACKET_OPERATOR)
+  #if !MDSPAN_USE_BRACKET_OPERATOR
   MDSPAN_TEMPLATE_REQUIRES(
     class Index,
     /* requires */ (
@@ -231,7 +231,7 @@ public:
   }
   #endif
 
-  #ifdef MDSPAN_USE_PAREN_OPERATOR
+  #if MDSPAN_USE_PAREN_OPERATOR
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
