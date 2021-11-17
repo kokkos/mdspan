@@ -167,21 +167,18 @@ TYPED_TEST(TestLayout3D, required_span_size_works) {
   ASSERT_EQ(this->map.required_span_size(), 3*4*5);
 }
 
-template<bool val>
-struct bool_wrapper {
-  static constexpr bool values = val;
-};
 template<class Layout1, class Layout2, class Extents1, class Extents2, bool Implicit, size_t ... AllSizes>
 using test_layout_conversion =
   std::tuple<Layout1, Layout2, Extents1, Extents2,
              std::integer_sequence<size_t, AllSizes...>,
-             bool_wrapper<Implicit>>;
+             std::integral_constant<bool, Implicit>>;
 
 
 using layout_conversion_test_types =
   ::testing::Types<
     // Left <=> Left conversion
      test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
+    ,test_layout_conversion<stdex::layout_left,  stdex::layout_left , stdex::extents<>,                    stdex::extents<>,                true>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            true, 5,10>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,dyn>,             stdex::extents<5,dyn>,           true, 5,0> // intentional 0 here to test degenerated
@@ -192,8 +189,10 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+
     // Right <=> Right conversion
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
+    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<>,                    stdex::extents<>,                true>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            true, 5,10>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,dyn>,             stdex::extents<5,dyn>,           true, 5,0> //intentional 0 to test degenerate
@@ -204,12 +203,82 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+
+    // Stride <=> Stride conversion
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<>,                    stdex::extents<>,                true>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<dyn,dyn>,             stdex::extents<5,dyn>,           true, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<dyn,10>,              stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<5,dyn>,               stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<5,dyn>,               stdex::extents<5,dyn>,           true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<dyn,10,15,dyn,25>,    stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+
+    // Right => Stride conversion
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<>,                    stdex::extents<>,                true>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<dyn,dyn>,             stdex::extents<5,dyn>,           true, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<dyn,10>,              stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<5,dyn>,               stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<5,dyn>,               stdex::extents<5,dyn>,           true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<dyn,10,15,dyn,25>,    stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+
+    // Left => Stride conversion
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<>,                    stdex::extents<>,                true>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<dyn,dyn>,             stdex::extents<5,dyn>,           true, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<dyn,10>,              stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<5,dyn>,               stdex::extents<5,10>,            true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<5,dyn>,               stdex::extents<5,dyn>,           true, 5,10>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<dyn,10,15,dyn,25>,    stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+
+    // Stride => Left conversion
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<dyn>,                 stdex::extents<5>,               false, 5>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<>,                    stdex::extents<>,                true>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            false, 5,10>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<dyn,dyn>,             stdex::extents<5,dyn>,           false, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<dyn,10>,              stdex::extents<5,10>,            false, 5,10>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<5,dyn>,               stdex::extents<5,10>,            false, 5,10>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<5,dyn>,               stdex::extents<5,dyn>,           false, 5,10>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<dyn,10,15,dyn,25>,    stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   false, 5, 10, 15, 20, 25>
+
+    // Stride => Right conversion
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<dyn>,                 stdex::extents<5>,               false, 5>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<>,                    stdex::extents<>,                true>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<dyn,dyn>,             stdex::extents<5,10>,            false, 5,10>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<dyn,dyn>,             stdex::extents<5,dyn>,           false, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<dyn,10>,              stdex::extents<5,10>,            false, 5,10>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<5,dyn>,               stdex::extents<5,10>,            false, 5,10>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<5,dyn>,               stdex::extents<5,dyn>,           false, 5,10>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<dyn,10,15,dyn,25>,    stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<dyn,dyn,dyn,dyn,dyn>, stdex::extents<5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<5,10,15,20,25>,       stdex::extents<5,10,15,20,25>,   false, 5, 10, 15, 20, 25>
+
     // Left <=> Right conversion
     ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<dyn>,                 stdex::extents<5>,               true, 5>
     ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<5>,                   stdex::extents<dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_left,  stdex::layout_left , stdex::extents<>,                    stdex::extents<>,                true>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<>,                    stdex::extents<>,                true>
     ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<>,                    stdex::extents<>,                true>
 
@@ -224,7 +293,7 @@ struct TestLayoutConversion<
              Extents1,
              Extents2,
              std::integer_sequence<size_t, AllSizes...>,
-             bool_wrapper<Implicit>>>  : public ::testing::Test {
+             std::integral_constant<bool, Implicit>>>  : public ::testing::Test {
   static constexpr bool implicit = Implicit;
   using layout_1_t = Layout1;
   using exts_1_t = Extents1;
@@ -238,14 +307,57 @@ struct TestLayoutConversion<
   map_1_t implicit_conv(map_1_t map) const {
     return map;
   }
+
+  template<class Extents>
+  static constexpr std::enable_if_t<
+    std::is_same<Extents, Extents2>::value &&
+   !std::is_same<Layout1, stdex::layout_stride>::value &&
+    std::is_same<Layout2, stdex::layout_stride>::value,
+    map_2_t> create_map2(Extents exts) {
+      return map_2_t(map_1_t(Extents1(exts)));
+  }
+
+  template<class Extents>
+  static constexpr std::enable_if_t<
+    std::is_same<Extents, Extents2>::value &&
+    std::is_same<Layout1, stdex::layout_stride>::value &&
+    std::is_same<Layout2, stdex::layout_stride>::value,
+    map_2_t> create_map2(Extents exts) {
+      return map_2_t(typename stdex::layout_left::template mapping<Extents>(exts));
+  }
+
+  template<class Extents>
+  static constexpr std::enable_if_t<
+     std::is_same<Extents,Extents2>::value &&
+    !std::is_same<Layout2,stdex::layout_stride>::value,
+    map_2_t> create_map2(Extents exts) {
+      return map_2_t(exts);
+  }
 };
 
 TYPED_TEST_SUITE(TestLayoutConversion, layout_conversion_test_types);
 
 TYPED_TEST(TestLayoutConversion, implicit_conversion) {
-  typename TestFixture::map_2_t map2(this->exts2);
+  typename TestFixture::map_2_t map2 = this->create_map2(this->exts2);
   typename TestFixture::map_1_t map1;
-  static_assert(this->implicit==std::is_convertible<typename TestFixture::exts_2_t, typename TestFixture::exts_1_t>::value);
+  static_assert(this->implicit ==
+   (
+    (
+     !std::is_same<typename TestFixture::layout_2_t, stdex::layout_stride>::value &&
+     std::is_convertible<typename TestFixture::exts_2_t, typename TestFixture::exts_1_t>::value
+    ) || (
+     std::is_same<typename TestFixture::layout_2_t, stdex::layout_stride>::value &&
+     std::is_same<typename TestFixture::layout_1_t, stdex::layout_stride>::value &&
+     std::is_convertible<typename TestFixture::exts_2_t, typename TestFixture::exts_1_t>::value
+    )|| (
+     std::is_same<typename TestFixture::layout_2_t, stdex::layout_stride>::value &&
+     !std::is_same<typename TestFixture::layout_1_t, stdex::layout_stride>::value &&
+     TestFixture::exts_2_t::rank()==0
+    )
+   )
+  );
+  static_assert(std::is_convertible<typename TestFixture::map_2_t, typename TestFixture::map_1_t>::value ==
+                this->implicit);
   #ifdef MDSPAN_HAS_CXX_17
   if constexpr(this->implicit)
     map1 = this->implicit_conv(map2);

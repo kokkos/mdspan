@@ -147,6 +147,11 @@ struct layout_stride {
         // assumes no negative strides; not sure if I'm allowed to assume that or not
         return __impl::_call_op_impl(self, (self.extents().template __extent<Idxs>() - 1)...) + 1;
       }
+
+      template<class OtherMapping>
+      static constexpr __strides_storage_t fill_strides(const OtherMapping& map) {
+        return __strides_storage_t(map.stride(Idxs)...);
+      }
     };
 
     // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
@@ -254,6 +259,31 @@ struct layout_stride {
 #endif
     { }
 
+
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherMapping,
+      /* requires */ (
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
+        OtherMapping::is_always_unique() &&
+        OtherMapping::is_always_strided()
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<typename OtherMapping::extents_type, Extents>::value)) // needs two () due to comma
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    mapping(OtherMapping const& other) noexcept // NOLINT(google-explicit-constructor)
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __members{
+#else
+      : __base_t(__base_t{__member_pair_t(
+#endif
+          other.extents(), __strides_storage_t(__impl::fill_strides(other))
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+    {}
+
     //--------------------------------------------------------------------------------
 
     MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept {
@@ -267,6 +297,7 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
       // TODO @testing test layout_stride is_contiguous()
+
       auto rem = array<size_t, Extents::rank()>{ };
       std::iota(rem.begin(), rem.end(), size_t(0));
       auto next_idx_iter = std::find_if(
@@ -285,7 +316,7 @@ struct layout_stride {
             rem.begin(), rem.end(),
             [&](size_t i) {
               return i != removed_index_sentinel
-                && this->stride(i) * this->extents().extent(i) == prev_stride_times_prev_extent;
+                && this->extents().extent(i) == prev_stride_times_prev_extent;
             }
           );
           if (next_idx_iter != rem.end()) {
