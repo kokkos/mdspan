@@ -392,7 +392,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #endif
 
 #ifndef MDSPAN_CONDITIONAL_EXPLICIT
-#  if (defined(MDSPAN_HAS_CXX_20))
+#  if MDSPAN_HAS_CXX_20
 #    define MDSPAN_CONDITIONAL_EXPLICIT(COND) explicit(COND)
 #  else
 #    define MDSPAN_CONDITIONAL_EXPLICIT(COND)
@@ -975,7 +975,7 @@ namespace experimental {
 
 template <class ElementType>
 struct default_accessor {
-  
+
   using offset_policy = default_accessor;
   using element_type = ElementType;
   using reference = ElementType&;
@@ -987,7 +987,7 @@ struct default_accessor {
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, typename default_accessor<OtherElementType>::pointer, pointer)
+      _MDSPAN_TRAIT(is_convertible, typename default_accessor<OtherElementType>::element_type(*)[], element_type(*)[])
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -3100,6 +3100,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
+      (N == rank() || N == rank_dynamic()) &&
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
     )
   )
@@ -3329,7 +3330,7 @@ struct layout_right {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
@@ -3341,6 +3342,7 @@ struct layout_right {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherMapping,
       /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, typename OtherMapping::extents_type) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_left) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
         (Extents::rank() <= 1)
@@ -3354,6 +3356,7 @@ struct layout_right {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherMapping,
       /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, typename OtherMapping::extents_type) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_stride) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping)
       )
@@ -3371,18 +3374,6 @@ struct layout_right {
        }
     }
 
-    MDSPAN_TEMPLATE_REQUIRES(
-      class OtherExtents,
-      /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
-      )
-    )
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping& operator=(mapping<OtherExtents> const& other) noexcept
-    {
-      __extents = Extents(other.extents());
-      return *this;
-    }
     //--------------------------------------------------------------------------------
 
     template <class... Indices>
@@ -3420,7 +3411,7 @@ struct layout_right {
     }
 
     // In C++ 20 the not equal exists if equal is found
-#ifndef MDSPAN_HAS_CXX20
+#if MDSPAN_HAS_CXX_20
     template<class OtherExtents>
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
@@ -3516,7 +3507,7 @@ public:
     class... SizeTypes,
     /* requires */ (
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
-      (sizeof...(SizeTypes) == extents_type::rank_dynamic()) &&
+      _MDSPAN_TRAIT(is_constructible, extents_type, SizeTypes...) &&
       _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
     )
@@ -3531,19 +3522,23 @@ public:
     class SizeType, size_t N,
     /* requires */ (
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
-      (N == extents_type::rank_dynamic()) &&
+      _MDSPAN_TRAIT(is_constructible, extents_type, array<SizeType, N>) &&
       _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
     )
   )
+  MDSPAN_CONDITIONAL_EXPLICIT(N != extents_type::rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
-  MDSPAN_INLINE_FUNCTION
-  constexpr mdspan(pointer p, const extents_type& exts)
-    : __members(p, __map_acc_pair_t(mapping_type(exts), accessor_type()))
+  MDSPAN_FUNCTION_REQUIRES(
+    (MDSPAN_INLINE_FUNCTION constexpr),
+    mdspan, (pointer p, const extents_type& exts), ,
+    /* requires */ (_MDSPAN_TRAIT(is_default_constructible, accessor_type) &&
+                    _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type))
+  ) : __members(p, __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
   MDSPAN_FUNCTION_REQUIRES(
@@ -3578,30 +3573,6 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mdspan& operator=(const mdspan&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mdspan& operator=(mdspan&&) = default;
 
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherElementType, size_t... OtherExtents, class OtherLayoutPolicy, class OtherAccessorPolicy,
-    /* requires */ (
-      _MDSPAN_TRAIT(is_assignable, mapping_type, typename OtherLayoutPolicy::template mapping<std::experimental::extents<OtherExtents...>>) &&
-      _MDSPAN_TRAIT(is_assignable, accessor_type, OtherAccessorPolicy) &&
-      _MDSPAN_TRAIT(is_assignable, pointer, typename OtherAccessorPolicy::pointer) &&
-      sizeof...(OtherExtents) == extents_type::rank() &&
-      // "For all r in the range [0, rank()), if other.static_extent(r) != dynamic_extent
-      //   && static_extent(r) != dynamic_extent is true, then
-      //   other.static_extent(r) == static_extent(r) is true."
-      // (this is just the convertiblity constraint on extents...)
-      _MDSPAN_TRAIT(is_assignable, extents_type, std::experimental::extents<OtherExtents...>)
-    )
-  )
-  MDSPAN_INLINE_FUNCTION
-  _MDSPAN_CONSTEXPR_14 mdspan& operator=(
-    const mdspan<OtherElementType, std::experimental::extents<OtherExtents...>, OtherLayoutPolicy, OtherAccessorPolicy>& other
-  )
-  {
-    __ptr_ref() = other.__ptr_ref();
-    __mapping_ref() = other.__mapping_ref();
-    __accessor_ref() = other.__accessor_ref();
-    return *this;
-  }
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.mapping], mdspan mapping domain multidimensional index to access codomain element
@@ -3660,20 +3631,6 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr size_type size() const noexcept {
     return __impl::__size(*this);
   };
-
-  // TODO @proposal-bug for non-unique, non-contiguous mappings this is unimplementable
-  MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 size_type unique_size() const noexcept {
-    if(__mapping_ref().is_unique()) {
-      return size();
-    }
-    else if(__mapping_ref().is_contiguous()) {
-      return __mapping_ref().required_span_size();
-    }
-    else {
-      // ??? guess, for now, until this gets fixed in the proposal ???
-      return __mapping_ref().required_span_size();
-    }
-  }
 
   MDSPAN_INLINE_FUNCTION constexpr pointer data() const noexcept { return __ptr_ref(); };
 
@@ -3993,6 +3950,7 @@ struct layout_stride {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherMapping,
       /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, typename OtherMapping::extents_type) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
         OtherMapping::is_always_unique() &&
         OtherMapping::is_always_strided()
@@ -4107,7 +4065,7 @@ struct layout_stride {
       return __impl::_eq_impl(lhs, rhs);
     }
 
-#ifdef MDSPAN_HAS_CXX20
+#if MDSPAN_HAS_CXX_20
     template<class OtherExtents>
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
@@ -4225,7 +4183,7 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, OtherExtents, Extents)
+        _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, Extents>::value)) // needs two () due to comma
@@ -4237,6 +4195,7 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherMapping,
       /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, typename OtherMapping::extents_type) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_right) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) &&
         (Extents::rank() <= 1)
@@ -4251,8 +4210,9 @@ struct layout_left {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherMapping,
       /* requires */ (
+        _MDSPAN_TRAIT(is_constructible, Extents, typename OtherMapping::extents_type) &&
         _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type, layout_stride) &&
-        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping) 
+        _MDSPAN_TRAIT(is_same, typename OtherMapping::layout_type::template mapping<typename OtherMapping::extents_type>, OtherMapping)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((Extents::rank()!=0))
@@ -4268,18 +4228,6 @@ struct layout_left {
        }
     }
 
-    MDSPAN_TEMPLATE_REQUIRES(
-      class OtherExtents,
-      /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, Extents, OtherExtents)
-      )
-    )
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping& operator=(mapping<OtherExtents> const& other) noexcept
-    {
-      __extents = Extents(other.extents());
-      return *this;
-    }
     //--------------------------------------------------------------------------------
 
     template <class... Indices>
@@ -4318,7 +4266,7 @@ struct layout_left {
     }
 
     // In C++ 20 the not equal exists if equal is found
-#ifndef MDSPAN_HAS_CXX20
+#if MDSPAN_HAS_CXX_20
     template<class OtherExtents>
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
