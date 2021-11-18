@@ -47,6 +47,11 @@
 
 namespace stdex = ::std::experimental;
 
+using ll_t = stdex::layout_left;
+using lr_t = stdex::layout_right;
+using ls_t = stdex::layout_stride;
+
+
 // Only works with newer constexpr
 #if defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
 
