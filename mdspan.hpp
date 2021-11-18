@@ -398,6 +398,48 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #    define MDSPAN_CONDITIONAL_EXPLICIT(COND)
 #  endif
 #endif
+
+#ifndef MDSPAN_USE_BRACKET_OPERATOR
+#  if defined(__cpp_multidimensional_subscript)
+#    define MDSPAN_USE_BRACKET_OPERATOR 1
+#  else
+#    define MDSPAN_USE_BRACKET_OPERATOR 0
+#  endif
+#endif
+
+#ifndef MDSPAN_USE_PAREN_OPERATOR
+#  if !MDSPAN_USE_BRACKET_OPERATOR
+#    define MDSPAN_USE_PAREN_OPERATOR 1
+#  else
+#    define MDSPAN_USE_PAREN_OPERATOR 0
+#  endif
+#endif
+
+#if MDSPAN_USE_BRACKET_OPERATOR
+#  define __MDSPAN_OP(mds,...) mds[__VA_ARGS__]
+// Corentins demo compiler for subscript chokes on empty [] call,
+// though I believe the proposal supports it?
+#ifdef MDSPAN_NO_EMPTY_BRACKET_OPERATOR
+#  define __MDSPAN_OP0(mds) mds.accessor().access(mds.data(),0)
+#else
+#  define __MDSPAN_OP0(mds) mds[]
+#endif
+#  define __MDSPAN_OP1(mds, a) mds[a]
+#  define __MDSPAN_OP2(mds, a, b) mds[a,b]
+#  define __MDSPAN_OP3(mds, a, b, c) mds[a,b,c]
+#  define __MDSPAN_OP4(mds, a, b, c, d) mds[a,b,c,d]
+#  define __MDSPAN_OP5(mds, a, b, c, d, e) mds[a,b,c,d,e]
+#  define __MDSPAN_OP6(mds, a, b, c, d, e, f) mds[a,b,c,d,e,f]
+#else
+#  define __MDSPAN_OP(mds,...) mds(__VA_ARGS__)
+#  define __MDSPAN_OP0(mds) mds()
+#  define __MDSPAN_OP1(mds, a) mds(a)
+#  define __MDSPAN_OP2(mds, a, b) mds(a,b)
+#  define __MDSPAN_OP3(mds, a, b, c) mds(a,b,c)
+#  define __MDSPAN_OP4(mds, a, b, c, d) mds(a,b,c,d)
+#  define __MDSPAN_OP5(mds, a, b, c, d, e) mds(a,b,c,d,e)
+#  define __MDSPAN_OP6(mds, a, b, c, d, e, f) mds(a,b,c,d,e,f)
+#endif
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/config.hpp
 
 
@@ -3426,7 +3468,7 @@ struct layout_right {
     }
     template<size_t N>
     constexpr size_type __stride() const noexcept {
-      return __get_stride<N>(__extents, make_index_sequence<__extents.rank()>());
+      return __get_stride<N>(__extents, make_index_sequence<extents_type::rank()>());
     }
 
 private:
@@ -3577,6 +3619,35 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.mapping], mdspan mapping domain multidimensional index to access codomain element
 
+  #if MDSPAN_USE_BRACKET_OPERATOR
+  MDSPAN_TEMPLATE_REQUIRES(
+    class... SizeTypes,
+    /* requires */ (
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
+      extents_type::rank() == sizeof...(SizeTypes)
+    )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference operator[](SizeTypes... indices) const noexcept
+  {
+    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(indices)...));
+  }
+  #endif
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType, size_t N,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+      N == extents_type::rank()
+    )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference operator[](const array<SizeType, N>& indices) const noexcept
+  {
+    return __impl::template __callop<reference>(*this, indices);
+  }
+
+  #if !MDSPAN_USE_BRACKET_OPERATOR
   MDSPAN_TEMPLATE_REQUIRES(
     class Index,
     /* requires */ (
@@ -3589,7 +3660,9 @@ public:
   {
     return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(idx)));
   }
+  #endif
 
+  #if MDSPAN_USE_PAREN_OPERATOR
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
@@ -3615,6 +3688,7 @@ public:
   {
     return __impl::template __callop<reference>(*this, indices);
   }
+  #endif
 
   MDSPAN_INLINE_FUNCTION constexpr
   accessor_type accessor() const { return __accessor_ref(); };
@@ -4281,7 +4355,7 @@ struct layout_left {
     }
     template<size_t N>
     constexpr size_type __stride() const noexcept {
-      return __get_stride<N>(__extents, make_index_sequence<__extents.rank()>());
+      return __get_stride<N>(__extents, make_index_sequence<extents_type::rank()>());
     }
 
 private:
