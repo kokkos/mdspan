@@ -52,57 +52,57 @@ _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 TEST(TestSubmdspanLayoutRightStaticSizedRankReducing3Dto1D, test_submdspan_layout_right_static_sized_rank_reducing_3d_to_1d) {
   std::vector<int> d(2 * 3 * 4, 0);
   stdex::mdspan<int, stdex::extents<2, 3, 4>> m(d.data());
-  m(1, 1, 1) = 42;
+  __MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = stdex::submdspan(m, 1, 1, stdex::full_extent);
   ASSERT_EQ(sub0.rank(),         1);
   ASSERT_EQ(sub0.rank_dynamic(), 0);
   ASSERT_EQ(sub0.extent(0),      4);
-  ASSERT_EQ(sub0(1),             42);
+  ASSERT_EQ((__MDSPAN_OP(sub0, 1)), 42);
 }
 
 TEST(TestSubmdspanLayoutLeftStaticSizedRankReducing3Dto1D, test_submdspan_layout_left_static_sized_rank_reducing_3d_to_1d) {
   std::vector<int> d(2 * 3 * 4, 0);
   stdex::mdspan<int, stdex::extents<2, 3, 4>, stdex::layout_left> m(d.data());
-  m(1, 1, 1) = 42;
+  __MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = stdex::submdspan(m, 1, 1, stdex::full_extent);
   ASSERT_EQ(sub0.rank(),         1);
   ASSERT_EQ(sub0.rank_dynamic(), 0);
   ASSERT_EQ(sub0.extent(0),      4);
-  ASSERT_EQ(sub0(1),             42);
+  ASSERT_EQ((__MDSPAN_OP(sub0, 1)), 42);
 }
 
 TEST(TestSubmdspanLayoutRightStaticSizedRankReducingNested3Dto0D, test_submdspan_layout_right_static_sized_rank_reducing_nested_3d_to_0d) {
   std::vector<int> d(2 * 3 * 4, 0);
   stdex::mdspan<int, stdex::extents<2, 3, 4>> m(d.data());
-  m(1, 1, 1) = 42;
+  __MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = stdex::submdspan(m, 1, stdex::full_extent, stdex::full_extent);
   ASSERT_EQ(sub0.rank(),         2);
   ASSERT_EQ(sub0.rank_dynamic(), 0);
   ASSERT_EQ(sub0.extent(0),      3);
   ASSERT_EQ(sub0.extent(1),      4);
-  ASSERT_EQ(sub0(1, 1),          42);
+  ASSERT_EQ((__MDSPAN_OP(sub0, 1, 1)), 42);
   auto sub1 = stdex::submdspan(sub0, 1, stdex::full_extent);
   ASSERT_EQ(sub1.rank(),         1);
   ASSERT_EQ(sub1.rank_dynamic(), 0);
   ASSERT_EQ(sub1.extent(0),      4);
-  ASSERT_EQ(sub1(1),             42);
+  ASSERT_EQ((__MDSPAN_OP(sub1,1)),42);
   auto sub2 = stdex::submdspan(sub1, 1);
   ASSERT_EQ(sub2.rank(),         0);
   ASSERT_EQ(sub2.rank_dynamic(), 0);
-  ASSERT_EQ(sub2(),              42);
+  ASSERT_EQ((__MDSPAN_OP0(sub2)), 42);
 }
 
 TEST(TestSubmdspanLayoutRightStaticSizedPairs, test_submdspan_layout_right_static_sized_pairs) {
   std::vector<int> d(2 * 3 * 4, 0);
   stdex::mdspan<int, stdex::extents<2, 3, 4>> m(d.data());
-  m(1, 1, 1) = 42;
+  __MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = stdex::submdspan(m, std::pair<int,int>{1, 2}, std::pair<int,int>{1, 3}, std::pair<int,int>{1, 4});
   ASSERT_EQ(sub0.rank(),         3);
   ASSERT_EQ(sub0.rank_dynamic(), 3);
   ASSERT_EQ(sub0.extent(0),      1);
   ASSERT_EQ(sub0.extent(1),      2);
   ASSERT_EQ(sub0.extent(2),      3);
-  ASSERT_EQ(sub0(0, 0, 0),       42);
+  ASSERT_EQ((__MDSPAN_OP(sub0, 0, 0, 0)), 42);
 }
 
 // TODO @proposal-bug We currently don't allow this, but we should.

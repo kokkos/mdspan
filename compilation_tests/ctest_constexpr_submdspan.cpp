@@ -61,7 +61,7 @@ dynamic_extent_1d() {
   int result = 0;
   for (int i = 0; i < s.extent(0); ++i) {
     auto ss = stdex::submdspan(s, i);
-    result += ss();
+    result += __MDSPAN_OP0(ss);
   }
   // 1 + 2 + 3 + 4 + 5
   constexpr_assert_equal(15, result);
@@ -87,7 +87,7 @@ dynamic_extent_1d_all_slice() {
   int result = 0;
   auto ss = stdex::submdspan(s, stdex::full_extent);
   for (int i = 0; i < s.extent(0); ++i) {
-    result += ss(i);
+    result += __MDSPAN_OP(ss, i);
   }
   // 1 + 2 + 3 + 4 + 5
   constexpr_assert_equal(15, result);
@@ -112,7 +112,7 @@ dynamic_extent_1d_pair_full() {
   int result = 0;
   auto ss = stdex::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
   for (int i = 0; i < s.extent(0); ++i) {
-    result += ss(i);
+    result += __MDSPAN_OP(ss, i);
   }
   constexpr_assert_equal(15, result);
   return result == 15;
@@ -131,7 +131,7 @@ dynamic_extent_1d_pair_each() {
   for (int i = 0; i < s.extent(0); ++i) {
     auto ss = stdex::submdspan(s,
       std::pair<std::ptrdiff_t, std::ptrdiff_t>{i, i+1});
-    result += ss(0);
+    result += __MDSPAN_OP(ss, 0);
   }
   constexpr_assert_equal(15, result);
   return result == 15;
@@ -160,7 +160,7 @@ dynamic_extent_1d_all_three() {
   int result = 0;
   for (int i = 0; i < s.extent(0); ++i) {
     auto ss = stdex::submdspan(s2, i);
-    result += ss();
+    result += __MDSPAN_OP0(ss);
   }
   constexpr_assert_equal(15, result);
   return result == 15;
@@ -186,7 +186,7 @@ dynamic_extent_2d_idx_idx() {
   for(int row = 0; row < s.extent(0); ++row) {
     for(int col = 0; col < s.extent(1); ++col) {
       auto ss = stdex::submdspan(s, row, col);
-      result += ss();
+      result += __MDSPAN_OP0(ss);
     }
   }
   constexpr_assert_equal(21, result);
@@ -207,8 +207,8 @@ dynamic_extent_2d_idx_all_idx() {
     auto srow = stdex::submdspan(s, row, stdex::full_extent);
     for(int col = 0; col < s.extent(1); ++col) {
       auto scol = stdex::submdspan(srow, col);
-      constexpr_assert_equal(scol(), srow(col));
-      result += scol();
+      constexpr_assert_equal(__MDSPAN_OP0(scol), __MDSPAN_OP(srow, col));
+      result += __MDSPAN_OP0(scol);
     }
   }
   constexpr_assert_equal(21, result);
@@ -236,7 +236,7 @@ simple_static_submdspan_test_1(int add_to_row) {
     auto scol = stdex::submdspan(s, stdex::full_extent, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = stdex::submdspan(scol, row);
-      result += srow() * (row + add_to_row);
+      result += __MDSPAN_OP0(srow) * (row + add_to_row);
     }
   }
   return result;
@@ -278,7 +278,7 @@ mixed_submdspan_left_test_2() {
     auto scol = stdex::submdspan(s, stdex::full_extent, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = stdex::submdspan(scol, row);
-      result += srow() * (row + 1);
+      result += __MDSPAN_OP0(srow) * (row + 1);
     }
   }
   // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)= 108
@@ -287,7 +287,7 @@ mixed_submdspan_left_test_2() {
     auto srow = stdex::submdspan(s, row, stdex::full_extent);
     for(int col = 0; col < 5; ++col) {
       auto scol = stdex::submdspan(srow, col);
-      result += scol() * (row + 1);
+      result += __MDSPAN_OP0(scol) * (row + 1);
     }
   }
   result /= 2;
@@ -321,7 +321,7 @@ mixed_submdspan_test_3() {
     auto scol = stdex::submdspan(s, stdex::full_extent, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = stdex::submdspan(scol, row);
-      result += srow() * (row + 1);
+      result += __MDSPAN_OP0(srow) * (row + 1);
     }
   }
   constexpr_assert_equal(71, result);
@@ -329,7 +329,7 @@ mixed_submdspan_test_3() {
     auto srow = stdex::submdspan(s, row, stdex::full_extent);
     for(int col = 0; col < 5; ++col) {
       auto scol = stdex::submdspan(srow, col);
-      result += scol() * (row + 1);
+      result += __MDSPAN_OP0(scol) * (row + 1);
     }
   }
   result /= 2;
@@ -370,19 +370,19 @@ submdspan_single_element_stress_test_impl_2(
   auto ss_dyn = stdex::submdspan(s_dyn, _repeated_ptrdiff_t<0, Idxs>...);
   auto ss_all = stdex::submdspan(s, _repeated_with_idxs_t<stdex::full_extent_t, Idxs>{}...);
   auto ss_all_dyn = stdex::submdspan(s_dyn, _repeated_with_idxs_t<stdex::full_extent_t, Idxs>{}...);
-  auto val = ss_all(_repeated_ptrdiff_t<0, Idxs>...);
-  auto val_dyn = ss_all_dyn(_repeated_ptrdiff_t<0, Idxs>...);
+  auto val = __MDSPAN_OP(ss_all, (_repeated_ptrdiff_t<0, Idxs>...));
+  auto val_dyn = __MDSPAN_OP(ss_all_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
   auto ss_pair = stdex::submdspan(s, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
   auto ss_pair_dyn = stdex::submdspan(s_dyn, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
-  auto val_pair = ss_pair(_repeated_ptrdiff_t<0, Idxs>...);
-  auto val_pair_dyn = ss_pair_dyn(_repeated_ptrdiff_t<0, Idxs>...);
+  auto val_pair = __MDSPAN_OP(ss_pair, (_repeated_ptrdiff_t<0, Idxs>...));
+  auto val_pair_dyn = __MDSPAN_OP(ss_pair_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
   constexpr_assert_equal(42, ss());
   constexpr_assert_equal(42, ss_dyn());
   constexpr_assert_equal(42, val);
   constexpr_assert_equal(42, val_dyn);
   constexpr_assert_equal(42, val_pair);
   constexpr_assert_equal(42, val_pair_dyn);
-  return ss() == 42 && ss_dyn() == 42 && val == 42 && val_dyn == 42 && val_pair == 42 && val_pair_dyn == 42;
+  return __MDSPAN_OP0(ss) == 42 && __MDSPAN_OP0(ss_dyn) == 42 && val == 42 && val_dyn == 42 && val_pair == 42 && val_pair_dyn == 42;
 }
 
 template <class Layout, size_t... Sizes>

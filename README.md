@@ -36,8 +36,9 @@ Caveats
 
 This implementation is fully conforming with a few exceptions (most of which are extensions):
 
-### All Standards
+### C++20
 - implements `operator()` not `operator[]`
+  - note you can control which operator is available with defining `MDSPAN_USE_BRACKET_OPERATOR=[0,1]` and `MDSPAN_USE_PAREN_OPERATOR=[0,1]` irrespective of whether multi dimensional subscript support is detected.
 
 ### C++17 and C++14
 - the conditional explicit markup is missing, making certain constructors implicit

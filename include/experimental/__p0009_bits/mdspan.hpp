@@ -188,6 +188,35 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.mapping], mdspan mapping domain multidimensional index to access codomain element
 
+  #if MDSPAN_USE_BRACKET_OPERATOR
+  MDSPAN_TEMPLATE_REQUIRES(
+    class... SizeTypes,
+    /* requires */ (
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
+      extents_type::rank() == sizeof...(SizeTypes)
+    )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference operator[](SizeTypes... indices) const noexcept
+  {
+    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(indices)...));
+  }
+  #endif
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType, size_t N,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+      N == extents_type::rank()
+    )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference operator[](const array<SizeType, N>& indices) const noexcept
+  {
+    return __impl::template __callop<reference>(*this, indices);
+  }
+
+  #if !MDSPAN_USE_BRACKET_OPERATOR
   MDSPAN_TEMPLATE_REQUIRES(
     class Index,
     /* requires */ (
@@ -200,7 +229,9 @@ public:
   {
     return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(idx)));
   }
+  #endif
 
+  #if MDSPAN_USE_PAREN_OPERATOR
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
@@ -226,6 +257,7 @@ public:
   {
     return __impl::template __callop<reference>(*this, indices);
   }
+  #endif
 
   MDSPAN_INLINE_FUNCTION constexpr
   accessor_type accessor() const { return __accessor_ref(); };

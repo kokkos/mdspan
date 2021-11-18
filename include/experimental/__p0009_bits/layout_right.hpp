@@ -206,7 +206,7 @@ struct layout_right {
     }
     template<size_t N>
     constexpr size_type __stride() const noexcept {
-      return __get_stride<N>(__extents, make_index_sequence<__extents.rank()>());
+      return __get_stride<N>(__extents, make_index_sequence<extents_type::rank()>());
     }
 
 private:

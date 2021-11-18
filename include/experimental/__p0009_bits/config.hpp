@@ -239,3 +239,45 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #    define MDSPAN_CONDITIONAL_EXPLICIT(COND)
 #  endif
 #endif
+
+#ifndef MDSPAN_USE_BRACKET_OPERATOR
+#  if defined(__cpp_multidimensional_subscript)
+#    define MDSPAN_USE_BRACKET_OPERATOR 1
+#  else
+#    define MDSPAN_USE_BRACKET_OPERATOR 0
+#  endif
+#endif
+
+#ifndef MDSPAN_USE_PAREN_OPERATOR
+#  if !MDSPAN_USE_BRACKET_OPERATOR
+#    define MDSPAN_USE_PAREN_OPERATOR 1
+#  else
+#    define MDSPAN_USE_PAREN_OPERATOR 0
+#  endif
+#endif
+
+#if MDSPAN_USE_BRACKET_OPERATOR
+#  define __MDSPAN_OP(mds,...) mds[__VA_ARGS__]
+// Corentins demo compiler for subscript chokes on empty [] call,
+// though I believe the proposal supports it?
+#ifdef MDSPAN_NO_EMPTY_BRACKET_OPERATOR
+#  define __MDSPAN_OP0(mds) mds.accessor().access(mds.data(),0)
+#else
+#  define __MDSPAN_OP0(mds) mds[]
+#endif
+#  define __MDSPAN_OP1(mds, a) mds[a]
+#  define __MDSPAN_OP2(mds, a, b) mds[a,b]
+#  define __MDSPAN_OP3(mds, a, b, c) mds[a,b,c]
+#  define __MDSPAN_OP4(mds, a, b, c, d) mds[a,b,c,d]
+#  define __MDSPAN_OP5(mds, a, b, c, d, e) mds[a,b,c,d,e]
+#  define __MDSPAN_OP6(mds, a, b, c, d, e, f) mds[a,b,c,d,e,f]
+#else
+#  define __MDSPAN_OP(mds,...) mds(__VA_ARGS__)
+#  define __MDSPAN_OP0(mds) mds()
+#  define __MDSPAN_OP1(mds, a) mds(a)
+#  define __MDSPAN_OP2(mds, a, b) mds(a,b)
+#  define __MDSPAN_OP3(mds, a, b, c) mds(a,b,c)
+#  define __MDSPAN_OP4(mds, a, b, c, d) mds(a,b,c,d)
+#  define __MDSPAN_OP5(mds, a, b, c, d, e) mds(a,b,c,d,e)
+#  define __MDSPAN_OP6(mds, a, b, c, d, e, f) mds(a,b,c,d,e,f)
+#endif

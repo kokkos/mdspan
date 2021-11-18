@@ -53,7 +53,7 @@ TEST(TestMdspanConversionConst, test_mdspan_conversion_const) {
   std::array<double, 6> a{};
   stdex::mdspan<double, stdex::extents<2, 3>> s(a.data());
   ASSERT_EQ(s.data(), a.data());
-  s(0, 1) = 3.14;
+  __MDSPAN_OP(s, 0, 1) = 3.14;
   stdex::mdspan<double const, stdex::extents<2, 3>> c_s(s);
-  ASSERT_EQ(c_s(0, 1), 3.14);
+  ASSERT_EQ((__MDSPAN_OP(c_s, 0, 1)), 3.14);
 }
