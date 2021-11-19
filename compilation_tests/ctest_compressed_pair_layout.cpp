@@ -69,10 +69,8 @@ template <class T, size_t Size,
           standard_layoutness StandardLayout = standard_layout,
           trivially_copyableness TriviallyCopyable = trivially_copyable>
 void test() {
-//#ifndef _MDSPAN_COMPILER_MSVC
   MDSPAN_STATIC_TEST(sizeof(T) == Size);
   MDSPAN_STATIC_TEST(std::is_empty<T>::value == Empty);
-//#endif
 #if !defined(__INTEL_COMPILER) || (__INTEL_COMPILER>=1900)
   MDSPAN_STATIC_TEST(std::is_standard_layout<T>::value == StandardLayout);
 #endif
