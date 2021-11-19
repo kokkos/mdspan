@@ -121,3 +121,82 @@ TEST(TestSubmdspanLayoutRightStaticSizedTuples, test_submdspan_layout_right_stat
 }
 */
 
+//template<class LayoutOrg, class LayoutSub, class ExtentsOrg, class ExtentsSub, class ... SubArgs>
+
+
+using submdspan_test_types =
+  ::testing::Types<
+      // LayoutLeft to LayoutLeft
+      std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<1>,stdex::dextents<1>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<1>,stdex::dextents<1>, std::pair<int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<1>,stdex::dextents<0>, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<2>,stdex::dextents<2>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<2>,stdex::dextents<2>, stdex::full_extent_t, std::pair<int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<2>,stdex::dextents<1>, stdex::full_extent_t, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<3>,stdex::dextents<3>, stdex::full_extent_t, stdex::full_extent_t, std::pair<int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<3>,stdex::dextents<2>, stdex::full_extent_t, std::pair<int,int>, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<3>,stdex::dextents<1>, stdex::full_extent_t, int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<3>,stdex::dextents<1>, std::pair<int,int>, int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<6>,stdex::dextents<3>, stdex::full_extent_t, stdex::full_extent_t, std::pair<int,int>, int, int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<6>,stdex::dextents<2>, stdex::full_extent_t, std::pair<int,int>, int, int, int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<6>,stdex::dextents<1>, stdex::full_extent_t, int, int, int ,int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<6>,stdex::dextents<1>, std::pair<int,int>, int, int, int, int, int>
+    // LayoutRight to LayoutRight
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<1>,stdex::dextents<1>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<1>,stdex::dextents<1>, std::pair<int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<1>,stdex::dextents<0>, int>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<2>,stdex::dextents<2>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<2>,stdex::dextents<2>, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<2>,stdex::dextents<1>, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<3>,stdex::dextents<3>, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<3>,stdex::dextents<2>, int, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<3>,stdex::dextents<1>, int, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<6>,stdex::dextents<3>, int, int, int, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<6>,stdex::dextents<2>, int, int, int, int, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<6>,stdex::dextents<1>, int, int, int, int, int, stdex::full_extent_t>
+    // LayoutRight to LayoutRight Check Extents Preservation
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1>,stdex::extents<1>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1>,stdex::extents<dyn>, std::pair<int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1>,stdex::extents<>, int>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1,2>,stdex::extents<1,2>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1,2>,stdex::extents<dyn,2>, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1,2>,stdex::extents<2>, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1,2,3>,stdex::extents<dyn,2,3>, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1,2,3>,stdex::extents<dyn,3>, int, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1,2,3>,stdex::extents<3>, int, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1,2,3,4,5,6>,stdex::extents<dyn,5,6>, int, int, int, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1,2,3,4,5,6>,stdex::extents<dyn,6>, int, int, int, int, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<1,2,3,4,5,6>,stdex::extents<6>, int, int, int, int, int, stdex::full_extent_t>
+
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::extents<1,2,3,4,5,6>,stdex::extents<1,dyn,6>, stdex::full_extent_t, int, std::pair<int,int>, int, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::extents<1,2,3,4,5,6>,stdex::extents<2,dyn,5>, int, stdex::full_extent_t, std::pair<int,int>, int, stdex::full_extent_t, int>
+    >;
+
+template<class T> struct TestSubMDSpan;
+
+template<class LayoutOrg, class LayoutSub, class ExtentsOrg, class ExtentsSub, class ... SubArgs>
+struct TestSubMDSpan<
+  std::tuple<LayoutOrg,
+             LayoutSub,
+             ExtentsOrg,
+             ExtentsSub,
+             SubArgs...>>
+  : public ::testing::Test {
+
+  using mds_org_t = stdex::mdspan<int, ExtentsOrg, LayoutOrg>;
+  using mds_sub_t = stdex::mdspan<int, ExtentsSub, LayoutSub>;
+
+  using mds_sub_deduced_t = decltype(stdex::submdspan(mds_org_t(), SubArgs()...));
+  using sub_args_t = std::tuple<SubArgs...>;
+
+};
+
+
+TYPED_TEST_SUITE(TestSubMDSpan, submdspan_test_types);
+
+TYPED_TEST(TestSubMDSpan, submdspan_return_type) {
+  static_assert(std::is_same<typename TestFixture::mds_sub_t,
+                             typename TestFixture::mds_sub_deduced_t>::value,
+                "SubMDSpan: wrong return type");
+
+}
