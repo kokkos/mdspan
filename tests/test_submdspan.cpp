@@ -105,21 +105,19 @@ TEST(TestSubmdspanLayoutRightStaticSizedPairs, test_submdspan_layout_right_stati
   ASSERT_EQ((__MDSPAN_OP(sub0, 0, 0, 0)), 42);
 }
 
-// TODO @proposal-bug We currently don't allow this, but we should.
-/*
 TEST(TestSubmdspanLayoutRightStaticSizedTuples, test_submdspan_layout_right_static_sized_tuples) {
   std::vector<int> d(2 * 3 * 4, 0);
-  stdex::mdspan<double, stdex::extents<2, 3, 4>> m(d.data());
-  m(1, 1, 1) = 42;
-  auto sub0 = stdex::submdspan(m, std::tuple{1, 2}, std::tuple{1, 3}, std::tuple{1, 4});
+  stdex::mdspan<int, stdex::extents<2, 3, 4>> m(d.data());
+  __MDSPAN_OP(m, 1, 1, 1) = 42;
+  auto sub0 = stdex::submdspan(m, std::tuple<int,int>{1, 2}, std::tuple<int,int>{1, 3}, std::tuple<int,int>{1, 4});
   ASSERT_EQ(sub0.rank(),         3);
   ASSERT_EQ(sub0.rank_dynamic(), 3);
   ASSERT_EQ(sub0.extent(0),      1);
-  ASSERT_EQ(sub0.extent(0),      2);
-  ASSERT_EQ(sub0.extent(1),      3);
-  ASSERT_EQ(sub0(0, 0, 0),       42);
+  ASSERT_EQ(sub0.extent(1),      2);
+  ASSERT_EQ(sub0.extent(2),      3);
+  ASSERT_EQ((__MDSPAN_OP(sub0, 0, 0, 0)),       42);
 }
-*/
+
 
 //template<class LayoutOrg, class LayoutSub, class ExtentsOrg, class ExtentsSub, class ... SubArgs>
 
