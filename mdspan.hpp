@@ -4442,8 +4442,8 @@ __wrap_slice(full_extent_t val, size_t ext, size_t stride) { return { val, ext, 
 // TODO generalize this to anything that works with std::get<0> and std::get<1>
 template <size_t OldExtent, size_t OldStaticStride>
 MDSPAN_INLINE_FUNCTION constexpr
-__slice_wrap<OldExtent, OldStaticStride, std::pair<size_t, size_t>>
-__wrap_slice(std::pair<size_t, size_t> const& val, size_t ext, size_t stride)
+__slice_wrap<OldExtent, OldStaticStride, std::tuple<size_t, size_t>>
+__wrap_slice(std::tuple<size_t, size_t> const& val, size_t ext, size_t stride)
 {
   return { val, ext, stride };
 }
@@ -4640,11 +4640,11 @@ struct __assign_op_slice_handler<
     };
   }
 
-  // For a std::pair, add an offset and add a new dynamic extent (strides still preserved)
+  // For a std::tuple, add an offset and add a new dynamic extent (strides still preserved)
   template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, pair<size_t, size_t>>&& __slice) noexcept
+  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, tuple<size_t, size_t>>&& __slice) noexcept
     -> __assign_op_slice_handler<
          typename _PreserveLayoutAnalysis::encounter_pair,
          __partially_static_sizes<_Offsets..., dynamic_extent>,
@@ -4826,7 +4826,7 @@ MDSPAN_TEMPLATE_REQUIRES(
     ) &&
     _MDSPAN_FOLD_AND((
       _MDSPAN_TRAIT(is_convertible, SliceSpecs, size_t)
-        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, pair<size_t, size_t>)
+        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, tuple<size_t, size_t>)
         || _MDSPAN_TRAIT(is_convertible, SliceSpecs, full_extent_t)
     ) /* && ... */) &&
     sizeof...(SliceSpecs) == sizeof...(Exts)
