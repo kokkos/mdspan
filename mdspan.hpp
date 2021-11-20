@@ -275,7 +275,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #endif
 
 #ifndef _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
-#  if __has_cpp_attribute(no_unique_address) >= 201803L
+#  if (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(_MDSPAN_COMPILER_MSVC)
 #    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
 #    define _MDSPAN_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #  else
@@ -392,7 +392,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #endif
 
 #ifndef MDSPAN_CONDITIONAL_EXPLICIT
-#  if MDSPAN_HAS_CXX_20
+#  if MDSPAN_HAS_CXX_20 && !defined(_MDSPAN_COMPILER_MSVC)
 #    define MDSPAN_CONDITIONAL_EXPLICIT(COND) explicit(COND)
 #  else
 #    define MDSPAN_CONDITIONAL_EXPLICIT(COND)
@@ -2010,8 +2010,15 @@ struct __compressed_pair<
     enable_if_t<_MDSPAN_TRAIT(is_empty, _T) && _MDSPAN_TRAIT(is_empty, _U)>>
     // We need to use the __no_unique_address_emulation wrapper here to avoid
     // base class ambiguities.
+#ifdef _MDSPAN_COMPILER_MSVC
+// MSVC doesn't allow you to access public static member functions of a type
+// when you *happen* to privately inherit from that type.
+    : protected __no_unique_address_emulation<_T, 0>,
+      protected __no_unique_address_emulation<_U, 1>
+#else
     : private __no_unique_address_emulation<_T, 0>,
       private __no_unique_address_emulation<_U, 1>
+#endif
 {
   using __first_base_t = __no_unique_address_emulation<_T, 0>;
   using __second_base_t = __no_unique_address_emulation<_U, 1>;
