@@ -116,7 +116,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #endif
 
 #ifndef _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
-#  if __has_cpp_attribute(no_unique_address) >= 201803L
+#  if (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(_MDSPAN_COMPILER_MSVC)
 #    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
 #    define _MDSPAN_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #  else
@@ -233,7 +233,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #endif
 
 #ifndef MDSPAN_CONDITIONAL_EXPLICIT
-#  if MDSPAN_HAS_CXX_20
+#  if MDSPAN_HAS_CXX_20 && !defined(_MDSPAN_COMPILER_MSVC)
 #    define MDSPAN_CONDITIONAL_EXPLICIT(COND) explicit(COND)
 #  else
 #    define MDSPAN_CONDITIONAL_EXPLICIT(COND)
