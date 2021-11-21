@@ -4211,6 +4211,7 @@ namespace experimental {
 
 //==============================================================================
 struct layout_right;
+struct layout_stride;
 
 struct layout_left {
   template <class Extents>
