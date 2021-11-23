@@ -277,6 +277,7 @@ struct ImplicitConversionToExts<Extents,false> {
 
 
 TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
+#ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
   bool exts1_convertible_exts2 =
     std::is_convertible<typename TestFixture::extents_type1,
                         typename TestFixture::extents_type2>::value;
@@ -292,7 +293,6 @@ TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
                                typename TestFixture::extents_type1,
                                         TestFixture::implicit_exts2_to_exts1>::convert(this->exts2);
 
-#ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
   EXPECT_EQ(exts1_convertible_exts2,exts1_implicit_exts2);
   EXPECT_EQ(exts2_convertible_exts1,exts2_implicit_exts1);
   EXPECT_EQ(exts1_convertible_exts2,TestFixture::implicit_exts1_to_exts2);

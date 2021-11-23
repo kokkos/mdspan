@@ -143,12 +143,14 @@ struct layout_left {
     mapping(OtherMapping const& other) // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {
+       #ifndef __CUDA_ARCH__
        size_t stride = 1;
        for(size_type r=0; r<__extents.rank(); r++) {
          if(stride != other.stride(r))
            throw std::runtime_error("Assigning layout_stride to layout_left with invalid strides.");
          stride *= __extents.extent(r);
        }
+       #endif
     }
 
     //--------------------------------------------------------------------------------

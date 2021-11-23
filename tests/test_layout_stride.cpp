@@ -58,7 +58,7 @@ struct TestLayoutStride<std::tuple<
 >> : public ::testing::Test {
   using extents_type = stdex::extents<Extents...>;
   using mapping_type = typename stdex::layout_stride::template mapping<extents_type>;
-  mapping_type map = mapping_type(extents_type( DynamicSizes... ), std::array<size_t, sizeof...(DynamicStrides)>{ DynamicStrides... } );
+  mapping_type map = { extents_type{ DynamicSizes... }, std::array<size_t, sizeof...(DynamicStrides)>{ DynamicStrides... } };
 };
 
 template <size_t... Extents>
@@ -70,10 +70,12 @@ using layout_stride_case_t =
   std::tuple<E, DSz, SStr, DStr>;
 
 using extents_345_t = stdex::extents<3, 4, 5>;
+using extents_3dyn5_t = stdex::extents<3, dyn, 5>;
 using extents_ddd_t = stdex::extents<dyn, dyn, dyn>;
 using zero_stride_maps =
   ::testing::Types<
     layout_stride_case_t<extents_345_t, _ints<>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>,
+    layout_stride_case_t<extents_3dyn5_t, _ints<4>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>,
     layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>
   >;
 

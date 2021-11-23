@@ -126,7 +126,12 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  endif
 #endif
 
+// NVCC older than 11.6 chokes on the no-unique-address-emulation
+// so just pretend to use it, and leave the macro empty
 #ifndef _MDSPAN_NO_UNIQUE_ADDRESS
+#  if defined(__NVCC__)
+#    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
+#  endif
 #  define _MDSPAN_NO_UNIQUE_ADDRESS
 #endif
 

@@ -539,7 +539,9 @@ struct __partially_static_sizes_tagged
   using __psa_impl_t = __standard_layout_psa<
       _Tag, size_t, integer_sequence<size_t, __values_or_sentinals...>>;
   using __psa_impl_t::__psa_impl_t;
+#ifdef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
   MDSPAN_INLINE_FUNCTION
+#endif
   constexpr __partially_static_sizes_tagged() noexcept
 #ifdef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
     : __psa_impl_t() { }

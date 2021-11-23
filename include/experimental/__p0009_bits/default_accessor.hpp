@@ -58,7 +58,6 @@ struct default_accessor {
   using reference = ElementType&;
   using pointer = ElementType*;
 
-  MDSPAN_INLINE_FUNCTION
   constexpr default_accessor() noexcept = default;
 
   MDSPAN_TEMPLATE_REQUIRES(

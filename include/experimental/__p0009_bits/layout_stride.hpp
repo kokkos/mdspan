@@ -298,7 +298,9 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
       // TODO @testing test layout_stride is_contiguous()
-
+#ifdef __CUDA_ARCH__
+      return false;
+#else
       auto rem = array<size_t, Extents::rank()>{ };
       std::iota(rem.begin(), rem.end(), size_t(0));
       auto next_idx_iter = std::find_if(
@@ -309,7 +311,7 @@ struct layout_stride {
         size_t prev_stride_times_prev_extent =
           this->extents().extent(*next_idx_iter) * this->stride(*next_idx_iter);
         // "remove" the index
-        constexpr size_t removed_index_sentinel = -1;
+        constexpr size_t removed_index_sentinel = size_t(-1);
         *next_idx_iter = removed_index_sentinel;
         int found_count = 1;
         while (found_count != Extents::rank()) {
@@ -330,6 +332,7 @@ struct layout_stride {
         return found_count == Extents::rank();
       }
       return false;
+#endif
     }
     MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
 
