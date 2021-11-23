@@ -1,5 +1,8 @@
 
 macro(mdspan_add_test name)
+  if(MDSPAN_TEST_LANGUAGE)
+    set_source_files_properties(${name} PROPERTIES LANGUAGE ${MDSPAN_TEST_LANGUAGE})
+  endif()
   add_executable(${name} ${name}.cpp)
   target_link_libraries(${name} mdspan gtest_main)
   add_test(${name} ${name})

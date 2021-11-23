@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12...3.19)
+cmake_minimum_required(VERSION 3.21)
 
 project(MDSpan
   VERSION 0.2.0
@@ -96,6 +96,9 @@ if(MDSPAN_ENABLE_CUDA)
     enable_language(CUDA)
   else()
     message(FATAL_ERROR "Requested CUDA support, but no CMAKE_CUDA_COMPILER available")
+  endif()
+  if(MDSPAN_ENABLE_TESTS)
+    set(MDSPAN_TEST_LANGUAGE CUDA)
   endif()
 endif()
 
