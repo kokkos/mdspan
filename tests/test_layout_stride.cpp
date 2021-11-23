@@ -58,7 +58,7 @@ struct TestLayoutStride<std::tuple<
 >> : public ::testing::Test {
   using extents_type = stdex::extents<Extents...>;
   using mapping_type = typename stdex::layout_stride::template mapping<extents_type>;
-  mapping_type map = { extents_type{ DynamicSizes... }, std::array<size_t, sizeof...(DynamicStrides)>{ DynamicStrides... } };
+  mapping_type map = mapping_type(extents_type( DynamicSizes... ), std::array<size_t, sizeof...(DynamicStrides)>{ DynamicStrides... } );
 };
 
 template <size_t... Extents>
