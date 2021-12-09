@@ -44,5 +44,16 @@ template<class LAMBDA>
 void dispatch(const LAMBDA f) {
   f();
 }
+template<class T>
+T* allocate_array(size_t size) {
+  T* ptr = nullptr;
+  ptr = new T[size];
+  return ptr;
+}
+
+template<class T>
+void free_array(T* ptr) {
+  delete [] ptr;
+}
 #endif
 } // namespace
