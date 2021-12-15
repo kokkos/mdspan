@@ -274,13 +274,25 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  define _MDSPAN_PRESERVE_STANDARD_LAYOUT 1
 #endif
 
-#ifndef _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
+// no unique address starts working in NVCC 11.6
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS) && \
+   (!defined(__NVCC__) || ((__CUDACC_VER_MAJOR__ > 11) && (__CUDACC_VER_MINOR__ > 5)))
 #  if (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(_MDSPAN_COMPILER_MSVC)
 #    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
 #    define _MDSPAN_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #  else
 #    define _MDSPAN_NO_UNIQUE_ADDRESS
 #  endif
+#endif
+
+// NVCC older than 11.6 chokes on the no-unique-address-emulation
+// so just pretend to use it (to avoid the full blown EBO workaround
+// which NVCC also doesn't like ...), and leave the macro empty
+#ifndef _MDSPAN_NO_UNIQUE_ADDRESS
+#  if defined(__NVCC__)
+#    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
+#  endif
+#  define _MDSPAN_NO_UNIQUE_ADDRESS
 #endif
 
 #ifndef _MDSPAN_USE_CONCEPTS
@@ -1023,7 +1035,6 @@ struct default_accessor {
   using reference = ElementType&;
   using pointer = ElementType*;
 
-  MDSPAN_INLINE_FUNCTION
   constexpr default_accessor() noexcept = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -2551,7 +2562,9 @@ struct __partially_static_sizes_tagged
   using __psa_impl_t = __standard_layout_psa<
       _Tag, size_t, integer_sequence<size_t, __values_or_sentinals...>>;
   using __psa_impl_t::__psa_impl_t;
+#ifdef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
   MDSPAN_INLINE_FUNCTION
+#endif
   constexpr __partially_static_sizes_tagged() noexcept
 #ifdef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
     : __psa_impl_t() { }
@@ -2967,6 +2980,19 @@ namespace experimental {
 
 namespace detail {
 
+template<size_t ... Extents>
+struct _count_dynamic_extents;
+
+template<size_t E, size_t ... Extents>
+struct _count_dynamic_extents<E,Extents...> {
+  static constexpr size_t val = (E==dynamic_extent?1:0) + _count_dynamic_extents<Extents...>::val;
+};
+
+template<>
+struct _count_dynamic_extents<> {
+  static constexpr size_t val = 0;
+};
+
 template <size_t... Extents, size_t... OtherExtents>
 static constexpr std::false_type _check_compatible_extents(
   std::false_type, std::integer_sequence<size_t, Extents...>, std::integer_sequence<size_t, OtherExtents...>
@@ -3123,8 +3149,16 @@ public:
     class... Integral,
     /* requires */ (
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */)
-        && ((sizeof...(Integral) == rank_dynamic()) ||
-            (sizeof...(Integral) == rank()))
+// TODO: check whether this works with newest NVCC, doesn't with 11.4
+#ifdef __NVCC__
+      // NVCC chokes on the fold thingy here so wrote the workaround
+      && ((sizeof...(Integral) == detail::_count_dynamic_extents<Extents...>::val) ||
+          (sizeof...(Integral) == sizeof...(Extents)))
+#else
+      // NVCC seems to pick up rank_dynamic from the wrong extents type???
+      && ((sizeof...(Integral) == rank_dynamic()) ||
+          (sizeof...(Integral) == rank()))
+#endif
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -3149,8 +3183,16 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
-      (N == rank() || N == rank_dynamic()) &&
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
+// TODO: check whether this works with newest NVCC, doesn't with 11.4
+#ifdef __NVCC__
+      // NVCC chokes on the fold thingy here so wrote the workaround
+      && ((N == detail::_count_dynamic_extents<Extents...>::val) ||
+          (N == sizeof...(Extents)))
+#else
+      // NVCC seems to pick up rank_dynamic from the wrong extents type???
+      && (N == rank() || N == rank_dynamic())
+#endif
     )
   )
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
@@ -3415,12 +3457,14 @@ struct layout_right {
     mapping(OtherMapping const& other) // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {
+       #ifndef __CUDA_ARCH__
        size_t stride = 1;
        for(size_type r=__extents.rank(); r>0; r--) {
          if(stride != other.stride(r-1))
            throw std::runtime_error("Assigning layout_stride to layout_right with invalid strides.");
          stride *= __extents.extent(r-1);
        }
+       #endif
     }
 
     //--------------------------------------------------------------------------------
@@ -4066,7 +4110,10 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
       // TODO @testing test layout_stride is_contiguous()
-
+// FIXME CUDA
+#ifdef __CUDA_ARCH__
+      return false;
+#else
       auto rem = array<size_t, Extents::rank()>{ };
       std::iota(rem.begin(), rem.end(), size_t(0));
       auto next_idx_iter = std::find_if(
@@ -4077,7 +4124,7 @@ struct layout_stride {
         size_t prev_stride_times_prev_extent =
           this->extents().extent(*next_idx_iter) * this->stride(*next_idx_iter);
         // "remove" the index
-        constexpr size_t removed_index_sentinel = -1;
+        constexpr auto removed_index_sentinel = static_cast<size_t>(-1);
         *next_idx_iter = removed_index_sentinel;
         int found_count = 1;
         while (found_count != Extents::rank()) {
@@ -4098,6 +4145,7 @@ struct layout_stride {
         return found_count == Extents::rank();
       }
       return false;
+#endif
     }
     MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
 
@@ -4302,12 +4350,14 @@ struct layout_left {
     mapping(OtherMapping const& other) // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {
+       #ifndef __CUDA_ARCH__
        size_t stride = 1;
        for(size_type r=0; r<__extents.rank(); r++) {
          if(stride != other.stride(r))
            throw std::runtime_error("Assigning layout_stride to layout_left with invalid strides.");
          stride *= __extents.extent(r);
        }
+       #endif
     }
 
     //--------------------------------------------------------------------------------
