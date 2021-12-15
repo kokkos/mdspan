@@ -48,7 +48,7 @@
 namespace stdex = std::experimental;
 
 // Making actual test implementations part of the class,
-// can't create CUDA lambdas in the primary test fucntions, since they are private
+// can't create CUDA lambdas in the primary test functions, since they are private
 // making a non-member function would require replicating all the type info
 
 template <class> struct TestExtents;

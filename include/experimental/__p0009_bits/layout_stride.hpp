@@ -311,7 +311,7 @@ struct layout_stride {
         size_t prev_stride_times_prev_extent =
           this->extents().extent(*next_idx_iter) * this->stride(*next_idx_iter);
         // "remove" the index
-        constexpr size_t removed_index_sentinel = size_t(-1);
+        constexpr auto removed_index_sentinel = static_cast<size_t>(-1);
         *next_idx_iter = removed_index_sentinel;
         int found_count = 1;
         while (found_count != Extents::rank()) {

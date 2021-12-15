@@ -9,11 +9,11 @@ __global__ void dispatch_kernel(const LAMBDA f) {
 }
 
 template<class LAMBDA>
-void dispatch(const LAMBDA f) {
+void dispatch(LAMBDA&& f) {
   if(dispatch_host) {
-    f();
+    (LAMBDA&&)f();
   } else {
-    dispatch_kernel<<<1,1>>>(f);
+    dispatch_kernel<<<1,1>>>((LAMBDA&&)f);
     cudaDeviceSynchronize();
   }
 }
@@ -41,8 +41,8 @@ void free_array(T* ptr) {
 
 #ifndef __MDSPAN_TESTS_DISPATCH_DEFINED
 template<class LAMBDA>
-void dispatch(const LAMBDA f) {
-  f();
+void dispatch(LAMBDA&& f) {
+  (LAMBDA&&)f();
 }
 template<class T>
 T* allocate_array(size_t size) {
