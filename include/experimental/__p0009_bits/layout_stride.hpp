@@ -298,6 +298,7 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return true; }
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
       // TODO @testing test layout_stride is_contiguous()
+// FIXME CUDA
 #ifdef __CUDA_ARCH__
       return false;
 #else

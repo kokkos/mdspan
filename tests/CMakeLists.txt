@@ -1,4 +1,9 @@
 
+#The tests in CUDA use lambdas
+if(MDSPAN_ENABLE_CUDA)
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda")
+endif()
+
 macro(mdspan_add_test name)
   if(MDSPAN_TEST_LANGUAGE)
     set_source_files_properties(${name} PROPERTIES LANGUAGE ${MDSPAN_TEST_LANGUAGE})

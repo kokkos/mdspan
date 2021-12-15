@@ -11,9 +11,9 @@ __global__ void dispatch_kernel(const LAMBDA f) {
 template<class LAMBDA>
 void dispatch(LAMBDA&& f) {
   if(dispatch_host) {
-    (LAMBDA&&)f();
+    static_cast<LAMBDA&&>(f)();
   } else {
-    dispatch_kernel<<<1,1>>>((LAMBDA&&)f);
+    dispatch_kernel<<<1,1>>>(static_cast<LAMBDA&&>(f));
     cudaDeviceSynchronize();
   }
 }
@@ -36,13 +36,19 @@ void free_array(T* ptr) {
     cudaFree(ptr);
 }
 
+#define __MDSPAN_TESTS_RUN_TEST(A) \
+ dispatch_host = true; \
+ A; \
+ dispatch_host = false; \
+ A;
+
 #define __MDSPAN_TESTS_DISPATCH_DEFINED
 #endif
 
 #ifndef __MDSPAN_TESTS_DISPATCH_DEFINED
 template<class LAMBDA>
 void dispatch(LAMBDA&& f) {
-  (LAMBDA&&)f();
+  static_cast<LAMBDA&&>(f)();
 }
 template<class T>
 T* allocate_array(size_t size) {
@@ -55,5 +61,9 @@ template<class T>
 void free_array(T* ptr) {
   delete [] ptr;
 }
+
+#define __MDSPAN_TESTS_RUN_TEST(A) \
+ dispatch_host = true; \
+ A;
 #endif
 } // namespace

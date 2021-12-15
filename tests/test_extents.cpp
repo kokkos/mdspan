@@ -142,24 +142,15 @@ using extents_test_types =
 TYPED_TEST_SUITE(TestExtents, extents_test_types);
 
 TYPED_TEST(TestExtents, rank) {
-  dispatch_host = true;
-  this->test_rank();
-  dispatch_host = false;
-  this->test_rank();
+  __MDSPAN_TESTS_RUN_TEST(this->test_rank())
 }
 
 TYPED_TEST(TestExtents, static_extent) {
-  dispatch_host = true;
-  this->test_static_extent();
-  dispatch_host = false;
-  this->test_static_extent();
+  __MDSPAN_TESTS_RUN_TEST(this->test_static_extent())
 }
 
 TYPED_TEST(TestExtents, extent) {
-  dispatch_host = true;
-  this->test_extent();
-  dispatch_host = false;
-  this->test_extent();
+  __MDSPAN_TESTS_RUN_TEST(this->test_extent())
 }
 
 TYPED_TEST(TestExtents, default_ctor) {
@@ -338,8 +329,8 @@ struct ImplicitConversionToExts<Extents,false> {
 };
 
 
-TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
 #ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
+TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
   bool exts1_convertible_exts2 =
     std::is_convertible<typename TestFixture::extents_type1,
                         typename TestFixture::extents_type2>::value;
@@ -359,8 +350,8 @@ TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
   EXPECT_EQ(exts2_convertible_exts1,exts2_implicit_exts1);
   EXPECT_EQ(exts1_convertible_exts2,TestFixture::implicit_exts1_to_exts2);
   EXPECT_EQ(exts2_convertible_exts1,TestFixture::implicit_exts2_to_exts1);
-#endif
 }
+#endif
 
 TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_convertible_to_size_t) {
   std::array<int, 2> i{2, 2};
