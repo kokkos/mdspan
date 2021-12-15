@@ -60,6 +60,19 @@ namespace experimental {
 
 namespace detail {
 
+template<size_t ... Extents>
+struct _count_dynamic_extents;
+
+template<size_t E, size_t ... Extents>
+struct _count_dynamic_extents<E,Extents...> {
+  static constexpr size_t val = (E==dynamic_extent?1:0) + _count_dynamic_extents<Extents...>::val;
+};
+
+template<>
+struct _count_dynamic_extents<> {
+  static constexpr size_t val = 0;
+};
+
 template <size_t... Extents, size_t... OtherExtents>
 static constexpr std::false_type _check_compatible_extents(
   std::false_type, std::integer_sequence<size_t, Extents...>, std::integer_sequence<size_t, OtherExtents...>
@@ -216,8 +229,16 @@ public:
     class... Integral,
     /* requires */ (
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */)
-        && ((sizeof...(Integral) == rank_dynamic()) ||
-            (sizeof...(Integral) == rank()))
+// TODO: check whether this works with newest NVCC, doesn't with 11.4
+#ifdef __NVCC__
+      // NVCC chokes on the fold thingy here so wrote the workaround
+      && ((sizeof...(Integral) == detail::_count_dynamic_extents<Extents...>::val) ||
+          (sizeof...(Integral) == sizeof...(Extents)))
+#else
+      // NVCC seems to pick up rank_dynamic from the wrong extents type???
+      && ((sizeof...(Integral) == rank_dynamic()) ||
+          (sizeof...(Integral) == rank()))
+#endif
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -242,8 +263,16 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
-      (N == rank() || N == rank_dynamic()) &&
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
+// TODO: check whether this works with newest NVCC, doesn't with 11.4
+#ifdef __NVCC__
+      // NVCC chokes on the fold thingy here so wrote the workaround
+      && ((N == detail::_count_dynamic_extents<Extents...>::val) ||
+          (N == sizeof...(Extents)))
+#else
+      // NVCC seems to pick up rank_dynamic from the wrong extents type???
+      && (N == rank() || N == rank_dynamic())
+#endif
     )
   )
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())

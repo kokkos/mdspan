@@ -115,13 +115,25 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  define _MDSPAN_PRESERVE_STANDARD_LAYOUT 1
 #endif
 
-#ifndef _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
+// no unique address starts working in NVCC 11.6
+#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS) && \
+   (!defined(__NVCC__) || ((__CUDACC_VER_MAJOR__ > 11) && (__CUDACC_VER_MINOR__ > 5)))
 #  if (__has_cpp_attribute(no_unique_address) >= 201803L) && !defined(_MDSPAN_COMPILER_MSVC)
 #    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
 #    define _MDSPAN_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #  else
 #    define _MDSPAN_NO_UNIQUE_ADDRESS
 #  endif
+#endif
+
+// NVCC older than 11.6 chokes on the no-unique-address-emulation
+// so just pretend to use it (to avoid the full blown EBO workaround
+// which NVCC also doesn't like ...), and leave the macro empty
+#ifndef _MDSPAN_NO_UNIQUE_ADDRESS
+#  if defined(__NVCC__)
+#    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
+#  endif
+#  define _MDSPAN_NO_UNIQUE_ADDRESS
 #endif
 
 #ifndef _MDSPAN_USE_CONCEPTS

@@ -42,23 +42,86 @@
 */
 
 #include <experimental/mdspan>
-
+#include "offload_utils.hpp"
 #include <gtest/gtest.h>
 
 namespace stdex = std::experimental;
 
+// Making actual test implementations part of the class,
+// can't create CUDA lambdas in the primary test functions, since they are private
+// making a non-member function would require replicating all the type info
+
 template <class> struct TestExtents;
 template <size_t... Extents, size_t... DynamicSizes>
-struct TestExtents<std::tuple<
-  stdex::extents<Extents...>,
-  std::integer_sequence<size_t, DynamicSizes...>
->> : public ::testing::Test {
+struct TestExtents<
+  std::tuple<
+    stdex::extents<Extents...>,
+    std::integer_sequence<size_t, DynamicSizes...>
+  >
+> : public ::testing::Test {
   using extents_type = stdex::extents<Extents...>;
   // Double Braces here to make it work with GCC 5
   // Otherwise: "error: array must be initialized with a brace-enclosed initializer"
   const std::array<size_t, sizeof...(Extents)> static_sizes {{ Extents... }};
   const std::array<size_t, sizeof...(DynamicSizes)> dyn_sizes {{ DynamicSizes... }};
   extents_type exts { DynamicSizes... };
+  using Fixture = TestExtents< std::tuple<
+                    stdex::extents<Extents...>,
+                    std::integer_sequence<size_t, DynamicSizes...>
+                  >>;
+
+  void test_rank() {
+    size_t* result = allocate_array<size_t>(2);
+
+    dispatch([=] _MDSPAN_HOST_DEVICE () {
+      extents_type _exts(DynamicSizes...);
+      result[0] = _exts.rank();
+      result[1] = _exts.rank_dynamic();
+      // Some compilers warn about unused _exts since the functions are all static constexpr
+      (void) _exts;
+    });
+    EXPECT_EQ(result[0], static_sizes.size());
+    EXPECT_EQ(result[1], dyn_sizes.size());
+
+    free_array(result);
+  }
+
+  void test_static_extent() {
+    size_t* result = allocate_array<size_t>(extents_type::rank());
+
+    dispatch([=] _MDSPAN_HOST_DEVICE () {
+      extents_type _exts(DynamicSizes...);
+      for(int r=0; r<_exts.rank(); r++)
+        result[r] = _exts.static_extent(r);
+      // Some compilers warn about unused _exts since the functions are all static constexpr
+      (void) _exts;
+    });
+    for(int r=0; r<extents_type::rank(); r++) {
+      EXPECT_EQ(result[r], static_sizes[r]);
+    }
+
+    free_array(result);
+  }
+
+  void test_extent() {
+    size_t* result = allocate_array<size_t>(extents_type::rank());
+
+    dispatch([=] _MDSPAN_HOST_DEVICE () {
+      extents_type _exts(DynamicSizes...);
+      for(int r=0; r<_exts.rank(); r++ )
+        result[r] = _exts.extent(r);
+      // Some compilers warn about unused _exts since the functions are all static constexpr
+      (void) _exts;
+    });
+    int dyn_count = 0;
+    for(int r=0; r<extents_type::rank(); r++) {
+      bool is_dynamic = static_sizes[r] == stdex::dynamic_extent;
+      auto expected = is_dynamic ? dyn_sizes[dyn_count++] : static_sizes[r];
+      EXPECT_EQ(result[r], expected);
+    }
+
+    free_array(result);
+  }
 };
 
 template <size_t... Ds>
@@ -79,25 +142,15 @@ using extents_test_types =
 TYPED_TEST_SUITE(TestExtents, extents_test_types);
 
 TYPED_TEST(TestExtents, rank) {
-  EXPECT_EQ(this->exts.rank(), this->static_sizes.size());
-}
-
-TYPED_TEST(TestExtents, dynamic_rank) {
-  EXPECT_EQ(this->exts.rank_dynamic(), this->dyn_sizes.size());
+  __MDSPAN_TESTS_RUN_TEST(this->test_rank())
 }
 
 TYPED_TEST(TestExtents, static_extent) {
-  for (size_t r = 0; r < this->exts.rank(); ++r) {
-    EXPECT_EQ(this->exts.static_extent(r), this->static_sizes[r]);
-  }
+  __MDSPAN_TESTS_RUN_TEST(this->test_static_extent())
 }
 
-TYPED_TEST(TestExtents, extent_method) {
-  size_t dyn_count = 0;
-  for (size_t r = 0; r < this->exts.rank(); ++r) {
-    bool is_dynamic = (this->exts.static_extent(r) == stdex::dynamic_extent);
-    EXPECT_EQ(this->exts.extent(r), is_dynamic ? this->dyn_sizes[dyn_count++] : this->static_sizes[r]);
-  }
+TYPED_TEST(TestExtents, extent) {
+  __MDSPAN_TESTS_RUN_TEST(this->test_extent())
 }
 
 TYPED_TEST(TestExtents, default_ctor) {
@@ -276,6 +329,7 @@ struct ImplicitConversionToExts<Extents,false> {
 };
 
 
+#ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
 TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
   bool exts1_convertible_exts2 =
     std::is_convertible<typename TestFixture::extents_type1,
@@ -292,13 +346,12 @@ TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
                                typename TestFixture::extents_type1,
                                         TestFixture::implicit_exts2_to_exts1>::convert(this->exts2);
 
-#ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
   EXPECT_EQ(exts1_convertible_exts2,exts1_implicit_exts2);
   EXPECT_EQ(exts2_convertible_exts1,exts2_implicit_exts1);
   EXPECT_EQ(exts1_convertible_exts2,TestFixture::implicit_exts1_to_exts2);
   EXPECT_EQ(exts2_convertible_exts1,TestFixture::implicit_exts2_to_exts1);
-#endif
 }
+#endif
 
 TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_convertible_to_size_t) {
   std::array<int, 2> i{2, 2};
