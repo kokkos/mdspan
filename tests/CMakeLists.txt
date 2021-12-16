@@ -1,7 +1,9 @@
 
 #The tests in CUDA use lambdas
 if(MDSPAN_ENABLE_CUDA)
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda")
+  if(CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --extended-lambda")
+  endif()
 endif()
 
 macro(mdspan_add_test name)
