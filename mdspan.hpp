@@ -3145,22 +3145,28 @@ public:
 #endif
   { }
 
-  MDSPAN_TEMPLATE_REQUIRES(
+#ifdef __NVCC__
+    MDSPAN_TEMPLATE_REQUIRES(
     class... Integral,
     /* requires */ (
+      // TODO: check whether the other version works with newest NVCC, doesn't with 11.4
+      // NVCC seems to pick up rank_dynamic from the wrong extents type???
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */)
-// TODO: check whether this works with newest NVCC, doesn't with 11.4
-#ifdef __NVCC__
       // NVCC chokes on the fold thingy here so wrote the workaround
       && ((sizeof...(Integral) == detail::_count_dynamic_extents<Extents...>::val) ||
           (sizeof...(Integral) == sizeof...(Extents)))
-#else
-      // NVCC seems to pick up rank_dynamic from the wrong extents type???
-      && ((sizeof...(Integral) == rank_dynamic()) ||
-          (sizeof...(Integral) == rank()))
-#endif
+      )
     )
-  )
+#else
+    MDSPAN_TEMPLATE_REQUIRES(
+    class... Integral,
+    /* requires */ (
+       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */)
+        && ((sizeof...(Integral) == rank_dynamic()) ||
+            (sizeof...(Integral) == rank()))
+      )
+    )
+#endif
   MDSPAN_INLINE_FUNCTION
   explicit constexpr extents(Integral... exts) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -3179,22 +3185,27 @@ public:
 #endif
   { }
 
-
+    // TODO: check whether this works with newest NVCC, doesn't with 11.4
+#ifdef __NVCC__
+  // NVCC seems to pick up rank_dynamic from the wrong extents type???
+  // NVCC chokes on the fold thingy here so wrote the workaround
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
-// TODO: check whether this works with newest NVCC, doesn't with 11.4
-#ifdef __NVCC__
-      // NVCC chokes on the fold thingy here so wrote the workaround
       && ((N == detail::_count_dynamic_extents<Extents...>::val) ||
           (N == sizeof...(Extents)))
-#else
-      // NVCC seems to pick up rank_dynamic from the wrong extents type???
-      && (N == rank() || N == rank_dynamic())
-#endif
     )
   )
+#else
+    MDSPAN_TEMPLATE_REQUIRES(
+        class SizeType, size_t N,
+        /* requires */ (
+            _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
+      && (N == rank() || N == rank_dynamic())
+    )
+  )
+#endif
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr
