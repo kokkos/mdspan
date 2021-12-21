@@ -2420,7 +2420,7 @@ struct __standard_layout_psa<
 
   template <class _U, size_t _IDynamic, size_t _NDynamic>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
-      __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic> __tag,
+      __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic>,
       array<_U, _NDynamic> const &__vals) noexcept
       : __value_pair(
             ::std::get<_IDynamic>(__vals),
@@ -2530,7 +2530,7 @@ struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
 
   template <class _U, size_t _IDynamic, size_t _NDynamic>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
-      __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic> __tag,
+      __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic>,
       array<_U, _NDynamic> const &) noexcept {}
 
   template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal,
