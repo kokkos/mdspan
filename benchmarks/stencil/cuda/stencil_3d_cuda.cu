@@ -41,9 +41,6 @@
 //@HEADER
 */
 
-#include "fill.hpp"
-
-#include <experimental/mdspan>
 
 #include <memory>
 #include <random>
@@ -51,6 +48,16 @@
 #include <stdexcept>
 #include <iostream>
 
+// Whether to let mapping convert index calculation to the type used
+// to index into the mdspan
+//#define _MDSPAN_USE_MAPPING_ARG_CAST
+// Overwrite what extents.extent() returns and what the actual storage type is
+//#define _MDSPAN_OVERWRITE_EXTENTS_SIZE_TYPE int
+// Choose the index type used by the code
+using idx_t = size_t;
+
+#include "fill.hpp"
+#include <experimental/mdspan>
 //================================================================================
 
 static constexpr int global_delta = 1;
@@ -63,7 +70,6 @@ using lmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
 template <class T, size_t... Es>
 using rmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
 
-using idx_t = size_t;
 
 void throw_runtime_exception(const std::string &msg) {
   std::ostringstream o;
@@ -196,9 +202,9 @@ void BM_MDSpan_Cuda_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn)
   CUDA_SAFE_CALL(cudaFree(s.data()));
 }
 MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, right_, rmdspan, 80, 80, 80);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, left_, lmdspan, 80, 80, 80);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, right_, rmdspan, 400, 400, 400);
-MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, left_, lmdspan, 400, 400, 400);
+//MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, left_, lmdspan, 80, 80, 80);
+//MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, right_, rmdspan, 400, 400, 400);
+//MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Stencil_3D, left_, lmdspan, 400, 400, 400);
 
 //================================================================================
 
@@ -322,7 +328,7 @@ void BM_Raw_Cuda_Stencil_3D_left(benchmark::State& state, T, SizeX x_, SizeY y_,
   CUDA_SAFE_CALL(cudaFree(data));
 }
 BENCHMARK_CAPTURE(BM_Raw_Cuda_Stencil_3D_left, size_80_80_80, int(), 80, 80, 80);
-BENCHMARK_CAPTURE(BM_Raw_Cuda_Stencil_3D_left, size_400_400_400, int(), 400, 400, 400);
+//BENCHMARK_CAPTURE(BM_Raw_Cuda_Stencil_3D_left, size_400_400_400, int(), 400, 400, 400);
 
 //================================================================================
 
