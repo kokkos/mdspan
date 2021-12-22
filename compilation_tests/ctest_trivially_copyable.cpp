@@ -53,16 +53,16 @@ namespace stdex = std::experimental;
 // <editor-fold desc="helper utilities"> {{{1
 
 MDSPAN_STATIC_TEST(
-  !std::is_base_of<stdex::extents<1, 2, 3>, stdex::detail::__partially_static_sizes<1, 2, 3>>::value
+  !std::is_base_of<stdex::extents<1, 2, 3>, stdex::detail::__partially_static_sizes<size_t, 1, 2, 3>>::value
 );
 
 MDSPAN_STATIC_TEST(
-  !std::is_base_of<stdex::detail::__partially_static_sizes<1, 2, 3>, stdex::extents<1, 2, 3>>::value
+  !std::is_base_of<stdex::detail::__partially_static_sizes<size_t, 1, 2, 3>, stdex::extents<1, 2, 3>>::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::detail::__partially_static_sizes<1, 2, 3>
+    stdex::detail::__partially_static_sizes<size_t, 1, 2, 3>
   >::value
 );
 

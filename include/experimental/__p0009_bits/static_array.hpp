@@ -256,18 +256,18 @@ public:
 
 //==============================================================================
 
-template <size_t... __values_or_sentinals>
+template <class T, size_t... __values_or_sentinals>
 struct __partially_static_sizes :
   __partially_static_array_with_sentinal<
-    size_t, ::std::integer_sequence<size_t, __values_or_sentinals...>>
+    T, ::std::integer_sequence<size_t, __values_or_sentinals...>>
 {
 private:
   using __base_t = __partially_static_array_with_sentinal<
-    size_t, ::std::integer_sequence<size_t, __values_or_sentinals...>>;
+    T, ::std::integer_sequence<size_t, __values_or_sentinals...>>;
 public:
   using __base_t::__base_t;
   template <class _UTag>
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr __partially_static_sizes<__values_or_sentinals...>
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr __partially_static_sizes<T, __values_or_sentinals...>
   __with_tag() const noexcept {
     return *this;
   }
@@ -275,7 +275,7 @@ public:
 
 // Tags are needed for the standard layout version, but not here
 template <class, size_t... __values_or_sentinals>
-using __partially_static_sizes_tagged = __partially_static_sizes<__values_or_sentinals...>;
+using __partially_static_sizes_tagged = __partially_static_sizes<T, __values_or_sentinals...>;
 
 } // end namespace detail
 } // end namespace experimental

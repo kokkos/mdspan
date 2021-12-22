@@ -60,6 +60,12 @@ namespace experimental {
 
 namespace detail {
 
+#ifndef _MDSPAN_OVERWRITE_EXTENTS_SIZE_TYPE
+using extents_size_type = size_t;
+#else
+using extents_size_type = _MDSPAN_OVERWRITE_EXTENTS_SIZE_TYPE;
+#endif
+
 template<size_t ... Extents>
 struct _count_dynamic_extents;
 
@@ -101,14 +107,14 @@ template <size_t... Extents>
 class extents
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   : private detail::__no_unique_address_emulation<
-      detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>>
+      detail::__partially_static_sizes_tagged<detail::__extents_tag, detail::extents_size_type /*size_type*/, static_cast<detail::extents_size_type>(Extents)...>>
 #endif
 {
 public:
 
-  using size_type = size_t;
+  using size_type = detail::extents_size_type;
 
-  using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, Extents...>;
+  using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, size_type, static_cast<size_type>(Extents)...>;
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   _MDSPAN_NO_UNIQUE_ADDRESS __storage_t __storage_;
@@ -363,7 +369,7 @@ public:
 public:  // (but not really)
 
   MDSPAN_INLINE_FUNCTION static constexpr
-  extents __make_extents_impl(detail::__partially_static_sizes<Extents...>&& __bs) noexcept {
+  extents __make_extents_impl(detail::__partially_static_sizes<size_type, static_cast<size_type>(Extents)...>&& __bs) noexcept {
     // This effectively amounts to a sideways cast that can be done in a constexpr
     // context, but we have to do it to handle the case where the extents and the
     // strides could accidentally end up with the same types in their hierarchies
@@ -439,7 +445,9 @@ struct __extents_to_partially_static_sizes;
 
 template <size_t... ExtentsPack>
 struct __extents_to_partially_static_sizes<::std::experimental::extents<ExtentsPack...>> {
-  using type = detail::__partially_static_sizes<ExtentsPack...>;
+  using type = detail::__partially_static_sizes<
+          typename ::std::experimental::extents<ExtentsPack...>::size_type,
+          static_cast<typename ::std::experimental::extents<ExtentsPack...>::size_type>(ExtentsPack)...>;
 };
 
 template <typename Extents>
