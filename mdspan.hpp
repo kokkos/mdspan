@@ -2322,7 +2322,7 @@ struct __standard_layout_psa<
   }
   template <size_t _I, enable_if_t<_I == _Idx, int> = 1>
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 void
-  __set_n(_T const &__rhs) noexcept {
+  __set_n(_T const &) noexcept {
     // Don't assert here because that would break constexpr. This better
     // not change anything, though
   }
@@ -2525,7 +2525,7 @@ struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
 
   template <class _U, size_t _NStatic>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
-      __construct_psa_from_all_exts_array_tag_t __tag,
+      __construct_psa_from_all_exts_array_tag_t,
       array<_U, _NStatic> const &) noexcept {}
 
   template <class _U, size_t _IDynamic, size_t _NDynamic>
