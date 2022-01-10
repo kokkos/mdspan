@@ -15,7 +15,7 @@ int main() {
   stdex::mdspan m{d.data(), stdex::extents{3, 3}};
 
   for (std::size_t i = 0; i < m.extent(0); ++i)
-    for (std::size_t j = 0; j < m.extent(0); ++j)
+    for (std::size_t j = 0; j < m.extent(1); ++j)
       std::cout << "m(" << i << ", " << j << ") == " << m(i, j) << "\n";
 }
 #else
