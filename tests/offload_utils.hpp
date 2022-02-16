@@ -1,6 +1,13 @@
 
 namespace {
 bool dispatch_host = true;
+
+#define __MDSPAN_DEVICE_ASSERT_EQ(LHS, RHS) \
+if (!(LHS == RHS)) { \
+  printf("expected equality of %s and %s", #LHS, #RHS); \
+  errors[0]++; \
+}
+
 #ifdef _MDSPAN_HAS_CUDA
 
 template<class LAMBDA>
