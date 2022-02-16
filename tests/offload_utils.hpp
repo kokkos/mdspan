@@ -50,7 +50,7 @@ void free_array(T* ptr) {
  A;
 
 #define __MDSPAN_TESTS_DISPATCH_DEFINED
-#endif
+#endif // _MDSPAN_HAS_CUDA
 
 #ifndef __MDSPAN_TESTS_DISPATCH_DEFINED
 template<class LAMBDA>
