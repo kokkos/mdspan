@@ -4,7 +4,7 @@ bool dispatch_host = true;
 
 #define __MDSPAN_DEVICE_ASSERT_EQ(LHS, RHS) \
 if (!(LHS == RHS)) { \
-  printf("expected equality of %s and %s", #LHS, #RHS); \
+  printf("expected equality of %s and %s\n", #LHS, #RHS); \
   errors[0]++; \
 }
 
