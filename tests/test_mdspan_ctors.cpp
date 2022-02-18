@@ -154,7 +154,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
 }
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
-TEST(TestMdspanCTADExtentsPack, test_mdspan_ctad_extents_pack) {
+TEST(TestMdspanCTAD, extents_pack) {
   std::array<int, 1> d{42};
   stdex::mdspan m(d.data(), 64, 128);
   ASSERT_EQ(m.data(), d.data());
@@ -165,7 +165,63 @@ TEST(TestMdspanCTADExtentsPack, test_mdspan_ctad_extents_pack) {
   ASSERT_TRUE(m.is_contiguous());
 }
 
-TEST(TestMdspanCTADExtentsObject, test_mdspan_ctad_extents_object) {
+TEST(TestMdspanCTAD, ctad_pointer) {
+  std::array<int,5> d = {1,2,3,4,5};
+  stdex::mdspan m(d.data());
+  static_assert(std::is_same<decltype(m)::element_type,int>::value);
+  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.rank(), 0);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  ASSERT_TRUE(m.is_contiguous());
+}
+
+TEST(TestMdspanCTAD, ctad_carray) {
+  int data[5] = {1,2,3,4,5};
+  stdex::mdspan m(data);
+  static_assert(std::is_same<decltype(m)::element_type,int>::value);
+  ASSERT_EQ(m.data(), &data[0]);
+  #ifdef  _MDSPAN_USE_P2554
+  ASSERT_EQ(m.rank(), 1);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  ASSERT_EQ(m.static_extent(0), 5);
+  ASSERT_EQ(m.extent(0), 5);
+  ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
+  #else
+  ASSERT_EQ(m.rank(), 0);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  #endif
+  ASSERT_TRUE(m.is_contiguous());
+
+
+  stdex::mdspan m2(data, 3);
+  static_assert(std::is_same<decltype(m2)::element_type,int>::value);
+  ASSERT_EQ(m2.data(), &data[0]);
+  ASSERT_EQ(m2.rank(), 1);
+  ASSERT_EQ(m2.rank_dynamic(), 1);
+  ASSERT_EQ(m2.extent(0), 3);
+  ASSERT_TRUE(m2.is_contiguous());
+  ASSERT_EQ(__MDSPAN_OP(m2, 2), 3);
+}
+
+TEST(TestMdspanCTAD, ctad_const_carray) {
+  const int data[5] = {1,2,3,4,5};
+  stdex::mdspan m(data);
+  static_assert(std::is_same<decltype(m)::element_type,const int>::value);
+  ASSERT_EQ(m.data(), &data[0]);
+  #ifdef  _MDSPAN_USE_P2554
+  ASSERT_EQ(m.rank(), 1);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  ASSERT_EQ(m.static_extent(0), 5);
+  ASSERT_EQ(m.extent(0), 5);
+  ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
+  #else
+  ASSERT_EQ(m.rank(), 0);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  #endif
+  ASSERT_TRUE(m.is_contiguous());
+}
+
+TEST(TestMdspanCTAD, extents_object) {
   std::array<int, 1> d{42};
   stdex::mdspan m{d.data(), stdex::extents{64, 128}};
   ASSERT_EQ(m.data(), d.data());
@@ -176,7 +232,7 @@ TEST(TestMdspanCTADExtentsObject, test_mdspan_ctad_extents_object) {
   ASSERT_TRUE(m.is_contiguous());
 }
 
-TEST(TestMdspanCTADExtentsStdArray, test_mdspan_ctad_extents_std_array) {
+TEST(TestMdspanCTAD, extents_std_array) {
   std::array<int, 1> d{42};
   stdex::mdspan m{d.data(), std::array{64, 128}};
   ASSERT_EQ(m.data(), d.data());
@@ -187,7 +243,7 @@ TEST(TestMdspanCTADExtentsStdArray, test_mdspan_ctad_extents_std_array) {
   ASSERT_TRUE(m.is_contiguous());
 }
 
-TEST(TestMdspanCTADLayoutLeft, test_mdspan_ctad_layout_left) {
+TEST(TestMdspanCTAD, layout_left) {
   std::array<int, 1> d{42};
 
   stdex::mdspan m0{d.data(), stdex::layout_left::mapping{stdex::extents{16, 32}}};
@@ -214,7 +270,7 @@ TEST(TestMdspanCTADLayoutLeft, test_mdspan_ctad_layout_left) {
 */
 }
 
-TEST(TestMdspanCTADLayoutRight, test_mdspan_ctad_layout_right) {
+TEST(TestMdspanCTAD, layout_right) {
   std::array<int, 1> d{42};
 
   stdex::mdspan m0{d.data(), stdex::layout_right::mapping{stdex::extents{16, 32}}};
@@ -241,7 +297,7 @@ TEST(TestMdspanCTADLayoutRight, test_mdspan_ctad_layout_right) {
 */
 }
 
-TEST(TestMdspanCTADLayoutStride, test_mdspan_ctad_layout_stride) {
+TEST(TestMdspanCTAD, layout_stride) {
   std::array<int, 1> d{42};
 
   stdex::mdspan m0{d.data(), stdex::layout_stride::mapping{stdex::extents{16, 32}, std::array{1, 128}}};
@@ -279,4 +335,6 @@ TEST(TestMdspanCTADLayoutStride, test_mdspan_ctad_layout_stride) {
   ASSERT_FALSE(m2.is_contiguous());
 */
 }
+
+
 #endif

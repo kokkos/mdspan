@@ -34,7 +34,7 @@ TODO write this
 Caveats
 -------
 
-This implementation is fully conforming with a few exceptions (most of which are extensions):
+This implementation is fully conforming with revision 14 of P0009 with a few exceptions (most of which are extensions):
 
 ### C++20
 - implements `operator()` not `operator[]`
@@ -46,6 +46,11 @@ This implementation is fully conforming with a few exceptions (most of which are
 
 ### C++14
 - deduction guides don't exist
+
+### Implemented change proposals in flight:
+
+- [P2554](https://wg21.link/P2554) add `-D_MDSPAN_USE_P2554` to your `CMAKE_CXX_FLAGS` or define it in your code before including the mdspan header.
+
 
 Acknowledgements
 ================

@@ -307,12 +307,37 @@ private:
 };
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+#ifdef _MDSPAN_USE_P2554
+MDSPAN_TEMPLATE_REQUIRES(
+  class ElementType, class... SizeTypes,
+  /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */) &&
+  (sizeof...(SizeTypes) > 0)
+)
+mdspan(ElementType*, SizeTypes...)
+  -> mdspan<ElementType, ::std::experimental::dextents<sizeof...(SizeTypes)>>;
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Pointer,
+  (!_MDSPAN_TRAIT(is_array, Pointer))
+)
+mdspan(const Pointer&) -> mdspan<std::remove_pointer_t<Pointer>, extents<>>;
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class CArray,
+  _MDSPAN_TRAIT(is_array, CArray)
+)
+mdspan(CArray&) -> mdspan<std::remove_all_extents_t<CArray>, extents<::std::extent_v<CArray,0>>>;
+
+#else
+
 MDSPAN_TEMPLATE_REQUIRES(
   class ElementType, class... SizeTypes,
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */)
 )
 mdspan(ElementType*, SizeTypes...)
   -> mdspan<ElementType, ::std::experimental::dextents<sizeof...(SizeTypes)>>;
+
+#endif
 
 template <class ElementType, class SizeType, size_t N>
 mdspan(ElementType*, const ::std::array<SizeType, N>&)
