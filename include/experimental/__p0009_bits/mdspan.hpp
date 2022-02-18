@@ -320,7 +320,7 @@ MDSPAN_TEMPLATE_REQUIRES(
   class Pointer,
   (!_MDSPAN_TRAIT(is_array, Pointer))
 )
-mdspan(Pointer&) -> mdspan<std::remove_pointer_t<Pointer>, extents<>>;
+mdspan(const Pointer&) -> mdspan<std::remove_pointer_t<Pointer>, extents<>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class CArray,
