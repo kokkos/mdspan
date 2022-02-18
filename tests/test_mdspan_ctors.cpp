@@ -45,20 +45,35 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#include "offload_utils.hpp"
 
 namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
+
+void test_mdspan_ctor_data_carray() {
+  size_t* errors = allocate_array<size_t>(1);
+  errors[0] = 0;
+
+  dispatch([=] _MDSPAN_HOST_DEVICE () {
+    int data[1] = {42};
+    stdex::mdspan<int, stdex::extents<1>> m(data);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.data(), data);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 1);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.static_extent(0), 1);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.stride(0), 1);
+    auto val = __MDSPAN_OP(m,0);
+    __MDSPAN_DEVICE_ASSERT_EQ(val, 42);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.is_contiguous(), true);
+  });
+  ASSERT_EQ(errors[0], 0);
+  free_array(errors);
+}
+
 TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_data_carray) {
-  int data[1] = {42};
-  stdex::mdspan<int, stdex::extents<1>> m(data);
-  ASSERT_EQ(m.data(), data);
-  ASSERT_EQ(m.rank(), 1);
-  ASSERT_EQ(m.rank_dynamic(), 0);
-  ASSERT_EQ(m.extent(0), 1);
-  ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
-  ASSERT_TRUE(m.is_contiguous());
+  __MDSPAN_TESTS_RUN_TEST(test_mdspan_ctor_data_carray())
 }
 
 TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
