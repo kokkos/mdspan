@@ -150,6 +150,16 @@ TEST(TestMdspanCTAD, extents_pack) {
   ASSERT_TRUE(m.is_contiguous());
 }
 
+TEST(TestMdspanCTAD, ctad_pointer) {
+  std::array<int,5> d = {1,2,3,4,5};
+  stdex::mdspan m(d.data());
+  static_assert(std::is_same<decltype(m)::element_type,int>::value);
+  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.rank(), 0);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  ASSERT_TRUE(m.is_contiguous());
+}
+
 TEST(TestMdspanCTAD, ctad_carray) {
   int data[5] = {1,2,3,4,5};
   stdex::mdspan m(data);
@@ -160,11 +170,13 @@ TEST(TestMdspanCTAD, ctad_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.static_extent(0), 5);
   ASSERT_EQ(m.extent(0), 5);
+  ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
   #else
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
   #endif
   ASSERT_TRUE(m.is_contiguous());
+
 
   stdex::mdspan m2(data, 3);
   static_assert(std::is_same<decltype(m2)::element_type,int>::value);
@@ -173,6 +185,7 @@ TEST(TestMdspanCTAD, ctad_carray) {
   ASSERT_EQ(m2.rank_dynamic(), 1);
   ASSERT_EQ(m2.extent(0), 3);
   ASSERT_TRUE(m2.is_contiguous());
+  ASSERT_EQ(__MDSPAN_OP(m2, 2), 3);
 }
 
 TEST(TestMdspanCTAD, ctad_const_carray) {
@@ -185,6 +198,7 @@ TEST(TestMdspanCTAD, ctad_const_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.static_extent(0), 5);
   ASSERT_EQ(m.extent(0), 5);
+  ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
   #else
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
