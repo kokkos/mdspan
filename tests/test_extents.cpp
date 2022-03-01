@@ -55,18 +55,18 @@ template <class> struct TestExtents;
 template <size_t... Extents, size_t... DynamicSizes>
 struct TestExtents<
   std::tuple<
-    stdex::extents<Extents...>,
+    stdex::extents<size_t,Extents...>,
     std::integer_sequence<size_t, DynamicSizes...>
   >
 > : public ::testing::Test {
-  using extents_type = stdex::extents<Extents...>;
+  using extents_type = stdex::extents<size_t,Extents...>;
   // Double Braces here to make it work with GCC 5
   // Otherwise: "error: array must be initialized with a brace-enclosed initializer"
   const std::array<size_t, sizeof...(Extents)> static_sizes {{ Extents... }};
   const std::array<size_t, sizeof...(DynamicSizes)> dyn_sizes {{ DynamicSizes... }};
   extents_type exts { DynamicSizes... };
   using Fixture = TestExtents< std::tuple<
-                    stdex::extents<Extents...>,
+                    stdex::extents<size_t,Extents...>,
                     std::integer_sequence<size_t, DynamicSizes...>
                   >>;
 
@@ -127,7 +127,7 @@ struct TestExtents<
 template <size_t... Ds>
 using _sizes = std::integer_sequence<size_t, Ds...>;
 template <size_t... Ds>
-using _exts = stdex::extents<Ds...>;
+using _exts = stdex::extents<size_t,Ds...>;
 
 using extents_test_types =
   ::testing::Types<
@@ -191,14 +191,14 @@ struct _BoolPairDeducer {
 template <class> struct TestExtentsCompatCtors;
 template <size_t... Extents, size_t... DynamicSizes, size_t... Extents2, size_t... DynamicSizes2, bool ImplicitExts1ToExts2, bool ImplicitExts2ToExts1>
 struct TestExtentsCompatCtors<std::tuple<
-  stdex::extents<Extents...>,
+  stdex::extents<size_t,Extents...>,
   std::integer_sequence<size_t, DynamicSizes...>,
-  stdex::extents<Extents2...>,
+  stdex::extents<size_t,Extents2...>,
   std::integer_sequence<size_t, DynamicSizes2...>,
   _BoolPairDeducer<ImplicitExts1ToExts2,ImplicitExts2ToExts1>
 >> : public ::testing::Test {
-  using extents_type1 = stdex::extents<Extents...>;
-  using extents_type2 = stdex::extents<Extents2...>;
+  using extents_type1 = stdex::extents<size_t,Extents...>;
+  using extents_type2 = stdex::extents<size_t,Extents2...>;
   extents_type1 exts1 { DynamicSizes... };
   extents_type2 exts2 { DynamicSizes2... };
   static constexpr bool implicit_exts1_to_exts2 = ImplicitExts1ToExts2;
@@ -355,7 +355,7 @@ TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
 
 TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_convertible_to_size_t) {
   std::array<int, 2> i{2, 2};
-  stdex::dextents<2> e{i};
+  stdex::dextents<size_t,2> e{i};
   ASSERT_EQ(e.rank(), 2);
   ASSERT_EQ(e.rank_dynamic(), 2);
   ASSERT_EQ(e.extent(0), 2);

@@ -73,18 +73,18 @@ using test_right_type = std::tuple<
 
 using layout_test_types =
   ::testing::Types<
-    test_left_type<stdex::extents<10>>,
-    test_right_type<stdex::extents<10>>,
+    test_left_type<stdex::extents<size_t,10>>,
+    test_right_type<stdex::extents<size_t,10>>,
     //----------
-    test_left_type<stdex::extents<dyn>, 10>,
-    test_right_type<stdex::extents<dyn>, 10>,
+    test_left_type<stdex::extents<size_t,dyn>, 10>,
+    test_right_type<stdex::extents<size_t,dyn>, 10>,
     //----------
-    test_left_type<stdex::extents<dyn, 10>, 5>,
-    test_left_type<stdex::extents<5, dyn>, 10>,
-    test_left_type<stdex::extents<5, 10>>,
-    test_right_type<stdex::extents<dyn, 10>, 5>,
-    test_right_type<stdex::extents<5, dyn>, 10>,
-    test_right_type<stdex::extents<5, 10>>
+    test_left_type<stdex::extents<size_t,dyn, 10>, 5>,
+    test_left_type<stdex::extents<size_t,5, dyn>, 10>,
+    test_left_type<stdex::extents<size_t,5, 10>>,
+    test_right_type<stdex::extents<size_t,dyn, 10>, 5>,
+    test_right_type<stdex::extents<size_t,5, dyn>, 10>,
+    test_right_type<stdex::extents<size_t,5, 10>>
   >;
 
 TYPED_TEST_SUITE(TestLayoutCtors, layout_test_types);
@@ -127,7 +127,7 @@ using test_right_type_compatible = std::tuple<
 template <size_t... Ds>
 using _sizes = std::integer_sequence<size_t, Ds...>;
 template <size_t... Ds>
-using _exts = stdex::extents<Ds...>;
+using _exts = stdex::extents<size_t,Ds...>;
 
 template <template <class, class, class, class> class _test_case_type>
 using compatible_layout_test_types =
@@ -220,7 +220,7 @@ TYPED_TEST(TestLayoutRightCompatCtors, compatible_assign_2) {
 }
 
 TEST(TestLayoutLeftListInitialization, test_layout_left_extent_initialization) {
-  stdex::layout_left::mapping<stdex::extents<dyn, dyn>> m{stdex::dextents<2>{16, 32}};
+  stdex::layout_left::mapping<stdex::extents<size_t,dyn, dyn>> m{stdex::dextents<size_t,2>{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);
@@ -244,7 +244,7 @@ TEST(TestLayoutLeftCTAD, test_layout_left_ctad) {
 #endif
 
 TEST(TestLayoutRightListInitialization, test_layout_right_extent_initialization) {
-  stdex::layout_right::mapping<stdex::extents<dyn, dyn>> m{stdex::dextents<2>{16, 32}};
+  stdex::layout_right::mapping<stdex::extents<size_t,dyn, dyn>> m{stdex::dextents<size_t,2>{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);
