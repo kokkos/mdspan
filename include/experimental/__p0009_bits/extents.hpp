@@ -103,16 +103,16 @@ struct __extents_tag { };
 
 } // end namespace detail
 
-template <size_t... Extents>
+template <class ThisSizeType, size_t... Extents>
 class extents
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   : private detail::__no_unique_address_emulation<
-      detail::__partially_static_sizes_tagged<detail::__extents_tag, detail::extents_size_type /*size_type*/, static_cast<detail::extents_size_type>(Extents)...>>
+      detail::__partially_static_sizes_tagged<detail::__extents_tag, SizeType /*size_type*/, static_cast<SizeType>(Extents)...>>
 #endif
 {
 public:
 
-  using size_type = detail::extents_size_type;
+  using size_type = ThisSizeType;
 
   using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, size_type, static_cast<size_type>(Extents)...>;
 
@@ -148,16 +148,16 @@ public:
     return _MDSPAN_FOLD_PLUS_RIGHT(((Idxs == n) ? Extents : 0), /* + ... + */ 0);
   }
 
-  template <size_t...>
+  template <class, size_t...>
   friend class extents;
 
-  template <size_t... OtherExtents, size_t... Idxs>
+  template <class OtherSizeType, size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool _eq_impl(std::experimental::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return false; }
-  template <size_t... OtherExtents, size_t... Idxs>
+  constexpr bool _eq_impl(std::experimental::extents<OtherSizeType, OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return false; }
+  template <class OtherSizeType, size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
   constexpr bool _eq_impl(
-    std::experimental::extents<OtherExtents...> other,
+    std::experimental::extents<OtherSizeType, OtherExtents...> other,
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_AND(
@@ -165,13 +165,13 @@ public:
     );
   }
 
-  template <size_t... OtherExtents, size_t... Idxs>
+  template <class OtherSizeType, size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
-  constexpr bool _not_eq_impl(std::experimental::extents<OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return true; }
-  template <size_t... OtherExtents, size_t... Idxs>
+  constexpr bool _not_eq_impl(std::experimental::extents<OtherSizeType, OtherExtents...>, false_type, index_sequence<Idxs...>) const noexcept { return true; }
+  template <class OtherSizeType, size_t... OtherExtents, size_t... Idxs>
   MDSPAN_INLINE_FUNCTION
   constexpr bool _not_eq_impl(
-    std::experimental::extents<OtherExtents...> other,
+    std::experimental::extents<OtherSizeType, OtherExtents...> other,
     true_type, index_sequence<Idxs...>
   ) const noexcept {
     return _MDSPAN_FOLD_OR(
@@ -204,7 +204,7 @@ public:
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~extents() noexcept = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
-    size_t... OtherExtents,
+    class OtherSizeType, size_t... OtherExtents,
     /* requires */ (
       /* multi-stage check to protect from invalid pack expansion when sizes don't match? */
       decltype(detail::_check_compatible_extents(
@@ -216,7 +216,7 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent)) || ...))
-  constexpr extents(const extents<OtherExtents...>& __other)
+  constexpr extents(const extents<OtherSizeType, OtherExtents...>& __other)
     noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : __storage_{
@@ -346,9 +346,9 @@ public:
 
   //--------------------------------------------------------------------------------
 
-  template<size_t... RHS>
+  template<class OtherSizeType, size_t... RHS>
   MDSPAN_INLINE_FUNCTION
-  friend constexpr bool operator==(extents const& lhs, extents<RHS...> const& rhs) noexcept {
+  friend constexpr bool operator==(extents const& lhs, extents<OtherSizeType, RHS...> const& rhs) noexcept {
     return lhs._eq_impl(
       rhs, std::integral_constant<bool, (sizeof...(RHS) == rank())>{},
       make_index_sequence<sizeof...(RHS)>{}
@@ -356,9 +356,9 @@ public:
   }
 
 #if !(MDSPAN_HAS_CXX_20)
-  template<size_t... RHS>
+  template<class OtherSizeType, size_t... RHS>
   MDSPAN_INLINE_FUNCTION
-  friend constexpr bool operator!=(extents const& lhs, extents<RHS...> const& rhs) noexcept {
+  friend constexpr bool operator!=(extents const& lhs, extents<OtherSizeType, RHS...> const& rhs) noexcept {
     return lhs._not_eq_impl(
       rhs, std::integral_constant<bool, (sizeof...(RHS) == rank())>{},
       make_index_sequence<sizeof...(RHS)>{}
@@ -403,29 +403,29 @@ public:  // (but not really)
 
 namespace detail {
 
-template <size_t Rank, class Extents = ::std::experimental::extents<>>
+template <class SizeType, size_t Rank, class Extents = ::std::experimental::extents<SizeType>>
 struct __make_dextents;
 
-template <size_t Rank, size_t... ExtentsPack>
-struct __make_dextents<Rank, ::std::experimental::extents<ExtentsPack...>> {
-  using type = typename __make_dextents<Rank - 1,
-    ::std::experimental::extents<::std::experimental::dynamic_extent, ExtentsPack...>>::type;
+template <class SizeType, size_t Rank, size_t... ExtentsPack>
+struct __make_dextents<SizeType, Rank, ::std::experimental::extents<SizeType, ExtentsPack...>> {
+  using type = typename __make_dextents<SizeType, Rank - 1,
+    ::std::experimental::extents<SizeType, ::std::experimental::dynamic_extent, ExtentsPack...>>::type;
 };
 
-template <size_t... ExtentsPack>
-struct __make_dextents<0, ::std::experimental::extents<ExtentsPack...>> {
-  using type = ::std::experimental::extents<ExtentsPack...>;
+template <class SizeType, size_t... ExtentsPack>
+struct __make_dextents<SizeType, 0, ::std::experimental::extents<SizeType, ExtentsPack...>> {
+  using type = ::std::experimental::extents<SizeType, ExtentsPack...>;
 };
 
 } // end namespace detail
 
-template <size_t Rank>
-using dextents = typename detail::__make_dextents<Rank>::type;
+template <class SizeType, size_t Rank>
+using dextents = typename detail::__make_dextents<SizeType, Rank>::type;
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 template <class... SizeTypes>
 extents(SizeTypes...)
-  -> extents<detail::__make_dynamic_extent<SizeTypes>()...>;
+  -> extents<size_t, detail::__make_dynamic_extent<SizeTypes>()...>;
 #endif
 
 namespace detail {
@@ -433,8 +433,8 @@ namespace detail {
 template <class T>
 struct __is_extents : ::std::false_type {};
 
-template <size_t... ExtentsPack>
-struct __is_extents<::std::experimental::extents<ExtentsPack...>> : ::std::true_type {};
+template <class SizeType, size_t... ExtentsPack>
+struct __is_extents<::std::experimental::extents<SizeType, ExtentsPack...>> : ::std::true_type {};
 
 template <class T>
 static constexpr bool __is_extents_v = __is_extents<T>::value;
@@ -443,11 +443,11 @@ static constexpr bool __is_extents_v = __is_extents<T>::value;
 template <typename Extents>
 struct __extents_to_partially_static_sizes;
 
-template <size_t... ExtentsPack>
-struct __extents_to_partially_static_sizes<::std::experimental::extents<ExtentsPack...>> {
+template <class SizeType, size_t... ExtentsPack>
+struct __extents_to_partially_static_sizes<::std::experimental::extents<SizeType, ExtentsPack...>> {
   using type = detail::__partially_static_sizes<
-          typename ::std::experimental::extents<ExtentsPack...>::size_type,
-          static_cast<typename ::std::experimental::extents<ExtentsPack...>::size_type>(ExtentsPack)...>;
+          typename ::std::experimental::extents<SizeType, ExtentsPack...>::size_type,
+          static_cast<typename ::std::experimental::extents<SizeType, ExtentsPack...>::size_type>(ExtentsPack)...>;
 };
 
 template <typename Extents>
