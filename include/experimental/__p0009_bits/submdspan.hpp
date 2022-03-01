@@ -239,7 +239,7 @@ struct __assign_op_slice_handler<
 
 // Don't define this unless we need it; they have a cost to compile
 #ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
-  using __extents_type = ::std::experimental::extents<_Exts...>;
+  using __extents_type = ::std::experimental::extents<_IndexT, _Exts...>;
 #endif
 
   // For size_t slice, skip the extent and stride, but add an offset corresponding to the value
@@ -327,8 +327,8 @@ struct __assign_op_slice_handler<
     ),
     (
       /* not layout stride, so don't pass dynamic_strides */
-      /* return */ typename NewLayout::template mapping<::std::experimental::extents<_Exts...>>(
-        experimental::extents<_Exts...>::__make_extents_impl(::std::move(__exts))
+      /* return */ typename NewLayout::template mapping<::std::experimental::extents<_IndexT, _Exts...>>(
+        experimental::extents<_IndexT, _Exts...>::__make_extents_impl(::std::move(__exts))
       ) /* ; */
     )
   )
@@ -340,7 +340,7 @@ struct __assign_op_slice_handler<
       _make_layout_mapping_impl(layout_stride) noexcept
     ),
     (
-      /* return */ layout_stride::template mapping<::std::experimental::extents<_Exts...>>
+      /* return */ layout_stride::template mapping<::std::experimental::extents<_IndexT, _Exts...>>
         ::__make_mapping(::std::move(__exts), ::std::move(__strides)) /* ; */
     )
   )
@@ -362,15 +362,15 @@ struct __assign_op_slice_handler<
 
 #if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
 // Forking this because the C++11 version will be *completely* unreadable
-template <class ET, size_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
+template <class ET, class ST, size_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
 MDSPAN_INLINE_FUNCTION
 constexpr auto _submdspan_impl(
   integer_sequence<size_t, Idxs...>,
-  mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
+  mdspan<ET, std::experimental::extents<ST, Exts...>, LP, AP> const& src,
   SliceSpecs&&... slices
 ) noexcept
 {
-  using _IndexT = size_t;
+  using _IndexT = ST;
   auto _handled =
     _MDSPAN_FOLD_ASSIGN_LEFT(
       (
@@ -417,13 +417,13 @@ auto _submdspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t
   };
 }
 
-template <class ET, size_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
+template <class ET, class ST, size_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
 MDSPAN_INLINE_FUNCTION
 _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
   (
     constexpr /* auto */ _submdspan_impl(
       std::integer_sequence<size_t, Idxs...> seq,
-      mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src,
+      mdspan<ET, std::experimental::extents<ST, Exts...>, LP, AP> const& src,
       SliceSpecs&&... slices
     ) noexcept
   ),
@@ -436,9 +436,9 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
             size_t,
             detail::preserve_layout_analysis<LP>
           >{
-            __partially_static_sizes<size_t>{},
-            __partially_static_sizes<size_t>{},
-            __partially_static_sizes<size_t>{}
+            __partially_static_sizes<ST>{},
+            __partially_static_sizes<ST>{},
+            __partially_static_sizes<ST>{}
           }
         ),
         /* = ... = */
@@ -467,7 +467,7 @@ struct _is_layout_stride<
 //==============================================================================
 
 MDSPAN_TEMPLATE_REQUIRES(
-  class ET, size_t... Exts, class LP, class AP, class... SliceSpecs,
+  class ET, class EXT, class LP, class AP, class... SliceSpecs,
   /* requires */ (
     (
       _MDSPAN_TRAIT(is_same, LP, layout_left)
@@ -479,14 +479,14 @@ MDSPAN_TEMPLATE_REQUIRES(
         || _MDSPAN_TRAIT(is_convertible, SliceSpecs, tuple<size_t, size_t>)
         || _MDSPAN_TRAIT(is_convertible, SliceSpecs, full_extent_t)
     ) /* && ... */) &&
-    sizeof...(SliceSpecs) == sizeof...(Exts)
+    sizeof...(SliceSpecs) == EXT::rank()
   )
 )
 MDSPAN_INLINE_FUNCTION
 _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
   (
     constexpr submdspan(
-      mdspan<ET, std::experimental::extents<Exts...>, LP, AP> const& src, SliceSpecs... slices
+      mdspan<ET, EXT, LP, AP> const& src, SliceSpecs... slices
     ) noexcept
   ),
   (

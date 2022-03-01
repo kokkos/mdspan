@@ -314,19 +314,19 @@ MDSPAN_TEMPLATE_REQUIRES(
   (sizeof...(SizeTypes) > 0)
 )
 mdspan(ElementType*, SizeTypes...)
-  -> mdspan<ElementType, ::std::experimental::dextents<sizeof...(SizeTypes)>>;
+  -> mdspan<ElementType, ::std::experimental::dextents<size_t, sizeof...(SizeTypes)>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class Pointer,
   (!_MDSPAN_TRAIT(is_array, Pointer))
 )
-mdspan(const Pointer&) -> mdspan<std::remove_pointer_t<Pointer>, extents<>>;
+mdspan(const Pointer&) -> mdspan<std::remove_pointer_t<Pointer>, extents<size_t>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class CArray,
   _MDSPAN_TRAIT(is_array, CArray)
 )
-mdspan(CArray&) -> mdspan<std::remove_all_extents_t<CArray>, extents<::std::extent_v<CArray,0>>>;
+mdspan(CArray&) -> mdspan<std::remove_all_extents_t<CArray>, extents<size_t, ::std::extent_v<CArray,0>>>;
 
 #else
 
@@ -335,20 +335,20 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */)
 )
 mdspan(ElementType*, SizeTypes...)
-  -> mdspan<ElementType, ::std::experimental::dextents<sizeof...(SizeTypes)>>;
+  -> mdspan<ElementType, ::std::experimental::dextents<size_t, sizeof...(SizeTypes)>>;
 
 #endif
 
 template <class ElementType, class SizeType, size_t N>
 mdspan(ElementType*, const ::std::array<SizeType, N>&)
-  -> mdspan<ElementType, ::std::experimental::dextents<N>>;
+  -> mdspan<ElementType, ::std::experimental::dextents<size_t, N>>;
 
 // This one is necessary because all the constructors take `pointer`s, not
 // `ElementType*`s, and `pointer` is taken from `accessor_type::pointer`, which
 // seems to throw off automatic deduction guides.
-template <class ElementType, size_t... ExtentsPack>
-mdspan(ElementType*, const extents<ExtentsPack...>&)
-  -> mdspan<ElementType, ::std::experimental::extents<ExtentsPack...>>;
+template <class ElementType, class SizeType, size_t... ExtentsPack>
+mdspan(ElementType*, const extents<SizeType, ExtentsPack...>&)
+  -> mdspan<ElementType, ::std::experimental::extents<SizeType, ExtentsPack...>>;
 
 template <class ElementType, class MappingType>
 mdspan(ElementType*, const MappingType&)

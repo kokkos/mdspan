@@ -224,8 +224,8 @@ struct layout_left {
 #endif
 
     // Not really public, but currently needed to implement fully constexpr useable submdspan:
-    template<size_t N, size_t ... E, size_t ... Idx>
-    constexpr size_type __get_stride(std::experimental::extents<E...>,integer_sequence<size_t, Idx...>) const {
+    template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
+    constexpr size_type __get_stride(std::experimental::extents<SizeType, E...>,integer_sequence<size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT((Idx<N? __extents.template __extent<Idx>():1),1);
     }
     template<size_t N>

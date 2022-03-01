@@ -67,7 +67,7 @@ struct layout_stride {
     : private detail::__no_unique_address_emulation<
         detail::__compressed_pair<
           Extents,
-          ::std::experimental::dextents<Extents::rank()>
+          ::std::experimental::dextents<typename Extents::size_type, Extents::rank()>
         >
       >
 #endif
@@ -85,7 +85,7 @@ struct layout_stride {
 
     //----------------------------------------------------------------------------
 
-    using __strides_storage_t = ::std::experimental::dextents<Extents::rank()>;
+    using __strides_storage_t = ::std::experimental::dextents<size_type, Extents::rank()>;
     using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -189,7 +189,7 @@ struct layout_stride {
     __make_mapping(
       detail::__extents_to_partially_static_sizes_t<Extents>&& __exts,
       detail::__extents_to_partially_static_sizes_t<
-        ::std::experimental::dextents<Extents::rank()>>&& __strs
+        ::std::experimental::dextents<size_type, Extents::rank()>>&& __strs
     ) noexcept {
       // call the private constructor we created for this purpose
       return mapping(
