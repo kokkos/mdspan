@@ -52,10 +52,12 @@
 
 //================================================================================
 
+using size_type = int;
+
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+using lmdspan = stdex::mdspan<T, stdex::extents<size_type, Es...>, stdex::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
+using rmdspan = stdex::mdspan<T, stdex::extents<size_type, Es...>, stdex::layout_right>;
 
 //================================================================================
 
@@ -133,7 +135,7 @@ void BM_Raw_Sum_3D_OpenMP(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z)
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_type, 1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
 

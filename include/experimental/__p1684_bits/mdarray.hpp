@@ -55,11 +55,12 @@ namespace {
   template<class Extents>
   struct size_of_extents;
 
-  template<size_t ... Extents>
-  struct size_of_extents<extents<Extents...>> {
+  template<class IndexType, size_t ... Extents>
+  struct size_of_extents<extents<IndexType, Extents...>> {
     constexpr static size_t value() {
       size_t size = 1;
-      for(int r=0; r<extents<Extents...>::rank(); r++) size *= extents<Extents...>::static_extent(r);
+      for(int r=0; r<extents<IndexType, Extents...>::rank(); r++)
+        size *= extents<IndexType, Extents...>::static_extent(r);
       return size;
     }
   };

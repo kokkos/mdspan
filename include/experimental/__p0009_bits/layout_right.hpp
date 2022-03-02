@@ -59,6 +59,7 @@ struct layout_right {
   template <class Extents>
   class mapping {
   public:
+    using rank_type = typename Extents::rank_type;
     using size_type = typename Extents::size_type;
   private:
 
@@ -174,7 +175,7 @@ struct layout_right {
     {
        #ifndef __CUDA_ARCH__
        size_t stride = 1;
-       for(size_type r=__extents.rank(); r>0; r--) {
+       for(rank_type r=__extents.rank(); r>0; r--) {
          if(stride != other.stride(r-1))
            throw std::runtime_error("Assigning layout_stride to layout_right with invalid strides.");
          stride *= __extents.extent(r-1);
@@ -195,13 +196,13 @@ struct layout_right {
 
     constexpr size_type stride(size_t i) const noexcept {
       size_type value = 1;
-      for(size_type r=Extents::rank()-1; r>i; r--) value*=__extents.extent(r);
+      for(rank_type r=Extents::rank()-1; r>i; r--) value*=__extents.extent(r);
       return value;
     }
 
     constexpr size_type required_span_size() const noexcept {
       size_type value = 1;
-      for(size_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
+      for(rank_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
       return value;
     }
 
@@ -245,3 +246,4 @@ private:
 
 } // end namespace experimental
 } // end namespace std
+

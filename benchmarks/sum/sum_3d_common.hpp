@@ -55,7 +55,7 @@ void BM_Raw_Sum_1D(benchmark::State& state, T, Size size) {
   auto buffer = std::make_unique<T[]>(size);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), size};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_t, 1>>{buffer.get(), size};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -82,7 +82,7 @@ void BM_Raw_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) 
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_t, 1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -111,7 +111,7 @@ void BM_Raw_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_t, 1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -138,7 +138,7 @@ void BM_Raw_Sum_3D_right_iter_left(benchmark::State& state, T, SizeX x, SizeY y,
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_t, 1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
 
@@ -177,7 +177,7 @@ void BM_Raw_Static_Sum_3D_right(benchmark::State& state, T,
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_t, 1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -208,7 +208,7 @@ void BM_Raw_Static_Sum_3D_left(benchmark::State& state, T,
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_t, 1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();
@@ -239,7 +239,7 @@ void BM_Raw_Static_Sum_3D_right_iter_left(benchmark::State& state, T,
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_t, 1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
   T* data = buffer.get();

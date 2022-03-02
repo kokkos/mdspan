@@ -107,14 +107,15 @@ template <class ThisSizeType, size_t... Extents>
 class extents
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   : private detail::__no_unique_address_emulation<
-      detail::__partially_static_sizes_tagged<detail::__extents_tag, SizeType /*size_type*/, static_cast<SizeType>(Extents)...>>
+      detail::__partially_static_sizes_tagged<detail::__extents_tag, SizeType , size_t, Extents...>>
 #endif
 {
 public:
 
+  using rank_type = size_t;
   using size_type = ThisSizeType;
 
-  using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, size_type, static_cast<size_type>(Extents)...>;
+  using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, size_type, size_t, Extents...>;
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   _MDSPAN_NO_UNIQUE_ADDRESS __storage_t __storage_;
@@ -263,7 +264,7 @@ public:
       std::conditional_t<sizeof...(Integral)==rank_dynamic(),
         detail::__construct_psa_from_dynamic_exts_values_tag_t,
         detail::__construct_psa_from_all_exts_values_tag_t>(),
-        static_cast<size_t>(exts)...
+        static_cast<size_type>(exts)...
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       }
 #else
@@ -369,7 +370,7 @@ public:
 public:  // (but not really)
 
   MDSPAN_INLINE_FUNCTION static constexpr
-  extents __make_extents_impl(detail::__partially_static_sizes<size_type, static_cast<size_type>(Extents)...>&& __bs) noexcept {
+  extents __make_extents_impl(detail::__partially_static_sizes<size_type, size_t,Extents...>&& __bs) noexcept {
     // This effectively amounts to a sideways cast that can be done in a constexpr
     // context, but we have to do it to handle the case where the extents and the
     // strides could accidentally end up with the same types in their hierarchies
@@ -446,8 +447,8 @@ struct __extents_to_partially_static_sizes;
 template <class SizeType, size_t... ExtentsPack>
 struct __extents_to_partially_static_sizes<::std::experimental::extents<SizeType, ExtentsPack...>> {
   using type = detail::__partially_static_sizes<
-          typename ::std::experimental::extents<SizeType, ExtentsPack...>::size_type,
-          static_cast<typename ::std::experimental::extents<SizeType, ExtentsPack...>::size_type>(ExtentsPack)...>;
+          typename ::std::experimental::extents<SizeType, ExtentsPack...>::size_type, size_t, 
+          ExtentsPack...>;
 };
 
 template <typename Extents>

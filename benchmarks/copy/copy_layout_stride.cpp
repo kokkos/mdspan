@@ -47,6 +47,8 @@
 
 #include "fill.hpp"
 
+using size_type = int;
+
 namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
@@ -75,13 +77,13 @@ void BM_MDSpan_Copy_2D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
 }
 
 BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_right, size_100_100, stdex::mdspan<int, stdex::extents<100, 100>>()
+  BM_MDSpan_Copy_2D_right, size_100_100, stdex::mdspan<int, stdex::extents<size_type, 100, 100>>()
 );
 BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_right, size_100_dyn, stdex::mdspan<int, stdex::extents<100, dyn>>(), 100
+  BM_MDSpan_Copy_2D_right, size_100_dyn, stdex::mdspan<int, stdex::extents<size_type, 100, dyn>>(), 100
 );
 BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_right, size_dyn_dyn, stdex::mdspan<int, stdex::dextents<2>>(), 100, 100
+  BM_MDSpan_Copy_2D_right, size_dyn_dyn, stdex::mdspan<int, stdex::dextents<size_type, 2>>(), 100, 100
 );
 
 //================================================================================
@@ -113,41 +115,40 @@ void BM_MDSpan_Copy_2D_stride(benchmark::State& state, MDSpan, LayoutMapping map
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100_100,
-  stdex::mdspan<int, stdex::extents<100, 100>, stdex::layout_stride>(),
-  stdex::layout_stride::template mapping<stdex::extents<100, 100>>(
-    stdex::extents<100, 100>{},
+  stdex::mdspan<int, stdex::extents<size_type, 100, 100>, stdex::layout_stride>(),
+  stdex::layout_stride::template mapping<stdex::extents<size_type, 100, 100>>(
+    stdex::extents<size_type, 100, 100>{},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100_100d,
-  stdex::mdspan<int, stdex::extents<100, dyn>, stdex::layout_stride>(),
-  stdex::layout_stride::template mapping<stdex::extents<100, dyn>>(
-    stdex::extents<100, dyn>{100},
+  stdex::mdspan<int, stdex::extents<size_type, 100, dyn>, stdex::layout_stride>(),
+  stdex::layout_stride::template mapping<stdex::extents<size_type, 100, dyn>>(
+    stdex::extents<size_type, 100, dyn>{100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100d_100,
-  stdex::mdspan<int, stdex::extents<dyn, 100>, stdex::layout_stride>(),
-  stdex::layout_stride::template mapping<stdex::extents<dyn, 100>>(
-    stdex::extents<dyn, 100>{100},
+  stdex::mdspan<int, stdex::extents<size_type, dyn, 100>, stdex::layout_stride>(),
+  stdex::layout_stride::template mapping<stdex::extents<size_type, dyn, 100>>(
+    stdex::extents<size_type, dyn, 100>{100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100d_100d,
-  stdex::mdspan<int, stdex::extents<dyn, dyn>, stdex::layout_stride>(),
-  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
-    stdex::extents<dyn, dyn>{100, 100},
+  stdex::mdspan<int, stdex::extents<size_type, dyn, dyn>, stdex::layout_stride>(),
+  stdex::layout_stride::template mapping<stdex::extents<size_type, dyn, dyn>>(
+    stdex::extents<size_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
 );
-
 
 //================================================================================
 
@@ -181,14 +182,14 @@ void BM_MDSpan_Copy_2D_stride_diff_map(benchmark::State& state,
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride_diff_map, size_100d_100d_bcast_0, int(),
-  stdex::extents<dyn, dyn>{100, 100},
-  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
-    stdex::extents<dyn, dyn>{100, 100},
+  stdex::extents<size_type, dyn, dyn>{100, 100},
+  stdex::layout_stride::template mapping<stdex::extents<size_type, dyn, dyn>>(
+    stdex::extents<size_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{0, 1}
   ),
-  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
-    stdex::extents<dyn, dyn>{100, 100},
+  stdex::layout_stride::template mapping<stdex::extents<size_type, dyn, dyn>>(
+    stdex::extents<size_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
@@ -196,14 +197,14 @@ BENCHMARK_CAPTURE(
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride_diff_map, size_100d_100d_bcast_1, int(),
-  stdex::extents<dyn, dyn>{100, 100},
-  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
-    stdex::extents<dyn, dyn>{100, 100},
+  stdex::extents<size_type, dyn, dyn>{100, 100},
+  stdex::layout_stride::template mapping<stdex::extents<size_type, dyn, dyn>>(
+    stdex::extents<size_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{1, 0}
   ),
-  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
-    stdex::extents<dyn, dyn>{100, 100},
+  stdex::layout_stride::template mapping<stdex::extents<size_type, dyn, dyn>>(
+    stdex::extents<size_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
@@ -211,14 +212,14 @@ BENCHMARK_CAPTURE(
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride_diff_map, size_100d_100d_bcast_both, int(),
-  stdex::extents<dyn, dyn>{100, 100},
-  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
-    stdex::extents<dyn, dyn>{100, 100},
+  stdex::extents<size_type, dyn, dyn>{100, 100},
+  stdex::layout_stride::template mapping<stdex::extents<size_type, dyn, dyn>>(
+    stdex::extents<size_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{0, 0}
   ),
-  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
-    stdex::extents<dyn, dyn>{100, 100},
+  stdex::layout_stride::template mapping<stdex::extents<size_type, dyn, dyn>>(
+    stdex::extents<size_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
@@ -234,7 +235,7 @@ void BM_Raw_Copy_1D(benchmark::State& state, T, size_t size) {
   auto buffer = std::make_unique<value_type[]>(size);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), size};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_type, 1>>{buffer.get(), size};
     mdspan_benchmark::fill_random(wrapped);
   }
   value_type* src = buffer.get();
@@ -262,7 +263,7 @@ void BM_Raw_Copy_2D(benchmark::State& state, T, size_t x, size_t y) {
   auto buffer = std::make_unique<value_type[]>(x * y);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x * y};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_type, 1>>{buffer.get(), x * y};
     mdspan_benchmark::fill_random(wrapped);
   }
   value_type* src = buffer.get();

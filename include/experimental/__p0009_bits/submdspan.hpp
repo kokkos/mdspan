@@ -176,9 +176,9 @@ struct preserve_layout_analysis<layout_left>
 template <
   class _IndexT,
   class _PreserveLayoutAnalysis,
-  class _OffsetsArray=__partially_static_sizes<_IndexT>,
-  class _ExtsArray=__partially_static_sizes<_IndexT>,
-  class _StridesArray=__partially_static_sizes<_IndexT>,
+  class _OffsetsArray=__partially_static_sizes<_IndexT, size_t>,
+  class _ExtsArray=__partially_static_sizes<_IndexT, size_t>,
+  class _StridesArray=__partially_static_sizes<_IndexT, size_t>,
   class = make_index_sequence<_OffsetsArray::__size>,
   class = make_index_sequence<_ExtsArray::__size>,
   class = make_index_sequence<_StridesArray::__size>
@@ -198,9 +198,9 @@ template <
 struct __assign_op_slice_handler<
   _IndexT,
   _PreserveLayoutAnalysis,
-  __partially_static_sizes<_IndexT, _Offsets...>,
-  __partially_static_sizes<_IndexT, _Exts...>,
-  __partially_static_sizes<_IndexT, _Strides...>,
+  __partially_static_sizes<_IndexT, size_t, _Offsets...>,
+  __partially_static_sizes<_IndexT, size_t, _Exts...>,
+  __partially_static_sizes<_IndexT, size_t, _Strides...>,
   integer_sequence<size_t, _OffsetIdxs...>,
   integer_sequence<size_t, _ExtIdxs...>,
   integer_sequence<size_t, _StrideIdxs...>>
@@ -215,9 +215,9 @@ struct __assign_op_slice_handler<
     " "
   );
 
-  using __offsets_storage_t = __partially_static_sizes<_IndexT, _Offsets...>;
-  using __extents_storage_t = __partially_static_sizes<_IndexT, _Exts...>;
-  using __strides_storage_t = __partially_static_sizes<_IndexT, _Strides...>;
+  using __offsets_storage_t = __partially_static_sizes<_IndexT, size_t, _Offsets...>;
+  using __extents_storage_t = __partially_static_sizes<_IndexT, size_t, _Exts...>;
+  using __strides_storage_t = __partially_static_sizes<_IndexT, size_t, _Strides...>;
   __offsets_storage_t __offsets;
   __extents_storage_t __exts;
   __strides_storage_t __strides;
@@ -250,11 +250,11 @@ struct __assign_op_slice_handler<
     -> __assign_op_slice_handler<
          _IndexT,
          typename _PreserveLayoutAnalysis::encounter_scalar,
-         __partially_static_sizes<_IndexT, _Offsets..., dynamic_extent>,
-         __partially_static_sizes<_IndexT, _Exts...>,
-         __partially_static_sizes<_IndexT, _Strides...>/* intentional space here to work around ICC bug*/> {
+         __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>,
+         __partially_static_sizes<_IndexT, size_t, _Exts...>,
+         __partially_static_sizes<_IndexT, size_t, _Strides...>/* intentional space here to work around ICC bug*/> {
     return {
-      __partially_static_sizes<_IndexT, _Offsets..., dynamic_extent>(
+      __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>(
         __construct_psa_from_all_exts_values_tag,
         __offsets.template __get_n<_OffsetIdxs>()..., __slice.slice),
       ::std::move(__exts),
@@ -270,17 +270,17 @@ struct __assign_op_slice_handler<
     -> __assign_op_slice_handler<
          _IndexT,
          typename _PreserveLayoutAnalysis::encounter_all,
-         __partially_static_sizes<_IndexT, _Offsets..., 0>,
-         __partially_static_sizes<_IndexT, _Exts..., _OldStaticExtent>,
-         __partially_static_sizes<_IndexT, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
+         __partially_static_sizes<_IndexT, size_t, _Offsets..., 0>,
+         __partially_static_sizes<_IndexT, size_t, _Exts..., _OldStaticExtent>,
+         __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
     return {
-      __partially_static_sizes<_IndexT, _Offsets..., 0>(
+      __partially_static_sizes<_IndexT, size_t, _Offsets..., 0>(
         __construct_psa_from_all_exts_values_tag,
         __offsets.template __get_n<_OffsetIdxs>()..., size_t(0)),
-      __partially_static_sizes<_IndexT, _Exts..., _OldStaticExtent>(
+      __partially_static_sizes<_IndexT, size_t, _Exts..., _OldStaticExtent>(
         __construct_psa_from_all_exts_values_tag,
         __exts.template __get_n<_ExtIdxs>()..., __slice.old_extent),
-      __partially_static_sizes<_IndexT, _Strides..., _OldStaticStride>(
+      __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(
         __construct_psa_from_all_exts_values_tag,
         __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
     };
@@ -294,17 +294,17 @@ struct __assign_op_slice_handler<
     -> __assign_op_slice_handler<
          _IndexT,
          typename _PreserveLayoutAnalysis::encounter_pair,
-         __partially_static_sizes<_IndexT, _Offsets..., dynamic_extent>,
-         __partially_static_sizes<_IndexT, _Exts..., dynamic_extent>,
-         __partially_static_sizes<_IndexT, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
+         __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>,
+         __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>,
+         __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
     return {
-      __partially_static_sizes<_IndexT, _Offsets..., dynamic_extent>(
+      __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>(
         __construct_psa_from_all_exts_values_tag,
         __offsets.template __get_n<_OffsetIdxs>()..., ::std::get<0>(__slice.slice)),
-      __partially_static_sizes<_IndexT, _Exts..., dynamic_extent>(
+      __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>(
         __construct_psa_from_all_exts_values_tag,
         __exts.template __get_n<_ExtIdxs>()..., ::std::get<1>(__slice.slice) - ::std::get<0>(__slice.slice)),
-      __partially_static_sizes<_IndexT, _Strides..., _OldStaticStride>(
+      __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(
         __construct_psa_from_all_exts_values_tag,
         __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
     };
@@ -378,9 +378,9 @@ constexpr auto _submdspan_impl(
           _IndexT,
           detail::preserve_layout_analysis<LP>
         >{
-          __partially_static_sizes<_IndexT>{},
-          __partially_static_sizes<_IndexT>{},
-          __partially_static_sizes<_IndexT>{}
+          __partially_static_sizes<_IndexT, size_t>{},
+          __partially_static_sizes<_IndexT, size_t>{},
+          __partially_static_sizes<_IndexT, size_t>{}
         }
       ),
         /* = ... = */
@@ -436,9 +436,9 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
             size_t,
             detail::preserve_layout_analysis<LP>
           >{
-            __partially_static_sizes<ST>{},
-            __partially_static_sizes<ST>{},
-            __partially_static_sizes<ST>{}
+            __partially_static_sizes<ST, size_t>{},
+            __partially_static_sizes<ST, size_t>{},
+            __partially_static_sizes<ST, size_t>{}
           }
         ),
         /* = ... = */

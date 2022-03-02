@@ -371,7 +371,7 @@ struct layout_stride {
       for(unsigned r = 0; r < Extents::rank(); r++) {
         // Return early if any of the extents are zero
         if(extents().extent(r)==0) return 0;
-        span_size = std::max(span_size, extents().extent(r) * __strides_storage().extent(r));
+        span_size = std::max(span_size, static_cast<size_t>(extents().extent(r) * __strides_storage().extent(r)));
       }
       return span_size;
     }

@@ -86,9 +86,9 @@ namespace _impl {
 template <class, class T>
 T&& _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
 
-template <class T, class... Rest, class RNG, class Dist>
+template <class T, class SizeT, class... Rest, class RNG, class Dist>
 void _do_fill_random(
-  std::experimental::mdspan<T, std::experimental::extents<>, Rest...> s,
+  std::experimental::mdspan<T, std::experimental::extents<SizeT>, Rest...> s,
   RNG& gen,
   Dist& dist
 )
@@ -96,14 +96,14 @@ void _do_fill_random(
   s() = dist(gen);
 }
 
-template <class T, size_t E, size_t... Es, class... Rest, class RNG, class Dist>
+template <class T, class SizeT, size_t E, size_t... Es, class... Rest, class RNG, class Dist>
 void _do_fill_random(
-  std::experimental::mdspan<T, std::experimental::extents<E, Es...>, Rest...> s,
+  std::experimental::mdspan<T, std::experimental::extents<SizeT, E, Es...>, Rest...> s,
   RNG& gen,
   Dist& dist
 )
 {
-  for(size_t i = 0; i < s.extent(0); ++i) {
+  for(SizeT i = 0; i < s.extent(0); ++i) {
     _do_fill_random(std::experimental::submdspan(s, i, _repeated_with<decltype(Es)>(std::experimental::full_extent)...), gen, dist);
   }
 }

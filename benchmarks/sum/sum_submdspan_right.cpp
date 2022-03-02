@@ -51,10 +51,12 @@
 
 //================================================================================
 
+using size_type = int;
+
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, std::experimental::extents<Es...>, stdex::layout_left>;
+using lmdspan = stdex::mdspan<T, std::experimental::extents<size_type, Es...>, stdex::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, std::experimental::extents<Es...>, stdex::layout_right>;
+using rmdspan = stdex::mdspan<T, std::experimental::extents<size_type, Es...>, stdex::layout_right>;
 
 //================================================================================
 
@@ -145,7 +147,7 @@ template <class T, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
-  stdex::mdspan<T, std::experimental::extents<>, Rest...> s
+  stdex::mdspan<T, std::experimental::extents<size_type>, Rest...> s
 )
 {
   sum += s();
@@ -155,7 +157,7 @@ template <class T, size_t E, size_t... Es, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
-  stdex::mdspan<T, std::experimental::extents<E, Es...>, Rest...> s
+  stdex::mdspan<T, std::experimental::extents<size_type, E, Es...>, Rest...> s
 )
 {
   for(size_t i = 0; i < s.extent(0); ++i) {
@@ -186,31 +188,31 @@ void BM_MDSpan_Sum_Subspan_MD_right(benchmark::State& state, MDSpan, DynSizes...
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed_10D_size_1024,
-  stdex::mdspan<int, stdex::extents<2, 2, 2, 2, 2, 2, 2, 2, 2, 2>>{}
+  stdex::mdspan<int, stdex::extents<size_type, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2>>{}
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, dyn_10D_size_1024,
-  stdex::mdspan<int, stdex::dextents<10>>{},
+  stdex::mdspan<int, stdex::dextents<size_type, 10>>{},
   2, 2, 2, 2, 2,
   2, 2, 2, 2, 2
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed5_dyn5_10D_alternate_size_1024,
-  stdex::mdspan<int, stdex::extents<2, stdex::dynamic_extent, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent>>{},
+  stdex::mdspan<int, stdex::extents<size_type, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent>>{},
   2, 2, 2, 2, 2
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed8_dyn2_10D_alternate_size_1024,
-  stdex::mdspan<int, stdex::extents<2, 2, 2, 2, stdex::dynamic_extent, 2, 2, 2, 2, stdex::dynamic_extent>>{},
+  stdex::mdspan<int, stdex::extents<size_type, 2, 2, 2, 2, stdex::dynamic_extent, 2, 2, 2, 2, stdex::dynamic_extent>>{},
   2, 2
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed_5D_size_1024,
-  stdex::mdspan<int, stdex::extents<4, 4, 4, 4, 4>>{}
+  stdex::mdspan<int, stdex::extents<size_type, 4, 4, 4, 4, 4>>{}
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, dyn_5D_size_1024,
-  stdex::mdspan<int, stdex::dextents<5>>{},
+  stdex::mdspan<int, stdex::dextents<size_type, 5>>{},
   4, 4, 4, 4, 4
 );
 BENCHMARK_CAPTURE(
