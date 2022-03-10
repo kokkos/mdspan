@@ -263,6 +263,12 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  endif
 #endif
 
+#ifndef _MDSPAN_HAS_HIP
+#  if defined(__HIPCC__)
+#    define _MDSPAN_HAS_HIP __HIPCC__
+#  endif
+#endif
+
 #ifndef __has_cpp_attribute
 #  define __has_cpp_attribute(x) 0
 #endif
