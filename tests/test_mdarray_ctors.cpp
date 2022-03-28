@@ -47,6 +47,39 @@
 #include <gtest/gtest.h>
 #include "offload_utils.hpp"
 
+#ifdef __cpp_lib_memory_resource
+#include <memory_resource>
+
+
+//For testing, prints allocs and deallocs to cout
+struct ChatterResource : std::pmr::memory_resource{
+  ChatterResource() = default;
+  ChatterResource(std::pmr::memory_resource* upstream): upstream(upstream){}
+  ChatterResource(const ChatterResource&) = delete;
+  ChatterResource(ChatterResource&&) = delete;
+  ChatterResource& operator=(const ChatterResource&) = delete;
+  ChatterResource& operator=(ChatterResource&&) = delete;
+
+  private:
+
+    void* do_allocate( std::size_t bytes, std::size_t alignment ) override{
+        std::cout << "Allocation - size: " << bytes << ", alignment: " << alignment << std::endl;
+        return upstream->allocate(bytes, alignment);
+    }
+
+    void do_deallocate( void* p, std::size_t bytes, std::size_t alignment ) override{
+        std::cout << "Deallocation - size: " << bytes << ", alignment: " << alignment << std::endl;
+        upstream->deallocate(p, bytes, alignment);
+    }
+
+    bool do_is_equal( const std::pmr::memory_resource& other ) const noexcept override{
+        return this == &other;
+    };
+
+    std::pmr::memory_resource* upstream = std::pmr::get_default_resource();
+};
+#endif
+
 namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
@@ -293,6 +326,29 @@ TEST(TestMdarrayCtorFromMoveContainerSizes, 2d_mixed) {
   ASSERT_EQ(m.data(),ptr);
   ASSERT_TRUE(m.is_contiguous());
 }
+
+// PMR
+
+
+#ifdef __cpp_lib_memory_resource
+TEST(TestMdarrayCtorWithPMR, 2d_mixed) {
+    using array_2d_pmr_dynamic = stdex::mdarray<int, stdex::dextents<2>, stdex::layout_right, std::vector<int, std::pmr::polymorphic_allocator<int>>>;
+
+    ChatterResource allocation_logger;
+    constexpr bool test = std::uses_allocator_v<array_2d_pmr_dynamic, std::pmr::polymorphic_allocator<int>>;
+
+    array_2d_pmr_dynamic a{stdex::dextents<2>{3,3}, &allocation_logger};
+    array_2d_pmr_dynamic b{3,3};
+
+    std::pmr::vector<array_2d_pmr_dynamic> top_container{&allocation_logger};
+    top_container.reserve(4);
+
+    top_container.emplace_back(3,3);
+    top_container.emplace_back(a.mapping());
+    top_container.emplace_back(a.container(), a.mapping());
+    top_container.push_back({a});
+}
+#endif
 
 // Construct from container only
 TEST(TestMdarrayCtorDataStdArray, test_mdarray_ctor_data_carray) {
