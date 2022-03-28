@@ -230,6 +230,33 @@ public:
     static_assert(is_constructible_v<extents_type, OtherExtents>);
   }
 
+  // Constructors for container types constructible from a size and allocator
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class Alloc,
+    /* requires */ (_MDSPAN_TRAIT(is_constructible, container_type, size_t, Alloc) &&
+                    _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type))
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const extents_type& exts, const Alloc& a)
+    : map_(exts), ctr_(map_.required_span_size(), a)
+  { }
+
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherContainer, class Alloc,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_constructible, mapping_type, typename OtherLayoutPolicy::template mapping<OtherExtents>) &&
+      _MDSPAN_TRAIT(is_constructible, container_type, OtherContainer, Alloc)
+    )
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const mdarray<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherContainer>& other, const Alloc& a)
+    : map_(other.mapping()), ctr_(other.container(), a)
+  {
+    static_assert(is_constructible_v<extents_type, OtherExtents>);
+  }
+
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~mdarray() = default;
 
