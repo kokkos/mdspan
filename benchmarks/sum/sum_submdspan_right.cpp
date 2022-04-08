@@ -53,6 +53,8 @@
 
 template <class T, size_t... Es>
 using lmdspan = stdex::mdspan<T, std::experimental::extents<Es...>, stdex::layout_left>;
+template <class T, size_t... Es>
+using rmdspan = stdex::mdspan<T, std::experimental::extents<Es...>, stdex::layout_right>;
 
 //================================================================================
 

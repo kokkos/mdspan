@@ -113,8 +113,8 @@ void BM_MDSpan_Copy_2D_stride(benchmark::State& state, MDSpan, LayoutMapping map
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100_100,
-  stdex::mdspan<int, stdex::extents<100, 100>, stdex::layout_stride<dyn, dyn>>(),
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<100, 100>>(
+  stdex::mdspan<int, stdex::extents<100, 100>, stdex::layout_stride>(),
+  stdex::layout_stride::template mapping<stdex::extents<100, 100>>(
     stdex::extents<100, 100>{},
     // layout right
     std::array<size_t, 2>{100, 1}
@@ -122,8 +122,8 @@ BENCHMARK_CAPTURE(
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100_100d,
-  stdex::mdspan<int, stdex::extents<100, dyn>, stdex::layout_stride<dyn, dyn>>(),
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<100, dyn>>(
+  stdex::mdspan<int, stdex::extents<100, dyn>, stdex::layout_stride>(),
+  stdex::layout_stride::template mapping<stdex::extents<100, dyn>>(
     stdex::extents<100, dyn>{100},
     // layout right
     std::array<size_t, 2>{100, 1}
@@ -131,8 +131,8 @@ BENCHMARK_CAPTURE(
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100d_100,
-  stdex::mdspan<int, stdex::extents<dyn, 100>, stdex::layout_stride<dyn, dyn>>(),
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, 100>>(
+  stdex::mdspan<int, stdex::extents<dyn, 100>, stdex::layout_stride>(),
+  stdex::layout_stride::template mapping<stdex::extents<dyn, 100>>(
     stdex::extents<dyn, 100>{100},
     // layout right
     std::array<size_t, 2>{100, 1}
@@ -140,87 +140,14 @@ BENCHMARK_CAPTURE(
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100d_100d,
-  stdex::mdspan<int, stdex::extents<dyn, dyn>, stdex::layout_stride<dyn, dyn>>(),
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
+  stdex::mdspan<int, stdex::extents<dyn, dyn>, stdex::layout_stride>(),
+  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
 );
 
-BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_stride, size_fixed_dyn_100_100,
-  stdex::mdspan<int, stdex::extents<100, 100>, stdex::layout_stride<100, dyn>>(),
-  stdex::layout_stride<100, dyn>::template mapping<stdex::extents<100, 100>>(
-    stdex::extents<100, 100>{},
-    // layout right
-    std::array<size_t, 1>{1}
-  )
-);
-BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_stride, size_fixed_dyn_100_100d,
-  stdex::mdspan<int, stdex::extents<100, dyn>, stdex::layout_stride<100, dyn>>(),
-  stdex::layout_stride<100, dyn>::template mapping<stdex::extents<100, dyn>>(
-    stdex::extents<100, dyn>{100},
-    // layout right
-    std::array<size_t, 1>{1}
-  )
-);
-BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_stride, size_fixed_dyn_100d_100,
-  stdex::mdspan<int, stdex::extents<dyn, 100>, stdex::layout_stride<100, dyn>>(),
-  stdex::layout_stride<100, dyn>::template mapping<stdex::extents<dyn, 100>>(
-    stdex::extents<dyn, 100>{100},
-    // layout right
-    std::array<size_t, 1>{1}
-  )
-);
-BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_stride, size_dyn_fixed_100d_100d,
-  stdex::mdspan<int, stdex::extents<dyn, dyn>, stdex::layout_stride<100, dyn>>(),
-  stdex::layout_stride<100, dyn>::template mapping<stdex::extents<dyn, dyn>>(
-    stdex::extents<dyn, dyn>{100, 100},
-    // layout right
-    std::array<size_t, 1>{1}
-  )
-);
-
-BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_stride, size_dyn_fixed_100_100,
-  stdex::mdspan<int, stdex::extents<100, 100>, stdex::layout_stride<dyn, 1>>(),
-  stdex::layout_stride<dyn, 1>::template mapping<stdex::extents<100, 100>>(
-    stdex::extents<100, 100>{},
-    // layout right
-    std::array<size_t, 1>{100}
-  )
-);
-BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_stride, size_dyn_fixed_100_100d,
-  stdex::mdspan<int, stdex::extents<100, dyn>, stdex::layout_stride<dyn, 1>>(),
-  stdex::layout_stride<dyn, 1>::template mapping<stdex::extents<100, dyn>>(
-    stdex::extents<100, dyn>{100},
-    // layout right
-    std::array<size_t, 1>{100}
-  )
-);
-BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_stride, size_dyn_fixed_100d_100,
-  stdex::mdspan<int, stdex::extents<dyn, 100>, stdex::layout_stride<dyn, 1>>(),
-  stdex::layout_stride<dyn, 1>::template mapping<stdex::extents<dyn, 100>>(
-    stdex::extents<dyn, 100>{100},
-    // layout right
-    std::array<size_t, 1>{100}
-  )
-);
-BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_stride, size_dyn_fixed_100d_100d,
-  stdex::mdspan<int, stdex::extents<dyn, dyn>, stdex::layout_stride<dyn, 1>>(),
-  stdex::layout_stride<dyn, 1>::template mapping<stdex::extents<dyn, dyn>>(
-    stdex::extents<dyn, dyn>{100, 100},
-    // layout right
-    std::array<size_t, 1>{100}
-  )
-);
 
 //================================================================================
 
@@ -235,7 +162,7 @@ void BM_MDSpan_Copy_2D_stride_diff_map(benchmark::State& state,
   auto buff_dest = std::make_unique<value_type[]>(
     map_dest.required_span_size()
   );
-  using map_stride_dyn = stdex::layout_stride<dyn, dyn>;
+  using map_stride_dyn = stdex::layout_stride;
   using mdspan_type = stdex::mdspan<T, Extents, map_stride_dyn>;
   auto src = mdspan_type{buff_src.get(), map_src};
   mdspan_benchmark::fill_random(src);
@@ -255,12 +182,12 @@ void BM_MDSpan_Copy_2D_stride_diff_map(benchmark::State& state,
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride_diff_map, size_100d_100d_bcast_0, int(),
   stdex::extents<dyn, dyn>{100, 100},
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
+  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{0, 1}
   ),
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
+  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
@@ -270,12 +197,12 @@ BENCHMARK_CAPTURE(
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride_diff_map, size_100d_100d_bcast_1, int(),
   stdex::extents<dyn, dyn>{100, 100},
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
+  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{1, 0}
   ),
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
+  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
@@ -285,12 +212,12 @@ BENCHMARK_CAPTURE(
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride_diff_map, size_100d_100d_bcast_both, int(),
   stdex::extents<dyn, dyn>{100, 100},
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
+  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{0, 0}
   ),
-  stdex::layout_stride<dyn, dyn>::template mapping<stdex::extents<dyn, dyn>>(
+  stdex::layout_stride::template mapping<stdex::extents<dyn, dyn>>(
     stdex::extents<dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
