@@ -46,6 +46,7 @@
 
 #include "../mdspan"
 #include <cassert>
+#include <vector>
 
 namespace std {
 namespace experimental {
@@ -104,7 +105,14 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.cons], mdspan constructors, assignment, and destructor
 
+#if !(MDSPAN_HAS_CXX_20)
+  MDSPAN_FUNCTION_REQUIRES(
+    (MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr),
+    mdarray, (), ,
+    /* requires */ (extents_type::rank_dynamic()!=0)) {};
+#else
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdarray() requires(extents_type::rank_dynamic()!=0) = default;
+#endif
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdarray(const mdarray&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdarray(mdarray&&) = default;
 
@@ -236,7 +244,7 @@ public:
   constexpr mdarray(const mdarray<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherContainer>& other)
     : map_(other.mapping()), ctr_(other.container())
   {
-    static_assert(is_constructible_v<extents_type, OtherExtents>);
+    static_assert(is_constructible<extents_type, OtherExtents>::value, "");
   }
 
   // Constructors for container types constructible from a size and allocator
@@ -309,7 +317,7 @@ public:
   constexpr mdarray(const mdarray<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherContainer>& other, const Alloc& a)
     : map_(other.mapping()), ctr_(other.container(), a)
   {
-    static_assert(is_constructible_v<extents_type, OtherExtents>);
+    static_assert(is_constructible<extents_type, OtherExtents>::value, "");
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED

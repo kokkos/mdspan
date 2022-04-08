@@ -349,7 +349,7 @@ public:
     );
   }
 
-#ifndef MDSPAN_HAS_CXX_20
+#if !(MDSPAN_HAS_CXX_20)
   template<size_t... RHS>
   MDSPAN_INLINE_FUNCTION
   friend constexpr bool operator!=(extents const& lhs, extents<RHS...> const& rhs) noexcept {
