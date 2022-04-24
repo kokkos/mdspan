@@ -51,4 +51,5 @@ mdspan_add_test(test_contiguous_layouts)
 mdspan_add_test(test_layout_ctors)
 mdspan_add_test(test_layout_stride)
 mdspan_add_test(test_submdspan)
+mdspan_add_test(test_mdarray_ctors)
 
