@@ -20,7 +20,7 @@ option(MDSPAN_ENABLE_OPENMP "Enable OpenMP benchmarks if benchmarks are enabled.
 
 # Option to override which C++ standard to use
 set(MDSPAN_CXX_STANDARD DETECT CACHE STRING "Override the default CXX_STANDARD to compile with.")
-set_property(CACHE MDSPAN_CXX_STANDARD PROPERTY STRINGS DETECT 14 17 20)
+set_property(CACHE MDSPAN_CXX_STANDARD PROPERTY STRINGS DETECT 14 17 20 23)
 
 option(MDSPAN_ENABLE_CONCEPTS "Try to enable concepts support by giving extra flags." On)
 
@@ -48,8 +48,18 @@ elseif(MDSPAN_CXX_STANDARD STREQUAL "20")
   else()
     message(FATAL_ERROR "Requested MDSPAN_CXX_STANDARD \"20\" not supported by provided C++ compiler")
   endif()
+elseif(MDSPAN_CXX_STANDARD STREQUAL "23")
+  if("cxx_std_23" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+    message(STATUS "Using C++23 standard")
+    set(CMAKE_CXX_STANDARD 23)
+  else()
+    message(FATAL_ERROR "Requested MDSPAN_CXX_STANDARD \"23\" not supported by provided C++ compiler")
+  endif()
 else()
-  if("cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+  if("cxx_std_23" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+    set(CMAKE_CXX_STANDARD 23)
+    message(STATUS "Detected support for C++23 standard")
+  elseif("cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
     set(CMAKE_CXX_STANDARD 20)
     message(STATUS "Detected support for C++20 standard")
   elseif("cxx_std_17" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
@@ -66,7 +76,7 @@ endif()
 ################################################################################
 
 if(MDSPAN_ENABLE_CONCEPTS)
-  if(CMAKE_CXX_STANDARD STREQUAL "20")
+  if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
     include(CheckCXXCompilerFlag)
     check_cxx_compiler_flag("-fconcepts" COMPILER_SUPPORTS_FCONCEPTS)
     if(COMPILER_SUPPORTS_FCONCEPTS)
