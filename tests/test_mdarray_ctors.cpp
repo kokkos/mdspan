@@ -117,8 +117,10 @@ struct mdarray_values<2> {
   template<class MDA>
   static void check(const MDA& m) {
     for(int i=0; i<m.extent(0); i++)
-      for(int j=0; j<m.extent(1); j++)
-        ASSERT_EQ(__MDSPAN_OP(m,i,j), 42 + i*1000 + j);
+      for(int j=0; j<m.extent(1); j++) {
+        auto tmp = __MDSPAN_OP(m,i,j);
+        ASSERT_EQ(tmp, 42 + i*1000 + j);
+      }
   }
   template<class pointer, class extents_type>
   static void fill(const pointer& ptr, const extents_type& ext, bool is_layout_right) {
@@ -137,8 +139,10 @@ struct mdarray_values<3> {
   static void check(const MDA& m) {
     for(int i=0; i<m.extent(0); i++)
       for(int j=0; j<m.extent(1); j++)
-        for(int k=0; k<m.extent(2); k++)
-          ASSERT_EQ(__MDSPAN_OP(m,i,j,k), 42 + i*1000000 + j*1000 + k);
+        for(int k=0; k<m.extent(2); k++) {
+          auto tmp = __MDSPAN_OP(m,i,j,k);
+          ASSERT_EQ(tmp, 42 + i*1000000 + j*1000 + k);
+        }
   }
   template<class pointer, class extents_type>
   static void fill(const pointer& ptr, const extents_type& ext, bool is_layout_right) {
