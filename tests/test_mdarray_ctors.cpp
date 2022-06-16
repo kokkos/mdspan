@@ -481,6 +481,7 @@ TEST(TestMdarrayCtorWithPMR, 2d_mixed) {
 
     ChatterResource allocation_logger;
     constexpr bool test = std::uses_allocator_v<array_2d_pmr_dynamic, std::pmr::polymorphic_allocator<int>>;
+    (void) test;
 
     array_2d_pmr_dynamic a{stdex::dextents<int, 2>{3,3}, &allocation_logger};
     array_2d_pmr_dynamic b{3,3};

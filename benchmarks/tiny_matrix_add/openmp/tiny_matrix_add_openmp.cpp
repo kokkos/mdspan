@@ -54,8 +54,6 @@
 
 //================================================================================
 
-static constexpr int warpsPerBlock = 4;
-static constexpr int global_delta = 1;
 static constexpr int global_repeat = 1;
 
 //================================================================================
