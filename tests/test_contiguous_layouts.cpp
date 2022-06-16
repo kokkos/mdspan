@@ -365,7 +365,7 @@ TYPED_TEST(TestLayoutConversion, implicit_conversion) {
   #endif
     map1 = typename TestFixture::map_1_t(map2);
 
-  for(int r=0; r<this->exts1.rank(); r++) {
+  for(size_t r=0; r<this->exts1.rank(); r++) {
     ASSERT_EQ(map1.extents().extent(r), map2.extents().extent(r));
     ASSERT_EQ(map1.stride(r), map2.stride(r));
   }

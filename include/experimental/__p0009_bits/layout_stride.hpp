@@ -314,13 +314,13 @@ struct layout_stride {
         // "remove" the index
         constexpr auto removed_index_sentinel = static_cast<size_t>(-1);
         *next_idx_iter = removed_index_sentinel;
-        int found_count = 1;
+        size_t found_count = 1;
         while (found_count != Extents::rank()) {
           next_idx_iter = std::find_if(
             rem.begin(), rem.end(),
             [&](size_t i) {
               return i != removed_index_sentinel
-                && this->extents().extent(i) == prev_stride_times_prev_extent;
+                && static_cast<size_t>(this->extents().extent(i)) == prev_stride_times_prev_extent;
             }
           );
           if (next_idx_iter != rem.end()) {

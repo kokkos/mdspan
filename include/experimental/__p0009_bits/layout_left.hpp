@@ -58,6 +58,7 @@ struct layout_left {
   template <class Extents>
   class mapping {
   public:
+    using rank_type = typename Extents::rank_type;
     using size_type = typename Extents::size_type;
   private:
 
@@ -169,7 +170,7 @@ struct layout_left {
     {
        #ifndef __CUDA_ARCH__
        size_t stride = 1;
-       for(size_type r=0; r<__extents.rank(); r++) {
+       for(rank_type r=0; r<__extents.rank(); r++) {
          if(stride != other.stride(r))
            throw std::runtime_error("Assigning layout_stride to layout_left with invalid strides.");
          stride *= __extents.extent(r);
@@ -190,13 +191,13 @@ struct layout_left {
 
     constexpr size_type stride(size_t i) const noexcept {
       size_type value = 1;
-      for(size_type r=0; r<i; r++) value*=__extents.extent(r);
+      for(rank_type r=0; r<i; r++) value*=__extents.extent(r);
       return value;
     }
 
     constexpr size_type required_span_size() const noexcept {
       size_type value = 1;
-      for(size_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
+      for(rank_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
       return value;
     }
 

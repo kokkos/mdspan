@@ -102,12 +102,14 @@ template<>
 struct mdarray_values<1> {
   template<class MDA>
   static void check(const MDA& m) {
-    for(int i=0; i<m.extent(0); i++)
+    using size_type = typename MDA::size_type;
+    for(size_type i=0; i<m.extent(0); i++)
       ASSERT_EQ(__MDSPAN_OP(m,i), 42 + i);
   }
   template<class pointer, class extents_type>
   static void fill(const pointer& ptr, const extents_type& ext, bool) {
-    for(int i=0; i<ext.extent(0); i++)
+    using size_type = typename extents_type::size_type;
+    for(size_type i=0; i<ext.extent(0); i++)
       ptr[i] = 42 + i;
   }
 };
@@ -116,16 +118,18 @@ template<>
 struct mdarray_values<2> {
   template<class MDA>
   static void check(const MDA& m) {
-    for(int i=0; i<m.extent(0); i++)
-      for(int j=0; j<m.extent(1); j++) {
+    using size_type = typename MDA::size_type;
+    for(size_type i=0; i<m.extent(0); i++)
+      for(size_type j=0; j<m.extent(1); j++) {
         auto tmp = __MDSPAN_OP(m,i,j);
         ASSERT_EQ(tmp, 42 + i*1000 + j);
       }
   }
   template<class pointer, class extents_type>
   static void fill(const pointer& ptr, const extents_type& ext, bool is_layout_right) {
-    for(int i=0; i<ext.extent(0); i++)
-      for(int j=0; j<ext.extent(1); j++)
+    using size_type = typename extents_type::size_type;
+    for(size_type i=0; i<ext.extent(0); i++)
+      for(size_type j=0; j<ext.extent(1); j++)
         if(is_layout_right)
           ptr[i*ext.extent(1)+j] = 42 + i*1000 + j;
         else
