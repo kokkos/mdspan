@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.14)
 
 project(MDSpan
   VERSION 0.2.0
@@ -148,6 +148,7 @@ configure_package_config_file(cmake/mdspanConfig.cmake.in
 )
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/mdspanConfigVersion.cmake
   COMPATIBILITY SameMajorVersion
+  ARCH_INDEPENDENT
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfigVersion.cmake
