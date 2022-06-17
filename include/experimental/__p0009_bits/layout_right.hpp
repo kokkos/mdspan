@@ -71,11 +71,6 @@ struct layout_right {
     // i0+(i1 + E(1)*(i2 + E(2)*i3))
     template <size_t r, size_t Rank>
     struct __rank_count {};
-#if !defined(_MDSPAN_USE_MAPPING_ARG_CAST)
-    // The first option here is safer: it will use the extents size_type and not rely on implicit
-    // promotion of computation of the incoming types. Since everything always gets multiplied
-    // by __extents.extent() there shouldn't be any "unsafe" operations here with respect to
-    // overflowing unless Extents::size_type is not 64bit
 
     template <size_t r, size_t Rank, class I, class... Indices>
     constexpr size_type __compute_offset(
@@ -88,26 +83,6 @@ struct layout_right {
       __rank_count<0,Extents::rank()>, const I& i, Indices... idx) const {
       return __compute_offset(i,__rank_count<1,Extents::rank()>(),idx...);
     }
-
-#else
-    // This option will cast __extents::extent() to the current index type.
-    // That means if you index into the mapping with just int everything gets
-    // converted to int. That means the user would need to choose index types
-    // which he knows won't overflow i.e. the index type needs to be able
-    // to represent required_span_size
-
-    template <size_t r, size_t Rank, class I, class... Indices>
-    constexpr I __compute_offset(
-      I offset, __rank_count<r,Rank>, const I& i, Indices... idx) const {
-      return __compute_offset(offset * static_cast<I>(__extents.template __extent<r>()) + i,__rank_count<r+1,Rank>(),  idx...);
-    }
-
-    template<class I, class ... Indices>
-    constexpr I __compute_offset(
-      __rank_count<0,Extents::rank()>, const I& i, Indices... idx) const {
-      return __compute_offset(i,__rank_count<1,Extents::rank()>(),idx...);
-    }
-#endif
 
     constexpr typename Extents::size_type __compute_offset(size_t offset, __rank_count<Extents::rank(), Extents::rank()>) const {
       return offset;

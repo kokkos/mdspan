@@ -137,8 +137,8 @@ struct __standard_layout_psa<
   static constexpr auto __size = sizeof...(_Idxs) + 1;
 #ifdef _MDSPAN_COMPILER_MSVC
   // MSVC doesn't like the fact that __next_t happens to be a base
-  // class that's private, even though __size_synamic is public in
-  // it's definition.
+  // class that's private, even though __size_dynamic is public in
+  // its definition.
   struct __msvc_workaround_tag {};
   using __msvc_workaround_next_t = __standard_layout_psa<
       __msvc_workaround_tag, _T, _static_t
