@@ -110,7 +110,7 @@ public:
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr),
     mdarray, (), ,
-    /* requires */ (extents_type::rank_dynamic()!=0)) {};
+    /* requires */ (extents_type::rank_dynamic()!=0)) {}
 #else
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdarray() requires(extents_type::rank_dynamic()!=0) = default;
 #endif
