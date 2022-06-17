@@ -69,9 +69,9 @@ void BM_MDSpan_Sum_3D_left(benchmark::State& state, MDSpan, DynSizes... dyn) {
   mdspan_benchmark::fill_random(s);
   for (auto _ : state) {
     value_type sum = 0;
-    for (size_t k = 0; k < s.extent(2); ++k) {
-      for (size_t j = 0; j < s.extent(1); ++j) {
-        for(size_t i = 0; i < s.extent(0); ++i) {
+    for (size_type k = 0; k < s.extent(2); ++k) {
+      for (size_type j = 0; j < s.extent(1); ++j) {
+        for(size_type i = 0; i < s.extent(0); ++i) {
           sum += s(i, j, k);
         }
       }

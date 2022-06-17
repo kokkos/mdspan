@@ -93,7 +93,8 @@ public:
   using mapping_type = typename layout_type::template mapping<extents_type>;
   using element_type = ElementType;
   using value_type = remove_cv_t<element_type>;
-  using size_type = size_t;
+  using rank_type = typename extents_type::rank_type;
+  using size_type = typename extents_type::size_type;
   using difference_type = ptrdiff_t;
   using pointer = typename accessor_type::pointer;
   using reference = typename accessor_type::reference;

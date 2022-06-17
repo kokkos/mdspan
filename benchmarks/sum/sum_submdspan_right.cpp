@@ -75,11 +75,12 @@ void BM_MDSpan_Sum_Subspan_3D_right(benchmark::State& state, MDSpan, DynSizes...
     benchmark::DoNotOptimize(s);
     benchmark::DoNotOptimize(s.data());
     value_type sum = 0;
-    for(size_t i = 0; i < s.extent(0); ++i) {
+    using size_type = typename MDSpan::size_type;
+    for(size_type i = 0; i < s.extent(0); ++i) {
       auto sub_i = stdex::submdspan(s, i, stdex::full_extent, stdex::full_extent);
-      for (size_t j = 0; j < s.extent(1); ++j) {
+      for (size_type j = 0; j < s.extent(1); ++j) {
         auto sub_i_j = stdex::submdspan(sub_i, j, stdex::full_extent);
-        for (size_t k = 0; k < s.extent(2); ++k) {
+        for (size_type k = 0; k < s.extent(2); ++k) {
           sum += sub_i_j(k);
         }
       }
@@ -160,7 +161,7 @@ _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   stdex::mdspan<T, std::experimental::extents<size_type, E, Es...>, Rest...> s
 )
 {
-  for(size_t i = 0; i < s.extent(0); ++i) {
+  for(size_type i = 0; i < s.extent(0); ++i) {
     _impl::_do_sum_submdspan(sum, stdex::submdspan(
       s, i, _repeated_with<decltype(Es)>(stdex::full_extent)...)
     );

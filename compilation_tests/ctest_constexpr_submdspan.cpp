@@ -59,7 +59,7 @@ dynamic_extent_1d() {
   int data[] = {1, 2, 3, 4, 5};
   auto s = stdex::mdspan<int, stdex::dextents<size_t,1>, Layout>(data, 5);
   int result = 0;
-  for (int i = 0; i < s.extent(0); ++i) {
+  for (size_t i = 0; i < s.extent(0); ++i) {
     auto ss = stdex::submdspan(s, i);
     result += __MDSPAN_OP0(ss);
   }
@@ -86,7 +86,7 @@ dynamic_extent_1d_all_slice() {
     int, stdex::extents<size_t,stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   auto ss = stdex::submdspan(s, stdex::full_extent);
-  for (int i = 0; i < s.extent(0); ++i) {
+  for (size_t i = 0; i < s.extent(0); ++i) {
     result += __MDSPAN_OP(ss, i);
   }
   // 1 + 2 + 3 + 4 + 5
@@ -111,7 +111,7 @@ dynamic_extent_1d_pair_full() {
     int, stdex::extents<size_t,stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   auto ss = stdex::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
-  for (int i = 0; i < s.extent(0); ++i) {
+  for (size_t i = 0; i < s.extent(0); ++i) {
     result += __MDSPAN_OP(ss, i);
   }
   constexpr_assert_equal(15, result);
@@ -128,7 +128,7 @@ dynamic_extent_1d_pair_each() {
   auto s = stdex::mdspan<
     int, stdex::extents<size_t,stdex::dynamic_extent>, Layout>(data, 5);
   int result = 0;
-  for (int i = 0; i < s.extent(0); ++i) {
+  for (size_t i = 0; i < s.extent(0); ++i) {
     auto ss = stdex::submdspan(s,
       std::pair<std::ptrdiff_t, std::ptrdiff_t>{i, i+1});
     result += __MDSPAN_OP(ss, 0);
@@ -158,7 +158,7 @@ dynamic_extent_1d_all_three() {
   auto s1 = stdex::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
   auto s2 = stdex::submdspan(s1, stdex::full_extent);
   int result = 0;
-  for (int i = 0; i < s.extent(0); ++i) {
+  for (size_t i = 0; i < s.extent(0); ++i) {
     auto ss = stdex::submdspan(s2, i);
     result += __MDSPAN_OP0(ss);
   }
@@ -183,8 +183,8 @@ dynamic_extent_2d_idx_idx() {
     int, stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>, Layout>(
       data, 2, 3);
   int result = 0;
-  for(int row = 0; row < s.extent(0); ++row) {
-    for(int col = 0; col < s.extent(1); ++col) {
+  for(size_t row = 0; row < s.extent(0); ++row) {
+    for(size_t col = 0; col < s.extent(1); ++col) {
       auto ss = stdex::submdspan(s, row, col);
       result += __MDSPAN_OP0(ss);
     }
@@ -203,9 +203,9 @@ dynamic_extent_2d_idx_all_idx() {
     int, stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>, Layout>(
       data, 2, 3);
   int result = 0;
-  for(int row = 0; row < s.extent(0); ++row) {
+  for(size_t row = 0; row < s.extent(0); ++row) {
     auto srow = stdex::submdspan(s, row, stdex::full_extent);
-    for(int col = 0; col < s.extent(1); ++col) {
+    for(size_t col = 0; col < s.extent(1); ++col) {
       auto scol = stdex::submdspan(srow, col);
       constexpr_assert_equal(__MDSPAN_OP0(scol), __MDSPAN_OP(srow, col));
       result += __MDSPAN_OP0(scol);

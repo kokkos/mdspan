@@ -78,9 +78,9 @@ void BM_MDSpan_TinyMatrixSum_right(benchmark::State& state, MDSpan, DynSizes... 
     benchmark::DoNotOptimize(o.data());
     benchmark::DoNotOptimize(s);
     benchmark::DoNotOptimize(s.data());
-    for(size_t i = 0; i < s.extent(0); i ++) {
-      for(size_t j = 0; j < s.extent(1); j ++) {
-        for(size_t k = 0; k < s.extent(2); k ++) {
+    for(size_type i = 0; i < s.extent(0); i ++) {
+      for(size_type j = 0; j < s.extent(1); j ++) {
+        for(size_type k = 0; k < s.extent(2); k ++) {
           o(i,j,k) += s(i,j,k);
         }
       }
@@ -115,9 +115,9 @@ void BM_Raw_Static_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
   for (auto _ : state) {
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
-    for(size_t i = 0; i < 1000000; i ++) {
-      for(size_t j = 0; j < 3; j ++) {
-        for(size_t k = 0; k < 3; k ++) {
+    for(size_type i = 0; i < 1000000; i ++) {
+      for(size_type j = 0; j < 3; j ++) {
+        for(size_type k = 0; k < 3; k ++) {
           o_ptr[k + j*3 + i*3*3] += s_ptr[k + j*3 + i*3*3];
         }
       }
@@ -158,9 +158,9 @@ void BM_Raw_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, Si
   for (auto _ : state) {
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
-    for(size_t i = 0; i < x; i ++) {
-      for(size_t j = 0; j < y; j ++) {
-        for(size_t k = 0; k < z; k ++) {
+    for(SizeX i = 0; i < x; i ++) {
+      for(SizeY j = 0; j < y; j ++) {
+        for(SizeZ k = 0; k < z; k ++) {
           o_ptr[k + j*z + i*z*y] += s_ptr[k + j*z + i*z*y];
         }
       }

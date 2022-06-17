@@ -115,6 +115,7 @@ public:
   using rank_type = size_t;
   using size_type = ThisSizeType;
 
+// internal typedefs which for technical reasons are public
   using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, size_type, size_t, Extents...>;
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -190,19 +191,21 @@ public:
 public:
 
   MDSPAN_INLINE_FUNCTION
-  static constexpr size_t rank() noexcept { return sizeof...(Extents); }
+  static constexpr rank_type rank() noexcept { return sizeof...(Extents); }
   MDSPAN_INLINE_FUNCTION
-  static constexpr size_t rank_dynamic() noexcept { return _MDSPAN_FOLD_PLUS_RIGHT((int(Extents == dynamic_extent)), /* + ... + */ 0); }
+  static constexpr rank_type rank_dynamic() noexcept { return _MDSPAN_FOLD_PLUS_RIGHT((int(Extents == dynamic_extent)), /* + ... + */ 0); }
 
   //--------------------------------------------------------------------------------
   // Constructors, Destructors, and Assignment
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents() noexcept = default;
+#if !(MDSPAN_HAS_CXX20) && false
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents(extents const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents(extents&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED extents& operator=(extents const&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED extents& operator=(extents&&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED ~extents() noexcept = default;
+#endif
 
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherSizeType, size_t... OtherExtents,

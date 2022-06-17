@@ -65,8 +65,8 @@ void BM_MDSpan_Copy_2D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
   mdspan_benchmark::fill_random(s);
   auto dest = MDSpan{buffer2.get(), dyn...};
   for (auto _ : state) {
-    for(size_t i = 0; i < s.extent(0); ++i) {
-      for (size_t j = 0; j < s.extent(1); ++j) {
+    for(size_type i = 0; i < s.extent(0); ++i) {
+      for (size_type j = 0; j < s.extent(1); ++j) {
           dest(i, j) = s(i, j);
       }
     }
@@ -102,8 +102,8 @@ void BM_MDSpan_Copy_2D_stride(benchmark::State& state, MDSpan, LayoutMapping map
   mdspan_benchmark::fill_random(s);
   auto dest = MDSpan{buffer2.get(), map};
   for (auto _ : state) {
-    for(size_t i = 0; i < s.extent(0); ++i) {
-      for (size_t j = 0; j < s.extent(1); ++j) {
+    for(size_type i = 0; i < s.extent(0); ++i) {
+      for (size_type j = 0; j < s.extent(1); ++j) {
         dest(i, j) = s(i, j);
       }
     }
@@ -154,7 +154,7 @@ BENCHMARK_CAPTURE(
 
 template <class T, class Extents, class MapSrc, class MapDst>
 void BM_MDSpan_Copy_2D_stride_diff_map(benchmark::State& state,
-  T, Extents exts, MapSrc map_src, MapDst map_dest
+  T, Extents, MapSrc map_src, MapDst map_dest
 ) {
   using value_type = T;
   auto buff_src = std::make_unique<value_type[]>(
@@ -169,8 +169,8 @@ void BM_MDSpan_Copy_2D_stride_diff_map(benchmark::State& state,
   mdspan_benchmark::fill_random(src);
   auto dest = mdspan_type{buff_dest.get(), map_dest};
   for (auto _ : state) {
-    for(size_t i = 0; i < src.extent(0); ++i) {
-      for (size_t j = 0; j < src.extent(1); ++j) {
+    for(size_type i = 0; i < src.extent(0); ++i) {
+      for (size_type j = 0; j < src.extent(1); ++j) {
         dest(i, j) = src(i, j);
       }
     }

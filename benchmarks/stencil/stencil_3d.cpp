@@ -83,15 +83,16 @@ void BM_MDSpan_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
 
   int d = global_delta;
 
+  using size_type = typename MDSpan::size_type;
   for (auto _ : state) {
     benchmark::DoNotOptimize(o);
-    for(size_t i = d; i < s.extent(0)-d; i ++) {
-      for(size_t j = d; j < s.extent(1)-d; j ++) {
-        for(size_t k = d; k < s.extent(2)-d; k ++) {
+    for(size_type i = d; i < s.extent(0)-d; i ++) {
+      for(size_type j = d; j < s.extent(1)-d; j ++) {
+        for(size_type k = d; k < s.extent(2)-d; k ++) {
           value_type sum_local = 0;
-          for(size_t di = i-d; di < i+d+1; di++) {
-          for(size_t dj = j-d; dj < j+d+1; dj++) {
-          for(size_t dk = k-d; dk < k+d+1; dk++) {
+          for(size_type di = i-d; di < i+d+1; di++) {
+          for(size_type dj = j-d; dj < j+d+1; dj++) {
+          for(size_type dk = k-d; dk < k+d+1; dk++) {
             sum_local += s(di, dj, dk);
           }}}
           o(i,j,k) = sum_local;

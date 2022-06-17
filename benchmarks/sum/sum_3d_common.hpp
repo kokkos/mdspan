@@ -61,7 +61,7 @@ void BM_Raw_Sum_1D(benchmark::State& state, T, Size size) {
   T* data = buffer.get();
   for (auto _ : state) {
     T sum = 0;
-    for(size_t i = 0; i < size; ++i) {
+    for(Size i = 0; i < size; ++i) {
       sum += data[i];
     }
     benchmark::DoNotOptimize(sum);
@@ -91,9 +91,9 @@ void BM_Raw_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) 
   for (auto _ : state) {
     benchmark::DoNotOptimize(data);
     T sum = 0;
-    for(size_t i = 0; i < x; ++i) {
-      for(size_t j = 0; j < y; ++j) {
-        for(size_t k = 0; k < z; ++k) {
+    for(SizeX i = 0; i < x; ++i) {
+      for(SizeY j = 0; j < y; ++j) {
+        for(SizeZ k = 0; k < z; ++k) {
           sum += data[k + j*z + i*z*y];
         }
       }
@@ -118,9 +118,9 @@ void BM_Raw_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
   for (auto _ : state) {
     benchmark::DoNotOptimize(data);
     T sum = 0;
-    for(size_t k = 0; k < z; ++k) {
-      for(size_t j = 0; j < y; ++j) {
-        for(size_t i = 0; i < x; ++i) {
+    for(SizeZ k = 0; k < z; ++k) {
+      for(SizeY j = 0; j < y; ++j) {
+        for(SizeX i = 0; i < x; ++i) {
           sum += data[i + j*x + k*x*y];
         }
       }
@@ -151,9 +151,9 @@ void BM_Raw_Sum_3D_right_iter_left(benchmark::State& state, T, SizeX x, SizeY y,
   for (auto _ : state) {
     benchmark::DoNotOptimize(data);
     T sum = 0;
-    for(size_t k = 0; k < z; ++k) {
-      for(size_t j = 0; j < y; ++j) {
-        for(size_t i = 0; i < x; ++i) {
+    for(SizeZ k = 0; k < z; ++k) {
+      for(SizeY j = 0; j < y; ++j) {
+        for(SizeX i = 0; i < x; ++i) {
           sum += data[k + j*z + i*z*y];
         }
       }
