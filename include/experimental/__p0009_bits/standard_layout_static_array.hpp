@@ -53,6 +53,9 @@
 #endif
 
 #include <array>
+#if MDSPAN_HAS_CXX_20
+#include <span>
+#endif
 #include <utility> // integer_sequence
 #include <cstddef>
 
@@ -254,6 +257,58 @@ struct __standard_layout_psa<
 #endif
   { }
 
+#if MDSPAN_HAS_CXX_20
+  template <class _U, size_t _N>
+  MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
+      span<_U, _N> const &__vals) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __next_{
+#else
+      : __base_t(__base_t{__next_t(
+#endif
+          __vals
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+  { }
+
+  template <class _U, size_t _NStatic>
+  MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
+      __construct_psa_from_all_exts_array_tag_t const & __tag,
+      span<_U, _NStatic> const &__vals) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __next_{
+#else
+      : __base_t(__base_t{__next_t(
+#endif
+          __tag, __vals
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+  { }
+
+  template <class _U, size_t _IDynamic, size_t _NDynamic>
+  MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
+      __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic> __tag,
+      span<_U, _NDynamic> const &__vals) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __next_{
+#else
+      : __base_t(__base_t{__next_t(
+#endif
+          __tag, __vals
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+  { }
+#endif
+
   template <class _UTag, class _U, class _static_U, class _UValsSeq, _static_U __u_sentinal,
             class _IdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
@@ -404,6 +459,31 @@ struct __standard_layout_psa<
             __next_t(__construct_psa_from_dynamic_exts_array_tag_t<_IDynamic + 1>{},
                      __vals)) {}
 
+#if MDSPAN_HAS_CXX_20
+  template <class _U, size_t _N>
+  MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
+      span<_U, _N> const &__vals) noexcept
+      : __value_pair(__vals[_Idx], __vals) {}
+
+  template <class _U, size_t _NStatic>
+  MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
+      __construct_psa_from_all_exts_array_tag_t __tag,
+      span<_U, _NStatic> const &__vals) noexcept
+      : __value_pair(
+            __vals[_Idx],
+            __next_t(__tag,
+                     __vals)) {}
+
+  template <class _U, size_t _IDynamic, size_t _NDynamic>
+  MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
+      __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic>,
+      span<_U, _NDynamic> const &__vals) noexcept
+      : __value_pair(
+            __vals[_IDynamic],
+            __next_t(__construct_psa_from_dynamic_exts_array_tag_t<_IDynamic + 1>{},
+                     __vals)) {}
+#endif
+
   template <class _UTag, class _U, class _static_U, class _UValsSeq, _static_U __u_sentinal,
             class _UIdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
@@ -509,6 +589,22 @@ struct __standard_layout_psa<_Tag, _T, _static_t, integer_sequence<_static_t>, _
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
       __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic>,
       array<_U, _NDynamic> const &) noexcept {}
+
+#if MDSPAN_HAS_CXX_20
+  template <class _U, size_t _N>
+  MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
+      span<_U, _N> const &) noexcept {}
+
+  template <class _U, size_t _NStatic>
+  MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
+      __construct_psa_from_all_exts_array_tag_t,
+      span<_U, _NStatic> const &) noexcept {}
+
+  template <class _U, size_t _IDynamic, size_t _NDynamic>
+  MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
+      __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic>,
+      span<_U, _NDynamic> const &) noexcept {}
+#endif
 
   template <class _UTag, class _U, class _static_U, class _UValsSeq, _static_U __u_sentinal,
             class _UIdxsSeq>

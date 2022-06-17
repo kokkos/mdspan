@@ -124,6 +124,7 @@ public:
   using __base_t = detail::__no_unique_address_emulation<__storage_t>;
 #endif
 
+// private members dealing with the way we internally store dynamic extents
  private:
 
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
@@ -188,7 +189,13 @@ public:
   { }
 #endif
 
+
+// public interface:
 public:
+  /* Defined above for use in the private code
+  using rank_type = size_t;
+  using size_type = ThisSizeType;
+  */
 
   MDSPAN_INLINE_FUNCTION
   static constexpr rank_type rank() noexcept { return sizeof...(Extents); }
@@ -198,13 +205,10 @@ public:
   //--------------------------------------------------------------------------------
   // Constructors, Destructors, and Assignment
 
+  // Default constructor
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents() noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents(extents const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr extents(extents&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED extents& operator=(extents const&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED extents& operator=(extents&&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED ~extents() noexcept = default;
 
+  // Converting constructor
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherSizeType, size_t... OtherExtents,
     /* requires */ (
@@ -217,7 +221,9 @@ public:
     )
   )
   MDSPAN_INLINE_FUNCTION
-  MDSPAN_CONDITIONAL_EXPLICIT((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent)) || ...))
+  MDSPAN_CONDITIONAL_EXPLICIT(
+    (((Extents != dynamic_extent) && (OtherExtents == dynamic_extent)) || ...) ||
+    (std::numeric_limits<size_type>::max() < std::numeric_limits<OtherSizeType>::max()))
   constexpr extents(const extents<OtherSizeType, OtherExtents...>& __other)
     noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -231,7 +237,14 @@ public:
 #else
       }})
 #endif
-  { }
+  {
+    /* TODO: precondition check
+     * other.extent(r) equals Er for each r for which Er is a static extent, and
+     * either
+     *   - sizeof...(OtherExtents) is zero, or
+     *   - other.extent(r) is a representable value of type size_type for all rank index r of other
+     */
+  }
 
 #ifdef __NVCC__
     MDSPAN_TEMPLATE_REQUIRES(
@@ -239,19 +252,20 @@ public:
     /* requires */ (
       // TODO: check whether the other version works with newest NVCC, doesn't with 11.4
       // NVCC seems to pick up rank_dynamic from the wrong extents type???
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */)
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */) &&
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_nothrow_constructible, size_type, Integral) /* && ... */) &&
       // NVCC chokes on the fold thingy here so wrote the workaround
-      && ((sizeof...(Integral) == detail::_count_dynamic_extents<Extents...>::val) ||
-          (sizeof...(Integral) == sizeof...(Extents)))
+      ((sizeof...(Integral) == detail::_count_dynamic_extents<Extents...>::val) ||
+       (sizeof...(Integral) == sizeof...(Extents)))
       )
     )
 #else
     MDSPAN_TEMPLATE_REQUIRES(
     class... Integral,
     /* requires */ (
-       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */)
-        && ((sizeof...(Integral) == rank_dynamic()) ||
-            (sizeof...(Integral) == rank()))
+       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Integral, size_type) /* && ... */) &&
+       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_nothrow_constructible, size_type, Integral) /* && ... */) &&
+       ((sizeof...(Integral) == rank_dynamic()) || (sizeof...(Integral) == rank()))
       )
     )
 #endif
@@ -271,7 +285,14 @@ public:
 #else
       }})
 #endif
-  { }
+  {
+    /* TODO: precondition check
+     * If sizeof...(SizeTypes) != rank_dynamic() is true, exts_arr[r] equals Er for each r for which Er is a static extent, and
+     * either
+     *   - sizeof...(exts) == 0 is true, or
+     *   - each element of exts is nonnegative and is a representable value of type size_type.
+     */
+  }
 
     // TODO: check whether this works with newest NVCC, doesn't with 11.4
 #ifdef __NVCC__
@@ -280,17 +301,19 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
-      && ((N == detail::_count_dynamic_extents<Extents...>::val) ||
-          (N == sizeof...(Extents)))
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+      _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType) &&
+      ((N == detail::_count_dynamic_extents<Extents...>::val) ||
+       (N == sizeof...(Extents)))
     )
   )
 #else
     MDSPAN_TEMPLATE_REQUIRES(
         class SizeType, size_t N,
         /* requires */ (
-            _MDSPAN_TRAIT(is_convertible, SizeType, size_type)
-      && (N == rank() || N == rank_dynamic())
+          _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+          _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType) &&
+          (N == rank() || N == rank_dynamic())
     )
   )
 #endif
@@ -306,13 +329,72 @@ public:
       std::conditional_t<N==rank_dynamic(),
         detail::__construct_psa_from_dynamic_exts_array_tag_t<0>,
         detail::__construct_psa_from_all_exts_array_tag_t>(),
-        std::array<SizeType,N>{exts}
+      std::array<SizeType,N>{exts}
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       }
 #else
       }})
 #endif
-  { }
+  {
+    /* TODO: precondition check
+     * If N != rank_dynamic() is true, exts[r] equals Er for each r for which Er is a static extent, and
+     * either
+     *   - N is zero, or
+     *   - exts[r] is nonnegative and is a representable value of type size_type for all rank index r
+     */
+  }
+
+#if MDSPAN_HAS_CXX_20
+  // TODO: check whether this works with newest NVCC, doesn't with 11.4
+#ifdef __NVCC__
+  // NVCC seems to pick up rank_dynamic from the wrong extents type???
+  // NVCC chokes on the fold thingy here so wrote the workaround
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType, size_t N,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+      _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType) &&
+      ((N == detail::_count_dynamic_extents<Extents...>::val) ||
+       (N == sizeof...(Extents)))
+    )
+  )
+#else
+    MDSPAN_TEMPLATE_REQUIRES(
+        class SizeType, size_t N,
+        /* requires */ (
+          _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+          _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType) &&
+          (N == rank() || N == rank_dynamic())
+    )
+  )
+#endif
+  MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
+  MDSPAN_INLINE_FUNCTION
+  constexpr
+  extents(std::span<SizeType, N> const& exts) noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    : __storage_{
+#else
+    : __base_t(__base_t{typename __base_t::__stored_type{
+#endif
+      std::conditional_t<N==rank_dynamic(),
+        detail::__construct_psa_from_dynamic_exts_array_tag_t<0>,
+        detail::__construct_psa_from_all_exts_array_tag_t>(),
+      exts
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      }
+#else
+      }})
+#endif
+  {
+    /* TODO: precondition check
+     * If N != rank_dynamic() is true, exts[r] equals Er for each r for which Er is a static extent, and
+     * either
+     *   - N is zero, or
+     *   - exts[r] is nonnegative and is a representable value of type size_type for all rank index r
+     */
+  }
+#endif
 
   // Need this constructor for some submdspan implementation stuff
   // for the layout_stride case where I use an extents object for strides
@@ -337,12 +419,16 @@ public:
   MDSPAN_INLINE_FUNCTION
   static constexpr
   size_type static_extent(size_t n) noexcept {
+    // Can't do assert here since that breaks true constexpr ness
+    // assert(n<rank());
     return _static_extent_impl(n, std::make_integer_sequence<size_t, sizeof...(Extents)>{});
   }
 
   MDSPAN_INLINE_FUNCTION
   constexpr
   size_type extent(size_t n) const noexcept {
+    // Can't do assert here since that breaks true constexpr ness
+    // assert(n<rank());
     return __storage().__get(n);
   }
 
@@ -367,6 +453,8 @@ public:
     );
   }
 #endif
+
+  // End of public interface
 
 public:  // (but not really)
 

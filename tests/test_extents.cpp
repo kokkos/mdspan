@@ -362,6 +362,18 @@ TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_conv
   ASSERT_EQ(e.extent(1), 2);
 }
 
+#if MDSPAN_HAS_CXX_20
+TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_span_convertible_to_size_t) {
+  std::array<int, 2> i{2, 2};
+  std::span<int ,2> s(i.data(),2);
+  stdex::dextents<size_t,2> e{s};
+  ASSERT_EQ(e.rank(), 2);
+  ASSERT_EQ(e.rank_dynamic(), 2);
+  ASSERT_EQ(e.extent(0), 2);
+  ASSERT_EQ(e.extent(1), 2);
+}
+#endif
+
 TYPED_TEST(TestExtentsCompatCtors, construct_from_dynamic_sizes) {
   using e1_t = typename TestFixture::extents_type1;
   constexpr bool e1_last_ext_static = e1_t::rank()>0?e1_t::static_extent(e1_t::rank()-1)!=stdex::dynamic_extent:true;
