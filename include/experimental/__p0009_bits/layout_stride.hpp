@@ -67,7 +67,7 @@ struct layout_stride {
     : private detail::__no_unique_address_emulation<
         detail::__compressed_pair<
           Extents,
-          ::std::experimental::dextents<Extents::rank()>
+          ::std::experimental::dextents<typename Extents::size_type, Extents::rank()>
         >
       >
 #endif
@@ -85,7 +85,7 @@ struct layout_stride {
 
     //----------------------------------------------------------------------------
 
-    using __strides_storage_t = ::std::experimental::dextents<Extents::rank()>;
+    using __strides_storage_t = ::std::experimental::dextents<size_type, Extents::rank()>;
     using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -189,7 +189,7 @@ struct layout_stride {
     __make_mapping(
       detail::__extents_to_partially_static_sizes_t<Extents>&& __exts,
       detail::__extents_to_partially_static_sizes_t<
-        ::std::experimental::dextents<Extents::rank()>>&& __strs
+        ::std::experimental::dextents<size_type, Extents::rank()>>&& __strs
     ) noexcept {
       // call the private constructor we created for this purpose
       return mapping(
@@ -314,13 +314,13 @@ struct layout_stride {
         // "remove" the index
         constexpr auto removed_index_sentinel = static_cast<size_t>(-1);
         *next_idx_iter = removed_index_sentinel;
-        int found_count = 1;
+        size_t found_count = 1;
         while (found_count != Extents::rank()) {
           next_idx_iter = std::find_if(
             rem.begin(), rem.end(),
             [&](size_t i) {
               return i != removed_index_sentinel
-                && this->extents().extent(i) == prev_stride_times_prev_extent;
+                && static_cast<size_t>(this->extents().extent(i)) == prev_stride_times_prev_extent;
             }
           );
           if (next_idx_iter != rem.end()) {
@@ -371,7 +371,7 @@ struct layout_stride {
       for(unsigned r = 0; r < Extents::rank(); r++) {
         // Return early if any of the extents are zero
         if(extents().extent(r)==0) return 0;
-        span_size = std::max(span_size, extents().extent(r) * __strides_storage().extent(r));
+        span_size = std::max(span_size, static_cast<size_t>(extents().extent(r) * __strides_storage().extent(r)));
       }
       return span_size;
     }

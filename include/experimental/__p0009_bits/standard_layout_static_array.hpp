@@ -88,20 +88,20 @@ template <size_t _I, class _T> using __repeated_with_idxs = _T;
  * @tparam _ValsSeq
  * @tparam __sentinal
  */
-template <class _Tag, class _T, class _ValsSeq, _T __sentinal = dynamic_extent,
+template <class _Tag, class _T, class _static_t, class _ValsSeq, _static_t __sentinal = static_cast<_static_t>(dynamic_extent),
           class _IdxsSeq = make_index_sequence<_ValsSeq::size()>>
 struct __standard_layout_psa;
 
 //==============================================================================
 // Static case
-template <class _Tag, class _T, _T __value, _T... __values_or_sentinals,
-          _T __sentinal, size_t _Idx, size_t... _Idxs>
+template <class _Tag, class _T, class _static_t, _static_t __value, _static_t... __values_or_sentinals,
+          _static_t __sentinal, size_t _Idx, size_t... _Idxs>
 struct __standard_layout_psa<
-    _Tag, _T, integer_sequence<_T, __value, __values_or_sentinals...>,
+    _Tag, _T, _static_t, integer_sequence<_static_t, __value, __values_or_sentinals...>,
     __sentinal, integer_sequence<size_t, _Idx, _Idxs...>>
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : private __no_unique_address_emulation<__standard_layout_psa<
-          _Tag, _T, integer_sequence<_T, __values_or_sentinals...>, __sentinal,
+          _Tag, _T, _static_t, integer_sequence<_static_t, __values_or_sentinals...>, __sentinal,
           integer_sequence<size_t, _Idxs...>>>
 #endif
 {
@@ -109,8 +109,8 @@ struct __standard_layout_psa<
   //--------------------------------------------------------------------------
 
   using __next_t =
-      __standard_layout_psa<_Tag, _T,
-                            integer_sequence<_T, __values_or_sentinals...>,
+      __standard_layout_psa<_Tag, _T, _static_t,
+                            integer_sequence<_static_t, __values_or_sentinals...>,
                             __sentinal, integer_sequence<size_t, _Idxs...>>;
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -137,12 +137,12 @@ struct __standard_layout_psa<
   static constexpr auto __size = sizeof...(_Idxs) + 1;
 #ifdef _MDSPAN_COMPILER_MSVC
   // MSVC doesn't like the fact that __next_t happens to be a base
-  // class that's private, even though __size_synamic is public in
-  // it's definition.
+  // class that's private, even though __size_dynamic is public in
+  // its definition.
   struct __msvc_workaround_tag {};
   using __msvc_workaround_next_t = __standard_layout_psa<
-      __msvc_workaround_tag, _T,
-      integer_sequence<_T, __values_or_sentinals...>, __sentinal,
+      __msvc_workaround_tag, _T, _static_t
+      integer_sequence<_static_t, __values_or_sentinals...>, __sentinal,
       integer_sequence<size_t, _Idxs...>>;
   static constexpr auto __size_dynamic =
       __msvc_workaround_next_t::__size_dynamic;
@@ -254,10 +254,10 @@ struct __standard_layout_psa<
 #endif
   { }
 
-  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal,
+  template <class _UTag, class _U, class _static_U, class _UValsSeq, _static_U __u_sentinal,
             class _IdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
-      __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _IdxsSeq> const
+      __standard_layout_psa<_UTag, _U, _static_U, _UValsSeq, __u_sentinal, _IdxsSeq> const
           &__rhs) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __next_{
@@ -303,12 +303,12 @@ struct __standard_layout_psa<
     // Don't assert here because that would break constexpr. This better
     // not change anything, though
   }
-  template <size_t _I, enable_if_t<_I == _Idx, _T> = __sentinal>
-  MDSPAN_FORCE_INLINE_FUNCTION static constexpr _T __get_static_n() noexcept {
+  template <size_t _I, enable_if_t<_I == _Idx, _static_t> = __sentinal>
+  MDSPAN_FORCE_INLINE_FUNCTION static constexpr _static_t __get_static_n() noexcept {
     return __value;
   }
-  template <size_t _I, enable_if_t<_I != _Idx, _T> __default = __sentinal>
-  MDSPAN_FORCE_INLINE_FUNCTION static constexpr _T __get_static_n() noexcept {
+  template <size_t _I, enable_if_t<_I != _Idx, _static_t> __default = __sentinal>
+  MDSPAN_FORCE_INLINE_FUNCTION static constexpr _static_t __get_static_n() noexcept {
     return __next_t::template __get_static_n<_I, __default>();
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __get(size_t __n) const noexcept {
@@ -321,16 +321,16 @@ struct __standard_layout_psa<
 //==============================================================================
 
 // Dynamic case, __next_t may or may not be empty
-template <class _Tag, class _T, _T __sentinal, _T... __values_or_sentinals,
+template <class _Tag, class _T, class _static_t, _static_t __sentinal, _static_t... __values_or_sentinals,
           size_t _Idx, size_t... _Idxs>
 struct __standard_layout_psa<
-    _Tag, _T, integer_sequence<_T, __sentinal, __values_or_sentinals...>,
+    _Tag, _T, _static_t, integer_sequence<_static_t, __sentinal, __values_or_sentinals...>,
     __sentinal, integer_sequence<size_t, _Idx, _Idxs...>> {
   //--------------------------------------------------------------------------
 
   using __next_t =
-      __standard_layout_psa<_Tag, _T,
-                            integer_sequence<_T, __values_or_sentinals...>,
+      __standard_layout_psa<_Tag, _T, _static_t,
+                            integer_sequence<_static_t, __values_or_sentinals...>,
                             __sentinal, integer_sequence<size_t, _Idxs...>>;
 
   using __value_pair_t = __compressed_pair<_T, __next_t>;
@@ -404,10 +404,10 @@ struct __standard_layout_psa<
             __next_t(__construct_psa_from_dynamic_exts_array_tag_t<_IDynamic + 1>{},
                      __vals)) {}
 
-  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal,
+  template <class _UTag, class _U, class _static_U, class _UValsSeq, _static_U __u_sentinal,
             class _UIdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
-      __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _UIdxsSeq> const
+      __standard_layout_psa<_UTag, _U, _static_U, _UValsSeq, __u_sentinal, _UIdxsSeq> const
           &__rhs) noexcept
       : __value_pair(__rhs.template __get_n<_Idx>(), __rhs.__next()) {}
 
@@ -439,12 +439,12 @@ struct __standard_layout_psa<
   __set_n(_T const &__rhs) noexcept {
     __value_pair.__first() = __rhs;
   }
-  template <size_t _I, enable_if_t<_I == _Idx, _T> __default = __sentinal>
-  MDSPAN_FORCE_INLINE_FUNCTION static constexpr _T __get_static_n() noexcept {
+  template <size_t _I, enable_if_t<_I == _Idx, _static_t> __default = __sentinal>
+  MDSPAN_FORCE_INLINE_FUNCTION static constexpr _static_t __get_static_n() noexcept {
     return __default;
   }
-  template <size_t _I, enable_if_t<_I != _Idx, _T> __default = __sentinal>
-  MDSPAN_FORCE_INLINE_FUNCTION static constexpr _T __get_static_n() noexcept {
+  template <size_t _I, enable_if_t<_I != _Idx, _static_t> __default = __sentinal>
+  MDSPAN_FORCE_INLINE_FUNCTION static constexpr _static_t __get_static_n() noexcept {
     return __next_t::template __get_static_n<_I, __default>();
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T __get(size_t __n) const noexcept {
@@ -455,8 +455,8 @@ struct __standard_layout_psa<
 };
 
 // empty/terminal case
-template <class _Tag, class _T, _T __sentinal>
-struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
+template <class _Tag, class _T, class _static_t, _static_t __sentinal>
+struct __standard_layout_psa<_Tag, _T, _static_t, integer_sequence<_static_t>, __sentinal,
                              integer_sequence<size_t>> {
   //--------------------------------------------------------------------------
 
@@ -510,10 +510,10 @@ struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
       __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic>,
       array<_U, _NDynamic> const &) noexcept {}
 
-  template <class _UTag, class _U, class _UValsSeq, _U __u_sentinal,
+  template <class _UTag, class _U, class _static_U, class _UValsSeq, _static_U __u_sentinal,
             class _UIdxsSeq>
   MDSPAN_INLINE_FUNCTION constexpr __standard_layout_psa(
-      __standard_layout_psa<_UTag, _U, _UValsSeq, __u_sentinal, _UIdxsSeq> const&) noexcept {}
+      __standard_layout_psa<_UTag, _U, _static_U, _UValsSeq, __u_sentinal, _UIdxsSeq> const&) noexcept {}
 
   // See comment in the previous partial specialization for why this is
   // necessary.  Or just trust me that it's messy.
@@ -530,14 +530,14 @@ struct __standard_layout_psa<_Tag, _T, integer_sequence<_T>, __sentinal,
 
 // Same thing, but with a disambiguator so that same-base issues doesn't cause
 // a loss of standard-layout-ness.
-template <class _Tag, size_t... __values_or_sentinals>
+template <class _Tag, class T, class _static_t, _static_t... __values_or_sentinals>
 struct __partially_static_sizes_tagged
     : __standard_layout_psa<
-          _Tag, size_t,
-          integer_sequence<size_t, __values_or_sentinals...>> {
+          _Tag, T, _static_t,
+          integer_sequence<_static_t, __values_or_sentinals...>> {
   using __tag_t = _Tag;
   using __psa_impl_t = __standard_layout_psa<
-      _Tag, size_t, integer_sequence<size_t, __values_or_sentinals...>>;
+      _Tag, T, _static_t, integer_sequence<_static_t, __values_or_sentinals...>>;
   using __psa_impl_t::__psa_impl_t;
 #ifdef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
   MDSPAN_INLINE_FUNCTION
@@ -565,20 +565,20 @@ struct __partially_static_sizes_tagged
 
   template <class _UTag>
   MDSPAN_FORCE_INLINE_FUNCTION constexpr explicit __partially_static_sizes_tagged(
-    __partially_static_sizes_tagged<_UTag, __values_or_sentinals...> const& __vals
+    __partially_static_sizes_tagged<_UTag, T, _static_t, __values_or_sentinals...> const& __vals
   ) noexcept : __psa_impl_t(__vals.__enable_psa_conversion()) { }
 };
 
 struct __no_tag {};
-template <size_t... __values_or_sentinals>
+template <class T, class _static_t, _static_t... __values_or_sentinals>
 struct __partially_static_sizes
-    : __partially_static_sizes_tagged<__no_tag, __values_or_sentinals...> {
+    : __partially_static_sizes_tagged<__no_tag, T, _static_t, __values_or_sentinals...> {
 private:
   using __base_t =
-      __partially_static_sizes_tagged<__no_tag, __values_or_sentinals...>;
+      __partially_static_sizes_tagged<__no_tag, T, _static_t, __values_or_sentinals...>;
   template <class _UTag>
   MDSPAN_FORCE_INLINE_FUNCTION constexpr __partially_static_sizes(
-    __partially_static_sizes_tagged<_UTag, __values_or_sentinals...>&& __vals
+    __partially_static_sizes_tagged<_UTag, T, _static_t, __values_or_sentinals...>&& __vals
   ) noexcept : __base_t(::std::move(__vals)) { }
 public:
   using __base_t::__base_t;
@@ -589,9 +589,9 @@ public:
 #endif
   template <class _UTag>
   MDSPAN_FORCE_INLINE_FUNCTION constexpr __partially_static_sizes_tagged<
-      _UTag, __values_or_sentinals...>
+      _UTag, T, _static_t, __values_or_sentinals...>
   __with_tag() const noexcept {
-    return __partially_static_sizes_tagged<_UTag, __values_or_sentinals...>(*this);
+    return __partially_static_sizes_tagged<_UTag, T, _static_t, __values_or_sentinals...>(*this);
   }
 };
 

@@ -55,11 +55,12 @@ namespace {
   template<class Extents>
   struct size_of_extents;
 
-  template<size_t ... Extents>
-  struct size_of_extents<extents<Extents...>> {
+  template<class IndexType, size_t ... Extents>
+  struct size_of_extents<extents<IndexType, Extents...>> {
     constexpr static size_t value() {
       size_t size = 1;
-      for(int r=0; r<extents<Extents...>::rank(); r++) size *= extents<Extents...>::static_extent(r);
+      for(size_t r=0; r<extents<IndexType, Extents...>::rank(); r++)
+        size *= extents<IndexType, Extents...>::static_extent(r);
       return size;
     }
   };
@@ -109,7 +110,7 @@ public:
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr),
     mdarray, (), ,
-    /* requires */ (extents_type::rank_dynamic()!=0)) {};
+    /* requires */ (extents_type::rank_dynamic()!=0)) {}
 #else
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdarray() requires(extents_type::rank_dynamic()!=0) = default;
 #endif
@@ -190,7 +191,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   explicit constexpr mdarray(const container_type& ctr, SizeTypes... dynamic_extents)
     : map_(extents_type(dynamic_extents...)), ctr_(ctr)
-  { assert(ctr.size() >= map_.required_span_size()); }
+  { assert(ctr.size() >= static_cast<size_t>(map_.required_span_size())); }
 
 
   MDSPAN_FUNCTION_REQUIRES(
@@ -198,11 +199,11 @@ public:
     mdarray, (const container_type& ctr, const extents_type& exts), ,
     /* requires */ (_MDSPAN_TRAIT(is_constructible, mapping_type, extents_type))
   ) : map_(exts), ctr_(ctr)
-  { assert(ctr.size() >= map_.required_span_size()); }
+  { assert(ctr.size() >= static_cast<size_t>(map_.required_span_size())); }
 
   constexpr mdarray(const container_type& ctr, const mapping_type& m)
     : map_(m), ctr_(ctr)
-  { assert(ctr.size() >= map_.required_span_size()); }
+  { assert(ctr.size() >= static_cast<size_t>(map_.required_span_size())); }
 
 
   // Constructors from container
@@ -217,7 +218,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   explicit constexpr mdarray(container_type&& ctr, SizeTypes... dynamic_extents)
     : map_(extents_type(dynamic_extents...)), ctr_(std::move(ctr))
-  { assert(ctr_.size() >= map_.required_span_size()); }
+  { assert(ctr_.size() >= static_cast<size_t>(map_.required_span_size())); }
 
 
   MDSPAN_FUNCTION_REQUIRES(
@@ -225,7 +226,7 @@ public:
     mdarray, (container_type&& ctr, const extents_type& exts), ,
     /* requires */ (_MDSPAN_TRAIT(is_constructible, mapping_type, extents_type))
   ) : map_(exts), ctr_(std::move(ctr))
-  { assert(ctr_.size() >= map_.required_span_size()); }
+  { assert(ctr_.size() >= static_cast<size_t>(map_.required_span_size())); }
 
   constexpr mdarray(container_type&& ctr, const mapping_type& m)
     : map_(m), ctr_(std::move(ctr))
@@ -276,7 +277,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mdarray(const container_type& ctr, const extents_type& exts, const Alloc& a)
     : map_(exts), ctr_(ctr, a)
-  { assert(ctr_.size() >= map_.required_span_size()); }
+  { assert(ctr_.size() >= static_cast<size_t>(map_.required_span_size())); }
 
   MDSPAN_TEMPLATE_REQUIRES(
     class Alloc,
@@ -285,7 +286,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mdarray(const container_type& ctr, const mapping_type& map, const Alloc& a)
     : map_(map), ctr_(ctr, a)
-  { assert(ctr_.size() >= map_.required_span_size()); }
+  { assert(ctr_.size() >= static_cast<size_t>(map_.required_span_size())); }
 
   MDSPAN_TEMPLATE_REQUIRES(
     class Alloc,
@@ -295,7 +296,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mdarray(container_type&& ctr, const extents_type& exts, const Alloc& a)
     : map_(exts), ctr_(std::move(ctr), a)
-  { assert(ctr_.size() >= map_.required_span_size()); }
+  { assert(ctr_.size() >= static_cast<size_t>(map_.required_span_size())); }
 
   MDSPAN_TEMPLATE_REQUIRES(
     class Alloc,

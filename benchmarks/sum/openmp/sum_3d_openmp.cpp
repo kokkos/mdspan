@@ -52,10 +52,12 @@
 
 //================================================================================
 
+using size_type = int;
+
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+using lmdspan = stdex::mdspan<T, stdex::extents<size_type, Es...>, stdex::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
+using rmdspan = stdex::mdspan<T, stdex::extents<size_type, Es...>, stdex::layout_right>;
 
 //================================================================================
 
@@ -75,9 +77,9 @@ void BM_MDSpan_Sum_3D_OpenMP(benchmark::State& state, MDSpan, DynSizes... dyn) {
     {
       for (int r = 0; r < repeats; ++r) {
         value_type sum = 0;
-        for (size_t i = omp_get_thread_num(); i < s.extent(0); i += omp_get_num_threads()) {
-          for (size_t j = 0; j < s.extent(1); ++j) {
-            for (size_t k = 0; k < s.extent(2); ++k) {
+        for (size_type i = omp_get_thread_num(); i < s.extent(0); i += omp_get_num_threads()) {
+          for (size_type j = 0; j < s.extent(1); ++j) {
+            for (size_type k = 0; k < s.extent(2); ++k) {
               sum += s(i, j, k);
             }
           }
@@ -112,9 +114,9 @@ void BM_MDSpan_Sum_3D_loop_OpenMP(benchmark::State& state, MDSpan, DynSizes... d
     benchmark::DoNotOptimize(sums_buffer.get());
     benchmark::DoNotOptimize(s.data());
     #pragma omp parallel for default(none) shared(s, sum)
-    for (size_t i = 0; i < s.extent(0); ++i) {
-      for (size_t j = 0; j < s.extent(1); ++j) {
-        for (size_t k = 0; k < s.extent(2); ++k) {
+    for (size_type i = 0; i < s.extent(0); ++i) {
+      for (size_type j = 0; j < s.extent(1); ++j) {
+        for (size_type k = 0; k < s.extent(2); ++k) {
           sum[omp_get_thread_num()] += s(i, j, k);
         }
       }
@@ -133,7 +135,7 @@ void BM_Raw_Sum_3D_OpenMP(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z)
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{buffer.get(), x*y*z};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<size_type, 1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
 
@@ -147,9 +149,9 @@ void BM_Raw_Sum_3D_OpenMP(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z)
         T sum = 0;
         benchmark::DoNotOptimize(sum);
         benchmark::DoNotOptimize(data);
-        for (size_t i = omp_get_thread_num(); i < x; i += omp_get_num_threads()) {
-          for (size_t j = 0; j < y; ++j) {
-            for (size_t k = 0; k < z; ++k) {
+        for (size_type i = omp_get_thread_num(); i < x; i += omp_get_num_threads()) {
+          for (size_type j = 0; j < y; ++j) {
+            for (size_type k = 0; k < z; ++k) {
               sum += data[k + j*z + i*z*y];
             }
           }

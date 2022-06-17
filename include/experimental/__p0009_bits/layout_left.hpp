@@ -57,6 +57,9 @@ struct layout_stride;
 struct layout_left {
   template <class Extents>
   class mapping {
+  public:
+    using rank_type = typename Extents::rank_type;
+    using size_type = typename Extents::size_type;
   private:
 
     static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_left::mapping must be instantiated with a specialization of std::experimental::extents.");
@@ -69,19 +72,19 @@ struct layout_left {
     struct __rank_count {};
 
     template <size_t r, size_t Rank, class I, class... Indices>
-    constexpr size_t __compute_offset(
+    constexpr size_type __compute_offset(
       __rank_count<r,Rank>, const I& i, Indices... idx) const {
       return __compute_offset(__rank_count<r+1,Rank>(), idx...) *
                  __extents.template __extent<r>() + i;
     }
 
     template<class I>
-    constexpr size_t __compute_offset(
+    constexpr size_type __compute_offset(
       __rank_count<Extents::rank()-1,Extents::rank()>, const I& i) const {
       return i;
     }
 
-    constexpr size_t __compute_offset(__rank_count<0,0>) const { return 0; }
+    constexpr size_type __compute_offset(__rank_count<0,0>) const { return 0; }
 
   public:
 
@@ -97,7 +100,6 @@ struct layout_left {
 
     using layout_type = layout_left;
     using extents_type = Extents;
-    using size_type = typename Extents::size_type;
 
     constexpr mapping(Extents const& __exts) noexcept
       :__extents(__exts)
@@ -145,7 +147,7 @@ struct layout_left {
     {
        #ifndef __CUDA_ARCH__
        size_t stride = 1;
-       for(size_type r=0; r<__extents.rank(); r++) {
+       for(rank_type r=0; r<__extents.rank(); r++) {
          if(stride != other.stride(r))
            throw std::runtime_error("Assigning layout_stride to layout_left with invalid strides.");
          stride *= __extents.extent(r);
@@ -166,13 +168,13 @@ struct layout_left {
 
     constexpr size_type stride(size_t i) const noexcept {
       size_type value = 1;
-      for(size_type r=0; r<i; r++) value*=__extents.extent(r);
+      for(rank_type r=0; r<i; r++) value*=__extents.extent(r);
       return value;
     }
 
     constexpr size_type required_span_size() const noexcept {
       size_type value = 1;
-      for(size_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
+      for(rank_type r=0; r<Extents::rank(); r++) value*=__extents.extent(r);
       return value;
     }
 
@@ -200,8 +202,8 @@ struct layout_left {
 #endif
 
     // Not really public, but currently needed to implement fully constexpr useable submdspan:
-    template<size_t N, size_t ... E, size_t ... Idx>
-    constexpr size_type __get_stride(std::experimental::extents<E...>,integer_sequence<size_t, Idx...>) const {
+    template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
+    constexpr size_type __get_stride(std::experimental::extents<SizeType, E...>,integer_sequence<size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT((Idx<N? __extents.template __extent<Idx>():1),1);
     }
     template<size_t N>
@@ -217,3 +219,4 @@ private:
 
 } // end namespace experimental
 } // end namespace std
+

@@ -25,7 +25,13 @@ This implementation is header-only, with compiler features detected using featur
 
 ### Running tests
 
-TODO write this
+#### Configurations
+
+- clang-15 / cmake 3.23
+  - Warning free with  `-Wall -Wextra -pedantic` for C++23/20. In C++17 pedantic will give a few warnings, in C++14 Wextra will also give some.
+  - `cmake -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic" -DCMAKE_CXX_STANDARD=23 -DMDSPAN_CXX_STANDARD=23 -DCMAKE_CXX_COMPILER=clang++`- gcc-11 / cmake 3.23
+  - Warning free with  `-Wall -Wextra -pedantic` for C++23/20. In C++17 and C++14 pedantic will give a warning (note only with `CMAKE_CXX_EXTENSION=OFF`).
+  - `cmake -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic" -DCMAKE_CXX_STANDARD=17 -DMDSPAN_CXX_STANDARD=17 -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_EXTENSIONS=OFF`
 
 ### Running benchmarks
 
