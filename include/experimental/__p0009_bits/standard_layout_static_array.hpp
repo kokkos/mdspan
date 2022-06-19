@@ -257,7 +257,7 @@ struct __standard_layout_psa<
 #endif
   { }
 
-#if MDSPAN_HAS_CXX_20
+#ifdef __cpp_lib_span
   template <class _U, size_t _N>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
       span<_U, _N> const &__vals) noexcept
@@ -459,7 +459,7 @@ struct __standard_layout_psa<
             __next_t(__construct_psa_from_dynamic_exts_array_tag_t<_IDynamic + 1>{},
                      __vals)) {}
 
-#if MDSPAN_HAS_CXX_20
+#ifdef __cpp_lib_span
   template <class _U, size_t _N>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
       span<_U, _N> const &__vals) noexcept
@@ -590,7 +590,7 @@ struct __standard_layout_psa<_Tag, _T, _static_t, integer_sequence<_static_t>, _
       __construct_psa_from_dynamic_exts_array_tag_t<_IDynamic>,
       array<_U, _NDynamic> const &) noexcept {}
 
-#if MDSPAN_HAS_CXX_20
+#ifdef __cpp_lib_span
   template <class _U, size_t _N>
   MDSPAN_INLINE_FUNCTION constexpr explicit __standard_layout_psa(
       span<_U, _N> const &) noexcept {}

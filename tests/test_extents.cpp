@@ -362,7 +362,7 @@ TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_conv
   ASSERT_EQ(e.extent(1), 2);
 }
 
-#if MDSPAN_HAS_CXX_20
+#ifdef __cpp_lib_span
 TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_span_convertible_to_size_t) {
   std::array<int, 2> i{2, 2};
   std::span<int ,2> s(i.data(),2);

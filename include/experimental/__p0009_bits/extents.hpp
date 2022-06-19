@@ -371,7 +371,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr
-  extents(std::span<SizeType, N> const& exts) noexcept
+  extents(std::span<SizeType, N> exts) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : __storage_{
 #else
