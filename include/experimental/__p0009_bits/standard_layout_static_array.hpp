@@ -53,7 +53,7 @@
 #endif
 
 #include <array>
-#if MDSPAN_HAS_CXX_20
+#ifdef __cpp_lib_span
 #include <span>
 #endif
 #include <utility> // integer_sequence

@@ -344,8 +344,8 @@ public:
      */
   }
 
-#if MDSPAN_HAS_CXX_20
-  // TODO: check whether this works with newest NVCC, doesn't with 11.4
+#ifdef __cpp_lib_span
+  // TODO: check whether the below works with newest NVCC, doesn't with 11.4
 #ifdef __NVCC__
   // NVCC seems to pick up rank_dynamic from the wrong extents type???
   // NVCC chokes on the fold thingy here so wrote the workaround
