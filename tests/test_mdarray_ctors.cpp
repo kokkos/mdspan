@@ -193,7 +193,7 @@ void test_mdarray_ctor_data_carray() {
   errors[0] = 0;
 
   dispatch([=] _MDSPAN_HOST_DEVICE () {
-    stdex::mdarray<int, stdex::extents<int,1>> m(stdex::extents<size_t,1>{});
+    stdex::mdarray<int, stdex::extents<size_t,1>> m(stdex::extents<int,1>{});
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
     __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 1);
