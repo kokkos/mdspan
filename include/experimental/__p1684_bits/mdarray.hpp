@@ -67,10 +67,16 @@ namespace {
 }
 
 namespace {
-  template<class>
-  struct container_is_array : false_type {};
+  template<class C>
+  struct container_is_array : false_type {
+    template<class M>
+    static constexpr C construct(const M& m) { return C(m.required_span_size()); }
+  };
   template<class T, size_t N>
-  struct container_is_array<array<T,N>> : true_type {};
+  struct container_is_array<array<T,N>> : true_type {
+    template<class M>
+    static constexpr array<T,N> construct(const M&) { return array<T,N>(); }
+  };
 }
 
 template <
@@ -124,59 +130,31 @@ public:
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
       _MDSPAN_TRAIT(is_constructible, extents_type, SizeTypes...) &&
       _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
-      _MDSPAN_TRAIT(is_constructible, container_type, size_t) &&
+      (_MDSPAN_TRAIT(is_constructible, container_type, size_t) ||
+       container_is_array<container_type>::value) &&
       (extents_type::rank()>0 || extents_type::rank_dynamic()==0)
     )
   )
   MDSPAN_INLINE_FUNCTION
   explicit constexpr mdarray(SizeTypes... dynamic_extents)
-    : map_(extents_type(dynamic_extents...)), ctr_(map_.required_span_size())
+    : map_(extents_type(dynamic_extents...)), ctr_(container_is_array<container_type>::construct(map_))
   { }
 
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdarray, (const extents_type& exts), ,
-    /* requires */ (_MDSPAN_TRAIT(is_constructible, container_type, size_t) &&
+    /* requires */ ((_MDSPAN_TRAIT(is_constructible, container_type, size_t) ||
+                     container_is_array<container_type>::value) &&
                     _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type))
-  ) : map_(exts), ctr_(map_.required_span_size())
+  ) : map_(exts), ctr_(container_is_array<container_type>::construct(map_))
   { }
 
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdarray, (const mapping_type& m), ,
-    /* requires */ (_MDSPAN_TRAIT(is_constructible, container_type, size_t))
-  ) : map_(m), ctr_(map_.required_span_size())
-  { }
-
-  // Constructors for array
-  MDSPAN_TEMPLATE_REQUIRES(
-    class... SizeTypes,
-    /* requires */ (
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
-      _MDSPAN_TRAIT(is_constructible, extents_type, SizeTypes...) &&
-      _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
-      container_is_array<container_type>::value &&
-      (extents_type::rank()>0 || extents_type::rank_dynamic()==0)
-    )
-  )
-  MDSPAN_INLINE_FUNCTION
-  explicit constexpr mdarray(SizeTypes... dynamic_extents)
-    : map_(extents_type(dynamic_extents...)), ctr_()
-  { }
-
-  MDSPAN_FUNCTION_REQUIRES(
-    (MDSPAN_INLINE_FUNCTION constexpr),
-    mdarray, (const extents_type& exts), ,
-    /* requires */ (_MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
+    /* requires */ (_MDSPAN_TRAIT(is_constructible, container_type, size_t) ||
                     container_is_array<container_type>::value)
-  ) : map_(exts), ctr_()
-  { }
-
-  MDSPAN_FUNCTION_REQUIRES(
-    (MDSPAN_INLINE_FUNCTION constexpr),
-    mdarray, (const mapping_type& m), ,
-    /* requires */ (container_is_array<container_type>::value)
-  ) : map_(m), ctr_()
+  ) : map_(m), ctr_(container_is_array<container_type>::construct(map_))
   { }
 
   // Constructors from container

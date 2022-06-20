@@ -60,6 +60,15 @@
 namespace std {
 namespace experimental {
 
+struct layout_left {
+  template<class Extents>
+    class mapping;
+};
+struct layout_right {
+  template<class Extents>
+    class mapping;
+};
+
 struct layout_stride {
   template <class Extents>
   class mapping
