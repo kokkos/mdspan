@@ -47,17 +47,14 @@
 #include "trait_backports.hpp"
 #include "extents.hpp"
 #include <stdexcept>
+#include "layout_stride.hpp"
 
 namespace std {
 namespace experimental {
 
 //==============================================================================
-struct layout_left;
-struct layout_stride;
-
-struct layout_right {
-  template <class Extents>
-  class mapping {
+template <class Extents>
+class layout_right::mapping {
   public:
     using rank_type = typename Extents::rank_type;
     using size_type = typename Extents::size_type;
@@ -216,7 +213,6 @@ struct layout_right {
 private:
    _MDSPAN_NO_UNIQUE_ADDRESS Extents __extents{};
 
-  };
 };
 
 } // end namespace experimental
