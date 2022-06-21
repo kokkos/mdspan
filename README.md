@@ -5,6 +5,8 @@ The ISO-C++ proposal [P0009](https://wg21.link/p0009) will add support for non-o
 
 [Try it out on Godbolt](https://godbolt.org/z/d5W54Ycfs){: .btn }
 
+Note: There is a tag mdspan-0.3.0 which reflects the status of P0009 before R17 - i.e. it does not have the integral type template parameter for `extents`.
+
 Using `mdspan`
 --------------
 
@@ -29,7 +31,8 @@ This implementation is header-only, with compiler features detected using featur
 
 - clang-15 / cmake 3.23
   - Warning free with  `-Wall -Wextra -pedantic` for C++23/20. In C++17 pedantic will give a few warnings, in C++14 Wextra will also give some.
-  - `cmake -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic" -DCMAKE_CXX_STANDARD=23 -DMDSPAN_CXX_STANDARD=23 -DCMAKE_CXX_COMPILER=clang++`- gcc-11 / cmake 3.23
+  - `cmake -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic" -DCMAKE_CXX_STANDARD=23 -DMDSPAN_CXX_STANDARD=23 -DCMAKE_CXX_COMPILER=clang++`
+- gcc-11 / cmake 3.23
   - Warning free with  `-Wall -Wextra -pedantic` for C++23/20. In C++17 and C++14 pedantic will give a warning (note only with `CMAKE_CXX_EXTENSION=OFF`).
   - `cmake -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic" -DCMAKE_CXX_STANDARD=17 -DMDSPAN_CXX_STANDARD=17 -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_EXTENSIONS=OFF`
 
@@ -47,6 +50,7 @@ This implementation is fully conforming with revision 14 of P0009 with a few exc
   - note you can control which operator is available with defining `MDSPAN_USE_BRACKET_OPERATOR=[0,1]` and `MDSPAN_USE_PAREN_OPERATOR=[0,1]` irrespective of whether multi dimensional subscript support is detected.
 
 ### C++17 and C++14
+- the `layout_stride::mapping::strides` function returns `array` not `span`.
 - the conditional explicit markup is missing, making certain constructors implicit
   - most notably you can implicitly convert from dynamic extent to static extent, which you can't in C++20 mode
 

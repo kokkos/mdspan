@@ -208,7 +208,7 @@ public:
 
   constexpr mdarray(container_type&& ctr, const mapping_type& m)
     : map_(m), ctr_(std::move(ctr))
-  { assert(ctr_.size() >= map_.required_span_size()); }
+  { assert(ctr_.size() >= static_cast<size_t>(map_.required_span_size())); }
 
 
 
