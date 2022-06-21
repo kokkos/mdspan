@@ -183,8 +183,9 @@ struct TestSubMDSpan<
 
   using mds_org_t = stdex::mdspan<int, ExtentsOrg, LayoutOrg>;
   using mds_sub_t = stdex::mdspan<int, ExtentsSub, LayoutSub>;
+  using map_t = typename mds_org_t::mapping_type;
 
-  using mds_sub_deduced_t = decltype(stdex::submdspan(mds_org_t(), SubArgs()...));
+  using mds_sub_deduced_t = decltype(stdex::submdspan(mds_org_t(nullptr, map_t()), SubArgs()...));
   using sub_args_t = std::tuple<SubArgs...>;
 
 };

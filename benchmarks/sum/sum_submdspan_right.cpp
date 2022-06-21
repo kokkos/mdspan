@@ -189,7 +189,7 @@ void BM_MDSpan_Sum_Subspan_MD_right(benchmark::State& state, MDSpan, DynSizes...
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed_10D_size_1024,
-  stdex::mdspan<int, stdex::extents<size_type, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2>>{}
+  stdex::mdspan<int, stdex::extents<size_type, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2>>{nullptr}
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, dyn_10D_size_1024,
@@ -209,7 +209,7 @@ BENCHMARK_CAPTURE(
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed_5D_size_1024,
-  stdex::mdspan<int, stdex::extents<size_type, 4, 4, 4, 4, 4>>{}
+  stdex::mdspan<int, stdex::extents<size_type, 4, 4, 4, 4, 4>>{nullptr}
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, dyn_5D_size_1024,

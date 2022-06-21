@@ -93,11 +93,15 @@ public:
   using mapping_type = typename layout_type::template mapping<extents_type>;
   using element_type = ElementType;
   using value_type = remove_cv_t<element_type>;
-  using rank_type = typename extents_type::rank_type;
   using size_type = typename extents_type::size_type;
-  using difference_type = ptrdiff_t;
+  using rank_type = typename extents_type::rank_type;
   using pointer = typename accessor_type::pointer;
   using reference = typename accessor_type::reference;
+
+  MDSPAN_INLINE_FUNCTION static constexpr size_t rank() noexcept { return extents_type::rank(); }
+  MDSPAN_INLINE_FUNCTION static constexpr size_t rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
+  MDSPAN_INLINE_FUNCTION static constexpr size_type static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
+  MDSPAN_INLINE_FUNCTION constexpr size_type extent(size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
 
 private:
 
@@ -111,7 +115,27 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.cons], mdspan constructors, assignment, and destructor
 
-  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan() = default;
+#if !MDSPAN_HAS_CXX_20
+  MDSPAN_FUNCTION_REQUIRES(
+    (MDSPAN_INLINE_FUNCTION constexpr),
+    mdspan, , ,
+    /* requires */ (
+       (rank_dynamic() > 0) &&
+       _MDSPAN_TRAIT(is_default_constructible, pointer) &&
+       _MDSPAN_TRAIT(is_default_constructible, mapping_type) &&
+       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
+     )
+   )
+   {}
+#else
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan()
+    requires(
+       (rank_dynamic() > 0) &&
+       _MDSPAN_TRAIT(is_default_constructible, pointer) &&
+       _MDSPAN_TRAIT(is_default_constructible, mapping_type) &&
+       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
+     ) = default;
+#endif
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(const mdspan&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(mdspan&&) = default;
 
@@ -139,10 +163,25 @@ public:
       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
     )
   )
-  MDSPAN_CONDITIONAL_EXPLICIT(N != extents_type::rank_dynamic())
+  MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
+  { }
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType, size_t N,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+      _MDSPAN_TRAIT(is_constructible, extents_type, span<SizeType, N>) &&
+      _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
+      _MDSPAN_TRAIT(is_default_constructible, accessor_type)
+    )
+  )
+  MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdspan(pointer p, span<SizeType, N> dynamic_extents)
+    : __members(p, __map_acc_pair_t(mapping_type(extents_type(as_const(dynamic_extents))), accessor_type()))
   { }
 
   MDSPAN_FUNCTION_REQUIRES(
@@ -266,12 +305,8 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.domobs], mdspan observers of the domain multidimensional index space
 
-  MDSPAN_INLINE_FUNCTION static constexpr size_t rank() noexcept { return extents_type::rank(); }
-  MDSPAN_INLINE_FUNCTION static constexpr size_t rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
-  MDSPAN_INLINE_FUNCTION static constexpr size_type static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
 
   MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept { return __mapping_ref().extents(); };
-  MDSPAN_INLINE_FUNCTION constexpr size_type extent(size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
   MDSPAN_INLINE_FUNCTION constexpr size_type size() const noexcept {
     return __impl::__size(*this);
   };
