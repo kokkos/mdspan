@@ -82,7 +82,7 @@ struct TestLayout<std::tuple<
   Mapping map;
 
   void initialize_mapping() {
-    using extents_type = decltype(map.extents());
+    using extents_type = std::remove_cv_t<std::remove_reference_t<decltype(map.extents())>>;
     map = Mapping(extents_type(DynamicSizes...));
   }
 
