@@ -2245,20 +2245,7 @@ struct __standard_layout_psa<
   }
 
   static constexpr auto __size = sizeof...(_Idxs) + 1;
-#ifdef _MDSPAN_COMPILER_MSVC
-  // MSVC doesn't like the fact that __next_t happens to be a base
-  // class that's private, even though __size_dynamic is public in
-  // its definition.
-  struct __msvc_workaround_tag {};
-  using __msvc_workaround_next_t = __standard_layout_psa<
-      __msvc_workaround_tag, _T, _static_t
-      integer_sequence<_static_t, __values_or_sentinals...>, __sentinal,
-      integer_sequence<size_t, _Idxs...>>;
-  static constexpr auto __size_dynamic =
-      __msvc_workaround_next_t::__size_dynamic;
-#else
   static constexpr auto __size_dynamic = __next_t::__size_dynamic;
-#endif
 
   //--------------------------------------------------------------------------
 
@@ -3209,7 +3196,7 @@ template <class ThisSizeType, size_t... Extents>
 class extents
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   : private detail::__no_unique_address_emulation<
-      detail::__partially_static_sizes_tagged<detail::__extents_tag, SizeType , size_t, Extents...>>
+      detail::__partially_static_sizes_tagged<detail::__extents_tag, ThisSizeType , size_t, Extents...>>
 #endif
 {
 public:
@@ -3737,7 +3724,7 @@ struct layout_stride {
     : private detail::__no_unique_address_emulation<
         detail::__compressed_pair<
           Extents,
-          ::std::experimental::dextents<typename Extents::size_type, Extents::rank()>
+          std::array<typename Extents::size_type, Extents::rank()>
         >
       >
 #endif
