@@ -50,6 +50,7 @@ This implementation is fully conforming with revision 14 of P0009 with a few exc
   - note you can control which operator is available with defining `MDSPAN_USE_BRACKET_OPERATOR=[0,1]` and `MDSPAN_USE_PAREN_OPERATOR=[0,1]` irrespective of whether multi dimensional subscript support is detected.
 
 ### C++17 and C++14
+- mdspan has a default constructor even in cases where it shouldn't (i.e. all static extents, and default constructible mapping/accessor)
 - the `layout_stride::mapping::strides` function returns `array` not `span`.
 - the conditional explicit markup is missing, making certain constructors implicit
   - most notably you can implicitly convert from dynamic extent to static extent, which you can't in C++20 mode
