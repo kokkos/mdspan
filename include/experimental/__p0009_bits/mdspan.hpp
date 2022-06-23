@@ -93,11 +93,15 @@ public:
   using mapping_type = typename layout_type::template mapping<extents_type>;
   using element_type = ElementType;
   using value_type = remove_cv_t<element_type>;
-  using rank_type = typename extents_type::rank_type;
   using size_type = typename extents_type::size_type;
-  using difference_type = ptrdiff_t;
+  using rank_type = typename extents_type::rank_type;
   using pointer = typename accessor_type::pointer;
   using reference = typename accessor_type::reference;
+
+  MDSPAN_INLINE_FUNCTION static constexpr size_t rank() noexcept { return extents_type::rank(); }
+  MDSPAN_INLINE_FUNCTION static constexpr size_t rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
+  MDSPAN_INLINE_FUNCTION static constexpr size_type static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
+  MDSPAN_INLINE_FUNCTION constexpr size_type extent(size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
 
 private:
 
@@ -111,7 +115,17 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.cons], mdspan constructors, assignment, and destructor
 
+#if !MDSPAN_HAS_CXX_20
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan() = default;
+#else
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan()
+    requires(
+       (rank_dynamic() > 0) &&
+       _MDSPAN_TRAIT(is_default_constructible, pointer) &&
+       _MDSPAN_TRAIT(is_default_constructible, mapping_type) &&
+       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
+     ) = default;
+#endif
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(const mdspan&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan(mdspan&&) = default;
 
@@ -119,7 +133,8 @@ public:
     class... SizeTypes,
     /* requires */ (
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
-      _MDSPAN_TRAIT(is_constructible, extents_type, SizeTypes...) &&
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeTypes) /* && ... */) &&
+      ((sizeof...(SizeTypes) == rank()) || (sizeof...(SizeTypes) == rank_dynamic())) &&
       _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
     )
@@ -127,60 +142,86 @@ public:
   MDSPAN_INLINE_FUNCTION
   explicit constexpr mdspan(pointer p, SizeTypes... dynamic_extents)
     // TODO @proposal-bug shouldn't I be allowed to do `move(p)` here?
-    : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents...)), accessor_type()))
+    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(static_cast<size_type>(std::move(dynamic_extents))...)), accessor_type()))
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
-      _MDSPAN_TRAIT(is_constructible, extents_type, array<SizeType, N>) &&
+      _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType) &&
+      ((N == rank()) || (N == rank_dynamic())) &&
       _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
     )
   )
-  MDSPAN_CONDITIONAL_EXPLICIT(N != extents_type::rank_dynamic())
+  MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
-    : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
+    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
+
+#ifdef __cpp_lib_span
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType, size_t N,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+      _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType) &&
+      ((N == rank()) || (N == rank_dynamic())) &&
+      _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type) &&
+      _MDSPAN_TRAIT(is_default_constructible, accessor_type)
+    )
+  )
+  MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdspan(pointer p, span<SizeType, N> dynamic_extents)
+    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(as_const(dynamic_extents))), accessor_type()))
+  { }
+#endif
 
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdspan, (pointer p, const extents_type& exts), ,
     /* requires */ (_MDSPAN_TRAIT(is_default_constructible, accessor_type) &&
                     _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type))
-  ) : __members(p, __map_acc_pair_t(mapping_type(exts), accessor_type()))
+  ) : __members(std::move(p), __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdspan, (pointer p, const mapping_type& m), ,
     /* requires */ (_MDSPAN_TRAIT(is_default_constructible, accessor_type))
-  ) : __members(p, __map_acc_pair_t(m, accessor_type()))
+  ) : __members(std::move(p), __map_acc_pair_t(m, accessor_type()))
   { }
 
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const mapping_type& m, const accessor_type& a)
-    : __members(p, __map_acc_pair_t(m, a))
+    : __members(std::move(p), __map_acc_pair_t(m, a))
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
     /* requires */ (
       _MDSPAN_TRAIT(is_constructible, mapping_type, typename OtherLayoutPolicy::template mapping<OtherExtents>) &&
-      _MDSPAN_TRAIT(is_constructible, accessor_type, OtherAccessor) &&
-      _MDSPAN_TRAIT(is_constructible, pointer, typename OtherAccessor::pointer) &&
-      _MDSPAN_TRAIT(is_constructible, extents_type, OtherExtents)
+      _MDSPAN_TRAIT(is_constructible, accessor_type, OtherAccessor)
     )
   )
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(const mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other)
     : __members(other.__ptr_ref(), __map_acc_pair_t(other.__mapping_ref(), other.__accessor_ref()))
-  { }
+  {
+      static_assert(_MDSPAN_TRAIT(is_constructible, pointer, typename OtherAccessor::pointer),"Incompatible pointer for mdspan construction");
+      static_assert(_MDSPAN_TRAIT(is_constructible, extents_type, OtherExtents),"Incompatible extents for mdspan construction");
+      /*
+       * TODO: Check precondition
+       * For each rank index r of extents_type, static_extent(r) == dynamic_extent || static_extent(r) == other.extent(r) is true.
+       */
+  }
 
+  /* Might need this on NVIDIA?
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~mdspan() = default;
+  */
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mdspan& operator=(const mdspan&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mdspan& operator=(mdspan&&) = default;
@@ -194,39 +235,56 @@ public:
     class... SizeTypes,
     /* requires */ (
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
-      extents_type::rank() == sizeof...(SizeTypes)
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeTypes) /* && ... */) &&
+      (rank() == sizeof...(SizeTypes))
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator[](SizeTypes... indices) const noexcept
+  constexpr reference operator[](SizeTypes... indices) const
   {
     return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(indices)...));
   }
   #endif
 
   MDSPAN_TEMPLATE_REQUIRES(
-    class SizeType, size_t N,
+    class SizeType,
     /* requires */ (
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
-      N == extents_type::rank()
+      _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator[](const array<SizeType, N>& indices) const noexcept
+  constexpr reference operator[](const array<SizeType, rank()>& indices) const
   {
     return __impl::template __callop<reference>(*this, indices);
   }
+
+  #ifdef __cpp_lib_span
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+      _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType)
+    )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference operator[](span<SizeType, rank()> indices) const
+  {
+    return __impl::template __callop<reference>(*this, indices);
+  }
+  #endif // __cpp_lib_span
 
   #if !MDSPAN_USE_BRACKET_OPERATOR
   MDSPAN_TEMPLATE_REQUIRES(
     class Index,
     /* requires */ (
       _MDSPAN_TRAIT(is_convertible, Index, size_type) &&
+      _MDSPAN_TRAIT(is_nothrow_constructible, size_type, Index) &&
       extents_type::rank() == 1
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator[](Index idx) const noexcept
+  constexpr reference operator[](Index idx) const
   {
     return __accessor_ref().access(__ptr_ref(), __mapping_ref()(size_type(idx)));
   }
@@ -237,46 +295,58 @@ public:
     class... SizeTypes,
     /* requires */ (
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, size_type) /* && ... */) &&
-      extents_type::rank() == sizeof...(SizeTypes)
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeTypes) /* && ... */) &&
+      rank() == sizeof...(SizeTypes)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator()(SizeTypes... indices) const noexcept
+  constexpr reference operator()(SizeTypes... indices) const
   {
     return __accessor_ref().access(__ptr_ref(), __mapping_ref()(indices...));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
-    class SizeType, size_t N,
+    class SizeType,
     /* requires */ (
       _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
-      N == extents_type::rank()
+      _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference operator()(const array<SizeType, N>& indices) const noexcept
+  constexpr reference operator()(const array<SizeType, rank()>& indices) const
   {
     return __impl::template __callop<reference>(*this, indices);
   }
-  #endif
 
-  MDSPAN_INLINE_FUNCTION constexpr
-  accessor_type accessor() const { return __accessor_ref(); };
+  #ifdef __cpp_lib_span
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_convertible, SizeType, size_type) &&
+      _MDSPAN_TRAIT(is_nothrow_constructible, size_type, SizeType)
+    )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION
+  constexpr reference operator()(span<SizeType, rank()> indices) const
+  {
+    return __impl::template __callop<reference>(*this, indices);
+  }
+  #endif // __cpp_lib_span
+  #endif // MDSPAN_USE_PAREN_OPERATOR
 
-  //--------------------------------------------------------------------------------
-  // [mdspan.basic.domobs], mdspan observers of the domain multidimensional index space
-
-  MDSPAN_INLINE_FUNCTION static constexpr size_t rank() noexcept { return extents_type::rank(); }
-  MDSPAN_INLINE_FUNCTION static constexpr size_t rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
-  MDSPAN_INLINE_FUNCTION static constexpr size_type static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
-
-  MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept { return __mapping_ref().extents(); };
-  MDSPAN_INLINE_FUNCTION constexpr size_type extent(size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
   MDSPAN_INLINE_FUNCTION constexpr size_type size() const noexcept {
     return __impl::__size(*this);
   };
 
-  MDSPAN_INLINE_FUNCTION constexpr pointer data() const noexcept { return __ptr_ref(); };
+
+  //--------------------------------------------------------------------------------
+  // [mdspan.basic.domobs], mdspan observers of the domain multidimensional index space
+
+
+  MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return __mapping_ref().extents(); };
+  MDSPAN_INLINE_FUNCTION constexpr const pointer& data() const noexcept { return __ptr_ref(); };
+  MDSPAN_INLINE_FUNCTION constexpr const mapping_type& mapping() const noexcept { return __mapping_ref(); };
+  MDSPAN_INLINE_FUNCTION constexpr const accessor_type& accessor() const noexcept { return __accessor_ref(); };
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.obs], mdspan observers of the mapping
@@ -285,7 +355,6 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept { return mapping_type::is_always_contiguous(); };
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return mapping_type::is_always_strided(); };
 
-  MDSPAN_INLINE_FUNCTION constexpr mapping_type mapping() const noexcept { return __mapping_ref(); };
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return __mapping_ref().is_unique(); };
   MDSPAN_INLINE_FUNCTION constexpr bool is_contiguous() const noexcept { return __mapping_ref().is_contiguous(); };
   MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return __mapping_ref().is_strided(); };
@@ -308,41 +377,35 @@ private:
 };
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
-#ifdef _MDSPAN_USE_P2554
 MDSPAN_TEMPLATE_REQUIRES(
   class ElementType, class... SizeTypes,
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */) &&
   (sizeof...(SizeTypes) > 0)
 )
-mdspan(ElementType*, SizeTypes...)
+explicit mdspan(ElementType*, SizeTypes...)
   -> mdspan<ElementType, ::std::experimental::dextents<size_t, sizeof...(SizeTypes)>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class Pointer,
-  (!_MDSPAN_TRAIT(is_array, Pointer))
+  (_MDSPAN_TRAIT(is_pointer, std::remove_reference_t<Pointer>))
 )
-mdspan(const Pointer&) -> mdspan<std::remove_pointer_t<Pointer>, extents<size_t>>;
+mdspan(Pointer&&) -> mdspan<std::remove_pointer_t<std::remove_reference_t<Pointer>>, extents<size_t>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class CArray,
-  _MDSPAN_TRAIT(is_array, CArray)
+  (_MDSPAN_TRAIT(is_array, CArray) && (rank_v<CArray> == 1))
 )
 mdspan(CArray&) -> mdspan<std::remove_all_extents_t<CArray>, extents<size_t, ::std::extent_v<CArray,0>>>;
-
-#else
-
-MDSPAN_TEMPLATE_REQUIRES(
-  class ElementType, class... SizeTypes,
-  /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */)
-)
-mdspan(ElementType*, SizeTypes...)
-  -> mdspan<ElementType, ::std::experimental::dextents<size_t, sizeof...(SizeTypes)>>;
-
-#endif
 
 template <class ElementType, class SizeType, size_t N>
 mdspan(ElementType*, const ::std::array<SizeType, N>&)
   -> mdspan<ElementType, ::std::experimental::dextents<size_t, N>>;
+
+#ifdef __cpp_lib_span
+template <class ElementType, class SizeType, size_t N>
+mdspan(ElementType*, ::std::span<SizeType, N>)
+  -> mdspan<ElementType, ::std::experimental::dextents<size_t, N>>;
+#endif
 
 // This one is necessary because all the constructors take `pointer`s, not
 // `ElementType*`s, and `pointer` is taken from `accessor_type::pointer`, which

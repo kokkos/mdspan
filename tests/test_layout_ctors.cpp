@@ -55,7 +55,7 @@ struct TestLayoutCtors<std::tuple<
   std::integer_sequence<size_t, DynamicSizes...>
 >> : public ::testing::Test {
   using mapping_type = Mapping;
-  using extents_type = decltype(std::declval<mapping_type>().extents());
+  using extents_type = typename mapping_type::extents_type;
   Mapping map = { extents_type{ DynamicSizes... } };
 };
 

@@ -163,7 +163,7 @@ class layout_right::mapping {
     MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping const&) noexcept = default;
 
     MDSPAN_INLINE_FUNCTION
-    constexpr extents_type extents() const noexcept {
+    constexpr const extents_type& extents() const noexcept {
       return __extents;
     }
 

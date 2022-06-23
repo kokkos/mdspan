@@ -77,7 +77,7 @@ void BM_MDSpan_Copy_2D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
 }
 
 BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_right, size_100_100, stdex::mdspan<int, stdex::extents<size_type, 100, 100>>()
+  BM_MDSpan_Copy_2D_right, size_100_100, stdex::mdspan<int, stdex::extents<size_type, 100, 100>>(nullptr)
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_right, size_100_dyn, stdex::mdspan<int, stdex::extents<size_type, 100, dyn>>(), 100
@@ -115,7 +115,8 @@ void BM_MDSpan_Copy_2D_stride(benchmark::State& state, MDSpan, LayoutMapping map
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100_100,
-  stdex::mdspan<int, stdex::extents<size_type, 100, 100>, stdex::layout_stride>(),
+  stdex::mdspan<int, stdex::extents<size_type, 100, 100>, stdex::layout_stride>(nullptr,
+          stdex::layout_stride::mapping<stdex::extents<size_type, 100, 100>>()),
   stdex::layout_stride::template mapping<stdex::extents<size_type, 100, 100>>(
     stdex::extents<size_type, 100, 100>{},
     // layout right

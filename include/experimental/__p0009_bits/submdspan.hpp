@@ -388,7 +388,7 @@ constexpr auto _submdspan_impl(
         Exts, dynamic_extent
       >(
         slices, src.extents().template __extent<Idxs>(),
-        src.mapping().template __stride<Idxs>()
+        src.mapping().stride(Idxs)
       )
     );
 
@@ -397,7 +397,8 @@ constexpr auto _submdspan_impl(
   auto map = _handled.make_layout_mapping(src.mapping());
   auto acc_pol = typename AP::offset_policy(src.accessor());
   return mdspan<
-    ET, decltype(map.extents()), typename decltype(_handled)::layout_type, decltype(acc_pol)
+    ET, remove_const_t<remove_reference_t<decltype(map.extents())>>,
+        typename decltype(_handled)::layout_type, remove_const_t<remove_reference_t<decltype(acc_pol)>>
   >(
     std::move(offset_ptr), std::move(map), std::move(acc_pol)
   );
