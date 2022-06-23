@@ -314,7 +314,7 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */) &&
   (sizeof...(SizeTypes) > 0)
 )
-mdspan(ElementType*, SizeTypes...)
+explicit mdspan(ElementType*, SizeTypes...)
   -> mdspan<ElementType, ::std::experimental::dextents<size_t, sizeof...(SizeTypes)>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
