@@ -116,17 +116,7 @@ public:
   // [mdspan.basic.cons], mdspan constructors, assignment, and destructor
 
 #if !MDSPAN_HAS_CXX_20
-  MDSPAN_FUNCTION_REQUIRES(
-    (MDSPAN_INLINE_FUNCTION constexpr),
-    mdspan, , ,
-    /* requires */ (
-       (rank_dynamic() > 0) &&
-       _MDSPAN_TRAIT(is_default_constructible, pointer) &&
-       _MDSPAN_TRAIT(is_default_constructible, mapping_type) &&
-       _MDSPAN_TRAIT(is_default_constructible, accessor_type)
-     )
-   )
-   {}
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan() = default;
 #else
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan()
     requires(
@@ -171,6 +161,7 @@ public:
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
+#ifdef __cpp_lib_span
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
@@ -186,6 +177,7 @@ public:
   constexpr mdspan(pointer p, span<SizeType, N> dynamic_extents)
     : __members(p, __map_acc_pair_t(mapping_type(extents_type(as_const(dynamic_extents))), accessor_type()))
   { }
+#endif
 
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
@@ -218,8 +210,8 @@ public:
   constexpr mdspan(const mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other)
     : __members(other.__ptr_ref(), __map_acc_pair_t(other.__mapping_ref(), other.__accessor_ref()))
   {
-      static_assert(_MDSPAN_TRAIT(is_constructible, pointer, typename OtherAccessor::pointer));
-      static_assert(_MDSPAN_TRAIT(is_constructible, extents_type, OtherExtents));
+      static_assert(_MDSPAN_TRAIT(is_constructible, pointer, typename OtherAccessor::pointer),"Incompatible pointer for mdspan construction");
+      static_assert(_MDSPAN_TRAIT(is_constructible, extents_type, OtherExtents),"Incompatible extents for mdspan construction");
       /*
        * TODO: Check precondition
        * For each rank index r of extents_type, static_extent(r) == dynamic_extent || static_extent(r) == other.extent(r) is true.
