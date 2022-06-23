@@ -3,7 +3,7 @@ Reference `mdspan` implementation
 
 The ISO-C++ proposal [P0009](https://wg21.link/p0009) will add support for non-owning multi-dimensional array references to the C++ standard library.  This repository aims to provide a production-quality implementation of the proposal as written (with a few caveats, see below) in preparation for the addition of `mdspan` to the standard.  Please feel free to use this, file bugs when it breaks, and let us know how it works for you :-)
 
-[Try it out on Godbolt](https://godbolt.org/z/d5W54Ycfs){: .btn }
+[Try it out on Godbolt](https://godbolt.org/z/Mxa7cej1a){: .btn }
 
 Note: There is a tag mdspan-0.3.0 which reflects the status of P0009 before R17 - i.e. it does not have the integral type template parameter for `extents`.
 
@@ -58,9 +58,6 @@ This implementation is fully conforming with revision 14 of P0009 with a few exc
 ### C++14
 - deduction guides don't exist
 
-### Implemented change proposals in flight:
-
-- [P2554](https://wg21.link/P2554) add `-D_MDSPAN_USE_P2554` to your `CMAKE_CXX_FLAGS` or define it in your code before including the mdspan header.
 
 
 Acknowledgements
