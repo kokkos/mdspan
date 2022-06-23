@@ -389,17 +389,10 @@ struct layout_stride {
 #endif
     };
 
-#ifdef __cpp_lib_span
     MDSPAN_INLINE_FUNCTION
-    constexpr span<const size_type, extents_type::rank() > strides() const noexcept {
-      return span<const size_type, extents_type::rank()>{__strides_storage().data(), extents_type::rank()};
-    }
-#else
-    MDSPAN_INLINE_FUNCTION
-    constexpr const array< size_type, extents_type::rank() >& strides() const noexcept {
+    constexpr array< size_type, extents_type::rank() > strides() const noexcept {
       return __strides_storage();
     }
-#endif
 
     MDSPAN_INLINE_FUNCTION
     constexpr size_type required_span_size() const noexcept {
