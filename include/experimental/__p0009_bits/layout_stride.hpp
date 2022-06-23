@@ -95,7 +95,7 @@ struct layout_stride {
     : private detail::__no_unique_address_emulation<
         detail::__compressed_pair<
           Extents,
-          ::std::experimental::dextents<typename Extents::size_type, Extents::rank()>
+          std::array<typename Extents::size_type, Extents::rank()>
         >
       >
 #endif

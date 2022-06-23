@@ -108,8 +108,8 @@ struct TestLayoutCompatCtors<std::tuple<
 >> : public ::testing::Test {
   using mapping_type1 = Mapping;
   using mapping_type2 = Mapping2;
-  using extents_type1 = decltype(std::declval<mapping_type1>().extents());
-  using extents_type2 = decltype(std::declval<mapping_type2>().extents());
+  using extents_type1 = std::remove_reference_t<decltype(std::declval<mapping_type1>().extents())>;
+  using extents_type2 = std::remove_reference_t<decltype(std::declval<mapping_type2>().extents())>;
   Mapping map1 = { extents_type1{ DynamicSizes... } };
   Mapping2 map2 = { extents_type2{ DynamicSizes2... } };
 };

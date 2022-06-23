@@ -107,7 +107,7 @@ template <class ThisSizeType, size_t... Extents>
 class extents
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
   : private detail::__no_unique_address_emulation<
-      detail::__partially_static_sizes_tagged<detail::__extents_tag, SizeType , size_t, Extents...>>
+      detail::__partially_static_sizes_tagged<detail::__extents_tag, ThisSizeType , size_t, Extents...>>
 #endif
 {
 public:
