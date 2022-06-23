@@ -158,7 +158,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const array<SizeType, N>& dynamic_extents)
-    : __members(p, __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
+    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
 #ifdef __cpp_lib_span
@@ -175,7 +175,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, span<SizeType, N> dynamic_extents)
-    : __members(p, __map_acc_pair_t(mapping_type(extents_type(as_const(dynamic_extents))), accessor_type()))
+    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(as_const(dynamic_extents))), accessor_type()))
   { }
 #endif
 
@@ -184,19 +184,19 @@ public:
     mdspan, (pointer p, const extents_type& exts), ,
     /* requires */ (_MDSPAN_TRAIT(is_default_constructible, accessor_type) &&
                     _MDSPAN_TRAIT(is_constructible, mapping_type, extents_type))
-  ) : __members(p, __map_acc_pair_t(mapping_type(exts), accessor_type()))
+  ) : __members(std::move(p), __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdspan, (pointer p, const mapping_type& m), ,
     /* requires */ (_MDSPAN_TRAIT(is_default_constructible, accessor_type))
-  ) : __members(p, __map_acc_pair_t(m, accessor_type()))
+  ) : __members(std::move(p), __map_acc_pair_t(m, accessor_type()))
   { }
 
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(pointer p, const mapping_type& m, const accessor_type& a)
-    : __members(p, __map_acc_pair_t(m, a))
+    : __members(std::move(p), __map_acc_pair_t(m, a))
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
