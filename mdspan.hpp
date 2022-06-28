@@ -3889,8 +3889,10 @@ struct layout_stride {
     MDSPAN_TEMPLATE_REQUIRES(
       class IntegralTypes,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, const remove_const_t<IntegralTypes>&, size_type) &&
-        _MDSPAN_TRAIT(is_nothrow_constructible, size_type, const remove_const_t<IntegralTypes>&)
+        // MSVC 19.32 does not like using size_type here, requires the typename Extents::size_type
+        // error C2641: cannot deduce template arguments for 'std::experimental::layout_stride::mapping'
+        _MDSPAN_TRAIT(is_convertible, const remove_const_t<IntegralTypes>&, typename Extents::size_type) &&
+        _MDSPAN_TRAIT(is_nothrow_constructible, typename Extents::size_type, const remove_const_t<IntegralTypes>&)
       )
     )
     MDSPAN_INLINE_FUNCTION
@@ -3925,8 +3927,10 @@ struct layout_stride {
     MDSPAN_TEMPLATE_REQUIRES(
       class IntegralTypes,
       /* requires */ (
-        _MDSPAN_TRAIT(is_convertible, const remove_const_t<IntegralTypes>&, size_type) &&
-        _MDSPAN_TRAIT(is_nothrow_constructible, size_type, const remove_const_t<IntegralTypes>&)
+        // MSVC 19.32 does not like using size_type here, requires the typename Extents::size_type
+        // error C2641: cannot deduce template arguments for 'std::experimental::layout_stride::mapping'
+        _MDSPAN_TRAIT(is_convertible, const remove_const_t<IntegralTypes>&, typename Extents::size_type) &&
+        _MDSPAN_TRAIT(is_nothrow_constructible, typename Extents::size_type, const remove_const_t<IntegralTypes>&)
       )
     )
     MDSPAN_INLINE_FUNCTION
@@ -4209,7 +4213,7 @@ class layout_right::mapping {
     }
 
     constexpr size_type __compute_offset(size_t offset, __rank_count<extents_type::rank(), extents_type::rank()>) const {
-      return offset;
+      return static_cast<size_type>(offset);
     }
 
     constexpr size_type __compute_offset(__rank_count<0,0>) const { return 0; }
