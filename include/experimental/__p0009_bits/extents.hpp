@@ -108,7 +108,7 @@ public:
 
   using rank_type = size_t;
   using index_type = ThisIndexType;
-  using size_type = size_t;
+  using size_type = make_unsigned_t<index_type>;
 
 // internal typedefs which for technical reasons are public
   using __storage_t = detail::__partially_static_sizes_tagged<detail::__extents_tag, index_type, size_t, Extents...>;
