@@ -52,17 +52,17 @@ struct NotARealLayout {
   struct mapping {
     using extents_type = Extents;
     using rank_type = typename extents_type::rank_type;
-    using size_type = typename extents_type::size_type;
+    using index_type = typename extents_type::index_type;
     using layout_type = NotARealLayout;
 
     constexpr extents_type& extents() const { return ext; }
 
     template<class ... Idx>
-    size_type operator()(Idx ...) const { return 0; }
+    index_type operator()(Idx ...) const { return 0; }
 
-    size_type required_span_size() const { return 0; }
+    index_type required_span_size() const { return 0; }
 
-    size_type stride(rank_type) const { return 1; }
+    index_type stride(rank_type) const { return 1; }
 
     private:
       extents_type ext;
@@ -75,17 +75,17 @@ struct AStridedLayout {
   struct mapping {
     using extents_type = Extents;
     using rank_type = typename extents_type::rank_type;
-    using size_type = typename extents_type::size_type;
+    using index_type = typename extents_type::index_type;
     using layout_type = AStridedLayout;
 
     constexpr extents_type& extents() const { return ext; }
 
     template<class ... Idx>
-    size_type operator()(Idx ...) const { return 0; }
+    index_type operator()(Idx ...) const { return 0; }
 
-    size_type required_span_size() const { return 0; }
+    index_type required_span_size() const { return 0; }
 
-    size_type stride(rank_type) const { return 1; }
+    index_type stride(rank_type) const { return 1; }
 
     constexpr static bool is_always_strided() { return true; }
     constexpr static bool is_always_unique() { return unique; }

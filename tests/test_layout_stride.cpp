@@ -89,10 +89,10 @@ TYPED_TEST(TestLayoutStrideAllZero, test_required_span_size) {
 }
 
 TYPED_TEST(TestLayoutStrideAllZero, test_mapping) {
-  using size_type = decltype(this->map.extents().extent(0));
-  for(size_type i = 0; i < this->map.extents().extent(0); ++i) {
-    for(size_type j = 0; j < this->map.extents().extent(1); ++j) {
-      for (size_type k = 0; k < this->map.extents().extent(2); ++k) {
+  using index_type = decltype(this->map.extents().extent(0));
+  for(index_type i = 0; i < this->map.extents().extent(0); ++i) {
+    for(index_type j = 0; j < this->map.extents().extent(1); ++j) {
+      for (index_type k = 0; k < this->map.extents().extent(2); ++k) {
         ASSERT_EQ(this->map(i, j, k), 0);
       }
     }
