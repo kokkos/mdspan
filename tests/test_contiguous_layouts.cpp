@@ -173,10 +173,12 @@ using test_layout_conversion =
              std::integer_sequence<size_t, AllSizes...>,
              std::integral_constant<bool, Implicit>>;
 
+// We separate layout_conversion_test_types into multiple type lists
+// in order to avoid an nvc++ compiler error (recursion too deep).
 
-using layout_conversion_test_types =
+// Left <=> Left conversion
+using layout_conversion_test_types_left_to_left =
   ::testing::Types<
-    // Left <=> Left conversion
      test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
     ,test_layout_conversion<stdex::layout_left,  stdex::layout_left , stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
@@ -189,9 +191,12 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+  >;
 
-    // Right <=> Right conversion
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
+// Right <=> Right conversion
+using layout_conversion_test_types_right_to_right =
+  ::testing::Types<
+    test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            true, 5,10>
@@ -203,9 +208,12 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+  >;
 
-    // Stride <=> Stride conversion
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
+// Stride <=> Stride conversion
+using layout_conversion_test_types_stride_to_stride =
+  ::testing::Types<
+    test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            true, 5,10>
@@ -217,9 +225,12 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+  >;
 
-    // Right => Stride conversion
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
+// Right => Stride conversion
+using layout_conversion_test_types_right_to_stride =
+  ::testing::Types<
+    test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            true, 5,10>
@@ -231,9 +242,12 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+  >;
 
-    // Left => Stride conversion
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
+// Left => Stride conversion
+using layout_conversion_test_types_left_to_stride =
+  ::testing::Types<
+    test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            true, 5,10>
@@ -245,9 +259,12 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+  >;
 
-    // Stride => Left conversion
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               false, 5>
+// Stride => Left conversion
+using layout_conversion_test_types_stride_to_left =
+  ::testing::Types<
+    test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               false, 5>
     ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
     ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            false, 5,10>
@@ -259,9 +276,12 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   false, 5, 10, 15, 20, 25>
+  >;
 
-    // Stride => Right conversion
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               false, 5>
+// Stride => Right conversion
+using layout_conversion_test_types_stride_to_right =
+  ::testing::Types<
+    test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               false, 5>
     ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
     ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            false, 5,10>
@@ -273,15 +293,17 @@ using layout_conversion_test_types =
     ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
     ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   false, 5, 10, 15, 20, 25>
+  >;
 
-    // Left <=> Right conversion
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
+// Left <=> Right conversion
+using layout_conversion_test_types_left_to_right =
+  ::testing::Types<
+    test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
     ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
     ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
     ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
-
   >;
 
 template<class T> struct TestLayoutConversion;
@@ -335,7 +357,39 @@ struct TestLayoutConversion<
   }
 };
 
-TYPED_TEST_SUITE(TestLayoutConversion, layout_conversion_test_types);
+// We can't reuse TestLayoutConversion directly for multiple suites,
+// because this results in duplicate test names.
+// However, creating an alias for each suite works around this.
+
+TYPED_TEST_SUITE(TestLayoutConversion, layout_conversion_test_types_left_to_left);
+
+template<class T>
+using TestLayoutConversion_R2R = TestLayoutConversion<T>;
+TYPED_TEST_SUITE(TestLayoutConversion_R2R, layout_conversion_test_types_right_to_right);
+
+template<class T>
+using TestLayoutConversion_S2S = TestLayoutConversion<T>;
+TYPED_TEST_SUITE(TestLayoutConversion_S2S, layout_conversion_test_types_stride_to_stride);
+
+template<class T>
+using TestLayoutConversion_R2S = TestLayoutConversion<T>;
+TYPED_TEST_SUITE(TestLayoutConversion_R2S, layout_conversion_test_types_right_to_stride);
+
+template<class T>
+using TestLayoutConversion_L2S = TestLayoutConversion<T>;
+TYPED_TEST_SUITE(TestLayoutConversion_L2S, layout_conversion_test_types_left_to_stride);
+
+template<class T>
+using TestLayoutConversion_S2L = TestLayoutConversion<T>;
+TYPED_TEST_SUITE(TestLayoutConversion_S2L, layout_conversion_test_types_stride_to_left);
+
+template<class T>
+using TestLayoutConversion_S2R = TestLayoutConversion<T>;
+TYPED_TEST_SUITE(TestLayoutConversion_S2R, layout_conversion_test_types_stride_to_right);
+
+template<class T>
+using TestLayoutConversion_L2R = TestLayoutConversion<T>;
+TYPED_TEST_SUITE(TestLayoutConversion_L2R, layout_conversion_test_types_left_to_right);
 
 TYPED_TEST(TestLayoutConversion, implicit_conversion) {
   typename TestFixture::map_2_t map2 = this->create_map2(this->exts2);
@@ -365,7 +419,7 @@ TYPED_TEST(TestLayoutConversion, implicit_conversion) {
   #endif
     map1 = typename TestFixture::map_1_t(map2);
 
-  for(size_t r=0; r<this->exts1.rank(); r++) {
+  for(size_t r=0; r != this->exts1.rank(); ++r) {
     ASSERT_EQ(map1.extents().extent(r), map2.extents().extent(r));
     ASSERT_EQ(map1.stride(r), map2.stride(r));
   }
