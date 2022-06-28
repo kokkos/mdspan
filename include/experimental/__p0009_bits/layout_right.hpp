@@ -57,6 +57,7 @@ template <class Extents>
 class layout_right::mapping {
   public:
     using extents_type = Extents;
+    using index_type = typename extents_type::index_type;
     using size_type = typename extents_type::size_type;
     using rank_type = typename extents_type::rank_type;
     using layout_type = layout_right;
@@ -72,22 +73,22 @@ class layout_right::mapping {
     struct __rank_count {};
 
     template <size_t r, size_t Rank, class I, class... Indices>
-    constexpr size_type __compute_offset(
-      size_type offset, __rank_count<r,Rank>, const I& i, Indices... idx) const {
+    constexpr index_type __compute_offset(
+      index_type offset, __rank_count<r,Rank>, const I& i, Indices... idx) const {
       return __compute_offset(offset * __extents.template __extent<r>() + i,__rank_count<r+1,Rank>(),  idx...);
     }
 
     template<class I, class ... Indices>
-    constexpr size_type __compute_offset(
+    constexpr index_type __compute_offset(
       __rank_count<0,extents_type::rank()>, const I& i, Indices... idx) const {
       return __compute_offset(i,__rank_count<1,extents_type::rank()>(),idx...);
     }
 
-    constexpr size_type __compute_offset(size_t offset, __rank_count<extents_type::rank(), extents_type::rank()>) const {
-      return static_cast<size_type>(offset);
+    constexpr index_type __compute_offset(size_t offset, __rank_count<extents_type::rank(), extents_type::rank()>) const {
+      return static_cast<index_type>(offset);
     }
 
-    constexpr size_type __compute_offset(__rank_count<0,0>) const { return 0; }
+    constexpr index_type __compute_offset(__rank_count<0,0>) const { return 0; }
 
   public:
 
@@ -113,7 +114,7 @@ class layout_right::mapping {
     {
        /*
         * TODO: check precondition
-        * other.required_span_size() is a representable value of type size_type
+        * other.required_span_size() is a representable value of type index_type
         */
     }
 
@@ -131,7 +132,7 @@ class layout_right::mapping {
     {
        /*
         * TODO: check precondition
-        * other.required_span_size() is a representable value of type size_type
+        * other.required_span_size() is a representable value of type index_type
         */
     }
 
@@ -148,7 +149,7 @@ class layout_right::mapping {
     {
        /*
         * TODO: check precondition
-        * other.required_span_size() is a representable value of type size_type
+        * other.required_span_size() is a representable value of type index_type
         */
        #ifndef __CUDA_ARCH__
        size_t stride = 1;
@@ -168,8 +169,8 @@ class layout_right::mapping {
     }
 
     MDSPAN_INLINE_FUNCTION
-    constexpr size_type required_span_size() const noexcept {
-      size_type value = 1;
+    constexpr index_type required_span_size() const noexcept {
+      index_type value = 1;
       for(rank_type r=0; r<extents_type::rank(); r++) value*=__extents.extent(r);
       return value;
     }
@@ -181,12 +182,12 @@ class layout_right::mapping {
       /* requires */ (
         (sizeof...(Indices) == extents_type::rank()) &&
         _MDSPAN_FOLD_AND(
-           (_MDSPAN_TRAIT(is_convertible, Indices, size_type) &&
-            _MDSPAN_TRAIT(is_nothrow_constructible, size_type, Indices))
+           (_MDSPAN_TRAIT(is_convertible, Indices, index_type) &&
+            _MDSPAN_TRAIT(is_nothrow_constructible, index_type, Indices))
         )
       )
     )
-    constexpr size_type operator()(Indices... idxs) const noexcept {
+    constexpr index_type operator()(Indices... idxs) const noexcept {
       return __compute_offset(__rank_count<0, extents_type::rank()>(), idxs...);
     }
 
@@ -198,8 +199,8 @@ class layout_right::mapping {
     MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
 
     MDSPAN_INLINE_FUNCTION
-    constexpr size_type stride(rank_type i) const noexcept {
-      size_type value = 1;
+    constexpr index_type stride(rank_type i) const noexcept {
+      index_type value = 1;
       for(rank_type r=extents_type::rank()-1; r>i; r--) value*=__extents.extent(r);
       return value;
     }
@@ -221,11 +222,11 @@ class layout_right::mapping {
 
     // Not really public, but currently needed to implement fully constexpr useable submdspan:
     template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
-    constexpr size_type __get_stride(std::experimental::extents<SizeType, E...>,integer_sequence<size_t, Idx...>) const {
+    constexpr index_type __get_stride(std::experimental::extents<SizeType, E...>,integer_sequence<size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT((Idx>N? __extents.template __extent<Idx>():1),1);
     }
     template<size_t N>
-    constexpr size_type __stride() const noexcept {
+    constexpr index_type __stride() const noexcept {
       return __get_stride<N>(__extents, make_index_sequence<extents_type::rank()>());
     }
 
