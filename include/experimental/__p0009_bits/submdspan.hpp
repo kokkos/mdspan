@@ -393,7 +393,7 @@ constexpr auto _submdspan_impl(
     );
 
   size_t offset_size = src.mapping()(_handled.__offsets.template __get_n<Idxs>()...);
-  auto offset_ptr = src.accessor().offset(src.data(), offset_size);
+  auto offset_ptr = src.accessor().offset(src.data_handle(), offset_size);
   auto map = _handled.make_layout_mapping(src.mapping());
   auto acc_pol = typename AP::offset_policy(src.accessor());
   return mdspan<
@@ -412,7 +412,7 @@ auto _submdspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t
      >
 {
   return {
-    src.accessor().offset(src.data(), src.mapping()(h.__offsets.template __get_n<Idxs>()...)),
+    src.accessor().offset(src.data_handle(), src.mapping()(h.__offsets.template __get_n<Idxs>()...)),
     h.make_layout_mapping(src.mapping()),
     typename AP::offset_policy(src.accessor())
   };

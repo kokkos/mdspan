@@ -56,7 +56,7 @@ struct default_accessor {
   using offset_policy = default_accessor;
   using element_type = ElementType;
   using reference = ElementType&;
-  using pointer = ElementType*;
+  using data_handle_type = ElementType*;
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr default_accessor() noexcept = default;
 
@@ -70,13 +70,13 @@ struct default_accessor {
   constexpr default_accessor(default_accessor<OtherElementType>) noexcept {}
 
   MDSPAN_INLINE_FUNCTION
-  constexpr pointer
-  offset(pointer p, size_t i) const noexcept {
+  constexpr data_handle_type
+  offset(data_handle_type p, size_t i) const noexcept {
     return p + i;
   }
 
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference access(pointer p, size_t i) const noexcept {
+  constexpr reference access(data_handle_type p, size_t i) const noexcept {
     return p[i];
   }
 
