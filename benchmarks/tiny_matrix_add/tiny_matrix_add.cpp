@@ -50,12 +50,12 @@
 
 //================================================================================
 
-using size_type = int;
+using index_type = int;
 
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<size_type, Es...>, stdex::layout_left>;
+using lmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<size_type, Es...>, stdex::layout_right>;
+using rmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_right>;
 
 //================================================================================
 
@@ -78,9 +78,9 @@ void BM_MDSpan_TinyMatrixSum_right(benchmark::State& state, MDSpan, DynSizes... 
     benchmark::DoNotOptimize(o.data());
     benchmark::DoNotOptimize(s);
     benchmark::DoNotOptimize(s.data());
-    for(size_type i = 0; i < s.extent(0); i ++) {
-      for(size_type j = 0; j < s.extent(1); j ++) {
-        for(size_type k = 0; k < s.extent(2); k ++) {
+    for(index_type i = 0; i < s.extent(0); i ++) {
+      for(index_type j = 0; j < s.extent(1); j ++) {
+        for(index_type k = 0; k < s.extent(2); k ++) {
           o(i,j,k) += s(i,j,k);
         }
       }
@@ -98,7 +98,7 @@ MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_TinyMatrixSum_right, left_, lmdspan, 1000000, 
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_Static_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::dextents<size_type, 3>>;
+  using MDSpan = stdex::mdspan<T, stdex::dextents<index_type, 3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
 
@@ -115,9 +115,9 @@ void BM_Raw_Static_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
   for (auto _ : state) {
     benchmark::DoNotOptimize(o_ptr);
     benchmark::DoNotOptimize(s_ptr);
-    for(size_type i = 0; i < 1000000; i ++) {
-      for(size_type j = 0; j < 3; j ++) {
-        for(size_type k = 0; k < 3; k ++) {
+    for(index_type i = 0; i < 1000000; i ++) {
+      for(index_type j = 0; j < 3; j ++) {
+        for(index_type k = 0; k < 3; k ++) {
           o_ptr[k + j*3 + i*3*3] += s_ptr[k + j*3 + i*3*3];
         }
       }
@@ -138,7 +138,7 @@ void BM_Raw_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, Si
   benchmark::DoNotOptimize(y);
   benchmark::DoNotOptimize(z);
 
-  using MDSpan = stdex::mdspan<T, stdex::dextents<size_type, 3>>;
+  using MDSpan = stdex::mdspan<T, stdex::dextents<index_type, 3>>;
   using value_type = typename MDSpan::value_type;
 
   auto buffer_s = std::make_unique<value_type[]>(x * y * z);
