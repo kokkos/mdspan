@@ -84,7 +84,7 @@ class layout_right::mapping {
     }
 
     constexpr size_type __compute_offset(size_t offset, __rank_count<extents_type::rank(), extents_type::rank()>) const {
-      return offset;
+      return static_cast<size_type>(offset);
     }
 
     constexpr size_type __compute_offset(__rank_count<0,0>) const { return 0; }

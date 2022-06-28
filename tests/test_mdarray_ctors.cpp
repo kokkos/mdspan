@@ -128,12 +128,13 @@ struct mdarray_values<2> {
   template<class pointer, class extents_type>
   static void fill(const pointer& ptr, const extents_type& ext, bool is_layout_right) {
     using size_type = typename extents_type::size_type;
+    using value_type = std::remove_pointer_t<pointer>;
     for(size_type i=0; i<ext.extent(0); i++)
       for(size_type j=0; j<ext.extent(1); j++)
         if(is_layout_right)
-          ptr[i*ext.extent(1)+j] = 42 + i*1000 + j;
+          ptr[i*ext.extent(1)+j] = static_cast<value_type>(42 + i*1000 + j);
         else
-          ptr[i+j*ext.extent(0)] = 42 + i*1000 + j;
+          ptr[i+j*ext.extent(0)] = static_cast<value_type>(42 + i*1000 + j);
   }
 };
 
