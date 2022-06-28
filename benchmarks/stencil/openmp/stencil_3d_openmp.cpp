@@ -158,13 +158,13 @@ void BM_Raw_OpenMP_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y
   auto s = MDSpan{buffer_s.get(), x,y,z};
   OpenMP_first_touch_3D(s);
   mdspan_benchmark::fill_random(s);
-  T* s_ptr = s.data();
+  T* s_ptr = s.data_handle();
 
   auto buffer_o = std::make_unique<value_type[]>(buffer_size);
   auto o = MDSpan{buffer_o.get(), x,y,z};
   OpenMP_first_touch_3D(o);
   mdspan_benchmark::fill_random(o);
-  T* o_ptr = o.data();
+  T* o_ptr = o.data_handle();
 
   int d = global_delta;
 
@@ -219,13 +219,13 @@ void BM_Raw_OpenMP_Stencil_3D_left(benchmark::State& state, T, SizeX x, SizeY y,
   auto s = MDSpan{buffer_s.get(), x,y,z};
   OpenMP_first_touch_3D(s);
   mdspan_benchmark::fill_random(s);
-  T* s_ptr = s.data();
+  T* s_ptr = s.data_handle();
 
   auto buffer_o = std::make_unique<value_type[]>(buffer_size);
   auto o = MDSpan{buffer_o.get(), x,y,z};
   OpenMP_first_touch_3D(o);
   mdspan_benchmark::fill_random(o);
-  T* o_ptr = o.data();
+  T* o_ptr = o.data_handle();
 
   int d = global_delta;
 

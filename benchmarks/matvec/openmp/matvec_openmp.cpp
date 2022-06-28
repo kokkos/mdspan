@@ -123,9 +123,9 @@ void BM_MDSpan_OpenMP_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... 
 
   int R = 10;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(A.data());
-    benchmark::DoNotOptimize(y.data());
-    benchmark::DoNotOptimize(x.data());
+    benchmark::DoNotOptimize(A.data_handle());
+    benchmark::DoNotOptimize(y.data_handle());
+    benchmark::DoNotOptimize(x.data_handle());
     for(int r=0; r<R; r++) {
     #pragma omp parallel for
     for(index_type i = 0; i < A.extent(0); i ++) {
@@ -174,9 +174,9 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, Dyn
   index_type N = A.extent(0);
   index_type M = A.extent(1);
 
-  value_type* p_A = A.data();
-  value_type* p_x = x.data();
-  value_type* p_y = y.data();
+  value_type* p_A = A.data_handle();
+  value_type* p_x = x.data_handle();
+  value_type* p_y = y.data_handle();
 
   #pragma omp parallel for
   for(index_type i = 0; i < N; i ++) {
@@ -189,9 +189,9 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, Dyn
 
   int R = 10;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(A.data());
-    benchmark::DoNotOptimize(y.data());
-    benchmark::DoNotOptimize(x.data());
+    benchmark::DoNotOptimize(A.data_handle());
+    benchmark::DoNotOptimize(y.data_handle());
+    benchmark::DoNotOptimize(x.data_handle());
     for(int r=0; r<R; r++) {
     #pragma omp parallel for
     for(index_type i = 0; i < A.extent(0); i ++) {
@@ -238,9 +238,9 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, Dy
   index_type N = A.extent(0);
   index_type M = A.extent(1);
 
-  value_type* p_A = A.data();
-  value_type* p_x = x.data();
-  value_type* p_y = y.data();
+  value_type* p_A = A.data_handle();
+  value_type* p_x = x.data_handle();
+  value_type* p_y = y.data_handle();
 
   #pragma omp parallel for
   for(index_type i = 0; i < N; i ++) {
@@ -253,9 +253,9 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, Dy
 
   int R = 10;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(A.data());
-    benchmark::DoNotOptimize(y.data());
-    benchmark::DoNotOptimize(x.data());
+    benchmark::DoNotOptimize(A.data_handle());
+    benchmark::DoNotOptimize(y.data_handle());
+    benchmark::DoNotOptimize(x.data_handle());
     for(int r=0; r<R; r++) {
     #pragma omp parallel for
     for(index_type i = 0; i < A.extent(0); i ++) {

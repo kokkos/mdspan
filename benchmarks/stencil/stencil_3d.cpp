@@ -124,7 +124,7 @@ void BM_Raw_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
   {
     auto s = MDSpan{buffer_s.get(), x, y, z};
     mdspan_benchmark::fill_random(s);
-    s_ptr = s.data();
+    s_ptr = s.data_handle();
   }
 
   T* o_ptr = nullptr;
@@ -132,7 +132,7 @@ void BM_Raw_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
   {
     auto o = MDSpan{buffer_o.get(), x, y, z};
     mdspan_benchmark::fill_random(o);
-    o_ptr = o.data();
+    o_ptr = o.data_handle();
   }
 
   int d = global_delta;

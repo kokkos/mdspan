@@ -58,7 +58,7 @@ void test_mdspan_ctor_data_carray() {
   dispatch([=] _MDSPAN_HOST_DEVICE () {
     int data[1] = {42};
     stdex::mdspan<int, stdex::extents<size_t,1>> m(data);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.data(), data);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.data_handle(), data);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
     __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 1);
@@ -79,7 +79,7 @@ TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_data_carray) {
 TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
   std::array<int, 1> d = {42};
   stdex::mdspan<int, stdex::extents<size_t,1>> m(d.data());
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
@@ -91,7 +91,7 @@ TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
 TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
   std::vector<int> d = {42};
   stdex::mdspan<int, stdex::extents<size_t,1>> m(d.data());
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
@@ -104,7 +104,7 @@ TEST(TestMdspanCtorExtentsStdArrayConvertibleToSizeT, test_mdspan_ctor_extents_s
   std::array<int, 4> d{42, 17, 71, 24};
   std::array<int, 2> e{2, 2};
   stdex::mdspan<int, stdex::dextents<size_t,2>> m(d.data(), e);
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 2);
@@ -117,7 +117,7 @@ TEST(TestMdspanCtorExtentsStdArrayConvertibleToSizeT, test_mdspan_ctor_extents_s
 TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_layout_left) {
   std::array<int, 1> d{42};
   stdex::mdspan<int, stdex::extents<size_t,dyn, dyn>, stdex::layout_left> m{d.data(), 16, 32};
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 16);
@@ -130,7 +130,7 @@ TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_lay
 TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_layout_right) {
   std::array<int, 1> d{42};
   stdex::mdspan<int, stdex::extents<size_t,dyn, dyn>, stdex::layout_right> m{d.data(), 16, 32};
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 16);
@@ -143,7 +143,7 @@ TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_la
 TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_layout_stride) {
   std::array<int, 1> d{42};
   stdex::mdspan<int, stdex::extents<size_t,dyn, dyn>, stdex::layout_stride> m{d.data(), {stdex::dextents<size_t,2>{16, 32}, std::array<std::size_t, 2>{1, 128}}};
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 16);
@@ -157,7 +157,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
 TEST(TestMdspanCTAD, extents_pack) {
   std::array<int, 1> d{42};
   stdex::mdspan m(d.data(), 64, 128);
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
@@ -170,7 +170,7 @@ TEST(TestMdspanCTAD, ctad_pointer) {
   int* ptr = d.data();
   stdex::mdspan m(ptr);
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_TRUE(m.is_contiguous());
@@ -180,7 +180,7 @@ TEST(TestMdspanCTAD, ctad_pointer_tmp) {
   std::array<int,5> d = {1,2,3,4,5};
   stdex::mdspan m(d.data());
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_TRUE(m.is_contiguous());
@@ -191,7 +191,7 @@ TEST(TestMdspanCTAD, ctad_pointer_move) {
   int* ptr = d.data();
   stdex::mdspan m(std::move(ptr));
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_TRUE(m.is_contiguous());
@@ -201,7 +201,7 @@ TEST(TestMdspanCTAD, ctad_carray) {
   int data[5] = {1,2,3,4,5};
   stdex::mdspan m(data);
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
-  ASSERT_EQ(m.data(), &data[0]);
+  ASSERT_EQ(m.data_handle(), &data[0]);
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.static_extent(0), 5);
@@ -212,7 +212,7 @@ TEST(TestMdspanCTAD, ctad_carray) {
 
   stdex::mdspan m2(data, 3);
   static_assert(std::is_same<decltype(m2)::element_type,int>::value);
-  ASSERT_EQ(m2.data(), &data[0]);
+  ASSERT_EQ(m2.data_handle(), &data[0]);
   ASSERT_EQ(m2.rank(), 1);
   ASSERT_EQ(m2.rank_dynamic(), 1);
   ASSERT_EQ(m2.extent(0), 3);
@@ -224,7 +224,7 @@ TEST(TestMdspanCTAD, ctad_const_carray) {
   const int data[5] = {1,2,3,4,5};
   stdex::mdspan m(data);
   static_assert(std::is_same<typename decltype(m)::element_type,const int>::value);
-  ASSERT_EQ(m.data(), &data[0]);
+  ASSERT_EQ(m.data_handle(), &data[0]);
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.static_extent(0), 5);
@@ -236,7 +236,7 @@ TEST(TestMdspanCTAD, ctad_const_carray) {
 TEST(TestMdspanCTAD, extents_object) {
   std::array<int, 1> d{42};
   stdex::mdspan m{d.data(), stdex::extents{64, 128}};
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
@@ -247,7 +247,7 @@ TEST(TestMdspanCTAD, extents_object) {
 TEST(TestMdspanCTAD, extents_object_move) {
   std::array<int, 1> d{42};
   stdex::mdspan m{d.data(), std::move(stdex::extents{64, 128})};
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
@@ -258,7 +258,7 @@ TEST(TestMdspanCTAD, extents_object_move) {
 TEST(TestMdspanCTAD, extents_std_array) {
   std::array<int, 1> d{42};
   stdex::mdspan m{d.data(), std::array{64, 128}};
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
@@ -271,7 +271,7 @@ TEST(TestMdspanCTAD, cptr_extents_std_array) {
   const int* const ptr= d.data();
   stdex::mdspan m{ptr, std::array{64, 128}};
   static_assert(std::is_same<typename decltype(m)::element_type, const int>::value);
-  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
@@ -283,7 +283,7 @@ TEST(TestMdspanCTAD, layout_left) {
   std::array<int, 1> d{42};
 
   stdex::mdspan m0{d.data(), stdex::layout_left::mapping{stdex::extents{16, 32}}};
-  ASSERT_EQ(m0.data(), d.data());
+  ASSERT_EQ(m0.data_handle(), d.data());
   ASSERT_EQ(m0.rank(), 2);
   ASSERT_EQ(m0.rank_dynamic(), 2);
   ASSERT_EQ(m0.extent(0), 16);
@@ -310,7 +310,7 @@ TEST(TestMdspanCTAD, layout_right) {
   std::array<int, 1> d{42};
 
   stdex::mdspan m0{d.data(), stdex::layout_right::mapping{stdex::extents{16, 32}}};
-  ASSERT_EQ(m0.data(), d.data());
+  ASSERT_EQ(m0.data_handle(), d.data());
   ASSERT_EQ(m0.rank(), 2);
   ASSERT_EQ(m0.rank_dynamic(), 2);
   ASSERT_EQ(m0.extent(0), 16);
@@ -337,7 +337,7 @@ TEST(TestMdspanCTAD, layout_stride) {
   std::array<int, 1> d{42};
 
   stdex::mdspan m0{d.data(), stdex::layout_stride::mapping{stdex::extents{16, 32}, std::array{1, 128}}};
-  ASSERT_EQ(m0.data(), d.data());
+  ASSERT_EQ(m0.data_handle(), d.data());
   ASSERT_EQ(m0.rank(), 2);
   ASSERT_EQ(m0.rank_dynamic(), 2);
   ASSERT_EQ(m0.extent(0), 16);
@@ -361,7 +361,7 @@ TEST(TestMdspanCTAD, layout_stride) {
 // TODO: Perhaps one day I'll get this to work.
 /*
   stdex::mdspan m2{d.data(), stdex::layout_stride::mapping{{16, 32}, {1, 128}}};
-  ASSERT_EQ(m2.data(), d.data());
+  ASSERT_EQ(m2.data_handle(), d.data());
   ASSERT_EQ(m2.rank(), 2);
   ASSERT_EQ(m2.rank_dynamic(), 2);
   ASSERT_EQ(m2.extent(0), 16);

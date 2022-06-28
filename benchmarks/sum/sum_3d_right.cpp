@@ -73,7 +73,7 @@ void BM_MDSpan_Sum_3D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(s);
-    benchmark::DoNotOptimize(s.data());
+    benchmark::DoNotOptimize(s.data_handle());
     value_type sum = 0;
     for(index_type i = 0; i < s.extent(0); ++i) {
       for (index_type j = 0; j < s.extent(1); ++j) {

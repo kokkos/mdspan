@@ -102,8 +102,8 @@ void BM_MDSpan_OpenMP_noloop_TinyMatrixSum(benchmark::State& state, MDSpan, DynS
 
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(o.data());
-    benchmark::DoNotOptimize(s.data());
+    benchmark::DoNotOptimize(o.data_handle());
+    benchmark::DoNotOptimize(s.data_handle());
 #pragma omp parallel
     {
       auto chunk_size = s.extent(0) / omp_get_num_threads();
@@ -166,8 +166,8 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
   }
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(o.data());
-    benchmark::DoNotOptimize(s.data());
+    benchmark::DoNotOptimize(o.data_handle());
+    benchmark::DoNotOptimize(s.data_handle());
     #pragma omp parallel for
     for(index_type i = 0; i < s.extent(0); i ++) {
       for(int r = 0; r<global_repeat; r++) {
@@ -200,13 +200,13 @@ void BM_Raw_Static_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX 
   auto s = MDSpan{buffer_s.get(), x,y,z};
   OpenMP_first_touch_3D(s);
   mdspan_benchmark::fill_random(s);
-  T* s_ptr = s.data();
+  T* s_ptr = s.data_handle();
 
   auto buffer_o = std::make_unique<value_type[]>(buffer_size);
   auto o = MDSpan{buffer_o.get(), x,y,z};
   OpenMP_first_touch_3D(o);
   mdspan_benchmark::fill_random(o);
-  T* o_ptr = o.data();
+  T* o_ptr = o.data_handle();
 
   #pragma omp parallel for
   for(SizeX i = 0; i < x; i ++) {
@@ -251,13 +251,13 @@ void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
   auto s = MDSpan{buffer_s.get(), x,y,z};
   OpenMP_first_touch_3D(s);
   mdspan_benchmark::fill_random(s);
-  T* s_ptr = s.data();
+  T* s_ptr = s.data_handle();
 
   auto buffer_o = std::make_unique<value_type[]>(buffer_size);
   auto o = MDSpan{buffer_o.get(), x,y,z};
   OpenMP_first_touch_3D(o);
   mdspan_benchmark::fill_random(o);
-  T* o_ptr = o.data();
+  T* o_ptr = o.data_handle();
 
 #pragma omp parallel for
   for(SizeX i = 0; i < x; i ++) {
@@ -304,13 +304,13 @@ void BM_Raw_Static_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x
   auto s = MDSpan{buffer_s.get(), x};
   OpenMP_first_touch_3D(s);
   mdspan_benchmark::fill_random(s);
-  T* s_ptr = s.data();
+  T* s_ptr = s.data_handle();
 
   auto buffer_o = std::make_unique<value_type[]>(buffer_size);
   auto o = MDSpan{buffer_o.get(), x};
   OpenMP_first_touch_3D(o);
   mdspan_benchmark::fill_random(o);
-  T* o_ptr = o.data();
+  T* o_ptr = o.data_handle();
 
   #pragma omp parallel for
   for(SizeX i = 0; i < x; i ++) {
@@ -357,13 +357,13 @@ void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY
   auto s = MDSpan{buffer_s.get(), x};
   OpenMP_first_touch_3D(s);
   mdspan_benchmark::fill_random(s);
-  T* s_ptr = s.data();
+  T* s_ptr = s.data_handle();
 
   auto buffer_o = std::make_unique<value_type[]>(buffer_size);
   auto o = MDSpan{buffer_o.get(), x};
   OpenMP_first_touch_3D(o);
   mdspan_benchmark::fill_random(o);
-  T* o_ptr = o.data();
+  T* o_ptr = o.data_handle();
 
   #pragma omp parallel for
   for(SizeX i = 0; i < x; i ++) {

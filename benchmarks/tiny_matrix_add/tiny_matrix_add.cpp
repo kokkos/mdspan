@@ -75,9 +75,9 @@ void BM_MDSpan_TinyMatrixSum_right(benchmark::State& state, MDSpan, DynSizes... 
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(o);
-    benchmark::DoNotOptimize(o.data());
+    benchmark::DoNotOptimize(o.data_handle());
     benchmark::DoNotOptimize(s);
-    benchmark::DoNotOptimize(s.data());
+    benchmark::DoNotOptimize(s.data_handle());
     for(index_type i = 0; i < s.extent(0); i ++) {
       for(index_type j = 0; j < s.extent(1); j ++) {
         for(index_type k = 0; k < s.extent(2); k ++) {
@@ -105,12 +105,12 @@ void BM_Raw_Static_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, Size
   auto buffer_s = std::make_unique<value_type[]>(buffer_size);
   auto s = MDSpan{buffer_s.get(), x,y,z};
   mdspan_benchmark::fill_random(s);
-  T* s_ptr = s.data();
+  T* s_ptr = s.data_handle();
 
   auto buffer_o = std::make_unique<value_type[]>(buffer_size);
   auto o = MDSpan{buffer_o.get(), x,y,z};
   mdspan_benchmark::fill_random(o);
-  T* o_ptr = o.data();
+  T* o_ptr = o.data_handle();
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(o_ptr);

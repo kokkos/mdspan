@@ -70,8 +70,8 @@ void BM_MDSpan_Copy_2D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
           dest(i, j) = s(i, j);
       }
     }
-    benchmark::DoNotOptimize(s.data());
-    benchmark::DoNotOptimize(dest.data());
+    benchmark::DoNotOptimize(s.data_handle());
+    benchmark::DoNotOptimize(dest.data_handle());
   }
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
@@ -107,8 +107,8 @@ void BM_MDSpan_Copy_2D_stride(benchmark::State& state, MDSpan, LayoutMapping map
         dest(i, j) = s(i, j);
       }
     }
-    benchmark::DoNotOptimize(s.data());
-    benchmark::DoNotOptimize(dest.data());
+    benchmark::DoNotOptimize(s.data_handle());
+    benchmark::DoNotOptimize(dest.data_handle());
   }
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
@@ -175,8 +175,8 @@ void BM_MDSpan_Copy_2D_stride_diff_map(benchmark::State& state,
         dest(i, j) = src(i, j);
       }
     }
-    benchmark::DoNotOptimize(src.data());
-    benchmark::DoNotOptimize(dest.data());
+    benchmark::DoNotOptimize(src.data_handle());
+    benchmark::DoNotOptimize(dest.data_handle());
   }
   state.SetBytesProcessed(src.extent(0) * src.extent(1) * sizeof(value_type) * state.iterations());
 }

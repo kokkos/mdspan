@@ -85,7 +85,7 @@ void BM_MDSpan_Sum_3D_OpenMP(benchmark::State& state, MDSpan, DynSizes... dyn) {
           }
         }
         benchmark::DoNotOptimize(sum);
-        benchmark::DoNotOptimize(s.data());
+        benchmark::DoNotOptimize(s.data_handle());
       }
     }
   }
@@ -112,7 +112,7 @@ void BM_MDSpan_Sum_3D_loop_OpenMP(benchmark::State& state, MDSpan, DynSizes... d
   auto* sum = sums_buffer.get();
   for (auto _ : state) {
     benchmark::DoNotOptimize(sums_buffer.get());
-    benchmark::DoNotOptimize(s.data());
+    benchmark::DoNotOptimize(s.data_handle());
     #pragma omp parallel for default(none) shared(s, sum)
     for (index_type i = 0; i < s.extent(0); ++i) {
       for (index_type j = 0; j < s.extent(1); ++j) {
