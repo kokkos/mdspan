@@ -407,7 +407,7 @@ TYPED_TEST(TestExtentsCompatCtors, construct_from_dynamic_array) {
   int dyn_idx = 0;
   for(size_t r=0; r<e1_t::rank(); r++) {
     if(e1_t::static_extent(r)==stdex::dynamic_extent) {
-      ext1_array_dynamic[dyn_idx] = (r+1)*5;
+      ext1_array_dynamic[dyn_idx] = static_cast<int>((r+1)*5);
       dyn_idx++;
     }
   }
@@ -421,7 +421,7 @@ TYPED_TEST(TestExtentsCompatCtors, construct_from_dynamic_array) {
   dyn_idx = 0;
   for(size_t r=0; r<e2_t::rank(); r++) {
     if(e2_t::static_extent(r)==stdex::dynamic_extent) {
-      ext2_array_dynamic[dyn_idx] = (r+1)*5;
+      ext2_array_dynamic[dyn_idx] = static_cast<int>((r+1)*5);
       dyn_idx++;
     }
   }
@@ -434,7 +434,7 @@ TYPED_TEST(TestExtentsCompatCtors, construct_from_all_array) {
   using e1_t = typename TestFixture::extents_type1;
   std::array<int, e1_t::rank()> ext1_array_all;
 
-  for(size_t r=0; r<e1_t::rank(); r++) ext1_array_all[r] = (r+1)*5;
+  for(size_t r=0; r<e1_t::rank(); r++) ext1_array_all[r] = static_cast<int>((r+1)*5);
   e1_t e1(ext1_array_all);
   for(size_t r=0; r<e1.rank(); r++)
     ASSERT_EQ(e1.extent(r), (r+1)*5);
@@ -442,7 +442,7 @@ TYPED_TEST(TestExtentsCompatCtors, construct_from_all_array) {
   using e2_t = typename TestFixture::extents_type2;
   std::array<int, e2_t::rank()> ext2_array_all;
 
-  for(size_t r=0; r<e2_t::rank(); r++) ext2_array_all[r] = (r+1)*5;
+  for(size_t r=0; r<e2_t::rank(); r++) ext2_array_all[r] = static_cast<int>((r+1)*5);
   e2_t e2(ext2_array_all);
   for(size_t r=0; r<e2.rank(); r++)
     ASSERT_EQ(e2.extent(r), (r+1)*5);
