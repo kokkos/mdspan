@@ -66,7 +66,7 @@ void test_mdspan_ctor_data_carray() {
     __MDSPAN_DEVICE_ASSERT_EQ(m.stride(0), 1);
     auto val = __MDSPAN_OP(m,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val, 42);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.is_contiguous(), true);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
   });
   ASSERT_EQ(errors[0], 0);
   free_array(errors);
@@ -85,7 +85,7 @@ TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
   ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
@@ -97,7 +97,7 @@ TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
   ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCtorExtentsStdArrayConvertibleToSizeT, test_mdspan_ctor_extents_std_array_convertible_to_size_t) {
@@ -111,7 +111,7 @@ TEST(TestMdspanCtorExtentsStdArrayConvertibleToSizeT, test_mdspan_ctor_extents_s
   ASSERT_EQ(m.extent(1), 2);
   ASSERT_EQ(m.stride(0), 2);
   ASSERT_EQ(m.stride(1), 1);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_layout_left) {
@@ -124,7 +124,7 @@ TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_lay
   ASSERT_EQ(m.extent(1), 32);
   ASSERT_EQ(m.stride(0), 1);
   ASSERT_EQ(m.stride(1), 16);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_layout_right) {
@@ -137,7 +137,7 @@ TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_la
   ASSERT_EQ(m.extent(1), 32);
   ASSERT_EQ(m.stride(0), 32);
   ASSERT_EQ(m.stride(1), 1);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_layout_stride) {
@@ -150,7 +150,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
   ASSERT_EQ(m.extent(1), 32);
   ASSERT_EQ(m.stride(0), 1);
   ASSERT_EQ(m.stride(1), 128);
-  ASSERT_FALSE(m.is_contiguous());
+  ASSERT_FALSE(m.is_exhaustive());
 }
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
@@ -162,7 +162,7 @@ TEST(TestMdspanCTAD, extents_pack) {
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
   ASSERT_EQ(m.extent(1), 128);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCTAD, ctad_pointer) {
@@ -173,7 +173,7 @@ TEST(TestMdspanCTAD, ctad_pointer) {
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCTAD, ctad_pointer_tmp) {
@@ -183,7 +183,7 @@ TEST(TestMdspanCTAD, ctad_pointer_tmp) {
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCTAD, ctad_pointer_move) {
@@ -194,7 +194,7 @@ TEST(TestMdspanCTAD, ctad_pointer_move) {
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCTAD, ctad_carray) {
@@ -207,7 +207,7 @@ TEST(TestMdspanCTAD, ctad_carray) {
   ASSERT_EQ(m.static_extent(0), 5);
   ASSERT_EQ(m.extent(0), 5);
   ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 
 
   stdex::mdspan m2(data, 3);
@@ -216,7 +216,7 @@ TEST(TestMdspanCTAD, ctad_carray) {
   ASSERT_EQ(m2.rank(), 1);
   ASSERT_EQ(m2.rank_dynamic(), 1);
   ASSERT_EQ(m2.extent(0), 3);
-  ASSERT_TRUE(m2.is_contiguous());
+  ASSERT_TRUE(m2.is_exhaustive());
   ASSERT_EQ(__MDSPAN_OP(m2, 2), 3);
 }
 
@@ -230,7 +230,7 @@ TEST(TestMdspanCTAD, ctad_const_carray) {
   ASSERT_EQ(m.static_extent(0), 5);
   ASSERT_EQ(m.extent(0), 5);
   ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCTAD, extents_object) {
@@ -241,7 +241,7 @@ TEST(TestMdspanCTAD, extents_object) {
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
   ASSERT_EQ(m.extent(1), 128);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCTAD, extents_object_move) {
@@ -252,7 +252,7 @@ TEST(TestMdspanCTAD, extents_object_move) {
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
   ASSERT_EQ(m.extent(1), 128);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCTAD, extents_std_array) {
@@ -263,7 +263,7 @@ TEST(TestMdspanCTAD, extents_std_array) {
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
   ASSERT_EQ(m.extent(1), 128);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCTAD, cptr_extents_std_array) {
@@ -276,7 +276,7 @@ TEST(TestMdspanCTAD, cptr_extents_std_array) {
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 64);
   ASSERT_EQ(m.extent(1), 128);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 TEST(TestMdspanCTAD, layout_left) {
@@ -290,7 +290,7 @@ TEST(TestMdspanCTAD, layout_left) {
   ASSERT_EQ(m0.extent(1), 32);
   ASSERT_EQ(m0.stride(0), 1);
   ASSERT_EQ(m0.stride(1), 16);
-  ASSERT_TRUE(m0.is_contiguous());
+  ASSERT_TRUE(m0.is_exhaustive());
 
 // TODO: Perhaps one day I'll get this to work.
 /*
@@ -302,7 +302,7 @@ TEST(TestMdspanCTAD, layout_left) {
   ASSERT_EQ(m1.extent(1), 32);
   ASSERT_EQ(m1.stride(0), 1);
   ASSERT_EQ(m1.stride(1), 16);
-  ASSERT_TRUE(m1.is_contiguous());
+  ASSERT_TRUE(m1.is_exhaustive());
 */
 }
 
@@ -317,7 +317,7 @@ TEST(TestMdspanCTAD, layout_right) {
   ASSERT_EQ(m0.extent(1), 32);
   ASSERT_EQ(m0.stride(0), 32);
   ASSERT_EQ(m0.stride(1), 1);
-  ASSERT_TRUE(m0.is_contiguous());
+  ASSERT_TRUE(m0.is_exhaustive());
 
 // TODO: Perhaps one day I'll get this to work.
 /*
@@ -329,7 +329,7 @@ TEST(TestMdspanCTAD, layout_right) {
   ASSERT_EQ(m1.extent(1), 32);
   ASSERT_EQ(m1.stride(0), 32);
   ASSERT_EQ(m1.stride(1), 1);
-  ASSERT_TRUE(m1.is_contiguous());
+  ASSERT_TRUE(m1.is_exhaustive());
 */
 }
 
@@ -344,7 +344,7 @@ TEST(TestMdspanCTAD, layout_stride) {
   ASSERT_EQ(m0.extent(1), 32);
   ASSERT_EQ(m0.stride(0), 1);
   ASSERT_EQ(m0.stride(1), 128);
-  ASSERT_FALSE(m0.is_contiguous());
+  ASSERT_FALSE(m0.is_exhaustive());
 
   /* 
   stdex::mdspan m1{d.data(), stdex::layout_stride::mapping{stdex::extents{16, 32}, stdex::extents{1, 128}}};
@@ -355,7 +355,7 @@ TEST(TestMdspanCTAD, layout_stride) {
   ASSERT_EQ(m1.extent(1), 32);
   ASSERT_EQ(m1.stride(0), 1);
   ASSERT_EQ(m1.stride(1), 128);
-  ASSERT_FALSE(m1.is_contiguous());
+  ASSERT_FALSE(m1.is_exhaustive());
   */
 
 // TODO: Perhaps one day I'll get this to work.
@@ -368,7 +368,7 @@ TEST(TestMdspanCTAD, layout_stride) {
   ASSERT_EQ(m2.extent(1), 32);
   ASSERT_EQ(m2.stride(0), 1);
   ASSERT_EQ(m2.stride(1), 128);
-  ASSERT_FALSE(m2.is_contiguous());
+  ASSERT_FALSE(m2.is_exhaustive());
 */
 }
 

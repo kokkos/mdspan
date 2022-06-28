@@ -89,10 +89,10 @@ struct AStridedLayout {
 
     constexpr static bool is_always_strided() { return true; }
     constexpr static bool is_always_unique() { return unique; }
-    constexpr static bool is_always_contiguous() { return true; }
+    constexpr static bool is_always_exhaustive() { return true; }
     constexpr bool is_strided() { return true; }
     constexpr bool is_unique() { return unique; }
-    constexpr bool is_contiguous() { return true; }
+    constexpr bool is_exhaustive() { return true; }
 
     private:
       extents_type ext;

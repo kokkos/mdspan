@@ -79,10 +79,10 @@ namespace detail {
   concept __layout_mapping_alike = requires {
     requires __is_extents<typename M::extents_type>::value;
     { M::is_always_strided() } -> same_as<bool>;
-    { M::is_always_contiguous() } -> same_as<bool>;
+    { M::is_always_exhaustive() } -> same_as<bool>;
     { M::is_always_unique() } -> same_as<bool>;
     bool_constant<M::is_always_strided()>::value;
-    bool_constant<M::is_always_contiguous()>::value;
+    bool_constant<M::is_always_exhaustive()>::value;
     bool_constant<M::is_always_unique()>::value;
   };
 #endif
@@ -425,14 +425,14 @@ struct layout_stride {
     }
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
-    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_contiguous() noexcept {
+    MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() noexcept {
       return false;
     }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_unique() noexcept { return true; }
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_contiguous() const noexcept {
-// TODO @testing test layout_stride is_contiguous()
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_exhaustive() const noexcept {
+// TODO @testing test layout_stride is_exhaustive()
 // FIXME CUDA
 #ifdef __CUDA_ARCH__
       return false;
