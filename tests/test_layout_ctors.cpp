@@ -227,7 +227,7 @@ TEST(TestLayoutLeftListInitialization, test_layout_left_extent_initialization) {
   ASSERT_EQ(m.extents().extent(1), 32);
   ASSERT_EQ(m.stride(0), 1);
   ASSERT_EQ(m.stride(1), 16);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
@@ -239,7 +239,7 @@ TEST(TestLayoutLeftCTAD, test_layout_left_ctad) {
   ASSERT_EQ(m.extents().extent(1), 32);
   ASSERT_EQ(m.stride(0), 1);
   ASSERT_EQ(m.stride(1), 16);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 #endif
 
@@ -251,7 +251,7 @@ TEST(TestLayoutRightListInitialization, test_layout_right_extent_initialization)
   ASSERT_EQ(m.extents().extent(1), 32);
   ASSERT_EQ(m.stride(0), 32);
   ASSERT_EQ(m.stride(1), 1);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
@@ -263,6 +263,6 @@ TEST(TestLayoutRightCTAD, test_layout_right_ctad) {
   ASSERT_EQ(m.extents().extent(1), 32);
   ASSERT_EQ(m.stride(0), 32);
   ASSERT_EQ(m.stride(1), 1);
-  ASSERT_TRUE(m.is_contiguous());
+  ASSERT_TRUE(m.is_exhaustive());
 }
 #endif

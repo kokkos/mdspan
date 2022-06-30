@@ -89,10 +89,10 @@ TYPED_TEST(TestLayoutStrideAllZero, test_required_span_size) {
 }
 
 TYPED_TEST(TestLayoutStrideAllZero, test_mapping) {
-  using size_type = decltype(this->map.extents().extent(0));
-  for(size_type i = 0; i < this->map.extents().extent(0); ++i) {
-    for(size_type j = 0; j < this->map.extents().extent(1); ++j) {
-      for (size_type k = 0; k < this->map.extents().extent(2); ++k) {
+  using index_type = decltype(this->map.extents().extent(0));
+  for(index_type i = 0; i < this->map.extents().extent(0); ++i) {
+    for(index_type j = 0; j < this->map.extents().extent(1); ++j) {
+      for (index_type k = 0; k < this->map.extents().extent(2); ++k) {
         ASSERT_EQ(this->map(i, j, k), 0);
       }
     }
@@ -109,7 +109,7 @@ TEST(TestLayoutStrideListInitialization, test_list_initialization) {
   ASSERT_EQ(m.stride(1), 128);
   ASSERT_EQ(m.strides()[0], 1);
   ASSERT_EQ(m.strides()[1], 128);
-  ASSERT_FALSE(m.is_contiguous());
+  ASSERT_FALSE(m.is_exhaustive());
 }
 
 // This fails on GCC 9.2 and others
@@ -125,7 +125,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m0.stride(0), 1);
   ASSERT_EQ(m0.stride(1), 128);
   ASSERT_EQ(m0.strides(), (std::array<std::size_t, 2>{1, 128}));
-  ASSERT_FALSE(m0.is_contiguous());
+  ASSERT_FALSE(m0.is_exhaustive());
   */
 
   stdex::layout_stride::mapping m1{stdex::extents{16, 32}, std::array{1, 128}};
@@ -137,7 +137,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m1.stride(1), 128);
   ASSERT_EQ(m1.strides()[0], 1);
   ASSERT_EQ(m1.strides()[1], 128);
-  ASSERT_FALSE(m1.is_contiguous());
+  ASSERT_FALSE(m1.is_exhaustive());
 
 // TODO These won't work with our current implementation, because the array will
 // be deduced as the extent type, leading to a `static_assert`. We can probably
@@ -151,7 +151,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m2.extents().extent(1), 32);
   ASSERT_EQ(m2.stride(0), 1);
   ASSERT_EQ(m2.stride(1), 128);
-  ASSERT_FALSE(m2.is_contiguous());
+  ASSERT_FALSE(m2.is_exhaustive());
 
   stdex::layout_stride::mapping m3{std::array{16, 32}, std::array{1, 128}};
   ASSERT_EQ(m3.extents().rank(), 2);
@@ -160,7 +160,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m3.extents().extent(1), 32);
   ASSERT_EQ(m3.stride(0), 1);
   ASSERT_EQ(m3.stride(1), 128);
-  ASSERT_FALSE(m3.is_contiguous());
+  ASSERT_FALSE(m3.is_exhaustive());
 */
 }
 #endif
