@@ -5,7 +5,13 @@ The ISO-C++ proposal [P0009](https://wg21.link/p0009) will add support for non-o
 
 [Try it out on Godbolt](https://godbolt.org/z/Mxa7cej1a){: .btn }
 
+During the final leg of the ISO C++ committee review process a number of breaking changes were proposed and accepted (issue #136). These are now merged into the stable branch.
+
 Note: There is a tag mdspan-0.3.0 which reflects the status of P0009 before R17 - i.e. it does not have the integral type template parameter for `extents`.
+Note: There is a tag mdspan-0.4.0 which reflects the status of P0009 before
+
+* renaming `pointer`, `data`, `is_contiguous` and `is_always_contiguous`; and before
+* renaming `size_type` to `index_type` and introducing a new `size_type = make_unsigned_t<index_type>` alias.
 
 Using `mdspan`
 --------------
