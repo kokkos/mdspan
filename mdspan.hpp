@@ -2906,6 +2906,7 @@ struct __type_at<3, __type_list<_T0, _T1, _T2, _T3, _Ts...>> {
 
 } // end namespace experimental
 } // end namespace std
+
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/type_list.hpp
 
 // Needs to be after the includes above to work with the single header generator
@@ -4296,7 +4297,7 @@ class layout_right::mapping {
     MDSPAN_INLINE_FUNCTION
     constexpr index_type required_span_size() const noexcept {
       index_type value = 1;
-      for(rank_type r=0; r<extents_type::rank(); r++) value*=__extents.extent(r);
+      for(rank_type r=0; r != extents_type::rank(); ++r) value*=__extents.extent(r);
       return value;
     }
 
