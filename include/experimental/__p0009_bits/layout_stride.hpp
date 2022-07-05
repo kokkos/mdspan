@@ -56,6 +56,9 @@
 #include <algorithm>
 #include <numeric>
 #include <array>
+#if  _MDSPAN_USE_CONCEPTS && MDSPAN_HAS_CXX_20
+#include<concepts>
+#endif
 
 namespace std {
 namespace experimental {
