@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <numeric>
 #include <array>
+#include<concepts>
 #include <tuple> // std::apply
 #include <utility> // std::pair
 #include <cassert>
@@ -3681,6 +3682,8 @@ using __extents_to_partially_static_sizes_t = typename __extents_to_partially_st
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #endif
 
+#if  _MDSPAN_USE_CONCEPTS && MDSPAN_HAS_CXX_20
+#endif
 
 namespace std {
 namespace experimental {
