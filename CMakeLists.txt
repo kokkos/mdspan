@@ -5,6 +5,8 @@ project(MDSpan
   LANGUAGES CXX
 )
 
+include(GNUInstallDirs)
+
 ################################################################################
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -119,19 +121,19 @@ add_library(std::mdspan ALIAS mdspan)
 
 target_include_directories(mdspan INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 ################################################################################
 
 install(TARGETS mdspan EXPORT mdspanTargets
-  INCLUDES DESTINATION include
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(EXPORT mdspanTargets
     FILE mdspanTargets.cmake
     NAMESPACE std::
-    DESTINATION lib/cmake/mdspan
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
 )
 
 export(TARGETS mdspan
@@ -139,12 +141,12 @@ export(TARGETS mdspan
     FILE mdspanTargets.cmake
 )
 
-install(DIRECTORY include/experimental DESTINATION include)
+install(DIRECTORY include/experimental DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/mdspanConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfig.cmake
-  INSTALL_DESTINATION lib/cmake/mdspan
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
 )
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/mdspanConfigVersion.cmake
   COMPATIBILITY SameMajorVersion
@@ -152,7 +154,7 @@ write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/mdspanConfigVersion
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfigVersion.cmake
-  DESTINATION lib/cmake/mdspan
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
 )
 
 ################################################################################
