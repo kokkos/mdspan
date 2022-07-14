@@ -4156,7 +4156,7 @@ struct layout_stride {
     )
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(const mapping& x, const StridedLayoutMapping& y) noexcept {
-      return !x==y;
+      return not (x == y);
     }
 
     MDSPAN_TEMPLATE_REQUIRES(
