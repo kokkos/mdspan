@@ -329,16 +329,17 @@ struct __assign_op_slice_handler<
     -> __assign_op_slice_handler<
          _IndexT,
          typename _PreserveLayoutAnalysis::encounter_pair,
-         __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>,
-         __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>,
+         __partially_static_sizes<_IndexT, size_t, _Offsets..., Value0>,
+         __partially_static_sizes<_IndexT, size_t, _Exts..., Value1 - Value0>,
          __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
+    static_assert(Value1 >= Value0, "Invalid slice specifier");
     return {
       // We're still turning the template parameters Value0 and Value1
       // into (constexpr) run-time values here.
-      __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>(
+      __partially_static_sizes<_IndexT, size_t, _Offsets..., Value0>(
         __construct_psa_from_all_exts_values_tag,
         __offsets.template __get_n<_OffsetIdxs>()..., Value0),
-      __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>(
+      __partially_static_sizes<_IndexT, size_t, _Exts..., Value1 - Value0>(
         __construct_psa_from_all_exts_values_tag,
         __exts.template __get_n<_ExtIdxs>()..., Value1 - Value0),
       __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(

@@ -92,8 +92,9 @@ TEST(TestMdspan, submdspan_static_slice_full_index) {
 }
 
 TEST(TestMdspan, submdspan_static_slice_full_tuple) {
-  // tuple of integral_constant, integral_constant is convertible to tuple of size_t, size_t.
-  // Nevertheless, submdspan won't compile out of the box with the former.
+  // tuple of two integral_constant is convertible to tuple of two
+  // size_t.  Nevertheless, submdspan needs special handling to be
+  // able to compile with the former as a slice specifier.
   static_assert(std::is_convertible<
       std::tuple<std::integral_constant<std::size_t, 1>, std::integral_constant<std::size_t, 3>>,
       std::tuple<std::size_t, std::size_t>
@@ -104,15 +105,26 @@ TEST(TestMdspan, submdspan_static_slice_full_tuple) {
   using input_layout_type = stdex::layout_left;
   using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
 
-  using expected_extents_type = stdex::dextents<int, 2>;
-  using expected_layout_type = stdex::layout_left;
-  using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
-
   input_extents_type input_extents{3, 4};
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::size_t, std::size_t>{1, 3});
-  // This won't compile out of the box, but with the
-  // included changes to submdspan, it does compile.
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::integral_constant<std::size_t, 1>, std::integral_constant<std::size_t, 3>> {} );
+  {
+    using expected_extents_type = stdex::dextents<int, 2>;
+    using expected_layout_type = stdex::layout_left;
+    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::size_t, std::size_t>{1, 3});
+  }
+  {
+    // Need an __assign_op_slice_handler::operator= overload for the
+    // output's extents type to be able to encode the compile-time slice
+    // information.
+    //using expected_extents_type = stdex::dextents<int, 2>;
+    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2>;
+    using expected_layout_type = stdex::layout_left;
+    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+
+    // This won't compile out of the box, but with the
+    // included changes to submdspan, it does compile.
+    test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::integral_constant<std::size_t, 1>, std::integral_constant<std::size_t, 3>> {} );
+  }
 }
 
 }
