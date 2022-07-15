@@ -125,6 +125,32 @@ TEST(TestMdspan, submdspan_static_slice_full_tuple) {
     // included changes to submdspan, it does compile.
     test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::integral_constant<std::size_t, 1>, std::integral_constant<std::size_t, 3>> {} );
   }
+  {
+    // Need an __assign_op_slice_handler::operator= overload for the
+    // output's extents type to be able to encode the compile-time slice
+    // information.
+    //using expected_extents_type = stdex::dextents<int, 2>;
+    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2>;
+    using expected_layout_type = stdex::layout_left;
+    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+
+    // This won't compile out of the box, but with the
+    // included changes to submdspan, it does compile.
+    test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::integral_constant<int, 1>, std::integral_constant<int, 3>> {} );
+  }
+  {
+    // Need an __assign_op_slice_handler::operator= overload for the
+    // output's extents type to be able to encode the compile-time slice
+    // information.
+    //using expected_extents_type = stdex::dextents<int, 2>;
+    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2>;
+    using expected_layout_type = stdex::layout_left;
+    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+
+    // This won't compile out of the box, but with the
+    // included changes to submdspan, it does compile.
+    test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::integral_constant<uint32_t, 1>, std::integral_constant<int32_t, 3>> {} );
+  }
 }
 
 }
