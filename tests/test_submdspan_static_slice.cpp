@@ -70,25 +70,31 @@ void test_submdspan_static_slice(
   static_assert(std::is_same_v<output_mdspan_type, ExpectedOutputMdspan>, "submdspan return types don't match.");
 }
 
-TEST(TestMdspan, submdspan_static_slice_full_index) {
+TEST(TestMdspan, submdspan_static_slice_full_full_index) {
   static_assert(std::is_convertible<std::integral_constant<std::size_t, 1>, std::size_t>::value, "Just a check.");
   static_assert(std::is_convertible<std::integral_constant<int32_t, 1>, std::size_t>::value, "Just a check.");
   static_assert(std::is_convertible<std::integral_constant<uint32_t, 1>, std::size_t>::value, "Just a check.");
 
-  using input_extents_type = stdex::dextents<int, 2>;
+  using input_extents_type = stdex::dextents<int, 3>;
   using input_layout_type = stdex::layout_left;
   using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  input_extents_type input_extents{3, 4, 5};
 
-  using expected_extents_type = stdex::dextents<int, 1>;
-  using expected_layout_type = stdex::layout_left;
-  using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
-
-  input_extents_type input_extents{3, 4};
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, 1);
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::integral_constant<int, 1>{});
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::integral_constant<std::size_t, 1>{});
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::integral_constant<int64_t, 1>{});
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::integral_constant<uint32_t, 1>{});
+  {
+    using expected_extents_type = stdex::dextents<int, 2>;
+    using expected_layout_type = stdex::layout_left;
+    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, stdex::full_extent, 1);
+  }
+  {
+    using expected_extents_type = stdex::dextents<int, 2>;
+    using expected_layout_type = stdex::layout_left;
+    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, stdex::full_extent, std::integral_constant<int, 1>{});
+    test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, stdex::full_extent, std::integral_constant<std::size_t, 1>{});
+    test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, stdex::full_extent, std::integral_constant<int64_t, 1>{});
+    test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, stdex::full_extent, std::integral_constant<uint32_t, 1>{});
+  }
 }
 
 TEST(TestMdspan, submdspan_static_slice_full_tuple) {
