@@ -51,7 +51,6 @@
 namespace {
 
 namespace stdex = std::experimental;
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
 template<class ExpectedOutputMdspan, class InputMdspan, class ... Slices>
 void test_submdspan_static_slice(
@@ -71,7 +70,7 @@ void test_submdspan_static_slice(
   static_assert(std::is_same_v<output_mdspan_type, ExpectedOutputMdspan>, "submdspan return types don't match.");
 }
 
-TEST(TestMdspan, submdspan_static_slice) {
+TEST(TestMdspan, submdspan_static_slice_full_index) {
   static_assert(std::is_convertible<std::integral_constant<std::size_t, 1>, std::size_t>::value, "Just a check.");
   static_assert(std::is_convertible<std::integral_constant<int32_t, 1>, std::size_t>::value, "Just a check.");
   static_assert(std::is_convertible<std::integral_constant<uint32_t, 1>, std::size_t>::value, "Just a check.");
@@ -84,11 +83,35 @@ TEST(TestMdspan, submdspan_static_slice) {
   using expected_layout_type = stdex::layout_left;
   using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
 
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents_type{3, 4}, stdex::full_extent, 1);
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents_type{3, 4}, stdex::full_extent, std::integral_constant<int, 1>{});
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents_type{3, 4}, stdex::full_extent, std::integral_constant<std::size_t, 1>{});
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents_type{3, 4}, stdex::full_extent, std::integral_constant<int64_t, 1>{});
-  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents_type{3, 4}, stdex::full_extent, std::integral_constant<uint32_t, 1>{});
+  input_extents_type input_extents{3, 4};
+  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, 1);
+  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::integral_constant<int, 1>{});
+  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::integral_constant<std::size_t, 1>{});
+  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::integral_constant<int64_t, 1>{});
+  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::integral_constant<uint32_t, 1>{});
+}
+
+TEST(TestMdspan, submdspan_static_slice_full_tuple) {
+  // tuple of integral_constant, integral_constant is convertible to tuple of size_t, size_t.
+  // Nevertheless, submdspan won't compile out of the box with the former.
+  static_assert(std::is_convertible<
+      std::tuple<std::integral_constant<std::size_t, 1>, std::integral_constant<std::size_t, 3>>,
+      std::tuple<std::size_t, std::size_t>
+    >::value, "Just a check.");
+  std::tuple<std::size_t, std::size_t> t = std::tuple<std::integral_constant<std::size_t, 1>, std::integral_constant<std::size_t, 3>>{};
+
+  using input_extents_type = stdex::dextents<int, 2>;
+  using input_layout_type = stdex::layout_left;
+  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+
+  using expected_extents_type = stdex::dextents<int, 2>;
+  using expected_layout_type = stdex::layout_left;
+  using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+
+  input_extents_type input_extents{3, 4};
+  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::size_t, std::size_t>{1, 3});
+  // This doesn't compile yet.
+  test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::integral_constant<std::size_t, 1>, std::integral_constant<std::size_t, 3>> {} );
 }
 
 }

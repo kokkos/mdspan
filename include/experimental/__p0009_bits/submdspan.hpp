@@ -89,6 +89,16 @@ __wrap_slice(std::tuple<size_t, size_t> const& val, size_t ext, size_t stride)
   return { val, ext, stride };
 }
 
+template <size_t OldExtent, size_t OldStaticStride, size_t Value0, size_t Value1>
+MDSPAN_INLINE_FUNCTION constexpr
+  __slice_wrap<OldExtent, OldStaticStride,
+	       std::tuple<size_t, size_t>>
+__wrap_slice(std::tuple<std::integral_constant<size_t, Value0>, std::integral_constant<size_t, Value1>> const& val, size_t ext, size_t stride)
+{
+  static_assert(Value1 >= Value0, "Invalid slice tuple");
+  return { std::tuple<size_t, size_t>(Value0, Value1), ext, stride };
+}
+
 //--------------------------------------------------------------------------------
 
 
