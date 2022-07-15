@@ -92,11 +92,12 @@ __wrap_slice(std::tuple<size_t, size_t> const& val, size_t ext, size_t stride)
 template <size_t OldExtent, size_t OldStaticStride, size_t Value0, size_t Value1>
 MDSPAN_INLINE_FUNCTION constexpr
   __slice_wrap<OldExtent, OldStaticStride,
-	       std::tuple<size_t, size_t>>
+               std::tuple<std::integral_constant<size_t, Value0>,
+                          std::integral_constant<size_t, Value1>>>
 __wrap_slice(std::tuple<std::integral_constant<size_t, Value0>, std::integral_constant<size_t, Value1>> const& val, size_t ext, size_t stride)
 {
   static_assert(Value1 >= Value0, "Invalid slice tuple");
-  return { std::tuple<size_t, size_t>(Value0, Value1), ext, stride };
+  return { val, ext, stride };
 }
 
 //--------------------------------------------------------------------------------
@@ -314,6 +315,32 @@ struct __assign_op_slice_handler<
       __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>(
         __construct_psa_from_all_exts_values_tag,
         __exts.template __get_n<_ExtIdxs>()..., ::std::get<1>(__slice.slice) - ::std::get<0>(__slice.slice)),
+      __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(
+        __construct_psa_from_all_exts_values_tag,
+        __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
+    };
+  }
+
+  // Treat a std::tuple of std::integral_constant as a tuple of size_t for now.
+  template <size_t _OldStaticExtent, size_t _OldStaticStride, size_t Value0, size_t Value1>
+  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
+  _MDSPAN_CONSTEXPR_14 auto
+  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, tuple<std::integral_constant<size_t, Value0>, std::integral_constant<size_t, Value1>>>&& __slice) noexcept
+    -> __assign_op_slice_handler<
+         _IndexT,
+         typename _PreserveLayoutAnalysis::encounter_pair,
+         __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>,
+         __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>,
+         __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
+    return {
+      // We're still turning the template parameters Value0 and Value1
+      // into (constexpr) run-time values here.
+      __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>(
+        __construct_psa_from_all_exts_values_tag,
+        __offsets.template __get_n<_OffsetIdxs>()..., Value0),
+      __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>(
+        __construct_psa_from_all_exts_values_tag,
+        __exts.template __get_n<_ExtIdxs>()..., Value1 - Value0),
       __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(
         __construct_psa_from_all_exts_values_tag,
         __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)

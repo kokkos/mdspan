@@ -110,7 +110,8 @@ TEST(TestMdspan, submdspan_static_slice_full_tuple) {
 
   input_extents_type input_extents{3, 4};
   test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::size_t, std::size_t>{1, 3});
-  // This doesn't compile yet.
+  // This won't compile out of the box, but with the
+  // included changes to submdspan, it does compile.
   test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, std::tuple<std::integral_constant<std::size_t, 1>, std::integral_constant<std::size_t, 3>> {} );
 }
 
