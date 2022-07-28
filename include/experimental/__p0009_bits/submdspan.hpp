@@ -75,6 +75,20 @@ MDSPAN_INLINE_FUNCTION constexpr
 __slice_wrap<OldExtent, OldStaticStride, size_t>
 __wrap_slice(size_t val, size_t ext, size_t stride) { return { val, ext, stride }; }
 
+template <size_t OldExtent, size_t OldStaticStride, class IntegerType, IntegerType Value0>
+MDSPAN_INLINE_FUNCTION constexpr
+__slice_wrap<OldExtent, OldStaticStride, std::integral_constant<IntegerType, Value0>>
+__wrap_slice(size_t val, size_t ext, std::integral_constant<IntegerType, Value0> stride)
+{
+#ifdef MDSPAN_HAS_CXX_17
+  if constexpr (std::is_signed_v<IntegerType>) {
+    static_assert(Value0 >= IntegerType(0), "Invalid slice specifier");
+  }
+#endif // MDSPAN_HAS_CXX_17
+
+  return { val, ext, stride };
+}
+
 template <size_t OldExtent, size_t OldStaticStride>
 MDSPAN_INLINE_FUNCTION constexpr
 __slice_wrap<OldExtent, OldStaticStride, full_extent_t>
@@ -86,6 +100,19 @@ MDSPAN_INLINE_FUNCTION constexpr
 __slice_wrap<OldExtent, OldStaticStride, std::tuple<size_t, size_t>>
 __wrap_slice(std::tuple<size_t, size_t> const& val, size_t ext, size_t stride)
 {
+  return { val, ext, stride };
+}
+
+template <size_t OldExtent, size_t OldStaticStride,
+	  class IntegerType0, IntegerType0 Value0,
+	  class IntegerType1, IntegerType1 Value1>
+MDSPAN_INLINE_FUNCTION constexpr
+  __slice_wrap<OldExtent, OldStaticStride,
+               std::tuple<std::integral_constant<IntegerType0, Value0>,
+                          std::integral_constant<IntegerType1, Value1>>>
+__wrap_slice(std::tuple<std::integral_constant<IntegerType0, Value0>, std::integral_constant<IntegerType1, Value1>> const& val, size_t ext, size_t stride)
+{
+  static_assert(Value1 >= Value0, "Invalid slice tuple");
   return { val, ext, stride };
 }
 
@@ -262,6 +289,33 @@ struct __assign_op_slice_handler<
     };
   }
 
+  // Treat integral_constant slice like size_t slice, but with a compile-time offset.
+  // The result's extents_type can't take advantage of that,
+  // but it might help for specialized layouts.
+  template <size_t _OldStaticExtent, size_t _OldStaticStride, class IntegerType, IntegerType Value0>
+  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
+  _MDSPAN_CONSTEXPR_14 auto
+  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, std::integral_constant<IntegerType, Value0>>&& __slice) noexcept
+    -> __assign_op_slice_handler<
+         _IndexT,
+         typename _PreserveLayoutAnalysis::encounter_scalar,
+         __partially_static_sizes<_IndexT, size_t, _Offsets..., Value0>,
+         __partially_static_sizes<_IndexT, size_t, _Exts...>,
+         __partially_static_sizes<_IndexT, size_t, _Strides...>/* intentional space here to work around ICC bug*/> {
+#ifdef MDSPAN_HAS_CXX_17
+    if constexpr (std::is_signed_v<IntegerType>) {
+      static_assert(Value0 >= IntegerType(0), "Invalid slice specifier");
+    }
+#endif // MDSPAN_HAS_CXX_17
+    return {
+      __partially_static_sizes<_IndexT, size_t, _Offsets..., Value0>(
+        __construct_psa_from_all_exts_values_tag,
+        __offsets.template __get_n<_OffsetIdxs>()..., size_t(Value0)),
+      ::std::move(__exts),
+      ::std::move(__strides)
+    };
+  }
+
   // For a std::full_extent, offset 0 and old extent
   template <size_t _OldStaticExtent, size_t _OldStaticStride>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
@@ -304,6 +358,37 @@ struct __assign_op_slice_handler<
       __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>(
         __construct_psa_from_all_exts_values_tag,
         __exts.template __get_n<_ExtIdxs>()..., ::std::get<1>(__slice.slice) - ::std::get<0>(__slice.slice)),
+      __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(
+        __construct_psa_from_all_exts_values_tag,
+        __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
+    };
+  }
+
+  // For a std::tuple of two std::integral_constant, do something like
+  // we did above for a tuple of two size_t, but make sure the
+  // result's extents type make the values compile-time constants.
+  template <size_t _OldStaticExtent, size_t _OldStaticStride,
+	    class IntegerType0, IntegerType0 Value0,
+	    class IntegerType1, IntegerType1 Value1>
+  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
+  _MDSPAN_CONSTEXPR_14 auto
+  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, tuple<std::integral_constant<IntegerType0, Value0>, std::integral_constant<IntegerType1, Value1>>>&& __slice) noexcept
+    -> __assign_op_slice_handler<
+         _IndexT,
+         typename _PreserveLayoutAnalysis::encounter_pair,
+         __partially_static_sizes<_IndexT, size_t, _Offsets..., size_t(Value0)>,
+         __partially_static_sizes<_IndexT, size_t, _Exts..., size_t(Value1 - Value0)>,
+         __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
+    static_assert(Value1 >= Value0, "Invalid slice specifier");
+    return {
+      // We're still turning the template parameters Value0 and Value1
+      // into (constexpr) run-time values here.
+      __partially_static_sizes<_IndexT, size_t, _Offsets..., size_t(Value0) > (
+        __construct_psa_from_all_exts_values_tag,
+        __offsets.template __get_n<_OffsetIdxs>()..., Value0),
+      __partially_static_sizes<_IndexT, size_t, _Exts..., size_t(Value1 - Value0) > (
+        __construct_psa_from_all_exts_values_tag,
+        __exts.template __get_n<_ExtIdxs>()..., Value1 - Value0),
       __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(
         __construct_psa_from_all_exts_values_tag,
         __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
