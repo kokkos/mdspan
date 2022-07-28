@@ -80,7 +80,7 @@ MDSPAN_INLINE_FUNCTION constexpr
 __slice_wrap<OldExtent, OldStaticStride, std::integral_constant<IntegerType, Value0>>
 __wrap_slice(size_t val, size_t ext, std::integral_constant<IntegerType, Value0> stride)
 {
-#ifdef MDSPAN_HAS_CXX_17
+#if MDSPAN_HAS_CXX_17
   if constexpr (std::is_signed_v<IntegerType>) {
     static_assert(Value0 >= IntegerType(0), "Invalid slice specifier");
   }
@@ -302,7 +302,7 @@ struct __assign_op_slice_handler<
          __partially_static_sizes<_IndexT, size_t, _Offsets..., Value0>,
          __partially_static_sizes<_IndexT, size_t, _Exts...>,
          __partially_static_sizes<_IndexT, size_t, _Strides...>/* intentional space here to work around ICC bug*/> {
-#ifdef MDSPAN_HAS_CXX_17
+#if MDSPAN_HAS_CXX_17
     if constexpr (std::is_signed_v<IntegerType>) {
       static_assert(Value0 >= IntegerType(0), "Invalid slice specifier");
     }

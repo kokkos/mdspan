@@ -61,15 +61,14 @@ void test_submdspan_static_slice(
   Slices&&... slices)
 {
   using input_type = InputMdspan;
-  using input_mapping_type = typename input_type::mapping_type;
   std::vector<typename InputMdspan::value_type> storage(input_mapping.required_span_size());
 
   input_type input(storage.data(), input_mapping);
   auto output = stdex::submdspan(input, std::forward<Slices>(slices)...);
   using output_mdspan_type = decltype(output);
-  static_assert(std::is_same_v<typename output_mdspan_type::extents_type, typename ExpectedOutputMdspan::extents_type>, "Extents don't match.");
-  static_assert(std::is_same_v<typename output_mdspan_type::layout_type, typename ExpectedOutputMdspan::layout_type>, "Layouts don't match.");
-  static_assert(std::is_same_v<output_mdspan_type, ExpectedOutputMdspan>, "submdspan return types don't match.");
+  static_assert(std::is_same<typename output_mdspan_type::extents_type, typename ExpectedOutputMdspan::extents_type>::value, "Extents don't match.");
+  static_assert(std::is_same<typename output_mdspan_type::layout_type, typename ExpectedOutputMdspan::layout_type>::value, "Layouts don't match.");
+  static_assert(std::is_same<output_mdspan_type, ExpectedOutputMdspan>::value, "submdspan return types don't match.");
 }
 
 template<class ExpectedOutputMdspan, class InputMdspan, class ... Slices>
@@ -260,10 +259,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_FullTupleFull) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
     };
-    runTest(tuple{int(1), int{3}});
-    runTest(tuple{std::size_t(1), std::size_t(3)});
-    runTest(tuple{std::int64_t(1), std::int64_t(3)});
-    runTest(tuple{std::uint32_t(1), std::uint32_t(3)});
+    runTest(tuple<int, int>{int(1), int{3}});
+    runTest(tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
+    runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2, stdex::dynamic_extent>;
@@ -274,10 +273,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_FullTupleFull) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
     };
-    runTest(tuple{IC<int, 1>{}, IC<int, 3>{}});
-    runTest(tuple{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
-    runTest(tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}});
-    runTest(tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}});
+    runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}});
+    runTest(tuple<IC<std::size_t,1 >, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
+    runTest(tuple<IC<std::int64_t, 1>, IC<std::int64_t, 3>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}});
+    runTest(tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 3>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}});
   }
 }
 
@@ -297,10 +296,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_FullTupleFull) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
     };
-    runTest(tuple{int(1), int{3}});
-    runTest(tuple{std::size_t(1), std::size_t(3)});
-    runTest(tuple{std::int64_t(1), std::int64_t(3)});
-    runTest(tuple{std::uint32_t(1), std::uint32_t(3)});
+    runTest(tuple<int, int>{int(1), int{3}});
+    runTest(tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
+    runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, 3, 2, 5>;
@@ -311,10 +310,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_FullTupleFull) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
     };
-    runTest(tuple{IC<int, 1>{}, IC<int, 3>{}});
-    runTest(tuple{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
-    runTest(tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}});
-    runTest(tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}});
+    runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}});
+    runTest(tuple<IC<std::size_t,1 >, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
+    runTest(tuple<IC<std::int64_t, 1>, IC<std::int64_t, 3>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}});
+    runTest(tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 3>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}});
   }
 }
 
@@ -334,10 +333,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_FullTupleFull) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
     };
-    runTest(tuple{int(1), int{3}});
-    runTest(tuple{std::size_t(1), std::size_t(3)});
-    runTest(tuple{std::int64_t(1), std::int64_t(3)});
-    runTest(tuple{std::uint32_t(1), std::uint32_t(3)});
+    runTest(tuple<int, int>{int(1), int{3}});
+    runTest(tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
+    runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2, stdex::dynamic_extent>;
@@ -348,10 +347,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_FullTupleFull) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
     };
-    runTest(tuple{IC<int, 1>{}, IC<int, 3>{}});
-    runTest(tuple{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
-    runTest(tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}});
-    runTest(tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}});
+    runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}});
+    runTest(tuple<IC<std::size_t,1 >, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
+    runTest(tuple<IC<std::int64_t, 1>, IC<std::int64_t, 3>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}});
+    runTest(tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 3>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}});
   }
 }
 
@@ -371,10 +370,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_FullTupleFull) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
     };
-    runTest(tuple{int(1), int{3}});
-    runTest(tuple{std::size_t(1), std::size_t(3)});
-    runTest(tuple{std::int64_t(1), std::int64_t(3)});
-    runTest(tuple{std::uint32_t(1), std::uint32_t(3)});
+    runTest(tuple<int, int>{int(1), int{3}});
+    runTest(tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
+    runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, 3, 2, 5>;
@@ -385,10 +384,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_FullTupleFull) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
     };
-    runTest(tuple{IC<int, 1>{}, IC<int, 3>{}});
-    runTest(tuple{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
-    runTest(tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}});
-    runTest(tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}});
+    runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}});
+    runTest(tuple<IC<std::size_t,1 >, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
+    runTest(tuple<IC<std::int64_t, 1>, IC<std::int64_t, 3>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}});
+    runTest(tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 3>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}});
   }
 }
 
@@ -408,10 +407,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_TupleFullTuple) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
     };
-    runTest(tuple{int{1}, int{3}}, tuple{int{1}, int{4}});
-    runTest(tuple{std::size_t{1}, std::size_t{3}}, tuple{std::size_t{1}, std::size_t{4}});
-    runTest(tuple{std::int64_t{1}, std::int64_t{3}}, tuple{std::int64_t{1}, std::int64_t{4}});
-    runTest(tuple{std::uint32_t{1}, std::uint32_t{3}}, tuple{std::uint32_t{1}, std::uint32_t{4}});
+    runTest(tuple<int, int>{int{1}, int{3}}, tuple<int, int>{int{1}, int{4}});
+    runTest(tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{3}}, tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{4}});
+    runTest(tuple<std::int64_t, std::int64_t>{std::int64_t{1}, std::int64_t{3}}, tuple<std::int64_t, std::int64_t>{std::int64_t{1}, std::int64_t{4}});
+    runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{3}}, tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{4}});
   }
   {
     using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent, 3>;
@@ -422,14 +421,14 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_TupleFullTuple) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
     };
-    runTest(tuple{IC<int, 1>{}, IC<int, 3>{}},
-	    tuple{IC<int, 1>{}, IC<int, 4>{}});
-    runTest(tuple{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}},
-	    tuple{IC<std::size_t, 1>{}, IC<std::size_t, 4>{}});
-    runTest(tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}},
-	    tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 4>{}});
-    runTest(tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}},
-	    tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 4>{}});
+    runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}},
+	    tuple<IC<int, 1>, IC<int, 4>>{IC<int, 1>{}, IC<int, 4>{}});
+    runTest(tuple<IC<std::size_t, 1>, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}},
+	    tuple<IC<std::size_t, 1>, IC<std::size_t, 4>>{IC<std::size_t, 1>{}, IC<std::size_t, 4>{}});
+    runTest(tuple<IC<std::int64_t, 1>, IC<std::int64_t, 3>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}},
+	    tuple<IC<std::int64_t, 1>, IC<std::int64_t, 4>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 4>{}});
+    runTest(tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 3>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}},
+	    tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 4>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 4>{}});
   }
 }
 
@@ -449,10 +448,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_TupleFullTuple) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
     };
-    runTest(tuple{int{1}, int{3}}, tuple{int{1}, int{4}});
-    runTest(tuple{std::size_t{1}, std::size_t{3}}, tuple{std::size_t{1}, std::size_t{4}});
-    runTest(tuple{std::int64_t{1}, std::int64_t{3}}, tuple{std::int64_t{1}, std::int64_t{4}});
-    runTest(tuple{std::uint32_t{1}, std::uint32_t{3}}, tuple{std::uint32_t{1}, std::uint32_t{4}});
+    runTest(tuple<int, int>{int{1}, int{3}}, tuple<int, int>{int{1}, int{4}});
+    runTest(tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{3}}, tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{4}});
+    runTest(tuple<std::int64_t, std::int64_t>{std::int64_t{1}, std::int64_t{3}}, tuple<std::int64_t, std::int64_t>{std::int64_t{1}, std::int64_t{4}});
+    runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{3}}, tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{4}});
   }
   {
     using expected_extents_type = stdex::extents<int, 2, 4, 3>;
@@ -463,14 +462,14 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_TupleFullTuple) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
     };
-    runTest(tuple{IC<int, 1>{}, IC<int, 3>{}},
-	    tuple{IC<int, 1>{}, IC<int, 4>{}});
-    runTest(tuple{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}},
-	    tuple{IC<std::size_t, 1>{}, IC<std::size_t, 4>{}});
-    runTest(tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}},
-	    tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 4>{}});
-    runTest(tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}},
-	    tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 4>{}});
+    runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}},
+	    tuple<IC<int, 1>, IC<int, 4>>{IC<int, 1>{}, IC<int, 4>{}});
+    runTest(tuple<IC<std::size_t, 1>, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}},
+	    tuple<IC<std::size_t, 1>, IC<std::size_t, 4>>{IC<std::size_t, 1>{}, IC<std::size_t, 4>{}});
+    runTest(tuple<IC<std::int64_t, 1>, IC<std::int64_t, 3>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}},
+	    tuple<IC<std::int64_t, 1>, IC<std::int64_t, 4>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 4>{}});
+    runTest(tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 3>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}},
+	    tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 4>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 4>{}});
   }
 }
 
@@ -490,10 +489,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_TupleFullTuple) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
     };
-    runTest(tuple{int{1}, int{3}}, tuple{int{1}, int{4}});
-    runTest(tuple{std::size_t{1}, std::size_t{3}}, tuple{std::size_t{1}, std::size_t{4}});
-    runTest(tuple{std::int64_t{1}, std::int64_t{3}}, tuple{std::int64_t{1}, std::int64_t{4}});
-    runTest(tuple{std::uint32_t{1}, std::uint32_t{3}}, tuple{std::uint32_t{1}, std::uint32_t{4}});
+    runTest(tuple<int, int>{int{1}, int{3}}, tuple<int, int>{int{1}, int{4}});
+    runTest(tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{3}}, tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{4}});
+    runTest(tuple<std::int64_t, std::int64_t>{std::int64_t{1}, std::int64_t{3}}, tuple<std::int64_t, std::int64_t>{std::int64_t{1}, std::int64_t{4}});
+    runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{3}}, tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{4}});
   }
   {
     using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent, 3>;
@@ -504,14 +503,14 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_TupleFullTuple) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
     };
-    runTest(tuple{IC<int, 1>{}, IC<int, 3>{}},
-	    tuple{IC<int, 1>{}, IC<int, 4>{}});
-    runTest(tuple{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}},
-	    tuple{IC<std::size_t, 1>{}, IC<std::size_t, 4>{}});
-    runTest(tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}},
-	    tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 4>{}});
-    runTest(tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}},
-	    tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 4>{}});
+    runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}},
+	    tuple<IC<int, 1>, IC<int, 4>>{IC<int, 1>{}, IC<int, 4>{}});
+    runTest(tuple<IC<std::size_t, 1>, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}},
+	    tuple<IC<std::size_t, 1>, IC<std::size_t, 4>>{IC<std::size_t, 1>{}, IC<std::size_t, 4>{}});
+    runTest(tuple<IC<std::int64_t, 1>, IC<std::int64_t, 3>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}},
+	    tuple<IC<std::int64_t, 1>, IC<std::int64_t, 4>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 4>{}});
+    runTest(tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 3>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}},
+	    tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 4>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 4>{}});
   }
 }
 
@@ -531,10 +530,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_TupleFullTuple) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
     };
-    runTest(tuple{int{1}, int{3}}, tuple{int{1}, int{4}});
-    runTest(tuple{std::size_t{1}, std::size_t{3}}, tuple{std::size_t{1}, std::size_t{4}});
-    runTest(tuple{std::int64_t{1}, std::int64_t{3}}, tuple{std::int64_t{1}, std::int64_t{4}});
-    runTest(tuple{std::uint32_t{1}, std::uint32_t{3}}, tuple{std::uint32_t{1}, std::uint32_t{4}});
+    runTest(tuple<int, int>{int{1}, int{3}}, tuple<int, int>{int{1}, int{4}});
+    runTest(tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{3}}, tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{4}});
+    runTest(tuple<std::int64_t, std::int64_t>{std::int64_t{1}, std::int64_t{3}}, tuple<std::int64_t, std::int64_t>{std::int64_t{1}, std::int64_t{4}});
+    runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{3}}, tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{4}});
   }
   {
     using expected_extents_type = stdex::extents<int, 2, 4, 3>;
@@ -545,14 +544,14 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_TupleFullTuple) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
         input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
     };
-    runTest(tuple{IC<int, 1>{}, IC<int, 3>{}},
-	    tuple{IC<int, 1>{}, IC<int, 4>{}});
-    runTest(tuple{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}},
-	    tuple{IC<std::size_t, 1>{}, IC<std::size_t, 4>{}});
-    runTest(tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}},
-	    tuple{IC<std::int64_t, 1>{}, IC<std::int64_t, 4>{}});
-    runTest(tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}},
-	    tuple{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 4>{}});
+    runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}},
+	    tuple<IC<int, 1>, IC<int, 4>>{IC<int, 1>{}, IC<int, 4>{}});
+    runTest(tuple<IC<std::size_t, 1>, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}},
+	    tuple<IC<std::size_t, 1>, IC<std::size_t, 4>>{IC<std::size_t, 1>{}, IC<std::size_t, 4>{}});
+    runTest(tuple<IC<std::int64_t, 1>, IC<std::int64_t, 3>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 3>{}},
+	    tuple<IC<std::int64_t, 1>, IC<std::int64_t, 4>>{IC<std::int64_t, 1>{}, IC<std::int64_t, 4>{}});
+    runTest(tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 3>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 3>{}},
+	    tuple<IC<std::uint32_t, 1>, IC<std::uint32_t, 4>>{IC<std::uint32_t, 1>{}, IC<std::uint32_t, 4>{}});
   }
 }
 
@@ -567,9 +566,8 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_FullTuple) {
   // __assign_op_slice_handler::operator=
   // in order for the output's extents type to be able to encode
   // the compile-time slice information.
-  std::tuple<std::size_t, std::size_t> t =
-    std::tuple<IC<std::size_t, 1>,
-	       IC<std::size_t, 3>>{};
+  static_assert(std::is_convertible<std::tuple<IC<std::size_t, 1>, IC<std::size_t, 3>>,
+                                    std::tuple<std::size_t, std::size_t>>::value);
 
   using input_extents_type = stdex::dextents<int, 2>;
   using input_layout_type = stdex::layout_left;
@@ -584,10 +582,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_FullTuple) {
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, sliceSpec);
     };
-    runTest(std::tuple{int(1), int(3)});
-    runTest(std::tuple{std::size_t(1), std::size_t(3)});
-    runTest(std::tuple{std::uint32_t(1), std::uint32_t(3)});
-    runTest(std::tuple{std::int64_t(1), std::int64_t(3)});
+    runTest(std::tuple<int, int>{int(1), int(3)});
+    runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(std::tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
+    runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2>;
@@ -618,10 +616,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_idd_FullTuple) {
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, sliceSpec);
     };
-    runTest(std::tuple{int(1), int(3)});
-    runTest(std::tuple{std::size_t(1), std::size_t(3)});
-    runTest(std::tuple{std::uint32_t(1), std::uint32_t(3)});
-    runTest(std::tuple{std::int64_t(1), std::int64_t(3)});
+    runTest(std::tuple<int, int>{int(1), int(3)});
+    runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(std::tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
+    runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2>;
@@ -652,10 +650,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_TupleFull) {
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, stdex::full_extent);
     };
-    runTest(std::tuple{int(1), int(3)});
-    runTest(std::tuple{std::size_t(1), std::size_t(3)});
-    runTest(std::tuple{std::uint32_t(1), std::uint32_t(3)});
-    runTest(std::tuple{std::int64_t(1), std::int64_t(3)});
+    runTest(std::tuple<int, int>{int(1), int(3)});
+    runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(std::tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
+    runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent>;
@@ -686,10 +684,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_idd_TupleFull) {
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, stdex::full_extent);
     };
-    runTest(std::tuple{int(1), int(3)});
-    runTest(std::tuple{std::size_t(1), std::size_t(3)});
-    runTest(std::tuple{std::uint32_t(1), std::uint32_t(3)});
-    runTest(std::tuple{std::int64_t(1), std::int64_t(3)});
+    runTest(std::tuple<int, int>{int(1), int(3)});
+    runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(std::tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
+    runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent>;
@@ -723,10 +721,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Stride_idd_TupleFull) {
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_mapping, sliceSpec, stdex::full_extent);
     };
-    runTest(std::tuple{int(1), int(3)});
-    runTest(std::tuple{std::size_t(1), std::size_t(3)});
-    runTest(std::tuple{std::uint32_t(1), std::uint32_t(3)});
-    runTest(std::tuple{std::int64_t(1), std::int64_t(3)});
+    runTest(std::tuple<int, int>{int(1), int(3)});
+    runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(std::tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
+    runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent>;
@@ -759,10 +757,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_id_Tuple) {
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
     };
-    runTest(std::tuple{int(1), int(3)});
-    runTest(std::tuple{std::size_t(1), std::size_t(3)});
-    runTest(std::tuple{std::uint32_t(1), std::uint32_t(3)});
-    runTest(std::tuple{std::int64_t(1), std::int64_t(3)});
+    runTest(std::tuple<int, int>{int(1), int(3)});
+    runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(std::tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
+    runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, 2>;
@@ -793,10 +791,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i5_Tuple) {
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
     };
-    runTest(std::tuple{int(1), int(3)});
-    runTest(std::tuple{std::size_t(1), std::size_t(3)});
-    runTest(std::tuple{std::uint32_t(1), std::uint32_t(3)});
-    runTest(std::tuple{std::int64_t(1), std::int64_t(3)});
+    runTest(std::tuple<int, int>{int(1), int(3)});
+    runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(std::tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
+    runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, 2>;
@@ -827,10 +825,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_id_Tuple) {
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
     };
-    runTest(std::tuple{int(1), int(3)});
-    runTest(std::tuple{std::size_t(1), std::size_t(3)});
-    runTest(std::tuple{std::uint32_t(1), std::uint32_t(3)});
-    runTest(std::tuple{std::int64_t(1), std::int64_t(3)});
+    runTest(std::tuple<int, int>{int(1), int(3)});
+    runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(std::tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
+    runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, 2>;
@@ -861,10 +859,10 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i5_Tuple) {
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
     };
-    runTest(std::tuple{int(1), int(3)});
-    runTest(std::tuple{std::size_t(1), std::size_t(3)});
-    runTest(std::tuple{std::uint32_t(1), std::uint32_t(3)});
-    runTest(std::tuple{std::int64_t(1), std::int64_t(3)});
+    runTest(std::tuple<int, int>{int(1), int(3)});
+    runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
+    runTest(std::tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
+    runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
     using expected_extents_type = stdex::extents<int, 2>;

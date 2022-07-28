@@ -8,6 +8,7 @@ namespace Foo {
   template<class T>
   struct foo_ptr {
     T* data;
+    foo_ptr(T* ptr):data(ptr) {}
   };
 
   template<class T>
@@ -34,7 +35,7 @@ namespace Foo {
     }
 
     constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept {
-      return foo_ptr{p.data+i};
+      return data_handle_type(p.data+i);
     }
     int* flag;
 
