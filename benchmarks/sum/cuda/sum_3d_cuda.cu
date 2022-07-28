@@ -58,9 +58,9 @@ static constexpr int warpsPerBlock = 4;
 //================================================================================
 
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_left>;
+using lmdspan = stdex::mdspan<T, stdex::extents<int, Es...>, stdex::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<Es...>, stdex::layout_right>;
+using rmdspan = stdex::mdspan<T, stdex::extents<int, Es...>, stdex::layout_right>;
 
 //================================================================================
 
@@ -198,7 +198,7 @@ void BM_MDSpan_Cuda_Sum_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
   state.counters["repeats"] = repeats;
 
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  CUDA_SAFE_CALL(cudaFree(s.data()));
+  CUDA_SAFE_CALL(cudaFree(s.data_handle()));
 }
 MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, right_, rmdspan, 80, 80, 80);
 MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, left_, lmdspan, 80, 80, 80);
@@ -214,9 +214,9 @@ void BM_Raw_Cuda_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, Size
   value_type* data = nullptr;
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<int, 1>>{};
     auto s = fill_device_mdspan(wrapped, x*y*z);
-    data = s.data();
+    data = s.data_handle();
   }
 
   int repeats = x*y*z > (100*100*100) ? 50 : 1000;
@@ -259,9 +259,9 @@ void BM_Raw_Cuda_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
   value_type* data = nullptr;
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<1>>{};
+    auto wrapped = stdex::mdspan<T, stdex::dextents<int, 1>>{};
     auto s = fill_device_mdspan(wrapped, x*y*z);
-    data = s.data();
+    data = s.data_handle();
   }
 
   int repeats = x*y*z > (100*100*100) ? 50 : 1000;

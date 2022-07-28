@@ -171,9 +171,9 @@ void BM_MDSpan_CUDA_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... dy
   state.SetBytesProcessed( num_elements * sizeof(value_type) * state.iterations() );
 
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  CUDA_SAFE_CALL(cudaFree(A.data()));
-  CUDA_SAFE_CALL(cudaFree(x.data()));
-  CUDA_SAFE_CALL(cudaFree(y.data()));
+  CUDA_SAFE_CALL(cudaFree(A.data_handle()));
+  CUDA_SAFE_CALL(cudaFree(x.data_handle()));
+  CUDA_SAFE_CALL(cudaFree(y.data_handle()));
 }
 
 BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec, left, lmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
@@ -193,9 +193,9 @@ void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynS
   size_t N = A.extent(0);
   size_t M = A.extent(1);
 
-  value_type* p_A = A.data();
-  value_type* p_x = x.data();
-  value_type* p_y = y.data();
+  value_type* p_A = A.data_handle();
+  value_type* p_x = x.data_handle();
+  value_type* p_y = y.data_handle();
 
   auto lambda =
       [=] __device__ {
@@ -219,9 +219,9 @@ void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynS
   state.SetBytesProcessed( num_elements * sizeof(value_type) * state.iterations() );
 
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  CUDA_SAFE_CALL(cudaFree(A.data()));
-  CUDA_SAFE_CALL(cudaFree(x.data()));
-  CUDA_SAFE_CALL(cudaFree(y.data()));
+  CUDA_SAFE_CALL(cudaFree(A.data_handle()));
+  CUDA_SAFE_CALL(cudaFree(x.data_handle()));
+  CUDA_SAFE_CALL(cudaFree(y.data_handle()));
 }
 
 BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec_Raw_Right, right, rmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
@@ -240,9 +240,9 @@ void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSi
   size_t N = A.extent(0);
   size_t M = A.extent(1);
 
-  value_type* p_A = A.data();
-  value_type* p_x = x.data();
-  value_type* p_y = y.data();
+  value_type* p_A = A.data_handle();
+  value_type* p_x = x.data_handle();
+  value_type* p_y = y.data_handle();
 
   auto lambda =
       [=] __device__ {
@@ -266,9 +266,9 @@ void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSi
   state.SetBytesProcessed( num_elements * sizeof(value_type) * state.iterations());
 
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
-  CUDA_SAFE_CALL(cudaFree(A.data()));
-  CUDA_SAFE_CALL(cudaFree(x.data()));
-  CUDA_SAFE_CALL(cudaFree(y.data()));
+  CUDA_SAFE_CALL(cudaFree(A.data_handle()));
+  CUDA_SAFE_CALL(cudaFree(x.data_handle()));
+  CUDA_SAFE_CALL(cudaFree(y.data_handle()));
 }
 
 BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec_Raw_Left, left, lmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
