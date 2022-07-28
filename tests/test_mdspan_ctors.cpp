@@ -51,6 +51,29 @@ namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
 
+void test_mdspan_ctor_default() {
+  size_t* errors = allocate_array<size_t>(1);
+  errors[0] = 0;
+
+  dispatch([=] _MDSPAN_HOST_DEVICE () {
+    stdex::mdspan<int, stdex::dextents<size_t,1>> m;
+    __MDSPAN_DEVICE_ASSERT_EQ(m.data_handle(), nullptr);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 1);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 0);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.static_extent(0), dyn);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.stride(0), 1);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.empty(), true);
+  });
+  ASSERT_EQ(errors[0], 0);
+  free_array(errors);
+}
+
+TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_default) {
+  __MDSPAN_TESTS_RUN_TEST(test_mdspan_ctor_default())
+}
+
 void test_mdspan_ctor_data_carray() {
   size_t* errors = allocate_array<size_t>(1);
   errors[0] = 0;
@@ -67,6 +90,7 @@ void test_mdspan_ctor_data_carray() {
     auto val = __MDSPAN_OP(m,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val, 42);
     __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.empty(), false);
   });
   ASSERT_EQ(errors[0], 0);
   free_array(errors);
