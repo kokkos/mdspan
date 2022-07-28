@@ -113,7 +113,7 @@ TEST(TestLayoutStrideListInitialization, test_list_initialization) {
 }
 
 // This fails on GCC 9.2 and others
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION) && !defined(__NVCC__)
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestLayoutStrideCTAD, test_ctad) {
   // This is not possible wiht the array constructor we actually provide
   /*
