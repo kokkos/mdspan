@@ -4620,7 +4620,7 @@ public:
     /* requires */ (
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, SizeTypes, index_type) /* && ... */) &&
       _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_nothrow_constructible, index_type, SizeTypes) /* && ... */) &&
-      rank() == sizeof...(SizeTypes)
+      extents_type::rank() == sizeof...(SizeTypes)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
