@@ -75,6 +75,10 @@ private:
     size_t __size(mdspan const& __self) noexcept {
       return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().template __extent<Idxs>()), /* * ... * */ 1);
     }
+    MDSPAN_FORCE_INLINE_FUNCTION static constexpr
+    bool __empty(mdspan const& __self) noexcept {
+      return (__self.rank()>0) && _MDSPAN_FOLD_OR((__self.__mapping_ref().extents().template __extent<Idxs>()==index_type(0)));
+    }
     template <class ReferenceType, class SizeType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ReferenceType __callop(mdspan const& __self, const array<SizeType, N>& indices) noexcept {
@@ -339,6 +343,16 @@ public:
     return static_cast<size_type>(__impl::__size(*this));
   };
 
+  MDSPAN_INLINE_FUNCTION constexpr bool empty() const noexcept {
+    return __impl::__empty(*this);
+  };
+
+  MDSPAN_INLINE_FUNCTION
+  friend constexpr void swap(mdspan& x, mdspan& y) noexcept {
+    swap(x.__ptr_ref(), y.__ptr_ref());
+    swap(x.__mapping_ref(), y.__mapping_ref());
+    swap(x.__accessor_ref(), y.__accessor_ref());
+  }
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.domobs], mdspan observers of the domain multidimensional index space
@@ -423,6 +437,8 @@ template <class MappingType, class AccessorType>
 mdspan(const typename AccessorType::data_handle_type, const MappingType&, const AccessorType&)
   -> mdspan<typename AccessorType::element_type, typename MappingType::extents_type, typename MappingType::layout_type, AccessorType>;
 #endif
+
+
 
 } // end namespace experimental
 } // end namespace std
