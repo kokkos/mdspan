@@ -339,6 +339,16 @@ public:
     return static_cast<size_type>(__impl::__size(*this));
   };
 
+  MDSPAN_INLINE_FUNCTION constexpr bool empty() const noexcept {
+    return size() == 0;
+  };
+
+  MDSPAN_INLINE_FUNCTION
+  friend constexpr void swap(mdspan& x, mdspan& y) noexcept {
+    swap(x.__ptr_ref(), y.__ptr_ref());
+    swap(x.__mapping_ref(), y.__mapping_ref());
+    swap(x.__accessor_ref(), y.__accessor_ref());
+  }
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.domobs], mdspan observers of the domain multidimensional index space
@@ -423,6 +433,8 @@ template <class MappingType, class AccessorType>
 mdspan(const typename AccessorType::data_handle_type, const MappingType&, const AccessorType&)
   -> mdspan<typename AccessorType::element_type, typename MappingType::extents_type, typename MappingType::layout_type, AccessorType>;
 #endif
+
+
 
 } // end namespace experimental
 } // end namespace std
