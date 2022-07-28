@@ -41,6 +41,12 @@ This implementation is header-only, with compiler features detected using featur
 - gcc-11 / cmake 3.23
   - Warning free with  `-Wall -Wextra -pedantic` for C++23/20. In C++17 and C++14 pedantic will give a warning (note only with `CMAKE_CXX_EXTENSION=OFF`).
   - `cmake -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic" -DCMAKE_CXX_STANDARD=17 -DMDSPAN_CXX_STANDARD=17 -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_EXTENSIONS=OFF`
+- CUDA 11.x / gcc 9.1 / cmake 3.23
+  - has a few warnings in C++17 mostly in `mdarray` due to the use of `vector` as container for the tests.
+  - Note with CUDA 11.7 and GCC 11.1 as host compiler we observe some issues around CTAD, some of the layout tests won't compile
+    - CUDA 11.7 with GCC 9.1 works however
+  - `cmake -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_CUDA=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DCMAKE_CXX_STANDARD=17 -DCMAKE_CUDA_ARCHITECTURES=70 -DMDSPAN_CXX_STANDARD=17 -DCMAKE_CUDA_FLAGS="--expt-relaxed-constexpr --extended-lambda"`
+
 
 ### Running benchmarks
 
@@ -49,15 +55,15 @@ TODO write this
 Caveats
 -------
 
-This implementation is fully conforming with revision 14 of P0009 with a few exceptions (most of which are extensions):
+This implementation is fully conforming with the version of `mdspan` voted into the C++23 draft standard in July 2022.
+When not in C++23 mode the implementation deviates from the proposal as follows:
 
 ### C++20
 - implements `operator()` not `operator[]`
   - note you can control which operator is available with defining `MDSPAN_USE_BRACKET_OPERATOR=[0,1]` and `MDSPAN_USE_PAREN_OPERATOR=[0,1]` irrespective of whether multi dimensional subscript support is detected.
 
-### C++17 and C++14
+### C++17
 - mdspan has a default constructor even in cases where it shouldn't (i.e. all static extents, and default constructible mapping/accessor)
-- the `layout_stride::mapping::strides` function returns `array` not `span`.
 - the conditional explicit markup is missing, making certain constructors implicit
   - most notably you can implicitly convert from dynamic extent to static extent, which you can't in C++20 mode
 
