@@ -76,7 +76,7 @@ struct TestExtents<
     dispatch([=] _MDSPAN_HOST_DEVICE () {
       extents_type _exts(DynamicSizes...);
       // Silencing an unused warning in nvc++ the condition will never be true
-      size_t dyn_val = exts.rank()>0?static_cast<size_t>(_exts.extent(0)):1;
+      size_t dyn_val = _exts.rank()>0?static_cast<size_t>(_exts.extent(0)):1;
       result[0] = dyn_val > 1e9 ? dyn_val : _exts.rank();
       result[1] = _exts.rank_dynamic();
       // Some compilers warn about unused _exts since the functions are all static constexpr
