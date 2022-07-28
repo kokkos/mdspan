@@ -75,6 +75,10 @@ private:
     size_t __size(mdspan const& __self) noexcept {
       return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().template __extent<Idxs>()), /* * ... * */ 1);
     }
+    MDSPAN_FORCE_INLINE_FUNCTION static constexpr
+    bool __empty(mdspan const& __self) noexcept {
+      return (__self.rank()>0) && _MDSPAN_FOLD_OR((__self.__mapping_ref().extents().template __extent<Idxs>()==index_type(0)));
+    }
     template <class ReferenceType, class SizeType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ReferenceType __callop(mdspan const& __self, const array<SizeType, N>& indices) noexcept {
@@ -340,7 +344,7 @@ public:
   };
 
   MDSPAN_INLINE_FUNCTION constexpr bool empty() const noexcept {
-    return size() == 0;
+    return __impl::__empty(*this);
   };
 
   MDSPAN_INLINE_FUNCTION

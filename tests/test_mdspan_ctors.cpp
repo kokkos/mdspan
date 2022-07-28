@@ -64,6 +64,7 @@ void test_mdspan_ctor_default() {
     __MDSPAN_DEVICE_ASSERT_EQ(m.static_extent(0), dyn);
     __MDSPAN_DEVICE_ASSERT_EQ(m.stride(0), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.size(), 0);
     __MDSPAN_DEVICE_ASSERT_EQ(m.empty(), true);
   });
   ASSERT_EQ(errors[0], 0);
@@ -90,6 +91,7 @@ void test_mdspan_ctor_data_carray() {
     auto val = __MDSPAN_OP(m,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val, 42);
     __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
+    __MDSPAN_DEVICE_ASSERT_EQ(m.size(), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.empty(), false);
   });
   ASSERT_EQ(errors[0], 0);
