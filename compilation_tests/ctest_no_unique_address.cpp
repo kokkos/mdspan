@@ -92,7 +92,7 @@ MDSPAN_STATIC_TEST(
   >) == sizeof(size_t)
 );
 
-#if defined(__GNUC__) && (__GNUC__>8)
+#if defined(__GNUC__) && (__GNUC__> 10)
 MDSPAN_STATIC_TEST(
   std::is_empty<stdex::layout_right::template mapping<
     stdex::extents<size_t,42, 123, 73>
@@ -109,5 +109,3 @@ MDSPAN_STATIC_TEST(
 
 // </editor-fold> end layouts }}}1
 //==============================================================================
-
-
