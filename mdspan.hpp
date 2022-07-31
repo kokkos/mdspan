@@ -4392,7 +4392,7 @@ private:
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     size_t __size(mdspan const& __self) noexcept {
-      return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().template __extent<Idxs>()), /* * ... * */ 1);
+      return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().template __extent<Idxs>()), /* * ... * */ size_t(1));
     }
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     bool __empty(mdspan const& __self) noexcept {
@@ -4658,8 +4658,8 @@ public:
   #endif // __cpp_lib_span
   #endif // MDSPAN_USE_PAREN_OPERATOR
 
-  MDSPAN_INLINE_FUNCTION constexpr size_type size() const noexcept {
-    return static_cast<size_type>(__impl::__size(*this));
+  MDSPAN_INLINE_FUNCTION constexpr size_t size() const noexcept {
+    return __impl::__size(*this);
   };
 
   MDSPAN_INLINE_FUNCTION constexpr bool empty() const noexcept {
