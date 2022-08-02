@@ -54,7 +54,7 @@ TEST(TestSubmdspanLayoutRightStaticSizedRankReducing3Dto1D, test_submdspan_layou
   stdex::mdspan<int, stdex::extents<size_t,2, 3, 4>> m(d.data());
   __MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = stdex::submdspan(m, 1, 1, stdex::full_extent);
-  static_assert(decltype(sub0)::rank()==1);
+  static_assert(decltype(sub0)::rank()==1,"unexpected submdspan rank");
   ASSERT_EQ(sub0.rank(),         1);
   ASSERT_EQ(sub0.rank_dynamic(), 0);
   ASSERT_EQ(sub0.extent(0),      4);
