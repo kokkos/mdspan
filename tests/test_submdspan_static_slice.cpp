@@ -567,7 +567,8 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_FullTuple) {
   // in order for the output's extents type to be able to encode
   // the compile-time slice information.
   static_assert(std::is_convertible<std::tuple<IC<std::size_t, 1>, IC<std::size_t, 3>>,
-                                    std::tuple<std::size_t, std::size_t>>::value);
+                                    std::tuple<std::size_t, std::size_t>>::value,
+                                    "convertibility of tuples of integral constant to size_t is false");
 
   using input_extents_type = stdex::dextents<int, 2>;
   using input_layout_type = stdex::layout_left;

@@ -92,7 +92,7 @@ MDSPAN_STATIC_TEST(
   >) == sizeof(size_t)
 );
 
-#if defined(__GNUC__) && (__GNUC__> 10)
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS) && !defined(_MDSPAN_USE_FAKE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 MDSPAN_STATIC_TEST(
   std::is_empty<stdex::layout_right::template mapping<
     stdex::extents<size_t,42, 123, 73>

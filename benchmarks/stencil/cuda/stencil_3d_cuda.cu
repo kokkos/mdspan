@@ -103,13 +103,13 @@ inline void cuda_internal_safe_call(cudaError e, const char* name,
 
 dim3 get_bench_thread_block(size_t y,size_t z) {
   cudaDeviceProp cudaProp;
-  int dim_z = 1;
+  size_t dim_z = 1;
   while(dim_z*3<z && dim_z<32) dim_z*=2;
   CUDA_SAFE_CALL(cudaGetDeviceProperties(&cudaProp, 1));
-  int dim_y = 16;
+  size_t dim_y = 16;
   while(dim_y*3<y && dim_y<32) dim_y*=2;
 
-  return dim3(1, dim_y, dim_z);
+  return dim3(1, static_cast<int>(dim_y), static_cast<int>(dim_z));
 }
 
 template <class F, class... Args>

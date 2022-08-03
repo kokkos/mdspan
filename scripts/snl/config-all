@@ -1,0 +1,30 @@
+module swap gcc gcc/9.1
+./config-one gcc-9 g++ 20 "-Wall -Wextra -Werror -pedantic"
+./config-one gcc-9 g++ 17 "-Wall -Wextra -Werror"
+./config-one gcc-9 g++ 14 "-Wall -Wextra -Werror"
+
+module swap gcc gcc/11.1
+./config-one gcc-11 g++ 23 "-Wall -Wextra -Werror -pedantic"
+./config-one gcc-11 g++ 20 "-Wall -Wextra -Werror -pedantic"
+./config-one gcc-11 g++ 17 "-Wall -Wextra -Werror"
+./config-one gcc-11 g++ 14 "-Wall -Wextra -Werror"
+
+module swap clang clang/15-head
+module swap gcc gcc/11.1
+./config-one clang-15 clang++ 23 "-Wall -Wextra -Werror -pedantic"
+./config-one clang-15 clang++ 20 "-Wall -Wextra -Werror -pedantic"
+./config-one clang-15 clang++ 17 "-Wall -Wextra -Werror"
+./config-one clang-15 clang++ 14 "-Wall -Werror"
+
+module swap clang clang/8.0
+module swap gcc gcc/9.1
+./config-one clang-8 clang++ 20 "-Wall -Wextra -Werror --gcc-toolchain=/home/projects/x86-64/gcc/9.1"
+./config-one clang-8 clang++ 17 "-Wall -Wextra -Werror --gcc-toolchain=/home/projects/x86-64/gcc/9.1"
+./config-one clang-8 clang++ 14 "-Wall -Werror --gcc-toolchain=/home/projects/x86-64/gcc/9.1"
+
+module swap cuda cuda/11.2
+module swap gcc gcc/9.1
+./config-one-cuda nvcc-112 g++ 17 "-Wall -Werror"
+./config-one-cuda nvcc-112 g++ 14 "-Wall -Werror"
+
+

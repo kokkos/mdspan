@@ -7,8 +7,6 @@
 #include "foo_customizations.hpp"
 
 namespace stdex = std::experimental;
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
-
 
 void test_mdspan_std_swap_static_extents() {
   size_t* errors = allocate_array<size_t>(1);
