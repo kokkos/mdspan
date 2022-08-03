@@ -330,7 +330,9 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #endif
 
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-#  if (MDSPAN_HAS_CXX_20) && (__has_cpp_attribute(no_unique_address) >= 201803L)
+#  if ((__has_cpp_attribute(no_unique_address) >= 201803L) && \
+       (!defined(__NVCC__) || MDSPAN_HAS_CXX_20) && \
+       (!defined(_MDSPAN_COMPILER_MSVC) || MDSPAN_HAS_CXX_20))
 #    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
 #    define _MDSPAN_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #  else
@@ -344,6 +346,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #ifndef _MDSPAN_NO_UNIQUE_ADDRESS
 #  if defined(__NVCC__)
 #    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
+#    define _MDSPAN_USE_FAKE_ATTRIBUTE_NO_UNIQUE_ADDRESS
 #  endif
 #  define _MDSPAN_NO_UNIQUE_ADDRESS
 #endif
@@ -5285,7 +5288,7 @@ struct __assign_op_slice_handler<
   template <size_t _OldStaticExtent, size_t _OldStaticStride, class IntegerType, IntegerType Value0>
   MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
   _MDSPAN_CONSTEXPR_14 auto
-  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, std::integral_constant<IntegerType, Value0>>&& __slice) noexcept
+  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, std::integral_constant<IntegerType, Value0>>&&) noexcept
     -> __assign_op_slice_handler<
          _IndexT,
          typename _PreserveLayoutAnalysis::encounter_scalar,
