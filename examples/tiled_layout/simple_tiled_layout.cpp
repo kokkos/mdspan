@@ -43,8 +43,9 @@
 
 #include <experimental/mdspan>
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
+#include <type_traits>
 
 namespace stdex = std::experimental;
 
@@ -58,10 +59,15 @@ struct SimpleTileLayout2D {
     // for simplicity
     static_assert(Extents::rank() == 2, "SimpleTileLayout2D is hard-coded for 2D layout");
 
-    // for convenience
+    using extents_type = Extents;
+    using rank_type = typename Extents::rank_type;
     using size_type = typename Extents::size_type;
+    using layout_type = SimpleTileLayout2D;
 
-    // constructor
+    mapping() noexcept = default;
+    mapping(const mapping&) noexcept = default;
+    mapping& operator=(const mapping&) noexcept = default;
+
     mapping(
       Extents const& exts,
       size_type row_tile,
@@ -78,12 +84,18 @@ struct SimpleTileLayout2D {
       assert(exts.extent(1) > 0);
     }
 
-    mapping() noexcept = default;
-    mapping(mapping const&) noexcept = default;
-    mapping(mapping&&) noexcept = default;
-    mapping& operator=(mapping const&) noexcept = default;
-    mapping& operator=(mapping&&) noexcept = default;
-    ~mapping() noexcept = default;
+    MDSPAN_TEMPLATE_REQUIRES(
+      class OtherExtents,
+      /* requires */ (::std::is_constructible<extents_type, OtherExtents>::value)
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT(
+      (!::std::is_convertible<OtherExtents, extents_type>::value)
+    )
+    constexpr mapping(const mapping<OtherExtents>& input_mapping) noexcept :
+      extents_(input_mapping.extents()),
+      row_tile_size_(input_mapping.row_tile_size_),
+      col_tile_size_(input_mapping.col_tile_size_)
+    {}
 
     //------------------------------------------------------------
     // Helper members (not part of the layout concept)
@@ -123,9 +135,8 @@ struct SimpleTileLayout2D {
     //------------------------------------------------------------
     // Required members
 
-    constexpr size_type
-    operator()(size_type row, size_type col) const noexcept {
-      return tile_offset(row, col) + offset_in_tile(row, col);
+    constexpr const extents_type& extents() const {
+      return extents_;
     }
 
     constexpr size_type
@@ -133,29 +144,40 @@ struct SimpleTileLayout2D {
       return n_row_tiles() * n_column_tiles() * tile_size();
     }
 
+    template<class RowIndex, class ColIndex>
+    // requires(is_convertible_v<RowIndex, size_type> &&
+    //   is_convertible_v<ColIndex, size_type> &&
+    //   is_nothrow_constructible_v<size_type, RowIndex> &&
+    //   is_nothrow_constructible_v<size_type, ColIndex>)
+    constexpr size_type
+    operator()(RowIndex row, ColIndex col) const noexcept {
+      // TODO (mfh 2022/08/04 check precondition that
+      // extents_type::index-cast(row, col)
+      // is a multidimensional index in extents_.
+      return tile_offset(row, col) + offset_in_tile(row, col);
+    }
+
+
     // Mapping is always unique
     static constexpr bool is_always_unique() noexcept { return true; }
+    // Only exhaustive if extents_.extent(0) % column_tile_size == 0, so not always
+    static constexpr bool is_always_exhaustive() noexcept { return false; }
     // There is not always a regular stride between elements in a given dimension
     static constexpr bool is_always_strided() noexcept { return false; }
-    // only contiguous if extents_.extent(0) % column_tile_size == 0, so not always
-    static constexpr bool is_always_contiguous() noexcept { return false; }
 
     static constexpr bool is_unique() noexcept { return true; }
-    constexpr bool
-    is_contiguous() const noexcept {
-      // Only contiguous if extents fit exactly into tile sizes...
+    constexpr bool is_exhaustive() const noexcept {
+      // Only exhaustive if extents fit exactly into tile sizes...
       return (extents_.extent(0) % row_tile_size_ == 0) && (extents_.extent(1) % col_tile_size_ == 0);
     }
     // There are some circumstances where this is strided, but we're not
     // concerned about that optimization, so we're allowed to just return false here
     constexpr bool is_strided() const noexcept { return false; }
 
-   private:
-
+  private:
     Extents extents_;
-    size_type row_tile_size_;
-    size_type col_tile_size_;
-
+    size_type row_tile_size_ = 1;
+    size_type col_tile_size_ = 1;
   };
 };
 
@@ -207,4 +229,3 @@ int main() {
     std::cout << "Success! SimpleTiledLayout2D works as expected." << std::endl;
   }
 }
-
