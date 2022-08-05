@@ -248,14 +248,9 @@ auto benchmark_add_unrestrict_raw_1d(const std::size_t num_trials, const index_t
 }
 
 template<class ElementType>
-void warmup(const index_type n, const ElementType* x, const ElementType* y, ElementType* z)
+auto warmup(const std::size_t num_trials, const index_type n, const ElementType* x, const ElementType* y, ElementType* z)
 {
-  constexpr std::size_t num_warmup_trials = 10;
-  for(std::size_t trial = 0; trial < num_warmup_trials; ++trial) {
-    for (index_type i = 0; i < n; ++i) {
-      z[i] = x[i] + y[i];
-    }
-  }
+  return benchmark_add_raw_1d(num_trials, n, x, y, z);
 }
 
 } // namespace (anonymous)
@@ -280,7 +275,7 @@ int main(int argc, char* argv[])
   std::vector<double> y(n);
   std::vector<double> z(n);
 
-  warmup(n, x.data(), y.data(), z.data());
+  auto warmup_result = warmup(num_trials, n, x.data(), y.data(), z.data());
   auto restrict_mdspan_result = benchmark_add_restrict_mdspan_1d(num_trials, n, x.data(), y.data(), z.data());
   auto mdspan_result = benchmark_add_mdspan_1d(num_trials, n, x.data(), y.data(), z.data());
   auto raw_result = benchmark_add_raw_1d(num_trials, n, x.data(), y.data(), z.data());
@@ -289,6 +284,7 @@ int main(int argc, char* argv[])
 
   cout << "num_trials: " << num_trials << ", n: " << n << endl
        << "Total time (unit: second):" << endl
+       << "  warmup: " << warmup_result << endl
        << "  restrict_mdspan: " << restrict_mdspan_result << endl
        << "  mdspan: " << mdspan_result << endl
        << "  raw_mdspan: " << raw_result << endl
