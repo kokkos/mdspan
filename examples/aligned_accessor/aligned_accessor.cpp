@@ -43,6 +43,11 @@
 
 #include <experimental/mdspan>
 
+// Just checking __cpp_lib_int_pow2 isn't enough for some GCC versions.
+// The <bit> header exists, but std::has_single_bit does not.
+#if defined(__cpp_lib_int_pow2) && __cplusplus >= 202002L
+#  include <bit>
+#endif
 #include <cassert>
 #include <chrono>
 #include <cstdlib> // aligned_alloc, posix_memalign (if applicable)
@@ -58,9 +63,8 @@
 namespace {
 
 using test_value_type = float;
-constexpr int min_overalignment_factor = 8;
-constexpr int min_byte_alignment =
-  static_cast<int>(min_overalignment_factor * sizeof(float));
+constexpr std::size_t min_overalignment_factor = 8;
+constexpr std::size_t min_byte_alignment = min_overalignment_factor * sizeof(float);
 
 // Use int, not size_t, as the index_type.
 // Some compilers have trouble optimizing loops with unsigned or 64-bit index types.
@@ -109,16 +113,35 @@ namespace stdex = std::experimental;
   constexpr char align_attribute_method[] = "(none)";
 #endif
 
-template<class ElementType>
 constexpr bool
-valid_byte_alignment(const std::size_t byte_alignment,
-		     const std::size_t size_of_element)
+is_nonzero_power_of_two(const std::size_t x)
 {
-  return byte_alignment >= alignof(ElementType); // && is a power of two
+// Just checking __cpp_lib_int_pow2 isn't enough for some GCC versions.
+// The <bit> header exists, but std::has_single_bit does not.
+#if defined(__cpp_lib_int_pow2) && __cplusplus >= 202002L
+  return std::has_single_bit(x);
+#else
+  return x != 0 && (x & (x - 1)) == 0;
+#endif
 }
 
+template<class ElementType>
+constexpr bool
+valid_byte_alignment(const std::size_t byte_alignment)
+{
+  return is_nonzero_power_of_two(byte_alignment) && byte_alignment >= alignof(ElementType);
+}
+
+// We define aligned_pointer_t through a struct
+// so we can check whether the byte alignment is valid.
+// This makes it impossible to use the alias
+// with an invalid byte alignment.
 template<class ElementType, std::size_t byte_alignment>
 struct aligned_pointer {
+  static_assert(valid_byte_alignment<ElementType>(byte_alignment),
+		"byte_alignment must be a power of two no less than "
+		"the minimum required alignment of ElementType.");
+
   // x86-64 ICC 2021.5.0 emits warning #3186 ("expected typedef declaration") here.
   // No other compiler (including Clang, which has a similar type attribute) has this issue.
   using type = ElementType* _MDSPAN_ALIGN_VALUE_ATTRIBUTE( byte_alignment );
@@ -394,8 +417,7 @@ template<class ElementType, std::size_t byte_alignment>
 void add_aligned_raw_1d(const index_type n,
 			aligned_pointer_t<const ElementType, byte_alignment> x,
 			aligned_pointer_t<const ElementType, byte_alignment> y,
-			aligned_pointer_t<ElementType, byte_alignment> z,
-			std::integral_constant<std::size_t, byte_alignment> /* ba */ )
+			aligned_pointer_t<ElementType, byte_alignment> z)
 {
   for (index_type i = 0; i < n; ++i) {
     z[i] = x[i] + y[i];
@@ -416,7 +438,7 @@ auto benchmark_add_aligned_raw_1d(const std::size_t num_trials,
   auto y_blessed = bless(y, ba);
   auto z_blessed = bless(z, ba);
   for (std::size_t trial = 0; trial < num_trials; ++trial) {
-    add_aligned_raw_1d<ElementType, byte_alignment>(n, x_blessed, y_blessed, z_blessed, ba);
+    add_aligned_raw_1d<ElementType, byte_alignment>(n, x_blessed, y_blessed, z_blessed);
   }
   return TOCK();
 }
@@ -630,10 +652,8 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  int n = 10000;
-  int num_trials = 100;
-  n = std::stoi(argv[1]);
-  num_trials = std::stoi(argv[2]);
+  const int n = std::stoi(argv[1]);
+  const int num_trials = std::stoi(argv[2]);
 
   aligned_array<float, min_byte_alignment> x(n);
   aligned_array<float, min_byte_alignment> y(n);
