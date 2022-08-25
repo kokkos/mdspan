@@ -85,3 +85,24 @@ MDSPAN_STATIC_TEST(
   (E2::static_extent(1) == 3) &&
   (E2::static_extent(2) == stdex::dynamic_extent)
 );
+
+using E3 = stdex::extents<uint32_t, stdex::dynamic_extent, 3, stdex::dynamic_extent>;
+
+MDSPAN_STATIC_TEST(
+  std::is_same<typename E3::index_type, uint32_t>::value &&
+  std::is_same<typename E3::size_type, uint32_t>::value &&
+  std::is_same<typename E3::rank_type, size_t>::value &&
+  std::is_same<decltype(E3::rank()), typename E3::rank_type>::value &&
+  std::is_same<decltype(E3::rank_dynamic()), typename E3::rank_type>::value &&
+  std::is_same<decltype(E3::static_extent(0)), size_t>::value &&
+  std::is_same<decltype(E3::static_extent(1)), size_t>::value &&
+  std::is_same<decltype(E3::static_extent(2)), size_t>::value &&
+  std::is_same<decltype(std::declval<E3>().extent(0)), typename E3::index_type>::value &&
+  std::is_same<decltype(std::declval<E3>().extent(1)), typename E3::index_type>::value &&
+  std::is_same<decltype(std::declval<E3>().extent(2)), typename E3::index_type>::value &&
+  (E3::rank()==3) &&
+  (E3::rank_dynamic()==2) &&
+  (E3::static_extent(0) == stdex::dynamic_extent) &&
+  (E3::static_extent(1) == 3) &&
+  (E3::static_extent(2) == stdex::dynamic_extent)
+);
