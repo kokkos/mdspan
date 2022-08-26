@@ -142,9 +142,18 @@ struct aligned_pointer {
 		"byte_alignment must be a power of two no less than "
 		"the minimum required alignment of ElementType.");
 
+#if defined(__ICC)
   // x86-64 ICC 2021.5.0 emits warning #3186 ("expected typedef declaration") here.
   // No other compiler (including Clang, which has a similar type attribute) has this issue.
+#  pragma warning push
+#  pragma warning disable 3186
+#endif
+
   using type = ElementType* _MDSPAN_ALIGN_VALUE_ATTRIBUTE( byte_alignment );
+
+#if defined(__ICC)
+#  pragma warning pop
+#endif
 };
 
 template<class ElementType, std::size_t byte_alignment>
