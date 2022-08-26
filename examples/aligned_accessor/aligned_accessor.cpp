@@ -222,8 +222,7 @@ allocate_raw(const std::size_t num_elements)
   static_assert(overalignment * sizeof(ElementType) == byte_alignment,
 		"overalignment * sizeof(ElementType) must equal byte_alignment.");
 
-  // Allocate an extra element, so we can do unaligned performance runs.
-  const std::size_t num_bytes = (num_elements + 1) * sizeof(ElementType);
+  const std::size_t num_bytes = num_elements * sizeof(ElementType);
   auto deleter = delete_raw<ElementType>{};
 
   void* ptr = nullptr;
@@ -252,71 +251,87 @@ allocate_raw(const std::size_t num_elements)
   return {reinterpret_cast<ElementType*>(ptr), deleter};
 }
 
+// A dynamically allocated array of ElementType,
+// whose zeroth element has byte alignment byte_alignment.
+//
+// ElementType: A trivially copyable type whose size is a power of two bytes.
+// byte_alignment: A power of two that is a multiple of sizeof(ElementType).
+//
+// This needs to be a class in order to preserve the invariant that
+// "pointer" points to the allocation.
 template<class ElementType, std::size_t byte_alignment>
-struct aligned_array_allocation {
+class aligned_array_allocation {
   static_assert(byte_alignment >= sizeof(ElementType),
 		"byte_alignment must be at least sizeof(ElementType).");
   static constexpr std::size_t overalignment = byte_alignment / sizeof(ElementType);
   static_assert(overalignment * sizeof(ElementType) == byte_alignment,
 		"overalignment * sizeof(ElementType) must equal byte_alignment.");
-
-  allocation_t<ElementType> allocation{nullptr, delete_raw<ElementType>{}};
-  aligned_pointer_t<ElementType, byte_alignment> aligned_pointer = nullptr;
-  std::size_t num_elements = 0;
-};
-
-template<class ElementType, std::size_t byte_alignment>
-aligned_array_allocation<ElementType, byte_alignment>
-allocate_aligned(std::size_t num_elements)
-{
-  if(num_elements == 0) {
-    return {};
-  }
-  auto allocation = allocate_raw<ElementType, byte_alignment>(num_elements);
-  aligned_pointer_t<ElementType, byte_alignment> aligned_pointer =
-    _MDSPAN_ASSUME_ALIGNED( ElementType, allocation.get(), byte_alignment );
-  return {std::move(allocation), aligned_pointer, num_elements};
-}
-
-// A dynamically allocated array of ElementType,
-// whose zeroth element has byte alignment byte_alignment.
-//
-// ElementType: A trivially copyable type whose size is a power of two bytes.
-//
-// byte_alignment: A power of two that is a multiple of sizeof(ElementType).
-template<class ElementType, std::size_t byte_alignment>
-class aligned_array {
 public:
-  aligned_array(std::size_t num_elements) :
-    alloc(allocate_aligned<ElementType, byte_alignment>(num_elements))
+  aligned_array_allocation(std::size_t number_of_elements) :
+    allocation(allocate_raw<ElementType, byte_alignment>(number_of_elements)),
+    pointer(allocation.get()),
+    num_elements(number_of_elements)
   {}
 
-  // A pointer to the zeroth element of the array.
-  // It is aligned to byte_alignment bytes.
-  // All num_elements (constructor parameter) elements are valid.
-  aligned_pointer_t<ElementType, byte_alignment>
-  data_aligned() const noexcept
+  aligned_pointer_t<ElementType, byte_alignment> data() const
   {
-    return _MDSPAN_ASSUME_ALIGNED( ElementType, alloc.aligned_pointer, byte_alignment );
-  }
-
-  // A pointer to the first (NOT zeroth) element of the array.
-  // It is aligned only to sizeof(ElementType) bytes.
-  // All num_elements (constructor parameter) elements are valid.
-  //
-  // This exists so that we can compare performance
-  // of aligned and unaligned access.
-  ElementType* data_unaligned() const noexcept
-  {
-    if (alloc.num_elements == 0) {
-      return nullptr;
-    } else { // align only to ElementType
-      return &(alloc.allocation[1]);
-    }
+    return _MDSPAN_ASSUME_ALIGNED( ElementType, pointer, byte_alignment );
   }
 
 private:
-  aligned_array_allocation<ElementType, byte_alignment> alloc;
+  allocation_t<ElementType> allocation{nullptr, delete_raw<ElementType>{}};
+  aligned_pointer_t<ElementType, byte_alignment> pointer{nullptr};
+  std::size_t num_elements{0};
+};
+
+// This represents an array allocation that is deliberately
+// aligned at most to sizeof(ElementType) bytes.
+//
+// We want this "unaligned" memory to make sure that the compiler or
+// C++ Standard Library implementation isn't adding overalignment.
+// For example, if the compiler knows that float arrays are always
+// allocated to 2*sizeof(float) alignment, it could make loops use
+// 2-wide SIMD code without needing a loop prelude or postlude to
+// handle the "unaligned remainder."  Forcing "unalignment" will thus
+// give us a better performance comparison with the aligned case.
+template<class ElementType>
+class deliberately_unaligned_array_allocation {
+public:
+  deliberately_unaligned_array_allocation(std::size_t number_of_elements) :
+    allocation(allocate_raw<ElementType, sizeof(ElementType)>(number_of_elements + 1)),
+    pointer(unaligned_pointer(allocation.get())),
+    num_elements(number_of_elements)
+  {}
+
+  ElementType* data() const {
+    return pointer;
+  }
+
+private:
+  // Just asking for the minimum alignment of sizeof(ElementType)
+  // bytes isn't enough, because the allocator might overalign that
+  // allocation.  Instead, we ask for an extra element, check whether
+  // the allocation is "odd" or "even," and add one if needed.
+  static ElementType*
+  unaligned_pointer(ElementType* allocation_pointer)
+  {
+    if(allocation_pointer == nullptr) {
+      return nullptr;
+    }
+    const auto ptr_as_uint = reinterpret_cast<std::uintptr_t>(allocation_pointer);
+    const auto bias = ptr_as_uint % std::uintptr_t(2 * sizeof(ElementType));
+    if(bias == 0) {
+      // It's aligned to sizeof(ElementType) times 2^k for integer k > 0.
+      // Add one (that is, sizeof(ElementType) bytes) to make it "odd" again.
+      return allocation_pointer + 1;
+    } else {
+      return allocation_pointer;
+    }
+  }
+
+  allocation_t<ElementType> allocation{nullptr, delete_raw<ElementType>{}};
+  ElementType* pointer{nullptr};
+  std::size_t num_elements{0};
 };
 
 template<class ElementType, std::size_t byte_alignment>
@@ -639,13 +654,16 @@ auto benchmark_add_omp_aligned_simd_aligned_raw_1d(
 #endif // _OPENMP
 
 template<class ElementType>
-auto warmup(const std::size_t num_trials,
-	    const index_type n,
-	    const ElementType x[],
-	    const ElementType y[],
-	    ElementType z[])
+void set_elements_of_arrays(const index_type n,
+			    ElementType x[],
+			    ElementType y[],
+			    ElementType z[])
 {
-  return benchmark_add_raw_1d(num_trials, n, x, y, z);
+  for (index_type i = 0; i < n; ++i) {
+    x[i] = 1.0;
+    y[i] = 2.0;
+    z[i] = 0.0;
+  }
 }
 
 } // namespace (anonymous)
@@ -655,6 +673,7 @@ int main(int argc, char* argv[])
   using std::cout;
   using std::cerr;
   using std::endl;
+  constexpr std::integral_constant<std::size_t, min_byte_alignment> byte_alignment;
 
   if(argc != 3) {
     cerr << "Usage: main <n> <num_trials>" << endl;
@@ -664,54 +683,57 @@ int main(int argc, char* argv[])
   const int n = std::stoi(argv[1]);
   const int num_trials = std::stoi(argv[2]);
 
-  aligned_array<float, min_byte_alignment> x(n);
-  aligned_array<float, min_byte_alignment> y(n);
-  aligned_array<float, min_byte_alignment> z(n);
-
-  constexpr std::integral_constant<std::size_t, min_byte_alignment> byte_alignment;
-
-  auto warmup_result =
-    warmup(num_trials, n, x.data_unaligned(), y.data_unaligned(), z.data_unaligned());
+  aligned_array_allocation<float, min_byte_alignment> x_aligned(n);
+  aligned_array_allocation<float, min_byte_alignment> y_aligned(n);
+  aligned_array_allocation<float, min_byte_alignment> z_aligned(n);
+  set_elements_of_arrays(n, x_aligned.data(), y_aligned.data(), z_aligned.data());
 
   auto aligned_mdspan_result =
-    benchmark_add_aligned_mdspan_1d(num_trials, n, x.data_aligned(),
-				    y.data_aligned(), z.data_aligned(),
+    benchmark_add_aligned_mdspan_1d(num_trials, n, x_aligned.data(),
+				    y_aligned.data(), z_aligned.data(),
 				    byte_alignment);
-  auto mdspan_result =
-    benchmark_add_mdspan_1d(num_trials, n, x.data_unaligned(),
-			    y.data_unaligned(), z.data_unaligned());
-  auto raw_result =
-    benchmark_add_raw_1d(num_trials, n, x.data_unaligned(),
-			 y.data_unaligned(), z.data_unaligned());
   auto aligned_raw_result =
-    benchmark_add_aligned_raw_1d(num_trials, n, x.data_aligned(),
-				 y.data_aligned(), z.data_aligned(),
+    benchmark_add_aligned_raw_1d(num_trials, n, x_aligned.data(),
+				 y_aligned.data(), z_aligned.data(),
 				 byte_alignment);
-
 #ifdef _OPENMP
   auto omp_simd_aligned_mdspan_result =
-    benchmark_add_omp_simd_aligned_mdspan_1d(num_trials, n, x.data_aligned(),
-					     y.data_aligned(), z.data_aligned(),
+    benchmark_add_omp_simd_aligned_mdspan_1d(num_trials, n, x_aligned.data(),
+					     y_aligned.data(), z_aligned.data(),
 					     byte_alignment);
-  auto omp_simd_mdspan_result =
-    benchmark_add_omp_simd_mdspan_1d(num_trials, n, x.data_unaligned(),
-				     y.data_unaligned(), z.data_unaligned());
-  auto omp_simd_raw_result =
-    benchmark_add_omp_simd_raw_1d(num_trials, n, x.data_unaligned(),
-				  y.data_unaligned(), z.data_unaligned());
   auto omp_aligned_simd_raw_result =
     benchmark_add_omp_aligned_simd_raw_1d(num_trials, n,
-					  x.data_aligned(), y.data_aligned(), z.data_aligned(),
-					  byte_alignment);
+					  x_aligned.data(), y_aligned.data(),
+					  z_aligned.data(), byte_alignment);
   auto omp_simd_aligned_raw_result =
     benchmark_add_omp_simd_aligned_raw_1d(num_trials, n,
-					  x.data_aligned(), y.data_aligned(), z.data_aligned(),
-					  byte_alignment);
+					  x_aligned.data(), y_aligned.data(),
+					  z_aligned.data(), byte_alignment);
   auto omp_aligned_simd_aligned_raw_result =
     benchmark_add_omp_aligned_simd_aligned_raw_1d(num_trials, n,
-						  x.data_aligned(), y.data_aligned(), z.data_aligned(),
-						  byte_alignment);
+						  x_aligned.data(), y_aligned.data(),
+						  z_aligned.data(), byte_alignment);
+#endif // _OPENMP
 
+  deliberately_unaligned_array_allocation<float> x_unaligned(n);
+  deliberately_unaligned_array_allocation<float> y_unaligned(n);
+  deliberately_unaligned_array_allocation<float> z_unaligned(n);
+  set_elements_of_arrays(n, x_unaligned.data(), y_unaligned.data(), z_unaligned.data());
+
+  auto mdspan_result =
+    benchmark_add_mdspan_1d(num_trials, n, x_unaligned.data(),
+			    y_unaligned.data(), z_unaligned.data());
+  auto raw_result =
+    benchmark_add_raw_1d(num_trials, n, x_unaligned.data(),
+			 y_unaligned.data(), z_unaligned.data());
+
+#ifdef _OPENMP
+  auto omp_simd_mdspan_result =
+    benchmark_add_omp_simd_mdspan_1d(num_trials, n, x_unaligned.data(),
+				     y_unaligned.data(), z_unaligned.data());
+  auto omp_simd_raw_result =
+    benchmark_add_omp_simd_raw_1d(num_trials, n, x_unaligned.data(),
+				  y_unaligned.data(), z_unaligned.data());
 #endif // _OPENMP
 
   cout << "Number of trials: " << num_trials << endl
@@ -721,11 +743,10 @@ int main(int argc, char* argv[])
        << "Way to declare a pointer type aligned, if any: "
        << align_attribute_method << endl
        << "Total time in seconds for non-OpenMP loops:" << endl
-       << "  warmup: " << warmup_result << endl
-       << "  mdspan with aligned_accessor: " << aligned_mdspan_result << endl
-       << "  mdspan with default_accessor: " << mdspan_result << endl
-       << "  raw arrays: " << raw_result << endl
-       << "  aligned raw arrays: " << aligned_raw_result << endl;
+       << "  aligned mdspan: " << aligned_mdspan_result << endl
+       << "  unaligned mdspan: " << mdspan_result << endl
+       << "  aligned raw: " << aligned_raw_result << endl
+       << "  unaligned raw: " << raw_result << endl;
 
 #ifdef _OPENMP
   cout << "Total time in seconds for OpenMP (omp simd) loops:" << endl
