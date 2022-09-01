@@ -253,46 +253,63 @@ struct layout_left_padded {
     inner_mapping_type inner_mapping_;
     pre_padding_extents_type pre_padded_extent_;
 
-  public:
-    // precondition on padding_extents_ constructor lets
-    // implementations check the padding value at run time.
+    struct unusable_tag_t {};
+    static constexpr unusable_tag_t unusable_tag{};
 
-    /*
-    MDSPAN_INLINE_FUNCTION
-    mapping(const extents_type& ext, std::size_t padding_value) :
-      inner_mapping_(details::pad_extents_left(ext, padding_extents_type{padding_value})),
+  public:
+    // mapping constructor that takes ONLY an extents_type.
+    //
+    // This constructor ONLY EXISTS if padding is known
+    // at compile time, that is, if (the template parameter)
+    // padding != dynamic_extent.
+    //
+    // This constructor makes it possible to construct an mdspan
+    // from a pointer and extents, since that requires that
+    // the mapping be constructible from extents alone.
+    template<class T = unusable_tag_t>
+    MDSPAN_INLINE_FUNCTION constexpr
+    mapping(const extents_type& ext,
+	    std::enable_if_t<padding != stdex::dynamic_extent
+	    and std::is_same_v<T, unusable_tag_t>
+	    , unusable_tag_t> = unusable_tag) :
+      inner_mapping_(details::pad_extents_left(ext, padding_extents_type{padding})),
       pre_padded_extent_(ext.extent(0))
     {}
-    */
 
+    // mapping constructor that takes an extents_type,
+    // AND an integral padding_value.
+    //
+    // This constructor always exists, even if padding is known at
+    // compile time -- just like the extents constructor lets you pass
+    // in all rank() extents, even if some of them are known at
+    // compile time.
+    //
+    // If padding is NOT known at compile time
+    // (i.e., the template parameter padding equals dynamic_extent),
+    // then you MUST pass it into the constructor,
+    // either as an integral value (the first constructor below),
+    // or as an extents object of the right type
+    // (the second constructor below).
+
+    template<class Size>
+    MDSPAN_INLINE_FUNCTION constexpr
+    mapping(const extents_type& ext,
+	    std::enable_if_t<padding == stdex::dynamic_extent &&
+	      std::is_integral_v<Size>,
+	    Size> padding_value = 0) :
+      inner_mapping_(details::pad_extents_left(ext, padding_extents_type{padding_value})),
+      pre_padded_extent_(ext.extent(0))
+    {
+      // We don't have to check padding_value here, because the
+      // padding_extents_type constructor already has a precondition.
+    }
+
+    // It's always legal to pass in the padding as an extents object.
     MDSPAN_INLINE_FUNCTION
     mapping(const extents_type& ext, const padding_extents_type& padding_extents) :
       inner_mapping_(details::pad_extents_left(ext, padding_extents)),
       pre_padded_extent_(ext.extent(0))
     {}
-
-    // If padding is known at compile time (i.e., is not
-    // dynamic_extent), then you don't need to pass it into the
-    // constructor.  This makes it possible to construct an mdspan
-    // from a pointer and extents (since that requires that the
-    // mapping be constructible from extents alone).  Note that if you
-    // don't have at least C++20, the constraint will turn into a
-    // mandate.
-    //
-    // icpc doesn't accept "requires", even despite "__cplusplus >= 202002L".
-    MDSPAN_INLINE_FUNCTION
-#if __cplusplus >= 202002L and not defined(__ICC)
-    requires(padding != stdex::dynamic_extent)
-#endif
-    mapping(const extents_type& ext) :
-      inner_mapping_(details::pad_extents_left(ext, padding_extents_type{padding})),
-      pre_padded_extent_(ext.extent(0))
-    {
-#if __cplusplus < 202002L
-      static_assert(padding != stdex::dynamic_extent,
-		    "You can't use this constructor if padding is dynamic_extent.");
-#endif
-    }
 
     // layout_stride::mapping deliberately only defines the copy
     // constructor and copy assignment operator, not the move
@@ -419,8 +436,15 @@ test_one_layout_left_padded(std::vector<float>& storage,
   mapping_type mapping1(input, padding);
   test_mapping(mapping1);
 
+  // Uncomment to test that constructing a padding=dynamic_extent
+  // mapping without a padding value is forbidden at compile time.
+  //
+  //if constexpr (PaddedExtent == stdex::dynamic_extent) {
+  //  mapping_type mapping2(input);
+  //}
+
   if constexpr (PaddedExtent != stdex::dynamic_extent) {
-    mapping_type mapping2(input, padding);
+    mapping_type mapping2(input);
     test_mapping(mapping2);
   }
 }
