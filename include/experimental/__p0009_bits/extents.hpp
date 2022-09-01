@@ -510,7 +510,7 @@ using dextents = typename detail::__make_dextents<IndexType, Rank>::type;
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 template <class... IndexTypes>
 extents(IndexTypes...)
-  -> extents<size_t, detail::__make_dynamic_extent<IndexTypes>()...>;
+  -> extents<size_t, size_t((IndexTypes(), ::std::experimental::dynamic_extent))...>;
 #endif
 
 namespace detail {
