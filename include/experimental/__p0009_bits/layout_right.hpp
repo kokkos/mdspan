@@ -73,21 +73,25 @@ class layout_right::mapping {
     struct __rank_count {};
 
     template <size_t r, size_t Rank, class I, class... Indices>
+    _MDSPAN_HOST_DEVICE
     constexpr index_type __compute_offset(
       index_type offset, __rank_count<r,Rank>, const I& i, Indices... idx) const {
       return __compute_offset(offset * __extents.template __extent<r>() + i,__rank_count<r+1,Rank>(),  idx...);
     }
 
     template<class I, class ... Indices>
+    _MDSPAN_HOST_DEVICE
     constexpr index_type __compute_offset(
       __rank_count<0,extents_type::rank()>, const I& i, Indices... idx) const {
       return __compute_offset(i,__rank_count<1,extents_type::rank()>(),idx...);
     }
 
+    _MDSPAN_HOST_DEVICE
     constexpr index_type __compute_offset(size_t offset, __rank_count<extents_type::rank(), extents_type::rank()>) const {
       return static_cast<index_type>(offset);
     }
 
+    _MDSPAN_HOST_DEVICE
     constexpr index_type __compute_offset(__rank_count<0,0>) const { return 0; }
 
   public:
@@ -97,6 +101,7 @@ class layout_right::mapping {
     MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping() noexcept = default;
     MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping const&) noexcept = default;
 
+    _MDSPAN_HOST_DEVICE
     constexpr mapping(extents_type const& __exts) noexcept
       :__extents(__exts)
     { }
@@ -187,6 +192,7 @@ class layout_right::mapping {
         )
       )
     )
+    _MDSPAN_HOST_DEVICE
     constexpr index_type operator()(Indices... idxs) const noexcept {
       return __compute_offset(__rank_count<0, extents_type::rank()>(), idxs...);
     }
