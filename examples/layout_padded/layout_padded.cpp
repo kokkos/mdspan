@@ -141,11 +141,12 @@ namespace details {
   // The third argument should always be
   // iota_index_sequence_t<0, ReturnExtents::rank() - 1>.
   template<class ReturnExtents,
+	   std::size_t PrePaddedExtent,
 	   class InnerExtents,
 	   std::size_t... LeadingIndices>
   MDSPAN_INLINE_FUNCTION constexpr ReturnExtents
   layout_right_extents_helper(const InnerExtents& inner_extents,
-			      std::size_t pre_padded_extent,
+			      const stdex::extents<typename InnerExtents::index_type, PrePaddedExtent>& pre_padded_extent,
 			      std::index_sequence<LeadingIndices...>)
   {
     static_assert(sizeof...(LeadingIndices) + 1 == ReturnExtents::rank(),
@@ -155,7 +156,7 @@ namespace details {
     using index_type = typename ReturnExtents::index_type;
     return ReturnExtents{
       index_type(inner_extents.extent(LeadingIndices))...,
-      index_type(pre_padded_extent)
+      pre_padded_extent.extent(0)
     };
   }
 
@@ -181,18 +182,19 @@ namespace details {
 	   class IndexType,
 	   std::size_t... InnerExtents>
   MDSPAN_INLINE_FUNCTION constexpr ReturnExtents
-  layout_left_extents(const stdex::extents<IndexType>& pre_padded_extent,
+  layout_left_extents(const stdex::extents<IndexType>& /* pre_padded_extent */ ,
 		      const stdex::extents<IndexType, InnerExtents...>& inner_extents)
   {
     return inner_extents;
   }
 
   template<class ReturnExtents,
+	   std::size_t PrePaddedExtent,
 	   class IndexType,
 	   std::size_t... InnerExtents>
   MDSPAN_INLINE_FUNCTION constexpr ReturnExtents
   layout_right_extents(const stdex::extents<IndexType, InnerExtents...>& inner_extents,
-		       std::size_t pre_padded_extent)
+		       const stdex::extents<IndexType, PrePaddedExtent>& pre_padded_extent)
   {
     // If rank() is zero, size_t(-1) would be a very large upper bound.
     static_assert(ReturnExtents::rank() != 0,
@@ -202,6 +204,19 @@ namespace details {
        pre_padded_extent,
        details::iota_index_sequence_t<0, ReturnExtents::rank() - 1>{}
     );
+  }
+
+  // Rank-0 pre_padded_extent means rank-0 input,
+  // but the latter turns out not to matter here.
+
+  template<class ReturnExtents,
+	   class IndexType,
+	   std::size_t... InnerExtents>
+  MDSPAN_INLINE_FUNCTION constexpr ReturnExtents
+  layout_right_extents(const stdex::extents<IndexType, InnerExtents...>& inner_extents,
+		       const stdex::extents<IndexType>& /* pre_padded_extent */ )
+  {
+    return inner_extents;
   }
 
   template<
@@ -339,9 +354,29 @@ namespace details {
     return stdex::extents<IndexType, input_type::static_extent(0)>{input.extent(0)};
   }
 
+  MDSPAN_TEMPLATE_REQUIRES(
+    class IndexType,
+    std::size_t ... InputExtents,
+    /* requires */ (sizeof...(InputExtents) != std::size_t(0))
+  )
+  MDSPAN_INLINE_FUNCTION constexpr auto
+  pre_padded_extent_right(const stdex::extents<IndexType, InputExtents...>& input)
+  {
+    using input_type = stdex::extents<IndexType, InputExtents...>;
+    const auto rank = input_type::rank();
+    return stdex::extents<IndexType, input_type::static_extent(rank - 1)>{input.extent(rank - 1)};
+  }
+
   template<class IndexType>
   MDSPAN_INLINE_FUNCTION constexpr auto
   pre_padded_extent_left(const stdex::extents<IndexType>& /* input */ )
+  {
+    return stdex::extents<IndexType>{};
+  }
+
+  template<class IndexType>
+  MDSPAN_INLINE_FUNCTION constexpr auto
+  pre_padded_extent_right(const stdex::extents<IndexType>& /* input */ )
   {
     return stdex::extents<IndexType>{};
   }
@@ -387,9 +422,12 @@ struct layout_left_padded {
   private:
     using padding_extents_type = stdex::extents<index_type, padding>;
     using inner_layout_type = stdex::layout_left;
-    using inner_extents_type =
-      decltype(details::pad_extents_left(std::declval<Extents>(),
-					 std::declval<padding_extents_type>()));
+    using inner_extents_type = decltype(
+      details::pad_extents_left(
+	std::declval<Extents>(),
+	std::declval<padding_extents_type>()
+      )
+    );
     using inner_mapping_type =
       typename inner_layout_type::template mapping<inner_extents_type>;
     using pre_padding_extents_type =
@@ -469,8 +507,10 @@ struct layout_left_padded {
     MDSPAN_INLINE_FUNCTION
     constexpr extents_type extents() const noexcept
     {
-      return details::layout_left_extents<extents_type>
-	(pre_padded_extent_, inner_mapping_.extents());
+      return details::layout_left_extents<extents_type>(
+	pre_padded_extent_,
+	inner_mapping_.extents()
+      );
     }
 
     MDSPAN_INLINE_FUNCTION
@@ -493,7 +533,7 @@ struct layout_left_padded {
 	_MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, Indices) /*&& ...*/)
       )
     )
-    MDSPAN_FORCE_INLINE_FUNCTION
+    MDSPAN_INLINE_FUNCTION
     constexpr size_t operator()(Indices... idxs) const noexcept {
       // TODO (mfh 2022/08/30) in debug mode, check precondition before forwarding to inner mapping.
       return inner_mapping_(std::forward<Indices>(idxs)...);
@@ -533,10 +573,7 @@ struct layout_right_padded {
     using layout_type = layout_right_padded<padding>;
 
   private:
-    using pre_padding_extents_type =
-      stdex::extents<index_type, Extents::static_extent(Extents::rank() - 1)>;
     using padding_extents_type = stdex::extents<index_type, padding>;
-
     using inner_layout_type = stdex::layout_right;
     using inner_extents_type = decltype(
       details::pad_extents_right(
@@ -546,6 +583,8 @@ struct layout_right_padded {
     );
     using inner_mapping_type =
       typename inner_layout_type::template mapping<inner_extents_type>;
+    using pre_padding_extents_type =
+      decltype(details::pre_padded_extent_right(std::declval<extents_type>()));
 
     inner_mapping_type inner_mapping_;
     pre_padding_extents_type pre_padded_extent_;
@@ -570,7 +609,7 @@ struct layout_right_padded {
 	    and std::is_same_v<T, unusable_tag_t>
 	    , unusable_tag_t> = unusable_tag) :
       inner_mapping_(details::pad_extents_right(ext, padding_extents_type{padding})),
-      pre_padded_extent_(ext.extent(Extents::rank() - 1))
+      pre_padded_extent_(details::pre_padded_extent_right(ext))
     {}
 
     // mapping constructor that takes an extents_type,
@@ -595,7 +634,7 @@ struct layout_right_padded {
 	      std::is_integral_v<Size>,
 	    Size> padding_value = 0) :
       inner_mapping_(details::pad_extents_right(ext, padding_extents_type{padding_value})),
-      pre_padded_extent_(ext.extent(Extents::rank() - 1))
+      pre_padded_extent_(details::pre_padded_extent_right(ext))
     {
       // We don't have to check padding_value here, because the
       // padding_extents_type constructor already has a precondition.
@@ -605,7 +644,7 @@ struct layout_right_padded {
     MDSPAN_INLINE_FUNCTION
     mapping(const extents_type& ext, const padding_extents_type& padding_extents) :
       inner_mapping_(details::pad_extents_right(ext, padding_extents)),
-      pre_padded_extent_(ext.extent(Extents::rank() - 1))
+      pre_padded_extent_(details::pre_padded_extent_right(ext))
     {}
 
     // layout_stride::mapping deliberately only defines the copy
@@ -623,7 +662,7 @@ struct layout_right_padded {
     {
       return details::layout_right_extents<extents_type>(
 	inner_mapping_.extents(),
-	pre_padded_extent_.extent(0)
+	pre_padded_extent_
       );
     }
 
@@ -647,7 +686,7 @@ struct layout_right_padded {
 	_MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, Indices) /*&& ...*/)
       )
     )
-    MDSPAN_FORCE_INLINE_FUNCTION
+    MDSPAN_INLINE_FUNCTION
     constexpr size_t operator()(Indices... idxs) const noexcept {
       // TODO (mfh 2022/08/30) in debug mode, check precondition before forwarding to inner mapping.
       return inner_mapping_(std::forward<Indices>(idxs)...);
@@ -655,14 +694,16 @@ struct layout_right_padded {
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() noexcept {
-      return extents_type::static_extent(Extents::rank() - 1) != stdex::dynamic_extent &&
-	extents_type::static_extent(Extents::rank() - 1) == pre_padding_extents_type::static_extent(0);
+      return extents_type::rank() == 0 ? true :
+	(extents_type::static_extent(Extents::rank() - 1) != stdex::dynamic_extent &&
+	 extents_type::static_extent(Extents::rank() - 1) == pre_padding_extents_type::static_extent(0));
     }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_unique() noexcept { return true; }
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_exhaustive() const noexcept {
-      return inner_mapping_.extent(Extents::rank() - 1) == pre_padded_extent_.extent(0);
+      return extents_type::rank() == 0 ? true :
+	inner_mapping_.extent(Extents::rank() - 1) == pre_padded_extent_.extent(0);
     }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_strided() noexcept { return true; }
 
@@ -715,20 +756,18 @@ test_one_layout_left_padded(std::vector<float>& storage,
     const size_t min_num_elements_storage = mapping.required_span_size();
     assert(min_num_elements_storage >= product_of_extents);
 
-    std::array<std::size_t, rank> expected_strides;
-    if(rank != 0) {
+    if (rank != 0) {
+      std::array<std::size_t, rank> expected_strides;
       expected_strides[0] = 1;
-    }
-    if (rank > 1) {
-      expected_strides[1] = padding.extent(0);
-      for (auto r = rank_type(2); r < rank; ++r) {
-	expected_strides[r] = expected_strides[r - 1] * input.extent(r - 1);
+      if (rank > std::size_t(1)) {
+	expected_strides[1] = padding.extent(0);
+	for (auto r = rank_type(2); r < rank; ++r) {
+	  expected_strides[r] = expected_strides[r - 1] * input.extent(r - 1);
+	}
       }
-    }
-
-    for (auto r = rank_type(0); r < rank; ++r) {
-      assert(mapping.stride(r) == expected_strides[r]);
-      assert(mapping.stride(r) == expected_strides[r]);
+      for (auto r = rank_type(0); r < rank; ++r) {
+	assert(mapping.stride(r) == expected_strides[r]);
+      }
     }
   };
 
@@ -758,29 +797,11 @@ test_one_layout_right_padded(std::vector<float>& storage,
 			     const stdex::extents<IndexType, InputExtents...>& input,
 			     const stdex::extents<IndexType, PaddedExtent>& padding)
 {
-  static_assert(sizeof...(InputExtents) >= std::size_t(1),
-		"input must have rank at least 1.");
   using input_extents_type = stdex::extents<IndexType, InputExtents...>;
   using rank_type = typename input_extents_type::rank_type;
   constexpr rank_type rank = input_extents_type::rank();
 
-  auto static_extent_to_string = [](std::size_t Extent) {
-    return Extent == stdex::dynamic_extent ?
-      std::string("-1") : std::to_string(Extent);
-  };
-
-  std::cerr << "input: [";
-  for(rank_type r = 0; r < rank; ++r) {
-    std::cerr << static_extent_to_string(input_extents_type::static_extent(r))
-	      << ": " << input.extent(r);
-    if (r + 1 != rank) {
-      std::cerr << ", ";
-    }
-  }
-  std::cerr << "]\npadding: [" << static_extent_to_string(PaddedExtent)
-	    << ": " << padding.extent(0) << "]\n";
-
-  assert(input.extent(rank - 1) <= padding.extent(0));
+  assert(rank == 0 || input.extent(0) <= padding.extent(0));
 
   using layout_type = layout_right_padded<PaddedExtent>;
   using mapping_type =
@@ -808,26 +829,18 @@ test_one_layout_right_padded(std::vector<float>& storage,
     const size_t min_num_elements_storage = mapping.required_span_size();
     assert(min_num_elements_storage >= product_of_extents);
 
-    std::array<std::size_t, rank> expected_strides;
-    expected_strides[rank - 1] = 1;
-    if(rank > std::size_t(1)) {
-      expected_strides[rank - 2] = padding.extent(0);
-      for (auto r = rank_type(rank - 1); r != 1; --r) {
-	expected_strides[r - 2] = expected_strides[r - 1] * input.extent(r - 1);
-      }
-    }
-    {
-      bool ok = true;
-      for (auto r = rank_type(0); r < rank; ++r) {
-	if(mapping.stride(r) != expected_strides[r]) {
-	  ok = false;
-	  std::cerr << "mapping.stride(" << r
-		    << ") = " << mapping.stride(r)
-		    << " != expected_strides[" << r << "] = "
-		    << expected_strides[r] << '\n';
+    if (rank != 0) {
+      std::array<std::size_t, rank> expected_strides;
+      expected_strides[rank - 1] = 1;
+      if(rank > std::size_t(1)) {
+	expected_strides[rank - 2] = padding.extent(0);
+	for (auto r = rank_type(rank - 1); r != 1; --r) {
+	  expected_strides[r - 2] = expected_strides[r - 1] * input.extent(r - 1);
 	}
       }
-      assert(ok);
+      for (auto r = rank_type(0); r < rank; ++r) {
+	assert(mapping.stride(r) == expected_strides[r]);
+      }
     }
   };
 
@@ -1026,6 +1039,21 @@ void test_layout_right_padded()
   constexpr auto dyn = stdex::dynamic_extent;
   // storage will get resized as needed in the tests.
   std::vector<float> storage;
+
+  {
+    using input_extents_type = stdex::extents<IndexType>;
+    input_extents_type input{};
+    {
+      using padding_extents_type = stdex::extents<IndexType, 8>;
+      padding_extents_type padding{};
+      test_one_layout_right_padded(storage, input, padding);
+    }
+    {
+      using padding_extents_type = stdex::extents<IndexType, dyn>;
+      padding_extents_type padding{8};
+      test_one_layout_right_padded(storage, input, padding);
+    }
+  }
 
   {
     using input_extents_type = stdex::extents<IndexType, 3>;
