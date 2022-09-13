@@ -460,8 +460,8 @@ struct layout_left_padded {
     mapping(const extents_type& ext,
 	    Size padding_value,
 	    std::enable_if_t<
-              std::is_convertible_v<Size, index_type> &&
-              std::is_nothrow_constructible_v<index_type, Size>
+	      std::is_convertible<Size, index_type>::value &&
+              std::is_nothrow_constructible<index_type, Size>::value
 	    >* = nullptr) :
       inner_mapping_(details::pad_extents_left(ext, padding_extents_type{padding_value})),
       unpadded_extent_(details::unpadded_extent_left(ext))
@@ -601,8 +601,8 @@ struct layout_right_padded {
     mapping(const extents_type& ext,
 	    Size padding_value,
 	    std::enable_if_t<
-              std::is_convertible_v<Size, index_type> &&
-              std::is_nothrow_constructible_v<index_type, Size>
+	      std::is_convertible<Size, index_type>::value &&
+	      std::is_nothrow_constructible<index_type, Size>::value
 	    >* = nullptr) :
       inner_mapping_(details::pad_extents_right(ext, padding_extents_type{padding_value})),
       unpadded_extent_(details::unpadded_extent_right(ext))
