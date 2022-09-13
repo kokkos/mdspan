@@ -16,7 +16,7 @@ jobs:
           compiler_prefix: /usr/bin
         - compiler_driver: icpx
           compiler_prefix: /opt/intel/oneapi/compiler/latest/linux/bin
-          compiler_url: https://registrationcenter-download.intel.com/akdlm/irc_nas/18478/l_dpcpp-cpp-compiler_p_2022.0.2.84_offline.sh
+          compiler_url: https://registrationcenter-download.intel.com/akdlm/irc_nas/18717/l_dpcpp-cpp-compiler_p_2022.1.0.137_offline.sh
     name: ${{ matrix.compiler_driver }}
     steps:
 
