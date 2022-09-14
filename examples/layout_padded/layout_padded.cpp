@@ -535,8 +535,8 @@ struct layout_left_padded {
     MDSPAN_INLINE_FUNCTION constexpr
 #ifdef __cpp_conditional_explicit
     explicit( extents_type::rank() > 0 &&
-	      (padding_stride == dynamic_extent ||
-	       other_padding_stride == dynamic_extent) )
+	      (padding_stride == std::experimental::dynamic_extent ||
+	       other_padding_stride == std::experimental::dynamic_extent) )
 #endif
     mapping(const typename layout_left_padded<other_padding_stride>::template mapping<OtherExtents>& other) :
       inner_mapping_(details::pad_extents_left(
@@ -699,8 +699,8 @@ struct layout_right_padded {
     MDSPAN_INLINE_FUNCTION constexpr
 #ifdef __cpp_conditional_explicit
     explicit( extents_type::rank() > 0 &&
-	      (padding_stride == dynamic_extent ||
-	       other_padding_stride == dynamic_extent) )
+	      (padding_stride == std::experimental::dynamic_extent ||
+	       other_padding_stride == std::experimental::dynamic_extent) )
 #endif
     mapping(const typename layout_right_padded<other_padding_stride>::template mapping<OtherExtents>& other) :
       inner_mapping_(details::pad_extents_right(
