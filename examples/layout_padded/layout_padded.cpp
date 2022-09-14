@@ -381,6 +381,46 @@ namespace details {
     return stdex::extents<IndexType>{};
   }
 
+  // Helper functions to work around C++14's lack of "if constexpr."
+
+  template<class PaddingExtentsType,
+	   class InnerMappingType,
+	   std::size_t Rank>
+  MDSPAN_INLINE_FUNCTION constexpr PaddingExtentsType
+  left_padding_extents(const InnerMappingType& inner_mapping,
+		       std::integral_constant<std::size_t, Rank> /* rank */ )
+  {
+    return PaddingExtentsType{inner_mapping.extent(0)};
+  }
+
+  template<class PaddingExtentsType,
+	   class InnerMappingType>
+  MDSPAN_INLINE_FUNCTION constexpr PaddingExtentsType
+  left_padding_extents(const InnerMappingType& /* inner_mapping */ ,
+		       std::integral_constant<std::size_t, 0> /* rank */ )
+  {
+    return PaddingExtentsType{};
+  }
+
+  template<class PaddingExtentsType,
+	   class InnerMappingType,
+           std::size_t Rank>
+  MDSPAN_INLINE_FUNCTION constexpr PaddingExtentsType
+  right_padding_extents(const InnerMappingType& inner_mapping,
+			std::integral_constant<std::size_t, Rank> /* rank */ )
+  {
+    return PaddingExtentsType{inner_mapping.extent(Rank - 1)};
+  }
+
+  template<class PaddingExtentsType,
+	   class InnerMappingType>
+  MDSPAN_INLINE_FUNCTION constexpr PaddingExtentsType
+  right_padding_extents(const InnerMappingType& /* inner_mapping */ ,
+		       std::integral_constant<std::size_t, 0> /* rank */ )
+  {
+    return PaddingExtentsType{};
+  }
+
 } // namespace details
 
 // TODO (mfh 2022/08/30) Private inheritance from layout_left::mapping
@@ -408,7 +448,7 @@ namespace details {
 // It is a template parameter of layout_left_padded (the "tag type"),
 // and NOT of the mapping, because mdspan requires that the mapping be
 // a metafunction of the tag type and the extents specialization type.
-template<std::size_t padding = stdex::dynamic_extent>
+template<std::size_t padding_stride = stdex::dynamic_extent>
 struct layout_left_padded {
   template <class Extents>
   class mapping {
@@ -417,10 +457,11 @@ struct layout_left_padded {
     using index_type = typename extents_type::index_type;
     using size_type = typename extents_type::size_type;
     using rank_type = typename extents_type::rank_type;
-    using layout_type = layout_left_padded<padding>;
+    using layout_type = layout_left_padded<padding_stride>;
 
   private:
-    using padding_extents_type = stdex::extents<index_type, padding>;
+    using padding_extents_type =
+      stdex::extents<index_type, padding_stride>;
     using inner_layout_type = stdex::layout_left;
     using inner_extents_type = decltype(
       details::pad_extents_left(
@@ -436,6 +477,12 @@ struct layout_left_padded {
     inner_mapping_type inner_mapping_;
     unpadded_extents_type unpadded_extent_;
 
+    padding_extents_type padding_extents() const {
+      return details::left_padding_extents<padding_extents_type>(
+        inner_mapping_,
+	std::integral_constant<std::size_t, extents_type::rank()>{});
+    }
+
   public:
     // mapping constructor that takes ONLY an extents_type.
     //
@@ -444,7 +491,9 @@ struct layout_left_padded {
     // the mapping be constructible from extents alone.
     MDSPAN_INLINE_FUNCTION constexpr
     mapping(const extents_type& ext) :
-      inner_mapping_(details::pad_extents_left(ext, padding_extents_type{padding})),
+      inner_mapping_(details::pad_extents_left(
+        ext,
+	padding_extents_type{padding_stride})),
       unpadded_extent_(details::unpadded_extent_left(ext))
     {}
 
@@ -476,6 +525,24 @@ struct layout_left_padded {
 	    const padding_extents_type& padding_extents) :
       inner_mapping_(details::pad_extents_left(ext, padding_extents)),
       unpadded_extent_(details::unpadded_extent_left(ext))
+    {}
+
+    MDSPAN_TEMPLATE_REQUIRES(
+      std::size_t other_padding_stride,
+      class OtherExtents,
+      /* requires */ (std::is_constructible<extents_type, OtherExtents>::value && (padding_stride == std::experimental::dynamic_extent || other_padding_stride == std::experimental::dynamic_extent || padding_stride == other_padding_stride))
+    )
+    MDSPAN_INLINE_FUNCTION constexpr
+#ifdef __cpp_conditional_explicit
+    explicit( extents_type::rank() > 0 &&
+	      (padding_stride == dynamic_extent ||
+	       other_padding_stride == dynamic_extent) )
+#endif
+    mapping(const typename layout_left_padded<other_padding_stride>::template mapping<OtherExtents>& other) :
+      inner_mapping_(details::pad_extents_left(
+        other.extents(),
+	padding_extents_type{other.padding_extents()})),
+      unpadded_extent_(details::unpadded_extent_left(other.extents()))
     {}
 
     // layout_stride::mapping deliberately only defines the copy
@@ -545,7 +612,7 @@ struct layout_left_padded {
   };
 };
 
-template<std::size_t padding = stdex::dynamic_extent>
+template<std::size_t padding_stride = stdex::dynamic_extent>
 struct layout_right_padded {
   template <class Extents>
   class mapping {
@@ -554,10 +621,11 @@ struct layout_right_padded {
     using index_type = typename extents_type::index_type;
     using size_type = typename extents_type::size_type;
     using rank_type = typename extents_type::rank_type;
-    using layout_type = layout_right_padded<padding>;
+    using layout_type = layout_right_padded<padding_stride>;
 
   private:
-    using padding_extents_type = stdex::extents<index_type, padding>;
+    using padding_extents_type =
+      stdex::extents<index_type, padding_stride>;
     using inner_layout_type = stdex::layout_right;
     using inner_extents_type = decltype(
       details::pad_extents_right(
@@ -573,8 +641,11 @@ struct layout_right_padded {
     inner_mapping_type inner_mapping_;
     unpadded_extents_type unpadded_extent_;
 
-    struct unusable_tag_t {};
-    static constexpr unusable_tag_t unusable_tag{};
+    padding_extents_type padding_extents() const {
+      return details::right_padding_extents<padding_extents_type>(
+        inner_mapping_,
+	std::integral_constant<std::size_t, extents_type::rank()>{});
+    }
 
   public:
     // mapping constructor that takes ONLY an extents_type.
@@ -582,10 +653,11 @@ struct layout_right_padded {
     // This constructor makes it possible to construct an mdspan
     // from a pointer and extents, since that requires that
     // the mapping be constructible from extents alone.
-    template<class T = unusable_tag_t>
     MDSPAN_INLINE_FUNCTION constexpr
     mapping(const extents_type& ext) :
-      inner_mapping_(details::pad_extents_right(ext, padding_extents_type{padding})),
+      inner_mapping_(details::pad_extents_right(
+        ext,
+	padding_extents_type{padding_stride})),
       unpadded_extent_(details::unpadded_extent_right(ext))
     {}
 
@@ -617,6 +689,24 @@ struct layout_right_padded {
 	    const padding_extents_type& padding_extents) :
       inner_mapping_(details::pad_extents_right(ext, padding_extents)),
       unpadded_extent_(details::unpadded_extent_right(ext))
+    {}
+
+    MDSPAN_TEMPLATE_REQUIRES(
+      std::size_t other_padding_stride,
+      class OtherExtents,
+      /* requires */ (std::is_constructible<extents_type, OtherExtents>::value && (padding_stride == std::experimental::dynamic_extent || other_padding_stride == std::experimental::dynamic_extent || padding_stride == other_padding_stride))
+    )
+    MDSPAN_INLINE_FUNCTION constexpr
+#ifdef __cpp_conditional_explicit
+    explicit( extents_type::rank() > 0 &&
+	      (padding_stride == dynamic_extent ||
+	       other_padding_stride == dynamic_extent) )
+#endif
+    mapping(const typename layout_right_padded<other_padding_stride>::template mapping<OtherExtents>& other) :
+      inner_mapping_(details::pad_extents_right(
+        other.extents(),
+        padding_extents_type{other.padding_extents()})),
+      unpadded_extent_(details::unpadded_extent_right(other.extents()))
     {}
 
     // layout_stride::mapping deliberately only defines the copy
