@@ -56,7 +56,7 @@
 #include <algorithm>
 #include <numeric>
 #include <array>
-#if  _MDSPAN_USE_CONCEPTS && MDSPAN_HAS_CXX_20
+#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #include<concepts>
 #endif
 
@@ -77,7 +77,7 @@ namespace detail {
   constexpr bool __is_mapping_of =
     is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
 
-#if  _MDSPAN_USE_CONCEPTS && MDSPAN_HAS_CXX_20
+#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
   template<class M>
   concept __layout_mapping_alike = requires {
     requires __is_extents<typename M::extents_type>::value;
@@ -337,7 +337,7 @@ struct layout_stride {
     }
 #endif // __cpp_lib_span
 
-#if !(_MDSPAN_USE_CONCEPTS && MDSPAN_HAS_CXX_20)
+#if !(defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
       /* requires */ (
@@ -481,7 +481,7 @@ struct layout_stride {
       return __strides_storage()[r];
     }
 
-#if !(_MDSPAN_USE_CONCEPTS && MDSPAN_HAS_CXX_20)
+#if !(defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
       /* requires */ (
