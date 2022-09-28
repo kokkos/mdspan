@@ -471,11 +471,11 @@ struct layout_left_padded {
     );
     using inner_mapping_type =
       typename inner_layout_type::template mapping<inner_extents_type>;
-    using unpadded_extents_type =
+    using unpadded_extent_type =
       decltype(details::unpadded_extent_left(std::declval<extents_type>()));
 
     inner_mapping_type inner_mapping_;
-    unpadded_extents_type unpadded_extent_;
+    unpadded_extent_type unpadded_extent_;
 
     padding_extents_type padding_extents() const {
       return details::left_padding_extents<padding_extents_type>(
@@ -522,7 +522,7 @@ struct layout_left_padded {
     // Pass in the padding as an extents object.
     MDSPAN_INLINE_FUNCTION constexpr
     mapping(const extents_type& ext,
-	    const padding_extents_type& padding_extents) :
+	    const stdex::extents<index_type, padding_stride>& padding_extents) :
       inner_mapping_(details::pad_extents_left(ext, padding_extents)),
       unpadded_extent_(details::unpadded_extent_left(ext))
     {}
@@ -544,6 +544,10 @@ struct layout_left_padded {
 	padding_extents_type{other.padding_extents()})),
       unpadded_extent_(details::unpadded_extent_left(other.extents()))
     {}
+
+    // FIXME (mfh 2022/09/28) Converting constructor taking
+    // layout_right_padded<other_padding_stride>::mapping<OtherExtents>
+    // is in the proposal, but missing here.
 
     // layout_stride::mapping deliberately only defines the copy
     // constructor and copy assignment operator, not the move
@@ -594,7 +598,7 @@ struct layout_left_padded {
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() noexcept {
       return extents_type::rank() == 0 ? true :
 	(extents_type::static_extent(0) != stdex::dynamic_extent &&
-	 extents_type::static_extent(0) == unpadded_extents_type::static_extent(0));
+	 extents_type::static_extent(0) == unpadded_extent_type::static_extent(0));
     }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
@@ -635,11 +639,11 @@ struct layout_right_padded {
     );
     using inner_mapping_type =
       typename inner_layout_type::template mapping<inner_extents_type>;
-    using unpadded_extents_type =
+    using unpadded_extent_type =
       decltype(details::unpadded_extent_right(std::declval<extents_type>()));
 
     inner_mapping_type inner_mapping_;
-    unpadded_extents_type unpadded_extent_;
+    unpadded_extent_type unpadded_extent_;
 
     padding_extents_type padding_extents() const {
       return details::right_padding_extents<padding_extents_type>(
@@ -686,7 +690,7 @@ struct layout_right_padded {
     // Pass in the padding as an extents object.
     MDSPAN_INLINE_FUNCTION constexpr
     mapping(const extents_type& ext,
-	    const padding_extents_type& padding_extents) :
+	    const stdex::extents<index_type, padding_stride>& padding_extents) :
       inner_mapping_(details::pad_extents_right(ext, padding_extents)),
       unpadded_extent_(details::unpadded_extent_right(ext))
     {}
@@ -708,6 +712,11 @@ struct layout_right_padded {
         padding_extents_type{other.padding_extents()})),
       unpadded_extent_(details::unpadded_extent_right(other.extents()))
     {}
+
+    // FIXME (mfh 2022/09/28) The converting constructor taking
+    // layout_left_padded<other_padding_stride>::mapping<OtherExtents>
+    // is in the proposal (missing other_padding_stride in R0),
+    // but missing here.
 
     // layout_stride::mapping deliberately only defines the copy
     // constructor and copy assignment operator, not the move
@@ -758,7 +767,7 @@ struct layout_right_padded {
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() noexcept {
       return extents_type::rank() == 0 ? true :
 	(extents_type::static_extent(Extents::rank() - 1) != stdex::dynamic_extent &&
-	 extents_type::static_extent(Extents::rank() - 1) == unpadded_extents_type::static_extent(0));
+	 extents_type::static_extent(Extents::rank() - 1) == unpadded_extent_type::static_extent(0));
     }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
