@@ -231,8 +231,8 @@ allocate_raw(const std::size_t num_elements)
   // even with /std:c++latest.  Instead, we use MSVC-specific _aligned_malloc.
   ptr = _aligned_malloc(num_bytes, byte_alignment);
 #elif __cplusplus < 201703L || defined(__APPLE__)
-  // aligned_alloc is a C11 function.  GCC does not provide it with -std=c++14.
-  // We have coverage for the Windows case (at least with MSVC) above,
+  // aligned_alloc is a C11 function.  Apple Clang and GCC do not provide it with
+  // -std=c++14.  We have coverage for the Windows case (at least with MSVC) above,
   // so we can resort to the POSIX function posix_memalign.
   const int err = posix_memalign(&ptr, byte_alignment, num_bytes);
   if(err != 0) {
