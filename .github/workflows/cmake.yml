@@ -12,7 +12,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - compiler_driver: g++
+        - compiler_driver: g++-9
+          compiler_prefix: /usr/bin
+        - compiler_driver: g++-10
+          compiler_prefix: /usr/bin
+        - compiler_driver: clang++-12
           compiler_prefix: /usr/bin
         - compiler_driver: icpx
           compiler_prefix: /opt/intel/oneapi/compiler/latest/linux/bin
