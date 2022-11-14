@@ -26,18 +26,12 @@ jobs:
     name: ${{ matrix.compiler_driver }}
     steps:
 
-    - name: Cache icpx install
-      if: ${{ matrix.compiler_driver == 'icpx' }}
-      id: cache-icpx
-      uses: actions/cache@v2
-      with:
-        path: /opt/intel/oneapi
-        key: oneapi-${{ matrix.compiler_url}}
     - name: Install icpx
-      if: ${{ matrix.compiler_driver == 'icpx' && steps.cache-icpx.outputs.cache-hit != 'true' }}
-      run: |
-        curl  --url ${{ matrix.compiler_url }} --output download.sh
-        sudo sh -x download.sh -s -a -s --action install --eula accept
+      if: ${{ matrix.compiler_driver == 'icpx' }}
+      uses: rscohn2/setup-oneapi@v0
+      with:
+        components: icx
+
     - name: Install gtest manually
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
 
