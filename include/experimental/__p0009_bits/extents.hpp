@@ -16,6 +16,9 @@
 #pragma once
 
 #include "macros.hpp"
+#if 1
+#include "extents2.hpp"
+#else
 #include "static_array.hpp"
 #include "standard_layout_static_array.hpp"
 #include "trait_backports.hpp" // integer_sequence, etc.
@@ -521,3 +524,4 @@ using __extents_to_partially_static_sizes_t = typename __extents_to_partially_st
 } // end namespace detail
 } // end namespace experimental
 } // end namespace std
+#endif
