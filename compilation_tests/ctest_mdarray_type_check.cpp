@@ -45,7 +45,8 @@
 
 #include <experimental/mdarray>
 #include <complex>
-#ifdef _MDSPAN_USE_CONCEPTS
+
+#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #include <concepts>
 #endif
 
@@ -54,7 +55,7 @@ namespace stdex = std::experimental;
 using E1 = stdex::extents<int32_t, stdex::dynamic_extent, 3>;
 using M1 = stdex::mdarray<float, E1, stdex::layout_left>;
 
-#ifdef _MDSPAN_USE_CONCEPTS
+#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 template<class T>
 constexpr bool is_copyable = std::copyable<T>;
 #else
