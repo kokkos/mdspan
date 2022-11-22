@@ -48,7 +48,11 @@ class layout_right::mapping {
     _MDSPAN_HOST_DEVICE
     constexpr index_type __compute_offset(
       index_type offset, __rank_count<r,Rank>, const I& i, Indices... idx) const {
+#ifndef _MDSPAN_NEW_EXTENTS
       return __compute_offset(offset * __extents.template __extent<r>() + i,__rank_count<r+1,Rank>(),  idx...);
+#else
+      return __compute_offset(offset * __extents.extent(r) + i,__rank_count<r+1,Rank>(),  idx...);
+#endif
     }
 
     template<class I, class ... Indices>

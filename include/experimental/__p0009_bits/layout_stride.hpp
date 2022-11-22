@@ -189,12 +189,14 @@ struct layout_stride {
       }
 #endif
 
+#ifndef _MDSPAN_NEW_EXTENTS
       MDSPAN_INLINE_FUNCTION
       static constexpr const __strides_storage_t fill_strides(
         detail::__extents_to_partially_static_sizes_t<
           ::std::experimental::dextents<index_type, extents_type::rank()>>&& s) {
         return __strides_storage_t{static_cast<index_type>(s.template __get_n<Idxs>())...};
       }
+#endif
 
       template<size_t K>
       MDSPAN_INLINE_FUNCTION
@@ -221,6 +223,7 @@ struct layout_stride {
 #endif
 
   public: // but not really
+#ifndef _MDSPAN_NEW_EXTENTS
     MDSPAN_INLINE_FUNCTION
     static constexpr mapping
     __make_mapping(
@@ -242,6 +245,7 @@ struct layout_stride {
 #endif
       );
     }
+#endif
     //----------------------------------------------------------------------------
 
 
@@ -272,7 +276,11 @@ struct layout_stride {
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
+#ifndef _MDSPAN_NEW_EXTENT2S
           e, __strides_storage_t(__impl::fill_strides(s))
+#else
+          e, __strides_storage_t(s)
+#endif
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
