@@ -301,6 +301,8 @@ public:
     static_assert(is_constructible<extents_type, OtherExtents>::value, "");
   }
 
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdarray& operator= (const mdarray&) = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdarray& operator= (mdarray&&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~mdarray() = default;
 
