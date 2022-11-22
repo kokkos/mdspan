@@ -54,6 +54,18 @@ namespace stdex = std::experimental;
 using E1 = stdex::extents<int32_t, stdex::dynamic_extent, 3>;
 using M1 = stdex::mdarray<float, E1, stdex::layout_left>;
 
+#ifdef _MDSPAN_USE_CONCEPTS
+template<class T>
+constexpr bool is_copyable = std::copyable<T>;
+#else
+template<class T>
+constexpr bool is_copyable =
+  std::is_assignable<T,T>::value &&
+  std::is_move_assignable<T>::value &&
+  std::is_copy_constructible<T>::value &&
+  std::is_move_constructible<T>::value;
+#endif
+
 MDSPAN_STATIC_TEST(
   std::is_same<typename M1::element_type, float>::value &&
   std::is_same<typename M1::index_type, int32_t>::value &&
@@ -71,9 +83,7 @@ MDSPAN_STATIC_TEST(
   (M1::rank_dynamic()==1) &&
   (M1::static_extent(0) == stdex::dynamic_extent) &&
   (M1::static_extent(1) == 3) &&
-#ifdef _MDSPAN_USE_CONCEPTS
-  std::copyable<M1> &&
-#endif
+  is_copyable<M1> &&
   std::is_default_constructible<M1>::value
 );
 
@@ -100,9 +110,7 @@ MDSPAN_STATIC_TEST(
   (M2::static_extent(0) == stdex::dynamic_extent) &&
   (M2::static_extent(1) == 3) &&
   (M2::static_extent(2) == stdex::dynamic_extent) &&
-#ifdef _MDSPAN_USE_CONCEPTS
-  std::copyable<M2> &&
-#endif
+  is_copyable<M2> &&
   std::is_default_constructible<M2>::value
 );
 
@@ -129,8 +137,6 @@ MDSPAN_STATIC_TEST(
   (M3::static_extent(0) == stdex::dynamic_extent) &&
   (M3::static_extent(1) == 3) &&
   (M3::static_extent(2) == stdex::dynamic_extent) &&
-#ifdef _MDSPAN_USE_CONCEPTS
-  std::copyable<M3> &&
-#endif
+  is_copyable<M3> &&
   std::is_default_constructible<M3>::value
 );
