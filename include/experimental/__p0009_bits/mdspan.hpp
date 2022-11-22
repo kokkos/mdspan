@@ -247,7 +247,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](SizeTypes... indices) const
   {
-    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(index_type(indices)...));
+    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(static_cast<index_type>(std::move(indices))...));
   }
   #endif
 
@@ -291,7 +291,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](Index idx) const
   {
-    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(index_type(idx)));
+    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(static_cast<index_type>(std::move(idx))));
   }
   #endif
 
@@ -307,7 +307,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(SizeTypes... indices) const
   {
-    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(indices...));
+    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(static_cast<index_type>(std::move(indices))...));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(

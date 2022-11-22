@@ -320,7 +320,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr const_reference operator[](SizeTypes... indices) const noexcept
   {
-    return ctr_[map_(index_type(indices)...)];
+    return ctr_[map_(static_cast<index_type>(std::move(indices))...)];
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -333,7 +333,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](SizeTypes... indices) noexcept
   {
-    return ctr_[map_(index_type(indices)...)];
+    return ctr_[map_(static_cast<index_type>(std::move(indices))...)];
   }
   #endif
 
@@ -377,7 +377,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr const_reference operator()(SizeTypes... indices) const noexcept
   {
-    return ctr_[map_(index_type(indices)...)];
+    return ctr_[map_(static_cast<index_type>(std::move(indices))...)];
   }
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
@@ -389,7 +389,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(SizeTypes... indices) noexcept
   {
-    return ctr_[map_(index_type(indices)...)];
+    return ctr_[map_(static_cast<index_type>(std::move(indices))...)];
   }
 
 #if 0
