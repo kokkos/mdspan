@@ -45,7 +45,7 @@
 
 #include <experimental/mdarray>
 #include <complex>
-#ifdef MDSPAN_HAS_CXX_20
+#ifdef _MDSPAN_USE_CONCEPTS
 #include <concepts>
 #endif
 
@@ -71,7 +71,7 @@ MDSPAN_STATIC_TEST(
   (M1::rank_dynamic()==1) &&
   (M1::static_extent(0) == stdex::dynamic_extent) &&
   (M1::static_extent(1) == 3) &&
-#ifdef MDSPAN_HAS_CXX_20
+#ifdef _MDSPAN_USE_CONCEPTS
   std::copyable<M1> &&
 #endif
   std::is_default_constructible<M1>::value
@@ -100,7 +100,7 @@ MDSPAN_STATIC_TEST(
   (M2::static_extent(0) == stdex::dynamic_extent) &&
   (M2::static_extent(1) == 3) &&
   (M2::static_extent(2) == stdex::dynamic_extent) &&
-#ifdef MDSPAN_HAS_CXX_20
+#ifdef _MDSPAN_USE_CONCEPTS
   std::copyable<M2> &&
 #endif
   std::is_default_constructible<M2>::value
@@ -129,7 +129,7 @@ MDSPAN_STATIC_TEST(
   (M3::static_extent(0) == stdex::dynamic_extent) &&
   (M3::static_extent(1) == 3) &&
   (M3::static_extent(2) == stdex::dynamic_extent) &&
-#ifdef MDSPAN_HAS_CXX_20
+#ifdef _MDSPAN_USE_CONCEPTS
   std::copyable<M3> &&
 #endif
   std::is_default_constructible<M3>::value
