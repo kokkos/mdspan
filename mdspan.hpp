@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <numeric>
 #include <array>
+#include <span>
 #include<concepts>
 #include <tuple> // std::apply
 #include <utility> // std::pair
@@ -3671,6 +3672,8 @@ using __extents_to_partially_static_sizes_t = typename __extents_to_partially_st
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #endif
 
+#ifdef __cpp_lib_span
+#endif
 #if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #endif
 
@@ -3811,6 +3814,14 @@ struct layout_stride {
       static constexpr const __strides_storage_t fill_strides(const array<IntegralType,extents_type::rank()>& s) {
         return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
       }
+
+#ifdef __cpp_lib_span
+      template<class IntegralType>
+      MDSPAN_INLINE_FUNCTION
+      static constexpr const __strides_storage_t fill_strides(const span<IntegralType,extents_type::rank()>& s) {
+        return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
+      }
+#endif
 
       MDSPAN_INLINE_FUNCTION
       static constexpr const __strides_storage_t fill_strides(
