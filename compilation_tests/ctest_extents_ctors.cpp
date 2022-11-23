@@ -136,6 +136,58 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
+  std::is_constructible<
+    stdex::extents<size_t,2, stdex::dynamic_extent>,
+    std::array<int,1>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_constructible<
+    stdex::extents<size_t,2, stdex::dynamic_extent>,
+    std::array<int,2>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  !std::is_constructible<
+    stdex::extents<size_t,2, stdex::dynamic_extent>,
+    std::array<int,3>
+  >::value
+);
+
+#ifdef __cpp_lib_span
+MDSPAN_STATIC_TEST(
+  std::is_constructible<
+    stdex::extents<size_t,2, stdex::dynamic_extent>,
+    std::span<int,1>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_constructible<
+    stdex::extents<size_t,2, stdex::dynamic_extent>,
+    std::span<int,2>
+  >::value
+);
+
+// this is not supported in the standard
+MDSPAN_STATIC_TEST(
+  !std::is_constructible<
+    stdex::extents<size_t,2, stdex::dynamic_extent>,
+    std::span<int,std::dynamic_extent>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  !std::is_constructible<
+    stdex::extents<size_t,2, stdex::dynamic_extent>,
+    std::span<int,3>
+  >::value
+);
+#endif // __cpp_lib_span
+
+MDSPAN_STATIC_TEST(
   !std::is_constructible<
     stdex::extents<size_t,3, stdex::dynamic_extent>,
     stdex::extents<size_t,2, 3>
