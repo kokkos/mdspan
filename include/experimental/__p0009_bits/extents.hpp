@@ -108,6 +108,8 @@ public:
 
   using rank_type = size_t;
   using index_type = ThisIndexType;
+  static_assert(std::is_integral<index_type>::value && !std::is_same<index_type, bool>::value,
+                "std::extents requires a signed or unsigned integer as index_type parameter");
   using size_type = make_unsigned_t<index_type>;
 
 // internal typedefs which for technical reasons are public
