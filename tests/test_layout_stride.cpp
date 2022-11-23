@@ -99,6 +99,26 @@ TYPED_TEST(TestLayoutStrideAllZero, test_mapping) {
   }
 }
 
+#ifdef __cpp_lib_span
+TEST(TestLayoutStrideSpanConstruction, test_from_span_construction) {
+  using map_t = stdex::layout_stride::mapping<stdex::extents<size_t,dyn, dyn>>;
+  std::array<int,2> strides{1,128};
+  map_t m1(stdex::dextents<size_t,2>{16, 32}, std::span<int,2>{strides.data(),2});
+  // The following is actually not supported by layout_stride in the standard?
+  //map_t m2(stdex::dextents<size_t,2>{16, 32}, std::span<int,std::dynamic_extent>{strides.data(),2});
+  //ASSERT_EQ(m1, m2);
+  ASSERT_EQ(m1.extents().rank(), 2);
+  ASSERT_EQ(m1.extents().rank_dynamic(), 2);
+  ASSERT_EQ(m1.extents().extent(0), 16);
+  ASSERT_EQ(m1.extents().extent(1), 32);
+  ASSERT_EQ(m1.stride(0), 1);
+  ASSERT_EQ(m1.stride(1), 128);
+  ASSERT_EQ(m1.strides()[0], 1);
+  ASSERT_EQ(m1.strides()[1], 128);
+  ASSERT_FALSE(m1.is_exhaustive());
+}
+#endif
+
 TEST(TestLayoutStrideListInitialization, test_list_initialization) {
   stdex::layout_stride::mapping<stdex::extents<size_t,dyn, dyn>> m{stdex::dextents<size_t,2>{16, 32}, std::array<int,2>{1, 128}};
   ASSERT_EQ(m.extents().rank(), 2);

@@ -56,6 +56,9 @@
 #include <algorithm>
 #include <numeric>
 #include <array>
+#ifdef __cpp_lib_span
+#include <span>
+#endif
 #if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #include<concepts>
 #endif
@@ -197,6 +200,14 @@ struct layout_stride {
       static constexpr const __strides_storage_t fill_strides(const array<IntegralType,extents_type::rank()>& s) {
         return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
       }
+
+#ifdef __cpp_lib_span
+      template<class IntegralType>
+      MDSPAN_INLINE_FUNCTION
+      static constexpr const __strides_storage_t fill_strides(const span<IntegralType,extents_type::rank()>& s) {
+        return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
+      }
+#endif
 
       MDSPAN_INLINE_FUNCTION
       static constexpr const __strides_storage_t fill_strides(
