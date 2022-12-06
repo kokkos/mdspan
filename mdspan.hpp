@@ -131,7 +131,7 @@
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -148,7 +148,7 @@
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -166,7 +166,7 @@
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1078,7 +1078,7 @@ struct default_accessor {
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1106,7 +1106,7 @@ _MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1124,7 +1124,7 @@ _MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1141,7 +1141,7 @@ _MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1271,7 +1271,7 @@ using enable_if_t = typename enable_if<_B, _T>::type;
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1288,7 +1288,7 @@ using enable_if_t = typename enable_if<_B, _T>::type;
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1306,7 +1306,7 @@ using enable_if_t = typename enable_if<_B, _T>::type;
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1335,7 +1335,7 @@ _MDSPAN_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<size
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1354,7 +1354,7 @@ _MDSPAN_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<size
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1556,7 +1556,7 @@ struct __maybe_static_value<_dynamic_t, _static_t, __is_dynamic_sentinal, __is_d
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -1573,7 +1573,7 @@ struct __maybe_static_value<_dynamic_t, _static_t, __is_dynamic_sentinal, __is_d
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -2400,7 +2400,7 @@ public:
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -3215,7 +3215,7 @@ using __extents_to_partially_static_sizes_t = typename __extents_to_partially_st
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -4332,7 +4332,7 @@ mdspan(const typename AccessorType::data_handle_type, const MappingType&, const 
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -4547,7 +4547,7 @@ private:
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
@@ -5097,7 +5097,7 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
 // the U.S. Government retains certain rights in this software.
 //
 // Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-//
+// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
