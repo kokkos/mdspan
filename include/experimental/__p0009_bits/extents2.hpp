@@ -67,9 +67,9 @@ struct index_sequence_scan_impl;
 
 template<size_t R, size_t FirstVal, size_t ... Values>
 struct index_sequence_scan_impl<R, FirstVal, Values...> {
-  constexpr static size_t get(int r) { 
+  constexpr static size_t get(size_t r) {
     if(r>R) return FirstVal + index_sequence_scan_impl<R+1, Values...>::get(r);
-    else return 0; 
+    else return 0;
   }
   template<size_t r>
   constexpr static size_t get() { return r>R? FirstVal + index_sequence_scan_impl<R+1, Values...>::get(r):0; }
@@ -77,13 +77,13 @@ struct index_sequence_scan_impl<R, FirstVal, Values...> {
 
 template<size_t R, size_t FirstVal>
 struct index_sequence_scan_impl<R, FirstVal> {
-  constexpr static size_t get(int r) { return R>r?FirstVal:0; }
+  constexpr static size_t get(size_t r) { return R>r?FirstVal:0; }
   template<size_t r>
   constexpr static size_t get() { return R>r?FirstVal:0; }
 };
 template<>
 struct index_sequence_scan_impl<0> {
-  constexpr static size_t get(int) { return 0; }
+  constexpr static size_t get(size_t) { return 0; }
   template<size_t>
   constexpr static size_t get() { return 0; }
 };
@@ -93,14 +93,14 @@ struct index_sequence_scan_impl<0> {
 template<class T, size_t N>
 struct possibly_empty_array {
   T vals[N];
-  constexpr T& operator[] (int r) { return vals[r]; }
-  constexpr const T& operator[] (int r) const { return vals[r]; }
+  constexpr T& operator[] (size_t r) { return vals[r]; }
+  constexpr const T& operator[] (size_t r) const { return vals[r]; }
 };
 
 template<class T>
 struct possibly_empty_array<T,0> {
-  constexpr T operator[] (int) { return T(); }
-  constexpr const T operator[] (int) const { return T(); }
+  constexpr T operator[] (size_t) { return T(); }
+  constexpr const T operator[] (size_t) const { return T(); }
 };
 
 
@@ -127,7 +127,7 @@ struct maybe_static_array {
     requires(sizeof...(DynVals)==m_size_dynamic && m_size_dynamic>0)
     constexpr maybe_static_array(DynVals ... vals):
       m_dyn_vals{static_cast<TDynamic>(vals)...} {}
-    
+
     template<class ... DynVals>
     requires(m_size_dynamic==0)
     constexpr maybe_static_array(DynVals ...):
@@ -136,17 +136,17 @@ struct maybe_static_array {
     template<class T, size_t N>
     requires(N==m_size_dynamic && N>0)
     constexpr maybe_static_array(const std::array<T,N>& vals) {
-      for(int r=0; r<N; r++) m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
+      for(size_t r=0; r<N; r++) m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
     }
     template<class T, size_t N>
     requires(N==m_size_dynamic && N==0)
     constexpr maybe_static_array(const std::array<T,N>&) {
     }
-    
+
     template<class T, size_t N>
     requires(N==m_size_dynamic)
     constexpr maybe_static_array(const std::span<T,N>& vals) {
-      for(int r=0; r<N; r++) m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
+      for(size_t r=0; r<N; r++) m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
     }
 
     // constructors from all values
@@ -154,7 +154,7 @@ struct maybe_static_array {
     requires(sizeof...(DynVals)!=m_size_dynamic && m_size_dynamic>0)
     constexpr maybe_static_array(DynVals ... vals) {
       TDynamic values[m_size]{static_cast<TDynamic>(vals)...};
-      for(int r=0; r<m_size; r++) {
+      for(size_t r=0; r<m_size; r++) {
         TStatic static_val = static_vals_t::get(r);
         if(static_val == dynamic_extent) {
           m_dyn_vals[dyn_map_t::get(r)] = values[r];
@@ -170,7 +170,7 @@ struct maybe_static_array {
     template<class T, size_t N>
     requires(N!=m_size_dynamic && m_size_dynamic>0)
     constexpr maybe_static_array(const std::array<T,N>& vals) {
-      for(int r=0; r<m_size; r++) {
+      for(size_t r=0; r<m_size; r++) {
         TStatic static_val = static_vals_t::get(r);
         if(static_val == dynamic_extent) {
           m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
@@ -186,7 +186,7 @@ struct maybe_static_array {
     template<class T, size_t N>
     requires(N!=m_size_dynamic && m_size_dynamic>0)
     constexpr maybe_static_array(const std::span<T,N>& vals) {
-      for(int r=0; r<m_size; r++) {
+      for(size_t r=0; r<m_size; r++) {
         TStatic static_val = static_vals_t::get(r);
         if(static_val == dynamic_extent) {
           m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
@@ -246,7 +246,7 @@ public:
 private:
   constexpr static rank_type m_rank = sizeof...(Extents);
   constexpr static rank_type m_rank_dynamic = ((Extents==dynamic_extent) + ... + 0);
-  
+
   using vals_t = maybe_static_array<IndexType, size_t, dynamic_extent, Extents...>;
   _MDSPAN_NO_UNIQUE_ADDRESS vals_t m_vals;
 public:
@@ -261,14 +261,14 @@ public:
      (is_nothrow_constructible_v<index_type, OtherIndexTypes> && ...) &&
      (sizeof...(OtherIndexTypes)==m_rank || sizeof...(OtherIndexTypes)==m_rank_dynamic))
   constexpr extents(OtherIndexTypes ... dynvals):m_vals(static_cast<index_type>(dynvals)...) {}
-  
+
   template<class OtherIndexType, size_t N>
   requires(
      is_convertible_v<OtherIndexType, index_type> &&
      is_nothrow_constructible_v<index_type, OtherIndexType> &&
      (N==m_rank || N==m_rank_dynamic))
   constexpr extents(const array<OtherIndexType, N>& exts):m_vals(std::move(exts)) {}
-  
+
   template<class OtherIndexType, size_t N>
   requires(
      is_convertible_v<OtherIndexType, index_type> &&
@@ -277,17 +277,17 @@ public:
   constexpr extents(const span<OtherIndexType, N>& exts):m_vals(std::move(exts)) {}
 
   template<class OtherIndexType, size_t... OtherExtents>
-  requires((sizeof...(OtherExtents) == rank()) && 
-           ((OtherExtents == dynamic_extent || 
-             Extents == dynamic_extent || 
+  requires((sizeof...(OtherExtents) == rank()) &&
+           ((OtherExtents == dynamic_extent ||
+             Extents == dynamic_extent ||
              OtherExtents == Extents) && ...))
-  constexpr explicit((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent)) 
+  constexpr explicit((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent))
                      || ... ) ||
                      (numeric_limits<index_type>::max() < numeric_limits<OtherIndexType>::max()))
     extents(const extents<OtherIndexType, OtherExtents...>& other) noexcept {
       if constexpr(m_rank_dynamic>0) {
         index_type vals[m_rank_dynamic];
-        for(int r=0; r<m_rank; r++) {
+        for(size_type r=0; r<m_rank; r++) {
           if (static_extent(r) == dynamic_extent) {
             vals[vals_t::dyn_map_t::get(r)] = other.extent(r);
           }
@@ -296,10 +296,10 @@ public:
       }
   }
 
-  constexpr index_type extent(int r) const {
+  constexpr index_type extent(rank_type r) const {
     return m_vals.value(r);
   }
-  constexpr static size_t static_extent(int r) {
+  constexpr static size_t static_extent(rank_type r) {
     return vals_t::static_value(r);
   }
 
@@ -307,7 +307,7 @@ public:
     friend constexpr bool operator==(const extents& ext,
                                      const extents<OtherIndexType, OtherExtents...>& ext2) noexcept {
     bool value = true;
-    for(int r=0; r<m_rank; r++) value &= ext.extent(r) == ext2.extent(r);
+    for(size_type r=0; r<m_rank; r++) value &= ext.extent(r) == ext2.extent(r);
     return value;
   }
 };
