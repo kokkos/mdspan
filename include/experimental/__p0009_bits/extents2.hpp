@@ -15,11 +15,13 @@ struct static_array_impl;
 
 template<size_t R, class T, T FirstExt, T ... Extents>
 struct static_array_impl<R, T, FirstExt, Extents...> {
+  MDSPAN_INLINE_FUNCTION
   constexpr static T value(size_t r) {
     if(r==R) return FirstExt;
     else return static_array_impl<R+1, T, Extents...>::value(r);
   }
   template<size_t r>
+  MDSPAN_INLINE_FUNCTION
   constexpr static T get() {
 #if MDSPAN_HAS_CXX_17
     if constexpr (r==R) return FirstExt;
@@ -34,10 +36,12 @@ struct static_array_impl<R, T, FirstExt, Extents...> {
 // End the recursion
 template<size_t R, class T, T FirstExt>
 struct static_array_impl<R, T, FirstExt> {
+  MDSPAN_INLINE_FUNCTION
   constexpr static T value(int) {
     return FirstExt;
   }
   template<size_t>
+  MDSPAN_INLINE_FUNCTION
   constexpr static T get() {
     return FirstExt;
   }
@@ -46,10 +50,12 @@ struct static_array_impl<R, T, FirstExt> {
 // Don't start recursion if size 0
 template<class T>
 struct static_array_impl<0, T> {
+  MDSPAN_INLINE_FUNCTION
   constexpr static T value(int) {
     return T();
   }
   template<size_t>
+  MDSPAN_INLINE_FUNCTION
   constexpr static T get() {
     return T();
   }
@@ -63,10 +69,14 @@ private:
 public:
   using value_type = T;
 
+  MDSPAN_INLINE_FUNCTION
   constexpr T operator[](int r) const { return get(r); }
+  MDSPAN_INLINE_FUNCTION
   constexpr static T get(int r) { return impl_t::value(r); }
   template<size_t r>
+  MDSPAN_INLINE_FUNCTION
   constexpr static T get() { return impl_t::template get<r>(); }
+  MDSPAN_INLINE_FUNCTION
   constexpr static size_t size() { return sizeof...(Values); }
 };
 
@@ -76,24 +86,30 @@ struct index_sequence_scan_impl;
 
 template<size_t R, size_t FirstVal, size_t ... Values>
 struct index_sequence_scan_impl<R, FirstVal, Values...> {
+  MDSPAN_INLINE_FUNCTION
   constexpr static size_t get(size_t r) {
     if(r>R) return FirstVal + index_sequence_scan_impl<R+1, Values...>::get(r);
     else return 0;
   }
   template<size_t r>
+  MDSPAN_INLINE_FUNCTION
   constexpr static size_t get() { return r>R? FirstVal + index_sequence_scan_impl<R+1, Values...>::get(r):0; }
 };
 
 template<size_t R, size_t FirstVal>
 struct index_sequence_scan_impl<R, FirstVal> {
+  MDSPAN_INLINE_FUNCTION
   constexpr static size_t get(size_t r) { return R>r?FirstVal:0; }
   template<size_t r>
+  MDSPAN_INLINE_FUNCTION
   constexpr static size_t get() { return R>r?FirstVal:0; }
 };
 template<>
 struct index_sequence_scan_impl<0> {
+  MDSPAN_INLINE_FUNCTION
   constexpr static size_t get(size_t) { return 0; }
   template<size_t>
+  MDSPAN_INLINE_FUNCTION
   constexpr static size_t get() { return 0; }
 };
 
@@ -102,13 +118,17 @@ struct index_sequence_scan_impl<0> {
 template<class T, size_t N>
 struct possibly_empty_array {
   T vals[N];
+  MDSPAN_INLINE_FUNCTION
   constexpr T& operator[] (size_t r) { return vals[r]; }
+  MDSPAN_INLINE_FUNCTION
   constexpr const T& operator[] (size_t r) const { return vals[r]; }
 };
 
 template<class T>
 struct possibly_empty_array<T,0> {
+  MDSPAN_INLINE_FUNCTION
   constexpr T operator[] (size_t) { return T(); }
+  MDSPAN_INLINE_FUNCTION
   constexpr const T operator[] (size_t) const { return T(); }
 };
 
@@ -138,6 +158,7 @@ struct maybe_static_array {
         sizeof...(DynVals)==m_size_dynamic && m_size_dynamic>0
       )
     )
+    MDSPAN_INLINE_FUNCTION
     constexpr maybe_static_array(DynVals ... vals):
       m_dyn_vals{static_cast<TDynamic>(vals)...} {}
 
@@ -147,6 +168,7 @@ struct maybe_static_array {
         (m_size_dynamic==0) && (sizeof...(DynVals)>0)
       )
     )
+    MDSPAN_INLINE_FUNCTION
     constexpr maybe_static_array(DynVals ...):
       m_dyn_vals{} {}
 
@@ -156,6 +178,7 @@ struct maybe_static_array {
         N==m_size_dynamic && N>0
       )
     )
+    MDSPAN_INLINE_FUNCTION
     constexpr maybe_static_array(const std::array<T,N>& vals) {
       for(size_t r=0; r<N; r++) m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
     }
@@ -166,6 +189,7 @@ struct maybe_static_array {
         N==m_size_dynamic && N==0
       )
     )
+    MDSPAN_INLINE_FUNCTION
     constexpr maybe_static_array(const std::array<T,N>&) {
     }
 
@@ -176,6 +200,7 @@ struct maybe_static_array {
         N==m_size_dynamic
       )
     )
+    MDSPAN_INLINE_FUNCTION
     constexpr maybe_static_array(const std::span<T,N>& vals) {
       for(size_t r=0; r<N; r++) m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
     }
@@ -188,6 +213,7 @@ struct maybe_static_array {
         sizeof...(DynVals)!=m_size_dynamic && m_size_dynamic>0
       )
     )
+    MDSPAN_INLINE_FUNCTION
     constexpr maybe_static_array(DynVals ... vals) {
       static_assert((sizeof...(DynVals)==m_size) || (m_size==dynamic_extent));
       TDynamic values[m_size]{static_cast<TDynamic>(vals)...};
@@ -210,6 +236,7 @@ struct maybe_static_array {
         N!=m_size_dynamic && m_size_dynamic>0
       )
     )
+    MDSPAN_INLINE_FUNCTION
     constexpr maybe_static_array(const std::array<T,N>& vals) {
       static_assert((N==m_size) || (m_size==dynamic_extent));
 #ifdef _MDSPAN_DEBUG
@@ -235,6 +262,7 @@ struct maybe_static_array {
         N!=m_size_dynamic && m_size_dynamic>0
       )
     )
+    MDSPAN_INLINE_FUNCTION
     constexpr maybe_static_array(const std::span<T,N>& vals) {
       static_assert((N==m_size) || (m_size==dynamic_extent));
 #ifdef _MDSPAN_DEBUG
@@ -255,19 +283,24 @@ struct maybe_static_array {
 #endif
 
     // access functions
+    MDSPAN_INLINE_FUNCTION
     constexpr static TStatic static_value(int r) { return static_vals_t::get(r); }
 
+    MDSPAN_INLINE_FUNCTION
     constexpr TDynamic value(int r) const {
       TStatic static_val = static_vals_t::get(r);
       return static_val==dynamic_extent?
         m_dyn_vals[dyn_map_t::get(r)] : static_cast<TDynamic>(static_val);
     }
+    MDSPAN_INLINE_FUNCTION
     constexpr TDynamic operator[](int r) const {
       return value(r);
     }
 
     // observers
+    MDSPAN_INLINE_FUNCTION
     constexpr static size_t size() { return m_size; }
+    MDSPAN_INLINE_FUNCTION
     constexpr static size_t size_dynamic() { return m_size_dynamic; }
 };
 
@@ -305,9 +338,12 @@ private:
   using vals_t = maybe_static_array<IndexType, size_t, dynamic_extent, Extents...>;
   _MDSPAN_NO_UNIQUE_ADDRESS vals_t m_vals;
 public:
+  MDSPAN_INLINE_FUNCTION
   constexpr static rank_type rank() { return m_rank; }
+  MDSPAN_INLINE_FUNCTION
   constexpr static rank_type rank_dynamic() { return m_rank_dynamic; }
 
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr extents() = default;
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -318,6 +354,7 @@ public:
       (sizeof...(OtherIndexTypes)==m_rank || sizeof...(OtherIndexTypes)==m_rank_dynamic)
     )
   )
+  MDSPAN_INLINE_FUNCTION
   constexpr extents(OtherIndexTypes ... dynvals):m_vals(static_cast<index_type>(dynvals)...) {}
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -328,6 +365,7 @@ public:
       (N==m_rank || N==m_rank_dynamic)
     )
   )
+  MDSPAN_INLINE_FUNCTION
   constexpr extents(const array<OtherIndexType, N>& exts):m_vals(std::move(exts)) {}
 
 #ifdef __cpp_lib_span
@@ -339,6 +377,7 @@ public:
       (N==m_rank || N==m_rank_dynamic)
     )
   )
+  MDSPAN_INLINE_FUNCTION
   constexpr extents(const span<OtherIndexType, N>& exts):m_vals(std::move(exts)) {}
 #endif
 
@@ -354,6 +393,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent))
                      || ... ) ||
                      (numeric_limits<index_type>::max() < numeric_limits<OtherIndexType>::max()))
+  MDSPAN_INLINE_FUNCTION
   constexpr extents(const extents<OtherIndexType, OtherExtents...>& other) noexcept {
 #if MDSPAN_HAS_CXX_17
       if constexpr(m_rank_dynamic>0) {
@@ -370,14 +410,17 @@ public:
       }
   }
 
+  MDSPAN_INLINE_FUNCTION
   constexpr index_type extent(rank_type r) const {
     return m_vals.value(r);
   }
+  MDSPAN_INLINE_FUNCTION
   constexpr static size_t static_extent(rank_type r) {
     return vals_t::static_value(r);
   }
 
   template<class OtherIndexType, size_t... OtherExtents>
+  MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator==(const extents& ext,
                                      const extents<OtherIndexType, OtherExtents...>& ext2) noexcept {
     bool value = true;
