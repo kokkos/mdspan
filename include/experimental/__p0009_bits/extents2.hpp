@@ -1,5 +1,9 @@
 #include "dynamic_extent.hpp"
+
+#ifdef __cpp_lib_span
 #include "span"
+#endif
+#include "array"
 
 #define _MDSPAN_NEW_EXTENTS
 
@@ -160,6 +164,7 @@ struct maybe_static_array {
     constexpr maybe_static_array(const std::array<T,N>&) {
     }
 
+#ifdef __cpp_lib_span
     MDSPAN_TEMPLATE_REQUIRES(
       class T, size_t N,
       /* requires */(
@@ -169,6 +174,7 @@ struct maybe_static_array {
     constexpr maybe_static_array(const std::span<T,N>& vals) {
       for(size_t r=0; r<N; r++) m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
     }
+#endif
 
     // constructors from all values
     MDSPAN_TEMPLATE_REQUIRES(
@@ -212,6 +218,7 @@ struct maybe_static_array {
       }
     }
 
+#ifdef __cpp_lib_span
     MDSPAN_TEMPLATE_REQUIRES(
       class T, size_t N,
       /* requires */(
@@ -231,6 +238,7 @@ struct maybe_static_array {
 #endif
       }
     }
+#endif
 
     // access functions
     constexpr static TStatic static_value(int r) { return static_vals_t::get(r); }
@@ -308,6 +316,7 @@ public:
   )
   constexpr extents(const array<OtherIndexType, N>& exts):m_vals(std::move(exts)) {}
 
+#ifdef __cpp_lib_span
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherIndexType, size_t N,
     /* requires */(
@@ -317,6 +326,7 @@ public:
     )
   )
   constexpr extents(const span<OtherIndexType, N>& exts):m_vals(std::move(exts)) {}
+#endif
 
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherIndexType, size_t... OtherExtents,
