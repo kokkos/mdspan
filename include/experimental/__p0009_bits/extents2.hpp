@@ -21,8 +21,13 @@ struct static_array_impl<R, T, FirstExt, Extents...> {
   }
   template<size_t r>
   constexpr static T get() {
+#if MDSPAN_HAS_CXX_17
     if constexpr (r==R) return FirstExt;
     else return static_array_impl<R+1, T, Extents...>::template get<r>();
+#else
+    if(r==R) return FirstExt;
+    else return static_array_impl<R+1, T, Extents...>::value(r);
+#endif
   }
 };
 
@@ -114,7 +119,7 @@ struct maybe_static_array {
   private:
     using static_vals_t = static_array<TStatic, Values...>;
     constexpr static size_t m_size = sizeof...(Values);
-    constexpr static size_t m_size_dynamic = ((Values==dyn_tag) + ... + 0);
+    constexpr static size_t m_size_dynamic = _MDSPAN_FOLD_PLUS_RIGHT((Values==dyn_tag), 0);
 
     _MDSPAN_NO_UNIQUE_ADDRESS possibly_empty_array<TDynamic,m_size_dynamic> m_dyn_vals;
   public:
@@ -139,7 +144,7 @@ struct maybe_static_array {
     MDSPAN_TEMPLATE_REQUIRES(
       class ... DynVals,
       /* requires */(
-        m_size_dynamic==0
+        (m_size_dynamic==0) && (sizeof...(DynVals)>0)
       )
     )
     constexpr maybe_static_array(DynVals ...):
@@ -184,6 +189,7 @@ struct maybe_static_array {
       )
     )
     constexpr maybe_static_array(DynVals ... vals) {
+      static_assert((sizeof...(DynVals)==m_size) || (m_size==dynamic_extent));
       TDynamic values[m_size]{static_cast<TDynamic>(vals)...};
       for(size_t r=0; r<m_size; r++) {
         TStatic static_val = static_vals_t::get(r);
@@ -205,6 +211,10 @@ struct maybe_static_array {
       )
     )
     constexpr maybe_static_array(const std::array<T,N>& vals) {
+      static_assert((N==m_size) || (m_size==dynamic_extent));
+#ifdef _MDSPAN_DEBUG
+      assert(N==m_size);
+#endif
       for(size_t r=0; r<m_size; r++) {
         TStatic static_val = static_vals_t::get(r);
         if(static_val == dynamic_extent) {
@@ -226,6 +236,10 @@ struct maybe_static_array {
       )
     )
     constexpr maybe_static_array(const std::span<T,N>& vals) {
+      static_assert((N==m_size) || (m_size==dynamic_extent));
+#ifdef _MDSPAN_DEBUG
+      assert(N==m_size);
+#endif
       for(size_t r=0; r<m_size; r++) {
         TStatic static_val = static_vals_t::get(r);
         if(static_val == dynamic_extent) {
@@ -286,7 +300,7 @@ public:
   using size_type = make_unsigned_t<index_type>;
 private:
   constexpr static rank_type m_rank = sizeof...(Extents);
-  constexpr static rank_type m_rank_dynamic = ((Extents==dynamic_extent) + ... + 0);
+  constexpr static rank_type m_rank_dynamic = _MDSPAN_FOLD_PLUS_RIGHT((Extents==dynamic_extent), /* + ... + */ 0);
 
   using vals_t = maybe_static_array<IndexType, size_t, dynamic_extent, Extents...>;
   _MDSPAN_NO_UNIQUE_ADDRESS vals_t m_vals;
@@ -299,8 +313,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class ... OtherIndexTypes,
     /* requires */(
-      (is_convertible_v<OtherIndexTypes, index_type> && ...) &&
-      (is_nothrow_constructible_v<index_type, OtherIndexTypes> && ...) &&
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, OtherIndexTypes, index_type) /* && ... */) &&
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_nothrow_constructible, index_type, OtherIndexTypes) /* && ... */) &&
       (sizeof...(OtherIndexTypes)==m_rank || sizeof...(OtherIndexTypes)==m_rank_dynamic)
     )
   )
@@ -309,8 +323,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherIndexType, size_t N,
     /* requires */(
-      is_convertible_v<OtherIndexType, index_type> &&
-      is_nothrow_constructible_v<index_type, OtherIndexType> &&
+      _MDSPAN_TRAIT(is_convertible, OtherIndexType, index_type) &&
+      _MDSPAN_TRAIT(is_nothrow_constructible, index_type, OtherIndexType) &&
       (N==m_rank || N==m_rank_dynamic)
     )
   )
@@ -320,8 +334,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherIndexType, size_t N,
     /* requires */(
-      is_convertible_v<OtherIndexType, index_type> &&
-      is_nothrow_constructible_v<index_type, OtherIndexType> &&
+      _MDSPAN_TRAIT(is_convertible, OtherIndexType, index_type) &&
+      _MDSPAN_TRAIT(is_nothrow_constructible, index_type, OtherIndexType) &&
       (N==m_rank || N==m_rank_dynamic)
     )
   )
@@ -332,23 +346,27 @@ public:
     class OtherIndexType, size_t... OtherExtents,
     /* requires */(
       (sizeof...(OtherExtents) == rank()) &&
-      ((OtherExtents == dynamic_extent ||
+      _MDSPAN_FOLD_AND((OtherExtents == dynamic_extent ||
         Extents == dynamic_extent ||
-        OtherExtents == Extents) && ...)
+        OtherExtents == Extents) /* && ... */)
     )
   )
-  constexpr explicit((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent))
+  MDSPAN_CONDITIONAL_EXPLICIT((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent))
                      || ... ) ||
                      (numeric_limits<index_type>::max() < numeric_limits<OtherIndexType>::max()))
-    extents(const extents<OtherIndexType, OtherExtents...>& other) noexcept {
+  constexpr extents(const extents<OtherIndexType, OtherExtents...>& other) noexcept {
+#if MDSPAN_HAS_CXX_17
       if constexpr(m_rank_dynamic>0) {
-        index_type vals[m_rank_dynamic];
+#else
+      if (m_rank_dynamic>0) {
+#endif
+        std::array<index_type, m_rank_dynamic> vals;
         for(size_type r=0; r<m_rank; r++) {
           if (static_extent(r) == dynamic_extent) {
             vals[vals_t::dyn_map_t::get(r)] = other.extent(r);
           }
         }
-        m_vals = vals_t(span<index_type, m_rank_dynamic>(vals));
+        m_vals = vals_t(std::move(vals));
       }
   }
 
