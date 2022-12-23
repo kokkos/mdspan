@@ -123,35 +123,60 @@ struct maybe_static_array {
     constexpr maybe_static_array() = default;
 
     // constructors from dynamic_extentamic values only
-    template<class ... DynVals>
-    requires(sizeof...(DynVals)==m_size_dynamic && m_size_dynamic>0)
+    MDSPAN_TEMPLATE_REQUIRES(
+      class ... DynVals,
+      /* requires */(
+        sizeof...(DynVals)==m_size_dynamic && m_size_dynamic>0
+      )
+    )
     constexpr maybe_static_array(DynVals ... vals):
       m_dyn_vals{static_cast<TDynamic>(vals)...} {}
 
-    template<class ... DynVals>
-    requires(m_size_dynamic==0)
+    MDSPAN_TEMPLATE_REQUIRES(
+      class ... DynVals,
+      /* requires */(
+        m_size_dynamic==0
+      )
+    )
     constexpr maybe_static_array(DynVals ...):
       m_dyn_vals{} {}
 
-    template<class T, size_t N>
-    requires(N==m_size_dynamic && N>0)
+    MDSPAN_TEMPLATE_REQUIRES(
+      class T, size_t N,
+      /* requires */(
+        N==m_size_dynamic && N>0
+      )
+    )
     constexpr maybe_static_array(const std::array<T,N>& vals) {
       for(size_t r=0; r<N; r++) m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
     }
-    template<class T, size_t N>
-    requires(N==m_size_dynamic && N==0)
+
+    MDSPAN_TEMPLATE_REQUIRES(
+      class T, size_t N,
+      /* requires */(
+        N==m_size_dynamic && N==0
+      )
+    )
     constexpr maybe_static_array(const std::array<T,N>&) {
     }
 
-    template<class T, size_t N>
-    requires(N==m_size_dynamic)
+    MDSPAN_TEMPLATE_REQUIRES(
+      class T, size_t N,
+      /* requires */(
+        N==m_size_dynamic
+      )
+    )
     constexpr maybe_static_array(const std::span<T,N>& vals) {
       for(size_t r=0; r<N; r++) m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
     }
 
     // constructors from all values
-    template<class ... DynVals>
-    requires(sizeof...(DynVals)!=m_size_dynamic && m_size_dynamic>0)
+    MDSPAN_TEMPLATE_REQUIRES(
+      class ... DynVals,
+      /* requires */(
+        sizeof...(DynVals)!=m_size_dynamic && m_size_dynamic>0
+      )
+    )
     constexpr maybe_static_array(DynVals ... vals) {
       TDynamic values[m_size]{static_cast<TDynamic>(vals)...};
       for(size_t r=0; r<m_size; r++) {
@@ -167,8 +192,12 @@ struct maybe_static_array {
       }
     }
 
-    template<class T, size_t N>
-    requires(N!=m_size_dynamic && m_size_dynamic>0)
+    MDSPAN_TEMPLATE_REQUIRES(
+      class T, size_t N,
+      /* requires */(
+        N!=m_size_dynamic && m_size_dynamic>0
+      )
+    )
     constexpr maybe_static_array(const std::array<T,N>& vals) {
       for(size_t r=0; r<m_size; r++) {
         TStatic static_val = static_vals_t::get(r);
@@ -183,8 +212,12 @@ struct maybe_static_array {
       }
     }
 
-    template<class T, size_t N>
-    requires(N!=m_size_dynamic && m_size_dynamic>0)
+    MDSPAN_TEMPLATE_REQUIRES(
+      class T, size_t N,
+      /* requires */(
+        N!=m_size_dynamic && m_size_dynamic>0
+      )
+    )
     constexpr maybe_static_array(const std::span<T,N>& vals) {
       for(size_t r=0; r<m_size; r++) {
         TStatic static_val = static_vals_t::get(r);
@@ -255,32 +288,45 @@ public:
 
   constexpr extents() = default;
 
-  template<class ... OtherIndexTypes>
-  requires(
-     (is_convertible_v<OtherIndexTypes, index_type> && ...) &&
-     (is_nothrow_constructible_v<index_type, OtherIndexTypes> && ...) &&
-     (sizeof...(OtherIndexTypes)==m_rank || sizeof...(OtherIndexTypes)==m_rank_dynamic))
+  MDSPAN_TEMPLATE_REQUIRES(
+    class ... OtherIndexTypes,
+    /* requires */(
+      (is_convertible_v<OtherIndexTypes, index_type> && ...) &&
+      (is_nothrow_constructible_v<index_type, OtherIndexTypes> && ...) &&
+      (sizeof...(OtherIndexTypes)==m_rank || sizeof...(OtherIndexTypes)==m_rank_dynamic)
+    )
+  )
   constexpr extents(OtherIndexTypes ... dynvals):m_vals(static_cast<index_type>(dynvals)...) {}
 
-  template<class OtherIndexType, size_t N>
-  requires(
-     is_convertible_v<OtherIndexType, index_type> &&
-     is_nothrow_constructible_v<index_type, OtherIndexType> &&
-     (N==m_rank || N==m_rank_dynamic))
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherIndexType, size_t N,
+    /* requires */(
+      is_convertible_v<OtherIndexType, index_type> &&
+      is_nothrow_constructible_v<index_type, OtherIndexType> &&
+      (N==m_rank || N==m_rank_dynamic)
+    )
+  )
   constexpr extents(const array<OtherIndexType, N>& exts):m_vals(std::move(exts)) {}
 
-  template<class OtherIndexType, size_t N>
-  requires(
-     is_convertible_v<OtherIndexType, index_type> &&
-     is_nothrow_constructible_v<index_type, OtherIndexType> &&
-     (N==m_rank || N==m_rank_dynamic))
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherIndexType, size_t N,
+    /* requires */(
+      is_convertible_v<OtherIndexType, index_type> &&
+      is_nothrow_constructible_v<index_type, OtherIndexType> &&
+      (N==m_rank || N==m_rank_dynamic)
+    )
+  )
   constexpr extents(const span<OtherIndexType, N>& exts):m_vals(std::move(exts)) {}
 
-  template<class OtherIndexType, size_t... OtherExtents>
-  requires((sizeof...(OtherExtents) == rank()) &&
-           ((OtherExtents == dynamic_extent ||
-             Extents == dynamic_extent ||
-             OtherExtents == Extents) && ...))
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherIndexType, size_t... OtherExtents,
+    /* requires */(
+      (sizeof...(OtherExtents) == rank()) &&
+      ((OtherExtents == dynamic_extent ||
+        Extents == dynamic_extent ||
+        OtherExtents == Extents) && ...)
+    )
+  )
   constexpr explicit((((Extents != dynamic_extent) && (OtherExtents == dynamic_extent))
                      || ... ) ||
                      (numeric_limits<index_type>::max() < numeric_limits<OtherIndexType>::max()))
