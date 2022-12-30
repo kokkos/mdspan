@@ -61,18 +61,19 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
       SliceSpecifiers...>::value;
   using dst_layout_t =
       conditional_t<preserve_layout, layout_left, layout_stride>;
+  using dst_map_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
   if constexpr (is_same_v<dst_layout_t, layout_left>) {
-    // return layout_left again
-    return mapping_offset{
-        typename dst_layout_t::template mapping<dst_ext_t>(dst_ext),
+    // layout_left case
+    return mapping_offset<dst_map_t>{
+        dst_map_t(dst_ext),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
-    // return layout stride: need inv_mapping to get strides
+    // layout_stride case
     using inv_map_t = typename detail::inv_map_rank<0, index_sequence<>,
                                                     SliceSpecifiers...>::type;
-    return mapping_offset{
-        typename dst_layout_t::template mapping<dst_ext_t>(
+    return mapping_offset<dst_map_t>{
+        dst_map_t(
             dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t())),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
@@ -120,18 +121,19 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
       SliceSpecifiers...>::value;
   using dst_layout_t =
       conditional_t<preserve_layout, layout_right, layout_stride>;
+  using dst_map_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
   if constexpr (is_same_v<dst_layout_t, layout_right>) {
     // layout_right case
-    return mapping_offset{
-        typename dst_layout_t::template mapping<dst_ext_t>(dst_ext),
+    return mapping_offset<dst_map_t>{
+        dst_map_t(dst_ext),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
     // layout_stride case
     using inv_map_t = typename detail::inv_map_rank<0, index_sequence<>,
                                                     SliceSpecifiers...>::type;
-    return mapping_offset{
-        typename dst_layout_t::template mapping<dst_ext_t>(
+    return mapping_offset<dst_map_t>{
+        dst_map_t(
             dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t())),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
@@ -148,8 +150,9 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
   using dst_ext_t = decltype(dst_ext);
   using inv_map_t = typename detail::inv_map_rank<0, index_sequence<>,
                                                   SliceSpecifiers...>::type;
-  return mapping_offset{
-      layout_stride::mapping<dst_ext_t>(
+  using dst_map_t = typename layout_stride::template mapping<dst_ext_t>;
+  return mapping_offset<dst_map_t>{
+      dst_map_t(
           dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t())),
       static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
 }
