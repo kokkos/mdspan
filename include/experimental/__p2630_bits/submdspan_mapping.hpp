@@ -153,7 +153,7 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
   using dst_map_t = typename layout_stride::template mapping<dst_ext_t>;
   return mapping_offset<dst_map_t>{
       dst_map_t(
-          dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t())),
+          dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t(),array{stride_of(slices)...}),
       static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
 }
 } // namespace experimental
