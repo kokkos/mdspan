@@ -12,11 +12,13 @@ template <class Mapping> struct mapping_offset {
 
 namespace detail {
 // constructs sub strides
-template <class SrcMapping, size_t... InvMapIdxs>
+template <class SrcMapping, class ... slice_strides, size_t... InvMapIdxs>
 constexpr auto construct_sub_strides(const SrcMapping &src_map,
-                                     index_sequence<InvMapIdxs...>) {
+                                     index_sequence<InvMapIdxs...>,
+                                     const tuple<slice_strides...>& slices_stride_factor) {
+  using index_type = typename SrcMapping::index_type;
   return array<typename SrcMapping::index_type, sizeof...(InvMapIdxs)>{
-      src_map.stride(InvMapIdxs)...};
+      (static_cast<index_type>(src_map.stride(InvMapIdxs)) * static_cast<index_type>(get<InvMapIdxs>(slices_stride_factor)))...};
 }
 } // namespace detail
 
@@ -74,7 +76,7 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
                                                     SliceSpecifiers...>::type;
     return mapping_offset<dst_map_t>{
         dst_map_t(
-            dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t())),
+            dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t(), tuple{detail::stride_of(slices)...})),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
 }
@@ -134,7 +136,7 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
                                                     SliceSpecifiers...>::type;
     return mapping_offset<dst_map_t>{
         dst_map_t(
-            dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t())),
+            dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t(), tuple{detail::stride_of(slices)...})),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
 }
@@ -153,7 +155,7 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
   using dst_map_t = typename layout_stride::template mapping<dst_ext_t>;
   return mapping_offset<dst_map_t>{
       dst_map_t(
-          dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t(),array{stride_of(slices)...}),
+          dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t(), tuple{detail::stride_of(slices)...})),
       static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
 }
 } // namespace experimental
