@@ -145,14 +145,25 @@ constexpr auto multiply(const integral_constant<T0, v0> &,
 }
 
 // compute new static extent from range, preserving static knowledge
-template <class Arg0, class Arg1> struct StaticExtent {
+template <class Arg0, class Arg1> struct StaticExtentFromRange {
   constexpr static size_t value = std::dynamic_extent;
 };
 
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
-struct StaticExtent<std::integral_constant<Integral0, val0>,
+struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
                     std::integral_constant<Integral1, val1>> {
   constexpr static size_t value = val1 - val0;
+};
+
+// compute new static extent from strided_index_range, preserving static knowledge
+template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
+  constexpr static size_t value = std::dynamic_extent;
+};
+
+template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
+struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
+                    std::integral_constant<Integral1, val1>> {
+  constexpr static size_t value = val0>0?1 + (val0-1) / val1:0;
 };
 
 // creates new extents through recursive calls to next_extent member function
@@ -167,7 +178,7 @@ struct extents_constructor {
                                                    const Slice &sl,
                                                    SliceSpecifiers... slices) {
     constexpr size_t new_static_extent =
-        StaticExtent<decltype(first_of(std::declval<Slice>())),
+        StaticExtentFromRange<decltype(first_of(std::declval<Slice>())),
                      decltype(last_of(
                          integral_constant<size_t, Extents::rank() - K>(),
                          std::declval<Extents>(),
@@ -195,15 +206,14 @@ struct extents_constructor {
               const strided_index_range<OffsetType, ExtentType, StrideType> &r,
               SliceSpecifiers... slices) {
     using index_t = typename Extents::index_type;
-    if constexpr (StaticExtent<ExtentType, StrideType>::value ==
-                  dynamic_extent) {
+    using new_static_extent_t = StaticExtentFromStridedRange<ExtentType, StrideType>;
+    if constexpr (new_static_extent_t::value == dynamic_extent) {
       using next_t =
           extents_constructor<K - 1, Extents, NewExtents..., dynamic_extent>;
       return next_t::next_extent(ext, slices...,
                                  divide<index_t>(r.extent, r.stride));
     } else {
-      constexpr size_t new_static_extent =
-          divide<size_t>(ExtentType(), StrideType());
+      constexpr size_t new_static_extent = new_static_extent_t::value;
       using next_t =
           extents_constructor<K - 1, Extents, NewExtents..., new_static_extent>;
       return next_t::next_extent(
