@@ -34,49 +34,17 @@ namespace detail {
 // Mapping from submapping ranks to srcmapping ranks
 // InvMapRank is an index_sequence, which we build recursively
 // to contain the mapped indices.
-// MDSPAN_TEMPLATE_REQUIRES templates don't work for this
-// partial specializations so we use functions in C++17
-#if MDSPAN_HAS_CXX_20
-template <size_t Counter, class InvMapRank, class... SliceSpecifiers>
-struct inv_map_rank;
-
-// specialization reducing rank by one (i.e., integral slice specifier)
-template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
-  requires (is_convertible_v<Slice, size_t>)
-struct inv_map_rank<Counter, index_sequence<MapIdxs...>, Slice,
-                    SliceSpecifiers...> {
-  using type = typename inv_map_rank<Counter + 1, index_sequence<MapIdxs...>,
-                                     SliceSpecifiers...>::type;
-};
-
-// specialization for slice specifiers expressing some form of range
-template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
-  requires(!is_convertible_v<Slice, size_t>)
-struct inv_map_rank<Counter, index_sequence<MapIdxs...>, Slice,
-                    SliceSpecifiers...> {
-  using type =
-      typename inv_map_rank<Counter + 1, index_sequence<MapIdxs..., Counter>,
-                            SliceSpecifiers...>::type;
-};
-
-// end of recursion specialization containing the final index_sequence
-template <size_t Counter, size_t... MapIdxs>
-struct inv_map_rank<Counter, index_sequence<MapIdxs...>> {
-  using type = index_sequence<MapIdxs...>;
-};
-
-#else
 // end of recursion specialization containing the final index_sequence
 template <size_t Counter, size_t... MapIdxs>
 MDSPAN_INLINE_FUNCTION
-auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>) {
+constexpr auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>) {
   return index_sequence<MapIdxs...>();
 };
 
 // specialization reducing rank by one (i.e., integral slice specifier)
 template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
 MDSPAN_INLINE_FUNCTION
-auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>, Slice,
+constexpr auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>, Slice,
                   SliceSpecifiers... slices) {
   using next_idx_seq_t = conditional_t<is_convertible_v<Slice, size_t>,
                                        index_sequence<MapIdxs...>,
@@ -85,7 +53,6 @@ auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>
   return inv_map_rank(integral_constant<size_t,Counter + 1>(), next_idx_seq_t(),
                                      slices...);
 };
-#endif
 
 // Helper for identifying strided_index_range
 template <class T> struct is_strided_index_range : false_type {};

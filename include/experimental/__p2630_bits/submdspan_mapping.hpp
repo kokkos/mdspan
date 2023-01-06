@@ -95,18 +95,13 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
     // layout_stride case
-    #if MDSPAN_HAS_CXX_20
-    using inv_map_t = typename detail::inv_map_rank<0, index_sequence<>,
-                                                    SliceSpecifiers...>::type;
-    #else
-    using inv_map_t = decltype(detail::inv_map_rank(
+    auto inv_map = detail::inv_map_rank(
       integral_constant<size_t,0>(),
       index_sequence<>(),
-      (declval<SliceSpecifiers>())...));
-    #endif
+      slices...);
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext, detail::construct_sub_strides(
-                                   src_mapping, inv_map_t(),
+                                   src_mapping, inv_map,
                                    tuple{detail::stride_of(slices)...})),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
@@ -168,18 +163,13 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
     // layout_stride case
-    #if MDSPAN_HAS_CXX_20
-    using inv_map_t = typename detail::inv_map_rank<0, index_sequence<>,
-                                                    SliceSpecifiers...>::type;
-    #else
-    using inv_map_t = decltype(detail::inv_map_rank(
+    auto inv_map = detail::inv_map_rank(
       integral_constant<size_t,0>(),
       index_sequence<>(),
-      (declval<SliceSpecifiers>())...));
-    #endif
+      slices...);
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext, detail::construct_sub_strides(
-                                   src_mapping, inv_map_t(),
+                                   src_mapping, inv_map,
                                    tuple{detail::stride_of(slices)...})),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
@@ -195,19 +185,14 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {
   auto dst_ext = submdspan_extents(src_mapping.extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
-  #if MDSPAN_HAS_CXX_20
-  using inv_map_t = typename detail::inv_map_rank<0, index_sequence<>,
-                                                  SliceSpecifiers...>::type;
-  #else
-  using inv_map_t = decltype(detail::inv_map_rank(
+  auto inv_map = detail::inv_map_rank(
       integral_constant<size_t,0>(),
       index_sequence<>(),
-      (declval<SliceSpecifiers>())...));
-  #endif
+      slices...);
   using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
   return mapping_offset<dst_mapping_t>{
       dst_mapping_t(dst_ext, detail::construct_sub_strides(
-                                 src_mapping, inv_map_t(),
+                                 src_mapping, inv_map,
                                  tuple{detail::stride_of(slices)...})),
       static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
 }
