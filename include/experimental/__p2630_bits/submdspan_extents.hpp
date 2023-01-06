@@ -24,8 +24,9 @@ struct inv_map_rank;
 // specialization reducing rank by one (i.e., integral slice specifier)
 template <size_t Counter, class Slice, class... SliceSpecifiers,
           size_t... MapIdxs>
-requires(is_convertible_v<Slice, size_t>) struct inv_map_rank<
-    Counter, index_sequence<MapIdxs...>, Slice, SliceSpecifiers...> {
+  requires(is_convertible_v<Slice, size_t>)
+struct inv_map_rank<Counter, index_sequence<MapIdxs...>, Slice,
+                    SliceSpecifiers...> {
   using type = typename inv_map_rank<Counter + 1, index_sequence<MapIdxs...>,
                                      SliceSpecifiers...>::type;
 };
@@ -33,8 +34,9 @@ requires(is_convertible_v<Slice, size_t>) struct inv_map_rank<
 // specialization for slice specifiers expressing some form of range
 template <size_t Counter, class Slice, class... SliceSpecifiers,
           size_t... MapIdxs>
-requires(!is_convertible_v<Slice, size_t>) struct inv_map_rank<
-    Counter, index_sequence<MapIdxs...>, Slice, SliceSpecifiers...> {
+  requires(!is_convertible_v<Slice, size_t>)
+struct inv_map_rank<Counter, index_sequence<MapIdxs...>, Slice,
+                    SliceSpecifiers...> {
   using type =
       typename inv_map_rank<Counter + 1, index_sequence<MapIdxs..., Counter>,
                             SliceSpecifiers...>::type;
@@ -55,8 +57,8 @@ struct is_strided_index_range<
 
 // first_of(slice): getting begin of slice specifier range
 template <class Integral>
-requires(is_convertible_v<Integral, size_t>) constexpr Integral
-    first_of(const Integral &i) {
+  requires(is_convertible_v<Integral, size_t>)
+constexpr Integral first_of(const Integral &i) {
   return i;
 }
 
@@ -66,9 +68,8 @@ first_of(const experimental::full_extent_t &) {
 }
 
 template <class Slice>
-requires(
-    is_convertible_v<
-        Slice, tuple<size_t, size_t>>) constexpr auto first_of(const Slice &i) {
+  requires(is_convertible_v<Slice, tuple<size_t, size_t>>)
+constexpr auto first_of(const Slice &i) {
   return get<0>(i);
 }
 
@@ -80,14 +81,16 @@ first_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
 
 // last_of(slice): getting end of slice specifier range
 template <size_t k, class Extents, class Integral>
-requires(is_convertible_v<Integral, size_t>) constexpr Integral
+  requires(is_convertible_v<Integral, size_t>)
+constexpr Integral
     last_of(integral_constant<size_t, k>, const Extents &, const Integral &i) {
   return i;
 }
 
 template <size_t k, class Extents, class Slice>
-requires(is_convertible_v<Slice, tuple<size_t, size_t>>) constexpr auto last_of(
-    integral_constant<size_t, k>, const Extents &, const Slice &i) {
+  requires(is_convertible_v<Slice, tuple<size_t, size_t>>)
+constexpr auto last_of(integral_constant<size_t, k>, const Extents &,
+                       const Slice &i) {
   return get<1>(i);
 }
 
@@ -151,19 +154,20 @@ template <class Arg0, class Arg1> struct StaticExtentFromRange {
 
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
-                    std::integral_constant<Integral1, val1>> {
+                             std::integral_constant<Integral1, val1>> {
   constexpr static size_t value = val1 - val0;
 };
 
-// compute new static extent from strided_index_range, preserving static knowledge
+// compute new static extent from strided_index_range, preserving static
+// knowledge
 template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
   constexpr static size_t value = std::dynamic_extent;
 };
 
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
-                    std::integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val0>0?1 + (val0-1) / val1:0;
+                                    std::integral_constant<Integral1, val1>> {
+  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
 };
 
 // creates new extents through recursive calls to next_extent member function
@@ -171,16 +175,13 @@ struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
 template <size_t K, class Extents, size_t... NewExtents>
 struct extents_constructor {
   template <class Slice, class... SliceSpecifiers>
-  requires(
-      !is_convertible_v<Slice, size_t> &&
-      !is_strided_index_range<Slice>::value)
-  constexpr static auto next_extent(const Extents &ext,
-                                    const Slice &sl,
+    requires(!is_convertible_v<Slice, size_t> &&
+             !is_strided_index_range<Slice>::value)
+  constexpr static auto next_extent(const Extents &ext, const Slice &sl,
                                     SliceSpecifiers... slices) {
-    constexpr size_t new_static_extent =
-        StaticExtentFromRange<decltype(first_of(std::declval<Slice>())),
-                     decltype(last_of(
-                         integral_constant<size_t, Extents::rank() - K>(),
+    constexpr size_t new_static_extent = StaticExtentFromRange<
+        decltype(first_of(std::declval<Slice>())),
+        decltype(last_of(integral_constant<size_t, Extents::rank() - K>(),
                          std::declval<Extents>(),
                          std::declval<Slice>()))>::value;
 
@@ -195,9 +196,8 @@ struct extents_constructor {
   }
 
   template <class Slice, class... SliceSpecifiers>
-  requires(is_convertible_v<Slice, size_t>)
-  constexpr static auto next_extent(const Extents &ext,
-                                    const Slice &,
+    requires(is_convertible_v<Slice, size_t>)
+  constexpr static auto next_extent(const Extents &ext, const Slice &,
                                     SliceSpecifiers... slices) {
     using next_t = extents_constructor<K - 1, Extents, NewExtents...>;
     return next_t::next_extent(ext, slices...);
@@ -205,16 +205,19 @@ struct extents_constructor {
 
   template <class OffsetType, class ExtentType, class StrideType,
             class... SliceSpecifiers>
-  constexpr static auto next_extent(const Extents &ext,
-                                    const strided_index_range<OffsetType, ExtentType, StrideType> &r,
-                                    SliceSpecifiers... slices) {
+  constexpr static auto
+  next_extent(const Extents &ext,
+              const strided_index_range<OffsetType, ExtentType, StrideType> &r,
+              SliceSpecifiers... slices) {
     using index_t = typename Extents::index_type;
-    using new_static_extent_t = StaticExtentFromStridedRange<ExtentType, StrideType>;
+    using new_static_extent_t =
+        StaticExtentFromStridedRange<ExtentType, StrideType>;
     if constexpr (new_static_extent_t::value == dynamic_extent) {
       using next_t =
           extents_constructor<K - 1, Extents, NewExtents..., dynamic_extent>;
-      return next_t::next_extent(ext, slices...,
-                                 r.extent>0?1+divide<index_t>(r.extent-1, r.stride):0);
+      return next_t::next_extent(
+          ext, slices...,
+          r.extent > 0 ? 1 + divide<index_t>(r.extent - 1, r.stride) : 0);
     } else {
       constexpr size_t new_static_extent = new_static_extent_t::value;
       using next_t =
