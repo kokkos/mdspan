@@ -188,7 +188,7 @@ class layout_left::mapping {
     }
 
     // In C++ 20 the not equal exists if equal is found
-#if MDSPAN_HAS_CXX_20
+#if !(MDSPAN_HAS_CXX_20)
     template<class OtherExtents>
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {

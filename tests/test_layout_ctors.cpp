@@ -68,6 +68,7 @@ TYPED_TEST(TestLayoutCtors, default_ctor) {
   auto m2 = typename TestFixture::mapping_type{};
   ASSERT_EQ(m2.extents(), typename TestFixture::extents_type{});
   ASSERT_EQ(m, m2);
+  ASSERT_FALSE(m != m2);
 }
 
 template <class> struct TestLayoutCompatCtors;
