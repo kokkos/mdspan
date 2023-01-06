@@ -171,7 +171,11 @@ if(MDSPAN_ENABLE_EXAMPLES)
 endif()
 
 if(MDSPAN_ENABLE_BENCHMARKS)
-  add_subdirectory(benchmarks)
+  if(NOT MDSPAN_CXX_STANDARD STREQUAL "14")
+    add_subdirectory(benchmarks)
+  else()
+    MESSAGE(FATAL_ERROR "Benchmarks are not available in C++14 mode. Turn MDSPAN_ENABLE_BENCHMARKS OFF or use C++17 or newer.")
+  endif()
 endif()
 
 if(MDSPAN_ENABLE_COMP_BENCH)

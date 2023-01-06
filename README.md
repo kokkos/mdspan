@@ -69,6 +69,8 @@ When not in C++23 mode the implementation deviates from the proposal as follows:
 
 ### C++14
 - deduction guides don't exist
+- submdspan (P2630) is not available - an earlier variant of submdspan is available up to release 0.5 in C++14 mode
+- benchmarks are not available (they need submdspan)
 
 
 
