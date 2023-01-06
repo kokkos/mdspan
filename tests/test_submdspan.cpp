@@ -183,7 +183,7 @@ struct TestSubMDSpan<
     return std::pair<int,int>(1,3);
   }
   static stdex::strided_index_range<int,int,int> create_slice_arg(stdex::strided_index_range<int,int,int>) {
-    return stdex::strided_index_range<int,int,int>(1,3,2);
+    return stdex::strided_index_range<int,int,int>{1,3,2};
   }
   static stdex::full_extent_t create_slice_arg(stdex::full_extent_t) {
     return stdex::full_extent;
