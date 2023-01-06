@@ -211,7 +211,7 @@ struct extents_constructor {
       using next_t =
           extents_constructor<K - 1, Extents, NewExtents..., dynamic_extent>;
       return next_t::next_extent(ext, slices...,
-                                 divide<index_t>(r.extent, r.stride));
+                                 r.extent>0?1+divide<index_t>(r.extent-1, r.stride):0);
     } else {
       constexpr size_t new_static_extent = new_static_extent_t::value;
       using next_t =
