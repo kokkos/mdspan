@@ -18,13 +18,15 @@ namespace detail {
 // Mapping from submapping ranks to srcmapping ranks
 // InvMapRank is an index_sequence, which we build recursively
 // to contain the mapped indices.
+// MDSPAN_TEMPLATE_REQUIRES templates don't work for this
+// partial specializations so we use functions in C++17
+#if MDSPAN_HAS_CXX_20
 template <size_t Counter, class InvMapRank, class... SliceSpecifiers>
 struct inv_map_rank;
 
 // specialization reducing rank by one (i.e., integral slice specifier)
-template <size_t Counter, class Slice, class... SliceSpecifiers,
-          size_t... MapIdxs>
-  requires(is_convertible_v<Slice, size_t>)
+template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
+  requires (is_convertible_v<Slice, size_t>)
 struct inv_map_rank<Counter, index_sequence<MapIdxs...>, Slice,
                     SliceSpecifiers...> {
   using type = typename inv_map_rank<Counter + 1, index_sequence<MapIdxs...>,
@@ -32,8 +34,7 @@ struct inv_map_rank<Counter, index_sequence<MapIdxs...>, Slice,
 };
 
 // specialization for slice specifiers expressing some form of range
-template <size_t Counter, class Slice, class... SliceSpecifiers,
-          size_t... MapIdxs>
+template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
   requires(!is_convertible_v<Slice, size_t>)
 struct inv_map_rank<Counter, index_sequence<MapIdxs...>, Slice,
                     SliceSpecifiers...> {
@@ -48,6 +49,26 @@ struct inv_map_rank<Counter, index_sequence<MapIdxs...>> {
   using type = index_sequence<MapIdxs...>;
 };
 
+#else
+// end of recursion specialization containing the final index_sequence
+template <size_t Counter, size_t... MapIdxs>
+auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>) {
+  return index_sequence<MapIdxs...>();
+};
+
+// specialization reducing rank by one (i.e., integral slice specifier)
+template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
+auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>, Slice,
+                  SliceSpecifiers... slices) {
+  using next_idx_seq_t = conditional_t<is_convertible_v<Slice, size_t>,
+                                       index_sequence<MapIdxs...>,
+                                       index_sequence<MapIdxs..., Counter>>;
+
+  return inv_map_rank(integral_constant<size_t,Counter + 1>(), next_idx_seq_t(),
+                                     slices...);
+};
+#endif
+
 // Helper for identifying strided_index_range
 template <class T> struct is_strided_index_range : false_type {};
 
@@ -56,8 +77,10 @@ struct is_strided_index_range<
     strided_index_range<OffsetType, ExtentType, StrideType>> : true_type {};
 
 // first_of(slice): getting begin of slice specifier range
-template <class Integral>
-  requires(is_convertible_v<Integral, size_t>)
+MDSPAN_TEMPLATE_REQUIRES(
+  class Integral,
+  /* requires */(is_convertible_v<Integral, size_t>)
+)
 constexpr Integral first_of(const Integral &i) {
   return i;
 }
@@ -67,8 +90,10 @@ first_of(const experimental::full_extent_t &) {
   return integral_constant<size_t, 0>();
 }
 
-template <class Slice>
-  requires(is_convertible_v<Slice, tuple<size_t, size_t>>)
+MDSPAN_TEMPLATE_REQUIRES(
+  class Slice,
+  /* requires */(is_convertible_v<Slice, tuple<size_t, size_t>>)
+)
 constexpr auto first_of(const Slice &i) {
   return get<0>(i);
 }
@@ -80,15 +105,19 @@ first_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
 }
 
 // last_of(slice): getting end of slice specifier range
-template <size_t k, class Extents, class Integral>
-  requires(is_convertible_v<Integral, size_t>)
+MDSPAN_TEMPLATE_REQUIRES(
+  size_t k, class Extents, class Integral,
+  /* requires */(is_convertible_v<Integral, size_t>)
+)
 constexpr Integral
     last_of(integral_constant<size_t, k>, const Extents &, const Integral &i) {
   return i;
 }
 
-template <size_t k, class Extents, class Slice>
-  requires(is_convertible_v<Slice, tuple<size_t, size_t>>)
+MDSPAN_TEMPLATE_REQUIRES(
+  size_t k, class Extents, class Slice,
+  /* requires */(is_convertible_v<Slice, tuple<size_t, size_t>>)
+)
 constexpr auto last_of(integral_constant<size_t, k>, const Extents &,
                        const Slice &i) {
   return get<1>(i);
@@ -149,7 +178,7 @@ constexpr auto multiply(const integral_constant<T0, v0> &,
 
 // compute new static extent from range, preserving static knowledge
 template <class Arg0, class Arg1> struct StaticExtentFromRange {
-  constexpr static size_t value = std::dynamic_extent;
+  constexpr static size_t value = dynamic_extent;
 };
 
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
@@ -161,7 +190,7 @@ struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
 // compute new static extent from strided_index_range, preserving static
 // knowledge
 template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
-  constexpr static size_t value = std::dynamic_extent;
+  constexpr static size_t value = dynamic_extent;
 };
 
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
@@ -174,9 +203,11 @@ struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
 // next_extent has different overloads for different types of stride specifiers
 template <size_t K, class Extents, size_t... NewExtents>
 struct extents_constructor {
-  template <class Slice, class... SliceSpecifiers>
-    requires(!is_convertible_v<Slice, size_t> &&
-             !is_strided_index_range<Slice>::value)
+  MDSPAN_TEMPLATE_REQUIRES(
+    class Slice, class... SliceSpecifiers,
+    /* requires */(!is_convertible_v<Slice, size_t> &&
+                   !is_strided_index_range<Slice>::value)
+  )
   constexpr static auto next_extent(const Extents &ext, const Slice &sl,
                                     SliceSpecifiers... slices) {
     constexpr size_t new_static_extent = StaticExtentFromRange<
@@ -195,8 +226,10 @@ struct extents_constructor {
             index_t(first_of(sl)));
   }
 
-  template <class Slice, class... SliceSpecifiers>
-    requires(is_convertible_v<Slice, size_t>)
+  MDSPAN_TEMPLATE_REQUIRES(
+    class Slice, class... SliceSpecifiers,
+    /* requires */ (is_convertible_v<Slice, size_t>)
+  )
   constexpr static auto next_extent(const Extents &ext, const Slice &,
                                     SliceSpecifiers... slices) {
     using next_t = extents_constructor<K - 1, Extents, NewExtents...>;
