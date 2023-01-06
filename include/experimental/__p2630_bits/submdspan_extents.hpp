@@ -173,10 +173,10 @@ struct extents_constructor {
   template <class Slice, class... SliceSpecifiers>
   requires(
       !is_convertible_v<Slice, size_t> &&
-      !is_strided_index_range<Slice>::
-          value) constexpr static auto next_extent(const Extents &ext,
-                                                   const Slice &sl,
-                                                   SliceSpecifiers... slices) {
+      !is_strided_index_range<Slice>::value)
+  constexpr static auto next_extent(const Extents &ext,
+                                    const Slice &sl,
+                                    SliceSpecifiers... slices) {
     constexpr size_t new_static_extent =
         StaticExtentFromRange<decltype(first_of(std::declval<Slice>())),
                      decltype(last_of(
@@ -193,18 +193,21 @@ struct extents_constructor {
                         sl)) -
             index_t(first_of(sl)));
   }
+
   template <class Slice, class... SliceSpecifiers>
-  requires(is_convertible_v<Slice, size_t>) constexpr static auto next_extent(
-      const Extents &ext, const Slice &, SliceSpecifiers... slices) {
+  requires(is_convertible_v<Slice, size_t>)
+  constexpr static auto next_extent(const Extents &ext,
+                                    const Slice &,
+                                    SliceSpecifiers... slices) {
     using next_t = extents_constructor<K - 1, Extents, NewExtents...>;
     return next_t::next_extent(ext, slices...);
   }
+
   template <class OffsetType, class ExtentType, class StrideType,
             class... SliceSpecifiers>
-  constexpr static auto
-  next_extent(const Extents &ext,
-              const strided_index_range<OffsetType, ExtentType, StrideType> &r,
-              SliceSpecifiers... slices) {
+  constexpr static auto next_extent(const Extents &ext,
+                                    const strided_index_range<OffsetType, ExtentType, StrideType> &r,
+                                    SliceSpecifiers... slices) {
     using index_t = typename Extents::index_type;
     using new_static_extent_t = StaticExtentFromStridedRange<ExtentType, StrideType>;
     if constexpr (new_static_extent_t::value == dynamic_extent) {
