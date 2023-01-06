@@ -119,6 +119,12 @@ struct layout_stride {
 #endif
     }
 
+    template<class SizeType, ::std::size_t ... Ep, ::std::size_t ... Idx>
+    _MDSPAN_HOST_DEVICE
+    constexpr index_type __get_size(extents<SizeType, Ep...>,integer_sequence<::std::size_t, Idx...>) const {
+      return _MDSPAN_FOLD_TIMES_RIGHT( static_cast<index_type>(extents().extent(Idx)), 1 );
+    }
+
     //----------------------------------------------------------------------------
 
     template <class>
@@ -391,7 +397,7 @@ struct layout_stride {
       for(unsigned r = 0; r < extents_type::rank(); r++) {
         // Return early if any of the extents are zero
         if(extents().extent(r)==0) return 0;
-        span_size = std::max(span_size, static_cast<index_type>(extents().extent(r) * __strides_storage()[r]));
+        span_size += ( static_cast<index_type>(extents().extent(r) - 1 ) * __strides_storage()[r]);
       }
       return span_size;
     }
@@ -418,43 +424,7 @@ struct layout_stride {
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_unique() noexcept { return true; }
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_exhaustive() const noexcept {
-// TODO @testing test layout_stride is_exhaustive()
-// FIXME CUDA
-#ifdef __CUDA_ARCH__
-      return false;
-#else
-      auto rem = array<size_t, Extents::rank()>{ };
-      std::iota(rem.begin(), rem.end(), size_t(0));
-      auto next_idx_iter = std::find_if(
-        rem.begin(), rem.end(),
-        [&](size_t i) { return this->stride(i) == 1;  }
-      );
-      if(next_idx_iter != rem.end()) {
-        size_t prev_stride_times_prev_extent =
-          this->extents().extent(*next_idx_iter) * this->stride(*next_idx_iter);
-        // "remove" the index
-        constexpr auto removed_index_sentinel = static_cast<size_t>(-1);
-        *next_idx_iter = removed_index_sentinel;
-        size_t found_count = 1;
-        while (found_count != Extents::rank()) {
-          next_idx_iter = std::find_if(
-            rem.begin(), rem.end(),
-            [&](size_t i) {
-              return i != removed_index_sentinel
-                && static_cast<size_t>(this->extents().extent(i)) == prev_stride_times_prev_extent;
-            }
-          );
-          if (next_idx_iter != rem.end()) {
-            // "remove" the index
-            *next_idx_iter = removed_index_sentinel;
-            ++found_count;
-            prev_stride_times_prev_extent = stride(*next_idx_iter) * this->extents().extent(*next_idx_iter);
-          } else { break; }
-        }
-        return found_count == Extents::rank();
-      }
-      return false;
-#endif
+      return required_span_size() == __get_size(extents(), make_index_sequence<extents_type::rank()>());
     }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_strided() noexcept { return true; }
 
