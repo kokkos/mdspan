@@ -87,6 +87,7 @@ TEST(TestLayoutStrideSpanConstruction, test_from_span_construction) {
   ASSERT_EQ(m1.stride(1), 128);
   ASSERT_EQ(m1.strides()[0], 1);
   ASSERT_EQ(m1.strides()[1], 128);
+  ASSERT_EQ(m1.required_span_size(),1+15*1+31*128);
   ASSERT_FALSE(m1.is_exhaustive());
 }
 #endif
@@ -101,6 +102,7 @@ TEST(TestLayoutStrideListInitialization, test_list_initialization) {
   ASSERT_EQ(m.stride(1), 128);
   ASSERT_EQ(m.strides()[0], 1);
   ASSERT_EQ(m.strides()[1], 128);
+  ASSERT_EQ(m.required_span_size(),1+15*1+31*128);
   ASSERT_FALSE(m.is_exhaustive());
 }
 
@@ -129,6 +131,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m1.stride(1), 128);
   ASSERT_EQ(m1.strides()[0], 1);
   ASSERT_EQ(m1.strides()[1], 128);
+  ASSERT_EQ(m1.required_span_size(),1+15*1+31*128);
   ASSERT_FALSE(m1.is_exhaustive());
 
 // TODO These won't work with our current implementation, because the array will
