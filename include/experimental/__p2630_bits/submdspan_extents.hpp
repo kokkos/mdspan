@@ -52,12 +52,14 @@ struct inv_map_rank<Counter, index_sequence<MapIdxs...>> {
 #else
 // end of recursion specialization containing the final index_sequence
 template <size_t Counter, size_t... MapIdxs>
+MDSPAN_INLINE_FUNCTION
 auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>) {
   return index_sequence<MapIdxs...>();
 };
 
 // specialization reducing rank by one (i.e., integral slice specifier)
 template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
+MDSPAN_INLINE_FUNCTION
 auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>, Slice,
                   SliceSpecifiers... slices) {
   using next_idx_seq_t = conditional_t<is_convertible_v<Slice, size_t>,
@@ -81,10 +83,12 @@ MDSPAN_TEMPLATE_REQUIRES(
   class Integral,
   /* requires */(is_convertible_v<Integral, size_t>)
 )
+MDSPAN_INLINE_FUNCTION
 constexpr Integral first_of(const Integral &i) {
   return i;
 }
 
+MDSPAN_INLINE_FUNCTION
 constexpr integral_constant<size_t, 0>
 first_of(const experimental::full_extent_t &) {
   return integral_constant<size_t, 0>();
@@ -94,11 +98,13 @@ MDSPAN_TEMPLATE_REQUIRES(
   class Slice,
   /* requires */(is_convertible_v<Slice, tuple<size_t, size_t>>)
 )
+MDSPAN_INLINE_FUNCTION
 constexpr auto first_of(const Slice &i) {
   return get<0>(i);
 }
 
 template <class OffsetType, class ExtentType, class StrideType>
+MDSPAN_INLINE_FUNCTION
 constexpr OffsetType
 first_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
   return r.offset;
@@ -109,6 +115,7 @@ MDSPAN_TEMPLATE_REQUIRES(
   size_t k, class Extents, class Integral,
   /* requires */(is_convertible_v<Integral, size_t>)
 )
+MDSPAN_INLINE_FUNCTION
 constexpr Integral
     last_of(integral_constant<size_t, k>, const Extents &, const Integral &i) {
   return i;
@@ -118,12 +125,28 @@ MDSPAN_TEMPLATE_REQUIRES(
   size_t k, class Extents, class Slice,
   /* requires */(is_convertible_v<Slice, tuple<size_t, size_t>>)
 )
+MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(integral_constant<size_t, k>, const Extents &,
                        const Slice &i) {
   return get<1>(i);
 }
 
+// Suppress spurious warning with NVCC about no return statement.
+// This is a known issue in NVCC and NVC++
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic push
+        #pragma nv_diag_suppress = implicit_return_from_non_void_function
+    #else
+        #pragma    diagnostic push
+        #pragma    diag_suppress = implicit_return_from_non_void_function
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic push
+    #pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
 template <size_t k, class Extents>
+MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(integral_constant<size_t, k>, const Extents &ext,
                        experimental::full_extent_t) {
   if constexpr (Extents::static_extent(k) == dynamic_extent) {
@@ -132,9 +155,19 @@ constexpr auto last_of(integral_constant<size_t, k>, const Extents &ext,
     return integral_constant<size_t, Extents::static_extent(k)>();
   }
 }
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic pop
+    #else
+        #pragma    diagnostic pop
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic pop
+#endif
 
 template <size_t k, class Extents, class OffsetType, class ExtentType,
           class StrideType>
+MDSPAN_INLINE_FUNCTION
 constexpr OffsetType
 last_of(integral_constant<size_t, k>, const Extents &,
         const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
@@ -142,11 +175,14 @@ last_of(integral_constant<size_t, k>, const Extents &,
 }
 
 // get stride of slices
-template <class T> constexpr auto stride_of(const T &) {
+template <class T>
+MDSPAN_INLINE_FUNCTION
+constexpr auto stride_of(const T &) {
   return integral_constant<size_t, 1>();
 }
 
 template <class OffsetType, class ExtentType, class StrideType>
+MDSPAN_INLINE_FUNCTION
 constexpr auto
 stride_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
   return r.stride;
@@ -154,11 +190,13 @@ stride_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
 
 // divide which can deal with integral constant preservation
 template <class IndexT, class T0, class T1>
+MDSPAN_INLINE_FUNCTION
 constexpr auto divide(const T0 &v0, const T1 &v1) {
   return IndexT(v0) / IndexT(v1);
 }
 
 template <class IndexT, class T0, T0 v0, class T1, T1 v1>
+MDSPAN_INLINE_FUNCTION
 constexpr auto divide(const integral_constant<T0, v0> &,
                       const integral_constant<T1, v1> &) {
   return integral_constant<IndexT, v0 / v1>();
@@ -166,11 +204,13 @@ constexpr auto divide(const integral_constant<T0, v0> &,
 
 // multiply which can deal with integral constant preservation
 template <class IndexT, class T0, class T1>
+MDSPAN_INLINE_FUNCTION
 constexpr auto multiply(const T0 &v0, const T1 &v1) {
   return IndexT(v0) * IndexT(v1);
 }
 
 template <class IndexT, class T0, T0 v0, class T1, T1 v1>
+MDSPAN_INLINE_FUNCTION
 constexpr auto multiply(const integral_constant<T0, v0> &,
                         const integral_constant<T1, v1> &) {
   return integral_constant<IndexT, v0 * v1>();
@@ -208,6 +248,7 @@ struct extents_constructor {
     /* requires */(!is_convertible_v<Slice, size_t> &&
                    !is_strided_index_range<Slice>::value)
   )
+  MDSPAN_INLINE_FUNCTION
   constexpr static auto next_extent(const Extents &ext, const Slice &sl,
                                     SliceSpecifiers... slices) {
     constexpr size_t new_static_extent = StaticExtentFromRange<
@@ -230,6 +271,7 @@ struct extents_constructor {
     class Slice, class... SliceSpecifiers,
     /* requires */ (is_convertible_v<Slice, size_t>)
   )
+  MDSPAN_INLINE_FUNCTION
   constexpr static auto next_extent(const Extents &ext, const Slice &,
                                     SliceSpecifiers... slices) {
     using next_t = extents_constructor<K - 1, Extents, NewExtents...>;
@@ -238,6 +280,7 @@ struct extents_constructor {
 
   template <class OffsetType, class ExtentType, class StrideType,
             class... SliceSpecifiers>
+  MDSPAN_INLINE_FUNCTION
   constexpr static auto
   next_extent(const Extents &ext,
               const strided_index_range<OffsetType, ExtentType, StrideType> &r,
@@ -265,6 +308,7 @@ template <class Extents, size_t... NewStaticExtents>
 struct extents_constructor<0, Extents, NewStaticExtents...> {
 
   template <class... NewExtents>
+  MDSPAN_INLINE_FUNCTION
   constexpr static auto next_extent(const Extents &, NewExtents... new_exts) {
     return extents<typename Extents::index_type, NewStaticExtents...>(
         new_exts...);
@@ -276,6 +320,7 @@ struct extents_constructor<0, Extents, NewStaticExtents...> {
 // submdspan_extents creates new extents given src extents and submdspan slice
 // specifiers
 template <class IndexType, size_t... Extents, class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
 constexpr auto submdspan_extents(const extents<IndexType, Extents...> &src_exts,
                                  SliceSpecifiers... slices) {
 

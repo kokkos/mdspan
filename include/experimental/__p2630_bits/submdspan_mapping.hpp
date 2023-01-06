@@ -13,6 +13,7 @@ template <class Mapping> struct mapping_offset {
 namespace detail {
 // constructs sub strides
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
+MDSPAN_INLINE_FUNCTION
 constexpr auto
 construct_sub_strides(const SrcMapping &src_mapping,
                       index_sequence<InvMapIdxs...>,
@@ -53,6 +54,7 @@ struct preserve_layout_left_mapping<index_sequence<Idx...>, SubRank,
 
 // Actual submdspan mapping call
 template <class Extents, class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {
@@ -125,6 +127,7 @@ struct preserve_layout_right_mapping<index_sequence<Idx...>, SubRank,
 } // namespace detail
 
 template <class Extents, class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {
@@ -170,6 +173,7 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
 // layout_stride submdspan_mapping
 //*********************************
 template <class Extents, class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {

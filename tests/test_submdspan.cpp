@@ -20,6 +20,8 @@
 
 #include <utility>
 
+#include "offload_utils.hpp"
+
 namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
@@ -182,45 +184,60 @@ struct TestSubMDSpan<
   using mds_sub_deduced_t = decltype(stdex::submdspan(mds_org_t(nullptr, map_t()), SubArgs()...));
   using sub_args_t = std::tuple<SubArgs...>;
 
+  MDSPAN_INLINE_FUNCTION
   static int create_slice_arg(int) {
     return 2;
   }
+  MDSPAN_INLINE_FUNCTION
   static std::pair<int,int> create_slice_arg(std::pair<int,int>) {
     return std::pair<int,int>(1,3);
   }
+  MDSPAN_INLINE_FUNCTION
   static stdex::strided_index_range<int,int,int> create_slice_arg(stdex::strided_index_range<int,int,int>) {
     return stdex::strided_index_range<int,int,int>{1,3,2};
   }
+  MDSPAN_INLINE_FUNCTION
   static stdex::full_extent_t create_slice_arg(stdex::full_extent_t) {
     return stdex::full_extent;
   }
 
   template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
   static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, int, SliceArgs ... slices) {
     return match_expected_extents(++src_idx, sub_idx, src_ext, sub_ext, slices...);
   }
   template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
   static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, std::pair<int,int> p, SliceArgs ... slices) {
     return (sub_ext.extent(sub_idx)==p.second-p.first) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
   }
   template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
   static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, stdex::strided_index_range<int,int,int> p, SliceArgs ... slices) {
     return (sub_ext.extent(sub_idx)==(p.extent+p.stride-1)/p.stride) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
   }
   template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
   static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, stdex::full_extent_t, SliceArgs ... slices) {
     return (sub_ext.extent(sub_idx)==src_ext.extent(src_idx)) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
   }
   template<class SrcExtents, class SubExtents>
+  MDSPAN_INLINE_FUNCTION
   static bool match_expected_extents(int, int, SrcExtents, SubExtents) { return true; }
 
   static void run() {
     typename mds_org_t::mapping_type map(typename mds_org_t::extents_type(ConstrArgs...));
     int data[25000];
     mds_org_t src(data, map);
-    auto sub = stdex::submdspan(src, create_slice_arg(SubArgs())...);
-    bool match = match_expected_extents(0, 0, src.extents(), sub.extents(), create_slice_arg(SubArgs())...);
-    EXPECT_TRUE(match);
+    size_t* result = allocate_array<size_t>(2);
+
+    dispatch([=] _MDSPAN_HOST_DEVICE () {
+      auto sub = stdex::submdspan(src, create_slice_arg(SubArgs())...);
+      bool match = match_expected_extents(0, 0, src.extents(), sub.extents(), create_slice_arg(SubArgs())...);
+      result[0] = match?1:0;
+    });
+    EXPECT_TRUE(result[0]==1);
+    free_array(result);
   }
 
 };
