@@ -112,7 +112,7 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
 //*********************************
 namespace detail {
 
-// Figure out whether to preserve layout_left
+// Figure out whether to preserve layout_right
 template <class IndexSequence, size_t SubRank, class... SliceSpecifiers>
 struct preserve_layout_right_mapping;
 
