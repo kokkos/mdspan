@@ -8,9 +8,9 @@ template <class ElementType, class Extents, class LayoutPolicy,
 constexpr auto
 submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
           SliceSpecifiers... slices) {
-  const auto sub_map_offset = submdspan_mapping(src.mapping(), slices...);
-  return mdspan(src.accessor().offset(src.data_handle(), sub_map_offset.offset),
-                sub_map_offset.map,
+  const auto sub_mapping_offset = submdspan_mapping(src.mapping(), slices...);
+  return mdspan(src.accessor().offset(src.data_handle(), sub_mapping_offset.offset),
+                sub_mapping_offset.mapping,
                 typename AccessorPolicy::offset_policy(src.accessor()));
 }
 } // namespace experimental

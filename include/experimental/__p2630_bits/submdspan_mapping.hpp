@@ -6,19 +6,19 @@ namespace experimental {
 // Return type of submdspan_mapping overloads
 //******************************************
 template <class Mapping> struct mapping_offset {
-  Mapping map;
+  Mapping mapping;
   size_t offset;
 };
 
 namespace detail {
 // constructs sub strides
 template <class SrcMapping, class ... slice_strides, size_t... InvMapIdxs>
-constexpr auto construct_sub_strides(const SrcMapping &src_map,
+constexpr auto construct_sub_strides(const SrcMapping &src_mapping,
                                      index_sequence<InvMapIdxs...>,
                                      const tuple<slice_strides...>& slices_stride_factor) {
   using index_type = typename SrcMapping::index_type;
   return array<typename SrcMapping::index_type, sizeof...(InvMapIdxs)>{
-      (static_cast<index_type>(src_map.stride(InvMapIdxs)) * static_cast<index_type>(get<InvMapIdxs>(slices_stride_factor)))...};
+      (static_cast<index_type>(src_mapping.stride(InvMapIdxs)) * static_cast<index_type>(get<InvMapIdxs>(slices_stride_factor)))...};
 }
 } // namespace detail
 
@@ -63,19 +63,19 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
       SliceSpecifiers...>::value;
   using dst_layout_t =
       conditional_t<preserve_layout, layout_left, layout_stride>;
-  using dst_map_t = typename dst_layout_t::template mapping<dst_ext_t>;
+  using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
   if constexpr (is_same_v<dst_layout_t, layout_left>) {
     // layout_left case
-    return mapping_offset<dst_map_t>{
-        dst_map_t(dst_ext),
+    return mapping_offset<dst_mapping_t>{
+        dst_mapping_t(dst_ext),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
     // layout_stride case
     using inv_map_t = typename detail::inv_map_rank<0, index_sequence<>,
                                                     SliceSpecifiers...>::type;
-    return mapping_offset<dst_map_t>{
-        dst_map_t(
+    return mapping_offset<dst_mapping_t>{
+        dst_mapping_t(
             dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t(), tuple{detail::stride_of(slices)...})),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
@@ -123,19 +123,19 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
       SliceSpecifiers...>::value;
   using dst_layout_t =
       conditional_t<preserve_layout, layout_right, layout_stride>;
-  using dst_map_t = typename dst_layout_t::template mapping<dst_ext_t>;
+  using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
   if constexpr (is_same_v<dst_layout_t, layout_right>) {
     // layout_right case
-    return mapping_offset<dst_map_t>{
-        dst_map_t(dst_ext),
+    return mapping_offset<dst_mapping_t>{
+        dst_mapping_t(dst_ext),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
     // layout_stride case
     using inv_map_t = typename detail::inv_map_rank<0, index_sequence<>,
                                                     SliceSpecifiers...>::type;
-    return mapping_offset<dst_map_t>{
-        dst_map_t(
+    return mapping_offset<dst_mapping_t>{
+        dst_mapping_t(
             dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t(), tuple{detail::stride_of(slices)...})),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
@@ -152,9 +152,9 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
   using dst_ext_t = decltype(dst_ext);
   using inv_map_t = typename detail::inv_map_rank<0, index_sequence<>,
                                                   SliceSpecifiers...>::type;
-  using dst_map_t = typename layout_stride::template mapping<dst_ext_t>;
-  return mapping_offset<dst_map_t>{
-      dst_map_t(
+  using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
+  return mapping_offset<dst_mapping_t>{
+      dst_mapping_t(
           dst_ext, detail::construct_sub_strides(src_mapping, inv_map_t(), tuple{detail::stride_of(slices)...})),
       static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
 }

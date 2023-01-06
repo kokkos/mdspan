@@ -16,12 +16,12 @@ struct strided_index_range {
 namespace detail {
 
 // Mapping from submapping ranks to srcmapping ranks
-// InvMapRank is gonna be a index_sequence, which we build recursively
-// to contain the mapped indicies.
+// InvMapRank is an index_sequence, which we build recursively
+// to contain the mapped indices.
 template <size_t Counter, class InvMapRank, class... SliceSpecifiers>
 struct inv_map_rank;
 
-// specialization reducing rank by one (i.e. integral slice specifier)
+// specialization reducing rank by one (i.e., integral slice specifier)
 template <size_t Counter, class Slice, class... SliceSpecifiers,
           size_t... MapIdxs>
 requires(is_convertible_v<Slice, size_t>) struct inv_map_rank<
@@ -40,7 +40,7 @@ requires(!is_convertible_v<Slice, size_t>) struct inv_map_rank<
                             SliceSpecifiers...>::type;
 };
 
-// final specialziation containing the final index_sequence
+// end of recursion specialization containing the final index_sequence
 template <size_t Counter, size_t... MapIdxs>
 struct inv_map_rank<Counter, index_sequence<MapIdxs...>> {
   using type = index_sequence<MapIdxs...>;
@@ -78,7 +78,7 @@ first_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
   return r.offset;
 }
 
-// last_of(slice): getting end of slice sepcifier range
+// last_of(slice): getting end of slice specifier range
 template <size_t k, class Extents, class Integral>
 requires(is_convertible_v<Integral, size_t>) constexpr Integral
     last_of(integral_constant<size_t, k>, const Extents &, const Integral &i) {
