@@ -35,14 +35,17 @@ template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
 struct preserve_layout_left_mapping<index_sequence<Idx...>, SubRank,
                                     SliceSpecifiers...> {
   constexpr static bool value =
-      (SubRank == 0) ||
-      ((Idx < SubRank - 1
-            ? is_same_v<SliceSpecifiers, full_extent_t>
-            : (Idx == SubRank - 1 ? is_same_v<SliceSpecifiers, full_extent_t> ||
-                                        is_convertible_v<SliceSpecifiers,
-                                                         tuple<size_t, size_t>>
-                                  : true)) &&
-       ...);
+    // Preserve layout for rank 0
+    (SubRank == 0) ||
+    (
+      // Slice specifiers up to subrank need to be full_extent_t - except for
+      // the last one which could also be tuple but not a strided index range
+      // slice specifiers after subrank are integrals
+      ((Idx > SubRank - 1) || // these are only integral slice specifiers
+       (is_same_v<SliceSpecifiers, full_extent_t>) ||
+       ((Idx == SubRank -1) && is_convertible_v<SliceSpecifiers, tuple<size_t, size_t>>)
+      ) && ...
+    );
 };
 } // namespace detail
 
@@ -95,15 +98,17 @@ struct preserve_layout_right_mapping<index_sequence<Idx...>, SubRank,
                                      SliceSpecifiers...> {
   constexpr static size_t SrcRank = sizeof...(SliceSpecifiers);
   constexpr static bool value =
-      (SubRank == 0) ||
-      ((Idx > SrcRank - SubRank
-            ? is_same_v<SliceSpecifiers, full_extent_t>
-            : (Idx == SrcRank - SubRank
-                   ? is_same_v<SliceSpecifiers, full_extent_t> ||
-                         is_convertible_v<SliceSpecifiers,
-                                          tuple<size_t, size_t>>
-                   : true)) &&
-       ...);
+    // Preserve layout for rank 0
+    (SubRank == 0) ||
+    (
+      // The last subrank slice specifiers need to be full_extent_t - except for
+      // the srcrank-subrank one which could also be tuple but not a strided index range
+      // slice specifiers before srcrank-subrank are integrals
+      ((Idx < SrcRank - SubRank) || // these are only integral slice specifiers
+       (is_same_v<SliceSpecifiers, full_extent_t>) ||
+       ((Idx == SrcRank - SubRank) && is_convertible_v<SliceSpecifiers, tuple<size_t, size_t>>)
+      ) && ...
+    );
 };
 } // namespace detail
 
