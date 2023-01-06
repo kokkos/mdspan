@@ -87,7 +87,7 @@ TEST(TestLayoutStrideSpanConstruction, test_from_span_construction) {
   ASSERT_EQ(m1.stride(1), 128);
   ASSERT_EQ(m1.strides()[0], 1);
   ASSERT_EQ(m1.strides()[1], 128);
-  ASSERT_EQ(m.required_span_size(),1+15*1+31*128);
+  ASSERT_EQ(m1.required_span_size(),1+15*1+31*128);
   ASSERT_FALSE(m1.is_exhaustive());
 }
 #endif
