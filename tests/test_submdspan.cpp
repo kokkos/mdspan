@@ -21,6 +21,7 @@
 #include <utility>
 
 #include "offload_utils.hpp"
+#include "foo_customizations.hpp"
 
 namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
@@ -163,6 +164,15 @@ using submdspan_test_types =
     , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, stdex::strided_index_range<int,int,int>, stdex::strided_index_range<int,int,int>>
     , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, stdex::extents<size_t,6,dyn,8>, stdex::full_extent_t, int, std::pair<int,int>, int, int, stdex::full_extent_t>
     , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, stdex::extents<size_t,4,dyn,7>, int, stdex::full_extent_t, std::pair<int,int>, int, stdex::full_extent_t, int>
+    // Testing of customization point design
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,1>, stdex::full_extent_t>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,1>, std::pair<int,int>>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,0>, int>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,2>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,2>, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,1>, int, stdex::full_extent_t>
+    , std::tuple<Foo::layout_foo, stdex::layout_stride, stdex::dextents<size_t,1>,          args_t<10>,          stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>>
+    , std::tuple<Foo::layout_foo, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>, int>
     >;
 
 template<class T> struct TestSubMDSpan;

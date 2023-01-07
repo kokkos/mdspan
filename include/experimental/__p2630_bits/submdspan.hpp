@@ -27,7 +27,7 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
           SliceSpecifiers... slices) {
   const auto sub_mapping_offset = submdspan_mapping(src.mapping(), slices...);
   // NVCC has a problem with the deduction so lets figure out the type
-  using sub_mapping_t = decltype(sub_mapping_offset.mapping);
+  using sub_mapping_t = std::remove_cv_t<decltype(sub_mapping_offset.mapping)>;
   using sub_extents_t = typename sub_mapping_t::extents_type;
   using sub_layout_t = typename sub_mapping_t::layout_type;
   using sub_accessor_t = typename AccessorPolicy::offset_policy;
