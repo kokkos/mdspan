@@ -106,6 +106,52 @@ TEST(TestLayoutStrideListInitialization, test_list_initialization) {
   ASSERT_FALSE(m.is_exhaustive());
 }
 
+template <class> struct TestLayoutEquality;
+template <class Mapping, size_t... DynamicSizes, class Mapping2, size_t... DynamicSizes2, class Equality>
+struct TestLayoutEquality<std::tuple<
+  Mapping,
+  std::integer_sequence<size_t, DynamicSizes...>,
+  Mapping2,
+  std::integer_sequence<size_t, DynamicSizes2...>,
+  Equality
+>> : public ::testing::Test {
+  using mapping_type1 = Mapping;
+  using mapping_type2 = Mapping2;
+  using extents_type1 = std::remove_reference_t<decltype(std::declval<mapping_type1>().extents())>;
+  using extents_type2 = std::remove_reference_t<decltype(std::declval<mapping_type2>().extents())>;
+  mapping_type1 map1 = { extents_type1{}, std::array<size_t, sizeof...(DynamicSizes)>{ DynamicSizes... } };
+  mapping_type2 map2 = { extents_type2{}, std::array<size_t, sizeof...(DynamicSizes2)>{ DynamicSizes2... } };
+  bool equal = Equality::value;
+};
+
+template <class E1, class S1, class E2, class S2, class Equal>
+using test_stride_equality = std::tuple<
+  typename stdex::layout_stride::template mapping<E1>, S1,
+  typename stdex::layout_stride::template mapping<E2>, S2,
+  Equal
+>;
+template <size_t... Ds>
+using _sizes = std::integer_sequence<size_t, Ds...>;
+template <size_t... Ds>
+using _exts = stdex::extents<size_t,Ds...>;
+
+template <template <class, class, class, class, class> class _test_case_type>
+using equality_test_types =
+  ::testing::Types<
+    _test_case_type<_exts<16, 32>, _sizes<1, 16>, _exts<16, 32>, _sizes<1, 16>, std:: true_type>,
+    _test_case_type<_exts<16, 32>, _sizes<1, 16>, _exts<16, 32>, _sizes<1, 17>, std::false_type>,
+    _test_case_type<_exts<16, 32>, _sizes<1, 16>, _exts<16, 64>, _sizes<1, 16>, std::false_type>,
+    _test_case_type<_exts<16, 32>, _sizes<1, 16>, _exts<16, 64>, _sizes<1, 17>, std::false_type>
+  >;
+
+using layout_stride_equality_test_types = equality_test_types<test_stride_equality>;
+
+TYPED_TEST_SUITE(TestLayoutEquality, layout_stride_equality_test_types);
+
+TYPED_TEST(TestLayoutEquality, equality_op) {
+  ASSERT_EQ(this->map1 == this->map2, this->equal);
+}
+
 // This fails on GCC 9.2 and others
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestLayoutStrideCTAD, test_ctad) {

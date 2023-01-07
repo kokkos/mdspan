@@ -142,12 +142,14 @@ struct layout_stride {
       template <class OtherExtents>
       MDSPAN_INLINE_FUNCTION
       static constexpr bool _eq_impl(mapping const& self, mapping<OtherExtents> const& other) noexcept {
-        return _MDSPAN_FOLD_AND((self.stride(Idxs) == other.stride(Idxs)) /* && ... */);
+        return    _MDSPAN_FOLD_AND((self.stride(Idxs) == other.stride(Idxs)) /* && ... */)
+               && _MDSPAN_FOLD_AND((self.extents().extent(Idxs) == other.extents().extent(Idxs)) /* || ... */);
       }
       template <class OtherExtents>
       MDSPAN_INLINE_FUNCTION
       static constexpr bool _not_eq_impl(mapping const& self, mapping<OtherExtents> const& other) noexcept {
-        return _MDSPAN_FOLD_OR((self.stride(Idxs) != other.stride(Idxs)) /* || ... */);
+        return    _MDSPAN_FOLD_OR((self.stride(Idxs) != other.stride(Idxs)) /* || ... */)
+               || _MDSPAN_FOLD_OR((self.extents().extent(Idxs) != other.extents().extent(Idxs)) /* || ... */);
       }
 
       template <class... Integral>
