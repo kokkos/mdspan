@@ -1,33 +1,5 @@
 #ifndef _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
 #define _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
-#  include <version>
-#  include <type_traits>
-#  include <utility>
-#include <type_traits> // std::is_void
-#include <cstddef> // size_t
-#include <type_traits>
-#include <utility> // integer_sequence
-#include <cstddef>  // size_t
-#include <limits>   // numeric_limits
-#include <array>
-#include <span>
-#include <utility> // integer_sequence
-#include <cstddef>
-#include <cstddef> // size_t
-#include <utility> // integer_sequence
-#include <array>
-#include <array>
-#include <cstddef>
-#include <stdexcept>
-#include <algorithm>
-#include <numeric>
-#include <array>
-#include <span>
-#include<concepts>
-#include <tuple> // std::apply
-#include <utility> // std::pair
-#include <cassert>
-#include <vector>
 
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/mdarray
 /*
@@ -176,7 +148,10 @@
 #endif
 
 #if __has_include(<version>)
+#  include <version>
 #else
+#  include <type_traits>
+#  include <utility>
 #endif
 
 #ifdef _MSVC_LANG
@@ -427,6 +402,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #endif
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/config.hpp
 
+#include <type_traits> // std::is_void
 
 #ifndef _MDSPAN_HOST_DEVICE
 #  if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
@@ -1027,6 +1003,7 @@ struct __bools;
 //==============================================================================
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/macros.hpp
 
+#include <cstddef> // size_t
 
 namespace std {
 namespace experimental {
@@ -1149,6 +1126,8 @@ _MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 #define MDSPAN_INCLUDE_EXPERIMENTAL_BITS_TRAIT_BACKPORTS_HPP_
 
 
+#include <type_traits>
+#include <utility> // integer_sequence
 
 //==============================================================================
 // <editor-fold desc="Variable template trait backports (e.g., is_void_v)"> {{{1
@@ -1312,6 +1291,8 @@ using enable_if_t = typename enable_if<_B, _T>::type;
 //@HEADER
 
 
+#include <cstddef>  // size_t
+#include <limits>   // numeric_limits
 
 namespace std {
 namespace experimental {
@@ -1760,8 +1741,12 @@ struct __compressed_pair<
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #endif
 
+#include <array>
 #ifdef __cpp_lib_span
+#include <span>
 #endif
+#include <utility> // integer_sequence
+#include <cstddef>
 
 namespace std {
 namespace experimental {
@@ -2480,6 +2465,9 @@ struct __type_at<3, __type_list<_T0, _T1, _T2, _T3, _Ts...>> {
 
 // Needs to be after the includes above to work with the single header generator
 #if !_MDSPAN_PRESERVE_STANDARD_LAYOUT
+#include <cstddef> // size_t
+#include <utility> // integer_sequence
+#include <array>
 
 namespace std {
 namespace experimental {
@@ -2713,6 +2701,8 @@ using __partially_static_sizes_tagged = __partially_static_sizes<T, _static_t, _
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #endif
 
+#include <array>
+#include <cstddef>
 
 namespace std {
 namespace experimental {
@@ -3203,6 +3193,7 @@ using __extents_to_partially_static_sizes_t = typename __extents_to_partially_st
 } // end namespace experimental
 } // end namespace std
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/extents.hpp
+#include <stdexcept>
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_stride.hpp
 //@HEADER
 // ************************************************************************
@@ -3224,9 +3215,14 @@ using __extents_to_partially_static_sizes_t = typename __extents_to_partially_st
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #endif
 
+#include <algorithm>
+#include <numeric>
+#include <array>
 #ifdef __cpp_lib_span
+#include <span>
 #endif
 #if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+#include<concepts>
 #endif
 
 namespace std {
@@ -4526,6 +4522,8 @@ private:
 
 
 
+#include <tuple> // std::apply
+#include <utility> // std::pair
 
 namespace std {
 namespace experimental {
@@ -5121,6 +5119,8 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
 
 
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p1684_bits/../mdspan
+#include <cassert>
+#include <vector>
 
 namespace std {
 namespace experimental {
