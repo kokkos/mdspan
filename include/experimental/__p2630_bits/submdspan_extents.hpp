@@ -173,7 +173,9 @@ template <class IndexT, class T0, T0 v0, class T1, T1 v1>
 MDSPAN_INLINE_FUNCTION
 constexpr auto divide(const integral_constant<T0, v0> &,
                       const integral_constant<T1, v1> &) {
-  return integral_constant<IndexT, v0 / v1>();
+  // cutting short division by zero
+  // this is used for strided_index_range with zero extent/stride
+  return integral_constant<IndexT, v0 == 0 ? 0 : v0 / v1>();
 }
 
 // multiply which can deal with integral constant preservation

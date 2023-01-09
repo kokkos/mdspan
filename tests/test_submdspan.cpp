@@ -157,6 +157,7 @@ using submdspan_test_types =
     , std::tuple<stdex::layout_left, stdex::layout_stride,  stdex::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, stdex::extents<size_t,4,dyn,7>, int, stdex::full_extent_t, std::pair<int,int>, int, stdex::full_extent_t, int>
     // layout_right to layout_stride
     , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,1>,          args_t<10>,          stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,1>,          args_t<10>,          stdex::extents<size_t,0>,  stdex::strided_index_range<int,std::integral_constant<int,0>,std::integral_constant<int,0>>>
     , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>, int>
     , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, stdex::full_extent_t, std::pair<int,int>>
     , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, std::pair<int,int>, stdex::strided_index_range<int,int,int>>
@@ -199,15 +200,20 @@ struct TestSubMDSpan<
     return 2;
   }
   MDSPAN_INLINE_FUNCTION
-  static std::pair<int,int> create_slice_arg(std::pair<int,int>) {
+  static auto create_slice_arg(std::pair<int,int>) {
     return std::pair<int,int>(1,3);
   }
   MDSPAN_INLINE_FUNCTION
-  static stdex::strided_index_range<int,int,int> create_slice_arg(stdex::strided_index_range<int,int,int>) {
+  static auto create_slice_arg(stdex::strided_index_range<int,int,int>) {
     return stdex::strided_index_range<int,int,int>{1,3,2};
   }
+  template<int Ext, int Stride>
   MDSPAN_INLINE_FUNCTION
-  static stdex::full_extent_t create_slice_arg(stdex::full_extent_t) {
+  static auto create_slice_arg(stdex::strided_index_range<int,std::integral_constant<int, Ext>, std::integral_constant<int, Stride>>) {
+    return stdex::strided_index_range<int,std::integral_constant<int, Ext>, std::integral_constant<int, Stride>>{1};
+  }
+  MDSPAN_INLINE_FUNCTION
+  static auto create_slice_arg(stdex::full_extent_t) {
     return stdex::full_extent;
   }
 
@@ -223,8 +229,15 @@ struct TestSubMDSpan<
   }
   template<class SrcExtents, class SubExtents, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
-  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, stdex::strided_index_range<int,int,int> p, SliceArgs ... slices) {
+  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext,
+                                     stdex::strided_index_range<int,int,int> p, SliceArgs ... slices) {
     return (sub_ext.extent(sub_idx)==(p.extent+p.stride-1)/p.stride) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+  }
+  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
+  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext,
+                                     stdex::strided_index_range<int,std::integral_constant<int, 0>,std::integral_constant<int,0>> p, SliceArgs ... slices) {
+    return (sub_ext.extent(sub_idx)==0) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
   }
   template<class SrcExtents, class SubExtents, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
