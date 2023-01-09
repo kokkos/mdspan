@@ -14,7 +14,11 @@
 //
 //@HEADER
 
+#include <array>
+#include <type_traits>
 #include <tuple>
+#include <utility> // index_sequence
+
 namespace std {
 namespace experimental {
 

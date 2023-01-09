@@ -14,21 +14,9 @@
 //
 //@HEADER
 
+#include "strided_index_range.hpp"
 namespace std {
 namespace experimental {
-
-// Slice Specifier allowing for strides and compile time extent
-template <class OffsetType, class ExtentType, class StrideType>
-struct strided_index_range {
-  using offset_type = OffsetType;
-  using extent_type = ExtentType;
-  using stride_type = StrideType;
-
-  OffsetType offset;
-  ExtentType extent;
-  StrideType stride;
-};
-
 namespace detail {
 
 // Mapping from submapping ranks to srcmapping ranks
@@ -94,6 +82,9 @@ first_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
 }
 
 // last_of(slice): getting end of slice specifier range
+// We need however not just the slice but also the extents
+// of the original view and which rank from the extents.
+// This is needed in the case of slice being full_extent_t.
 MDSPAN_TEMPLATE_REQUIRES(
   size_t k, class Extents, class Integral,
   /* requires */(is_convertible_v<Integral, size_t>)

@@ -239,14 +239,14 @@ struct TestSubMDSpan<
     typename mds_org_t::mapping_type map(typename mds_org_t::extents_type(ConstrArgs...));
     int data[25000];
     mds_org_t src(data, map);
-    size_t* result = allocate_array<size_t>(2);
+    size_t* result = allocate_array<size_t>(1);
 
     dispatch([=] _MDSPAN_HOST_DEVICE () {
       auto sub = stdex::submdspan(src, create_slice_arg(SubArgs())...);
       bool match = match_expected_extents(0, 0, src.extents(), sub.extents(), create_slice_arg(SubArgs())...);
       result[0] = match?1:0;
     });
-    EXPECT_TRUE(result[0]==1);
+    EXPECT_EQ(result[0], 1);
     free_array(result);
   }
 
