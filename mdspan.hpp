@@ -2,93 +2,39 @@
 #define _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
 
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/mdarray
-/*
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 2.0
-//              Copyright (2019) Sandia Corporation
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
 //
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+// Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
 //@HEADER
-*/
 
 
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/mdspan
-/*
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 2.0
-//              Copyright (2019) Sandia Corporation
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
 //
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+// Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
 //@HEADER
-*/
 
 
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/default_accessor.hpp
@@ -4507,7 +4453,8 @@ private:
 } // end namespace std
 
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/submdspan.hpp
+#if MDSPAN_HAS_CXX_17
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan.hpp
 //@HEADER
 // ************************************************************************
 //
@@ -4524,540 +4471,658 @@ private:
 //
 //@HEADER
 
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_extents.hpp
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
+//
+// Under the terms of Contract DE-NA0003525 with NTESS,
+// the U.S. Government retains certain rights in this software.
+//
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//@HEADER
 
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/strided_index_range.hpp
 
-#include <tuple> // std::apply
-#include <utility> // std::pair
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
+//
+// Under the terms of Contract DE-NA0003525 with NTESS,
+// the U.S. Government retains certain rights in this software.
+//
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//@HEADER
 
 namespace std {
 namespace experimental {
 
+// Slice Specifier allowing for strides and compile time extent
+template <class OffsetType, class ExtentType, class StrideType>
+struct strided_index_range {
+  using offset_type = OffsetType;
+  using extent_type = ExtentType;
+  using stride_type = StrideType;
+
+  OffsetType offset;
+  ExtentType extent;
+  StrideType stride;
+};
+
+} // experimental
+} // std
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/strided_index_range.hpp
+namespace std {
+namespace experimental {
 namespace detail {
 
-template <size_t OldExtent, size_t OldStaticStride, class T>
-struct __slice_wrap {
-  T slice;
-  size_t old_extent;
-  size_t old_stride;
-};
-
-//--------------------------------------------------------------------------------
-
-template <size_t OldExtent, size_t OldStaticStride>
-MDSPAN_INLINE_FUNCTION constexpr
-__slice_wrap<OldExtent, OldStaticStride, size_t>
-__wrap_slice(size_t val, size_t ext, size_t stride) { return { val, ext, stride }; }
-
-template <size_t OldExtent, size_t OldStaticStride, class IntegerType, IntegerType Value0>
-MDSPAN_INLINE_FUNCTION constexpr
-__slice_wrap<OldExtent, OldStaticStride, std::integral_constant<IntegerType, Value0>>
-__wrap_slice(size_t val, size_t ext, std::integral_constant<IntegerType, Value0> stride)
-{
-#if MDSPAN_HAS_CXX_17
-  if constexpr (std::is_signed_v<IntegerType>) {
-    static_assert(Value0 >= IntegerType(0), "Invalid slice specifier");
-  }
-#endif // MDSPAN_HAS_CXX_17
-
-  return { val, ext, stride };
-}
-
-template <size_t OldExtent, size_t OldStaticStride>
-MDSPAN_INLINE_FUNCTION constexpr
-__slice_wrap<OldExtent, OldStaticStride, full_extent_t>
-__wrap_slice(full_extent_t val, size_t ext, size_t stride) { return { val, ext, stride }; }
-
-// TODO generalize this to anything that works with std::get<0> and std::get<1>
-template <size_t OldExtent, size_t OldStaticStride>
-MDSPAN_INLINE_FUNCTION constexpr
-__slice_wrap<OldExtent, OldStaticStride, std::tuple<size_t, size_t>>
-__wrap_slice(std::tuple<size_t, size_t> const& val, size_t ext, size_t stride)
-{
-  return { val, ext, stride };
-}
-
-template <size_t OldExtent, size_t OldStaticStride,
-	  class IntegerType0, IntegerType0 Value0,
-	  class IntegerType1, IntegerType1 Value1>
-MDSPAN_INLINE_FUNCTION constexpr
-  __slice_wrap<OldExtent, OldStaticStride,
-               std::tuple<std::integral_constant<IntegerType0, Value0>,
-                          std::integral_constant<IntegerType1, Value1>>>
-__wrap_slice(std::tuple<std::integral_constant<IntegerType0, Value0>, std::integral_constant<IntegerType1, Value1>> const& val, size_t ext, size_t stride)
-{
-  static_assert(Value1 >= Value0, "Invalid slice tuple");
-  return { val, ext, stride };
-}
-
-//--------------------------------------------------------------------------------
-
-
-// a layout right remains a layout right if it is indexed by 0 or more scalars,
-// then optionally a pair and finally 0 or more all
-template <
-  // what we encountered until now preserves the layout right
-  bool result=true,
-  // we only encountered 0 or more scalars, no pair or all
-  bool encountered_only_scalar=true
->
-struct preserve_layout_right_analysis : integral_constant<bool, result> {
-  using layout_type_if_preserved = layout_right;
-  using encounter_pair = preserve_layout_right_analysis<
-    // if we encounter a pair, the layout remains a layout right only if it was one before
-    // and that only scalars were encountered until now
-    result && encountered_only_scalar,
-    // if we encounter a pair, we didn't encounter scalars only
-    false
-  >;
-  using encounter_all = preserve_layout_right_analysis<
-    // if we encounter a all, the layout remains a layout right if it was one before
-    result,
-    // if we encounter a all, we didn't encounter scalars only
-    false
-  >;
-  using encounter_scalar = preserve_layout_right_analysis<
-    // if we encounter a scalar, the layout remains a layout right only if it was one before
-    // and that only scalars were encountered until now
-    result && encountered_only_scalar,
-    // if we encounter a scalar, the fact that we encountered scalars only doesn't change
-    encountered_only_scalar
-  >;
-};
-
-// a layout left remains a layout left if it is indexed by 0 or more all,
-// then optionally a pair and finally 0 or more scalars
-template <
-  bool result=true,
-  bool encountered_only_all=true
->
-struct preserve_layout_left_analysis : integral_constant<bool, result> {
-  using layout_type_if_preserved = layout_left;
-  using encounter_pair = preserve_layout_left_analysis<
-    // if we encounter a pair, the layout remains a layout left only if it was one before
-    // and that only all were encountered until now
-    result && encountered_only_all,
-    // if we encounter a pair, we didn't encounter all only
-    false
-  >;
-  using encounter_all = preserve_layout_left_analysis<
-    // if we encounter a all, the layout remains a layout left only if it was one before
-    // and that only all were encountered until now
-    result && encountered_only_all,
-    // if we encounter a all, the fact that we encountered scalars all doesn't change
-    encountered_only_all
-  >;
-  using encounter_scalar = preserve_layout_left_analysis<
-    // if we encounter a scalar, the layout remains a layout left if it was one before
-    result,
-    // if we encounter a scalar, we didn't encounter scalars only
-    false
-  >;
-};
-
-struct ignore_layout_preservation : std::integral_constant<bool, false> {
-  using layout_type_if_preserved = void;
-  using encounter_pair = ignore_layout_preservation;
-  using encounter_all = ignore_layout_preservation;
-  using encounter_scalar = ignore_layout_preservation;
-};
-
-template <class Layout>
-struct preserve_layout_analysis
-  : ignore_layout_preservation { };
-template <>
-struct preserve_layout_analysis<layout_right>
-  : preserve_layout_right_analysis<> { };
-template <>
-struct preserve_layout_analysis<layout_left>
-  : preserve_layout_left_analysis<> { };
-
-//--------------------------------------------------------------------------------
-
-template <
-  class _IndexT,
-  class _PreserveLayoutAnalysis,
-  class _OffsetsArray=__partially_static_sizes<_IndexT, size_t>,
-  class _ExtsArray=__partially_static_sizes<_IndexT, size_t>,
-  class _StridesArray=__partially_static_sizes<_IndexT, size_t>,
-  class = make_index_sequence<_OffsetsArray::__size>,
-  class = make_index_sequence<_ExtsArray::__size>,
-  class = make_index_sequence<_StridesArray::__size>
->
-struct __assign_op_slice_handler;
-
-/* clang-format: off */
-template <
-  class _IndexT,
-  class _PreserveLayoutAnalysis,
-  size_t... _Offsets,
-  size_t... _Exts,
-  size_t... _Strides,
-  size_t... _OffsetIdxs,
-  size_t... _ExtIdxs,
-  size_t... _StrideIdxs>
-struct __assign_op_slice_handler<
-  _IndexT,
-  _PreserveLayoutAnalysis,
-  __partially_static_sizes<_IndexT, size_t, _Offsets...>,
-  __partially_static_sizes<_IndexT, size_t, _Exts...>,
-  __partially_static_sizes<_IndexT, size_t, _Strides...>,
-  integer_sequence<size_t, _OffsetIdxs...>,
-  integer_sequence<size_t, _ExtIdxs...>,
-  integer_sequence<size_t, _StrideIdxs...>>
-{
-  // TODO remove this for better compiler performance
-  static_assert(
-    _MDSPAN_FOLD_AND((_Strides == dynamic_extent || _Strides > 0) /* && ... */),
-    " "
-  );
-  static_assert(
-    _MDSPAN_FOLD_AND((_Offsets == dynamic_extent || _Offsets >= 0) /* && ... */),
-    " "
-  );
-
-  using __offsets_storage_t = __partially_static_sizes<_IndexT, size_t, _Offsets...>;
-  using __extents_storage_t = __partially_static_sizes<_IndexT, size_t, _Exts...>;
-  using __strides_storage_t = __partially_static_sizes<_IndexT, size_t, _Strides...>;
-  __offsets_storage_t __offsets;
-  __extents_storage_t __exts;
-  __strides_storage_t __strides;
-
-#ifdef __INTEL_COMPILER
-#if __INTEL_COMPILER <= 1800
-  MDSPAN_INLINE_FUNCTION constexpr __assign_op_slice_handler(__assign_op_slice_handler&& __other) noexcept
-    : __offsets(::std::move(__other.__offsets)), __exts(::std::move(__other.__exts)), __strides(::std::move(__other.__strides))
-  { }
-  MDSPAN_INLINE_FUNCTION constexpr __assign_op_slice_handler(
-    __offsets_storage_t&& __o,
-    __extents_storage_t&& __e,
-    __strides_storage_t&& __s
-  ) noexcept
-    : __offsets(::std::move(__o)), __exts(::std::move(__e)), __strides(::std::move(__s))
-  { }
-#endif
-#endif
-
-// Don't define this unless we need it; they have a cost to compile
-#ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
-  using __extents_type = ::std::experimental::extents<_IndexT, _Exts...>;
-#endif
-
-  // For size_t slice, skip the extent and stride, but add an offset corresponding to the value
-  template <size_t _OldStaticExtent, size_t _OldStaticStride>
-  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
-  _MDSPAN_CONSTEXPR_14 auto
-  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, size_t>&& __slice) noexcept
-    -> __assign_op_slice_handler<
-         _IndexT,
-         typename _PreserveLayoutAnalysis::encounter_scalar,
-         __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>,
-         __partially_static_sizes<_IndexT, size_t, _Exts...>,
-         __partially_static_sizes<_IndexT, size_t, _Strides...>/* intentional space here to work around ICC bug*/> {
-    return {
-      __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>(
-        __construct_psa_from_all_exts_values_tag,
-        __offsets.template __get_n<_OffsetIdxs>()..., __slice.slice),
-      ::std::move(__exts),
-      ::std::move(__strides)
-    };
-  }
-
-  // Treat integral_constant slice like size_t slice, but with a compile-time offset.
-  // The result's extents_type can't take advantage of that,
-  // but it might help for specialized layouts.
-  template <size_t _OldStaticExtent, size_t _OldStaticStride, class IntegerType, IntegerType Value0>
-  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
-  _MDSPAN_CONSTEXPR_14 auto
-  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, std::integral_constant<IntegerType, Value0>>&&) noexcept
-    -> __assign_op_slice_handler<
-         _IndexT,
-         typename _PreserveLayoutAnalysis::encounter_scalar,
-         __partially_static_sizes<_IndexT, size_t, _Offsets..., Value0>,
-         __partially_static_sizes<_IndexT, size_t, _Exts...>,
-         __partially_static_sizes<_IndexT, size_t, _Strides...>/* intentional space here to work around ICC bug*/> {
-#if MDSPAN_HAS_CXX_17
-    if constexpr (std::is_signed_v<IntegerType>) {
-      static_assert(Value0 >= IntegerType(0), "Invalid slice specifier");
-    }
-#endif // MDSPAN_HAS_CXX_17
-    return {
-      __partially_static_sizes<_IndexT, size_t, _Offsets..., Value0>(
-        __construct_psa_from_all_exts_values_tag,
-        __offsets.template __get_n<_OffsetIdxs>()..., size_t(Value0)),
-      ::std::move(__exts),
-      ::std::move(__strides)
-    };
-  }
-
-  // For a std::full_extent, offset 0 and old extent
-  template <size_t _OldStaticExtent, size_t _OldStaticStride>
-  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
-  _MDSPAN_CONSTEXPR_14 auto
-  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, full_extent_t>&& __slice) noexcept
-    -> __assign_op_slice_handler<
-         _IndexT,
-         typename _PreserveLayoutAnalysis::encounter_all,
-         __partially_static_sizes<_IndexT, size_t, _Offsets..., 0>,
-         __partially_static_sizes<_IndexT, size_t, _Exts..., _OldStaticExtent>,
-         __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
-    return {
-      __partially_static_sizes<_IndexT, size_t, _Offsets..., 0>(
-        __construct_psa_from_all_exts_values_tag,
-        __offsets.template __get_n<_OffsetIdxs>()..., size_t(0)),
-      __partially_static_sizes<_IndexT, size_t, _Exts..., _OldStaticExtent>(
-        __construct_psa_from_all_exts_values_tag,
-        __exts.template __get_n<_ExtIdxs>()..., __slice.old_extent),
-      __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(
-        __construct_psa_from_all_exts_values_tag,
-        __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
-    };
-  }
-
-  // For a std::tuple, add an offset and add a new dynamic extent (strides still preserved)
-  template <size_t _OldStaticExtent, size_t _OldStaticStride>
-  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
-  _MDSPAN_CONSTEXPR_14 auto
-  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, tuple<size_t, size_t>>&& __slice) noexcept
-    -> __assign_op_slice_handler<
-         _IndexT,
-         typename _PreserveLayoutAnalysis::encounter_pair,
-         __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>,
-         __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>,
-         __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
-    return {
-      __partially_static_sizes<_IndexT, size_t, _Offsets..., dynamic_extent>(
-        __construct_psa_from_all_exts_values_tag,
-        __offsets.template __get_n<_OffsetIdxs>()..., ::std::get<0>(__slice.slice)),
-      __partially_static_sizes<_IndexT, size_t, _Exts..., dynamic_extent>(
-        __construct_psa_from_all_exts_values_tag,
-        __exts.template __get_n<_ExtIdxs>()..., ::std::get<1>(__slice.slice) - ::std::get<0>(__slice.slice)),
-      __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(
-        __construct_psa_from_all_exts_values_tag,
-        __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
-    };
-  }
-
-  // For a std::tuple of two std::integral_constant, do something like
-  // we did above for a tuple of two size_t, but make sure the
-  // result's extents type make the values compile-time constants.
-  template <size_t _OldStaticExtent, size_t _OldStaticStride,
-	    class IntegerType0, IntegerType0 Value0,
-	    class IntegerType1, IntegerType1 Value1>
-  MDSPAN_FORCE_INLINE_FUNCTION // NOLINT (misc-unconventional-assign-operator)
-  _MDSPAN_CONSTEXPR_14 auto
-  operator=(__slice_wrap<_OldStaticExtent, _OldStaticStride, tuple<std::integral_constant<IntegerType0, Value0>, std::integral_constant<IntegerType1, Value1>>>&& __slice) noexcept
-    -> __assign_op_slice_handler<
-         _IndexT,
-         typename _PreserveLayoutAnalysis::encounter_pair,
-         __partially_static_sizes<_IndexT, size_t, _Offsets..., size_t(Value0)>,
-         __partially_static_sizes<_IndexT, size_t, _Exts..., size_t(Value1 - Value0)>,
-         __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>/* intentional space here to work around ICC bug*/> {
-    static_assert(Value1 >= Value0, "Invalid slice specifier");
-    return {
-      // We're still turning the template parameters Value0 and Value1
-      // into (constexpr) run-time values here.
-      __partially_static_sizes<_IndexT, size_t, _Offsets..., size_t(Value0) > (
-        __construct_psa_from_all_exts_values_tag,
-        __offsets.template __get_n<_OffsetIdxs>()..., Value0),
-      __partially_static_sizes<_IndexT, size_t, _Exts..., size_t(Value1 - Value0) > (
-        __construct_psa_from_all_exts_values_tag,
-        __exts.template __get_n<_ExtIdxs>()..., Value1 - Value0),
-      __partially_static_sizes<_IndexT, size_t, _Strides..., _OldStaticStride>(
-        __construct_psa_from_all_exts_values_tag,
-        __strides.template __get_n<_StrideIdxs>()..., __slice.old_stride)
-    };
-  }
-
-   // TODO defer instantiation of this?
-  using layout_type = typename conditional<
-    _PreserveLayoutAnalysis::value,
-    typename _PreserveLayoutAnalysis::layout_type_if_preserved,
-    layout_stride
-  >::type;
-
-  // TODO noexcept specification
-  template <class NewLayout>
-  MDSPAN_INLINE_FUNCTION
-  _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
-    (
-      _MDSPAN_CONSTEXPR_14 /* auto */
-      _make_layout_mapping_impl(NewLayout) noexcept
-    ),
-    (
-      /* not layout stride, so don't pass dynamic_strides */
-      /* return */ typename NewLayout::template mapping<::std::experimental::extents<_IndexT, _Exts...>>(
-        experimental::extents<_IndexT, _Exts...>::__make_extents_impl(::std::move(__exts))
-      ) /* ; */
-    )
-  )
-
-  MDSPAN_INLINE_FUNCTION
-  _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
-    (
-      _MDSPAN_CONSTEXPR_14 /* auto */
-      _make_layout_mapping_impl(layout_stride) noexcept
-    ),
-    (
-      /* return */ layout_stride::template mapping<::std::experimental::extents<_IndexT, _Exts...>>
-        ::__make_mapping(::std::move(__exts), ::std::move(__strides)) /* ; */
-    )
-  )
-
-  template <class OldLayoutMapping> // mostly for deferred instantiation, but maybe we'll use this in the future
-  MDSPAN_INLINE_FUNCTION
-  _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
-    (
-      _MDSPAN_CONSTEXPR_14 /* auto */
-      make_layout_mapping(OldLayoutMapping const&) noexcept
-    ),
-    (
-      /* return */ this->_make_layout_mapping_impl(layout_type{}) /* ; */
-    )
-  )
-};
-
-//==============================================================================
-
-#if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
-// Forking this because the C++11 version will be *completely* unreadable
-template <class ET, class ST, size_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
+// Mapping from submapping ranks to srcmapping ranks
+// InvMapRank is an index_sequence, which we build recursively
+// to contain the mapped indices.
+// end of recursion specialization containing the final index_sequence
+template <size_t Counter, size_t... MapIdxs>
 MDSPAN_INLINE_FUNCTION
-constexpr auto _submdspan_impl(
-  integer_sequence<size_t, Idxs...>,
-  mdspan<ET, std::experimental::extents<ST, Exts...>, LP, AP> const& src,
-  SliceSpecs&&... slices
-) noexcept
-{
-  using _IndexT = ST;
-  auto _handled =
-    _MDSPAN_FOLD_ASSIGN_LEFT(
-      (
-        detail::__assign_op_slice_handler<
-          _IndexT,
-          detail::preserve_layout_analysis<LP>
-        >{
-          __partially_static_sizes<_IndexT, size_t>{},
-          __partially_static_sizes<_IndexT, size_t>{},
-          __partially_static_sizes<_IndexT, size_t>{}
-        }
-      ),
-        /* = ... = */
-      detail::__wrap_slice<
-        Exts, dynamic_extent
-      >(
-        slices, src.extents().template __extent<Idxs>(),
-        src.mapping().stride(Idxs)
-      )
-    );
-
-  size_t offset_size = src.mapping()(_handled.__offsets.template __get_n<Idxs>()...);
-  auto offset_ptr = src.accessor().offset(src.data_handle(), offset_size);
-  auto map = _handled.make_layout_mapping(src.mapping());
-  auto acc_pol = typename AP::offset_policy(src.accessor());
-  return mdspan<
-    ET, remove_const_t<remove_reference_t<decltype(map.extents())>>,
-        typename decltype(_handled)::layout_type, remove_const_t<remove_reference_t<decltype(acc_pol)>>
-  >(
-    std::move(offset_ptr), std::move(map), std::move(acc_pol)
-  );
-}
-#else
-
-template <class ET, class AP, class Src, class Handled, size_t... Idxs>
-auto _submdspan_impl_helper(Src&& src, Handled&& h, std::integer_sequence<size_t, Idxs...>)
-  -> mdspan<
-       ET, typename Handled::__extents_type, typename Handled::layout_type, typename AP::offset_policy
-     >
-{
-  return {
-    src.accessor().offset(src.data_handle(), src.mapping()(h.__offsets.template __get_n<Idxs>()...)),
-    h.make_layout_mapping(src.mapping()),
-    typename AP::offset_policy(src.accessor())
-  };
+constexpr auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>) {
+  return index_sequence<MapIdxs...>();
 }
 
-template <class ET, class ST, size_t... Exts, class LP, class AP, class... SliceSpecs, size_t... Idxs>
+// specialization reducing rank by one (i.e., integral slice specifier)
+template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
 MDSPAN_INLINE_FUNCTION
-_MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
-  (
-    constexpr /* auto */ _submdspan_impl(
-      std::integer_sequence<size_t, Idxs...> seq,
-      mdspan<ET, std::experimental::extents<ST, Exts...>, LP, AP> const& src,
-      SliceSpecs&&... slices
-    ) noexcept
-  ),
-  (
-    /* return */ _submdspan_impl_helper<ET, AP>(
-      src,
-      _MDSPAN_FOLD_ASSIGN_LEFT(
-        (
-          detail::__assign_op_slice_handler<
-            size_t,
-            detail::preserve_layout_analysis<LP>
-          >{
-            __partially_static_sizes<ST, size_t>{},
-            __partially_static_sizes<ST, size_t>{},
-            __partially_static_sizes<ST, size_t>{}
-          }
-        ),
-        /* = ... = */
-        detail::__wrap_slice<
-          Exts, dynamic_extent
-        >(
-          slices, src.extents().template __extent<Idxs>(), src.mapping().stride(Idxs)
-        )
-      ),
-      seq
-    ) /* ; */
-  )
+constexpr auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>, Slice,
+                  SliceSpecifiers... slices) {
+  using next_idx_seq_t = conditional_t<is_convertible_v<Slice, size_t>,
+                                       index_sequence<MapIdxs...>,
+                                       index_sequence<MapIdxs..., Counter>>;
+
+  return inv_map_rank(integral_constant<size_t,Counter + 1>(), next_idx_seq_t(),
+                                     slices...);
+}
+
+// Helper for identifying strided_index_range
+template <class T> struct is_strided_index_range : false_type {};
+
+template <class OffsetType, class ExtentType, class StrideType>
+struct is_strided_index_range<
+    strided_index_range<OffsetType, ExtentType, StrideType>> : true_type {};
+
+// first_of(slice): getting begin of slice specifier range
+MDSPAN_TEMPLATE_REQUIRES(
+  class Integral,
+  /* requires */(is_convertible_v<Integral, size_t>)
 )
+MDSPAN_INLINE_FUNCTION
+constexpr Integral first_of(const Integral &i) {
+  return i;
+}
 
+MDSPAN_INLINE_FUNCTION
+constexpr integral_constant<size_t, 0>
+first_of(const experimental::full_extent_t &) {
+  return integral_constant<size_t, 0>();
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Slice,
+  /* requires */(is_convertible_v<Slice, tuple<size_t, size_t>>)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr auto first_of(const Slice &i) {
+  return get<0>(i);
+}
+
+template <class OffsetType, class ExtentType, class StrideType>
+MDSPAN_INLINE_FUNCTION
+constexpr OffsetType
+first_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
+  return r.offset;
+}
+
+// last_of(slice): getting end of slice specifier range
+// We need however not just the slice but also the extents
+// of the original view and which rank from the extents.
+// This is needed in the case of slice being full_extent_t.
+MDSPAN_TEMPLATE_REQUIRES(
+  size_t k, class Extents, class Integral,
+  /* requires */(is_convertible_v<Integral, size_t>)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr Integral
+    last_of(integral_constant<size_t, k>, const Extents &, const Integral &i) {
+  return i;
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  size_t k, class Extents, class Slice,
+  /* requires */(is_convertible_v<Slice, tuple<size_t, size_t>>)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr auto last_of(integral_constant<size_t, k>, const Extents &,
+                       const Slice &i) {
+  return get<1>(i);
+}
+
+// Suppress spurious warning with NVCC about no return statement.
+// This is a known issue in NVCC and NVC++
+// Depending on the CUDA and GCC version we need both the builtin
+// and the diagnostic push. I tried really hard to find something shorter
+// but no luck ...
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic push
+        #pragma nv_diag_suppress = implicit_return_from_non_void_function
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic push
+        #pragma diag_suppress implicit_return_from_non_void_function
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic push
+    #pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
+template <size_t k, class Extents>
+MDSPAN_INLINE_FUNCTION
+constexpr auto last_of(integral_constant<size_t, k>, const Extents &ext,
+                       experimental::full_extent_t) {
+  if constexpr (Extents::static_extent(k) == dynamic_extent) {
+    return ext.extent(k);
+  } else {
+    return integral_constant<size_t, Extents::static_extent(k)>();
+  }
+#if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+  // Even with CUDA_ARCH protection this thing warns about calling host function
+  __builtin_unreachable();
+#endif
+}
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic pop
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic pop
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic pop
 #endif
 
-template <class T> struct _is_layout_stride : std::false_type { };
-template<>
-struct _is_layout_stride<
-  layout_stride
-> : std::true_type
-{ };
+template <size_t k, class Extents, class OffsetType, class ExtentType,
+          class StrideType>
+MDSPAN_INLINE_FUNCTION
+constexpr OffsetType
+last_of(integral_constant<size_t, k>, const Extents &,
+        const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
+  return r.extent;
+}
+
+// get stride of slices
+template <class T>
+MDSPAN_INLINE_FUNCTION
+constexpr auto stride_of(const T &) {
+  return integral_constant<size_t, 1>();
+}
+
+template <class OffsetType, class ExtentType, class StrideType>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+stride_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
+  return r.stride;
+}
+
+// divide which can deal with integral constant preservation
+template <class IndexT, class T0, class T1>
+MDSPAN_INLINE_FUNCTION
+constexpr auto divide(const T0 &v0, const T1 &v1) {
+  return IndexT(v0) / IndexT(v1);
+}
+
+template <class IndexT, class T0, T0 v0, class T1, T1 v1>
+MDSPAN_INLINE_FUNCTION
+constexpr auto divide(const integral_constant<T0, v0> &,
+                      const integral_constant<T1, v1> &) {
+  // cutting short division by zero
+  // this is used for strided_index_range with zero extent/stride
+  return integral_constant<IndexT, v0 == 0 ? 0 : v0 / v1>();
+}
+
+// multiply which can deal with integral constant preservation
+template <class IndexT, class T0, class T1>
+MDSPAN_INLINE_FUNCTION
+constexpr auto multiply(const T0 &v0, const T1 &v1) {
+  return IndexT(v0) * IndexT(v1);
+}
+
+template <class IndexT, class T0, T0 v0, class T1, T1 v1>
+MDSPAN_INLINE_FUNCTION
+constexpr auto multiply(const integral_constant<T0, v0> &,
+                        const integral_constant<T1, v1> &) {
+  return integral_constant<IndexT, v0 * v1>();
+}
+
+// compute new static extent from range, preserving static knowledge
+template <class Arg0, class Arg1> struct StaticExtentFromRange {
+  constexpr static size_t value = dynamic_extent;
+};
+
+template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
+struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
+                             std::integral_constant<Integral1, val1>> {
+  constexpr static size_t value = val1 - val0;
+};
+
+// compute new static extent from strided_index_range, preserving static
+// knowledge
+template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
+  constexpr static size_t value = dynamic_extent;
+};
+
+template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
+struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
+                                    std::integral_constant<Integral1, val1>> {
+  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
+};
+
+// creates new extents through recursive calls to next_extent member function
+// next_extent has different overloads for different types of stride specifiers
+template <size_t K, class Extents, size_t... NewExtents>
+struct extents_constructor {
+  MDSPAN_TEMPLATE_REQUIRES(
+    class Slice, class... SlicesAndExtents,
+    /* requires */(!is_convertible_v<Slice, size_t> &&
+                   !is_strided_index_range<Slice>::value)
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr static auto next_extent(const Extents &ext, const Slice &sl,
+                                    SlicesAndExtents... slices_and_extents) {
+    constexpr size_t new_static_extent = StaticExtentFromRange<
+        decltype(first_of(std::declval<Slice>())),
+        decltype(last_of(integral_constant<size_t, Extents::rank() - K>(),
+                         std::declval<Extents>(),
+                         std::declval<Slice>()))>::value;
+
+    using next_t =
+        extents_constructor<K - 1, Extents, NewExtents..., new_static_extent>;
+    using index_t = typename Extents::index_type;
+    return next_t::next_extent(
+        ext, slices_and_extents...,
+        index_t(last_of(integral_constant<size_t, Extents::rank() - K>(), ext,
+                        sl)) -
+            index_t(first_of(sl)));
+  }
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class Slice, class... SlicesAndExtents,
+    /* requires */ (is_convertible_v<Slice, size_t>)
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr static auto next_extent(const Extents &ext, const Slice &,
+                                    SlicesAndExtents... slices_and_extents) {
+    using next_t = extents_constructor<K - 1, Extents, NewExtents...>;
+    return next_t::next_extent(ext, slices_and_extents...);
+  }
+
+  template <class OffsetType, class ExtentType, class StrideType,
+            class... SlicesAndExtents>
+  MDSPAN_INLINE_FUNCTION
+  constexpr static auto
+  next_extent(const Extents &ext,
+              const strided_index_range<OffsetType, ExtentType, StrideType> &r,
+              SlicesAndExtents... slices_and_extents) {
+    using index_t = typename Extents::index_type;
+    using new_static_extent_t =
+        StaticExtentFromStridedRange<ExtentType, StrideType>;
+    if constexpr (new_static_extent_t::value == dynamic_extent) {
+      using next_t =
+          extents_constructor<K - 1, Extents, NewExtents..., dynamic_extent>;
+      return next_t::next_extent(
+          ext, slices_and_extents...,
+          r.extent > 0 ? 1 + divide<index_t>(r.extent - 1, r.stride) : 0);
+    } else {
+      constexpr size_t new_static_extent = new_static_extent_t::value;
+      using next_t =
+          extents_constructor<K - 1, Extents, NewExtents..., new_static_extent>;
+      return next_t::next_extent(
+          ext, slices_and_extents..., index_t(divide<index_t>(ExtentType(), StrideType())));
+    }
+  }
+};
+
+template <class Extents, size_t... NewStaticExtents>
+struct extents_constructor<0, Extents, NewStaticExtents...> {
+
+  template <class... NewExtents>
+  MDSPAN_INLINE_FUNCTION
+  constexpr static auto next_extent(const Extents &, NewExtents... new_exts) {
+    return extents<typename Extents::index_type, NewStaticExtents...>(
+        new_exts...);
+  }
+};
 
 } // namespace detail
 
-//==============================================================================
-
-MDSPAN_TEMPLATE_REQUIRES(
-  class ET, class EXT, class LP, class AP, class... SliceSpecs,
-  /* requires */ (
-    (
-      _MDSPAN_TRAIT(is_same, LP, layout_left)
-        || _MDSPAN_TRAIT(is_same, LP, layout_right)
-        || detail::_is_layout_stride<LP>::value
-    ) &&
-    _MDSPAN_FOLD_AND((
-      _MDSPAN_TRAIT(is_convertible, SliceSpecs, size_t)
-        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, tuple<size_t, size_t>)
-        || _MDSPAN_TRAIT(is_convertible, SliceSpecs, full_extent_t)
-    ) /* && ... */) &&
-    sizeof...(SliceSpecs) == EXT::rank()
-  )
-)
+// submdspan_extents creates new extents given src extents and submdspan slice
+// specifiers
+template <class IndexType, size_t... Extents, class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION
-_MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
-  (
-    constexpr submdspan(
-      mdspan<ET, EXT, LP, AP> const& src, SliceSpecs... slices
-    ) noexcept
-  ),
-  (
-    /* return */
-      detail::_submdspan_impl(std::make_index_sequence<sizeof...(SliceSpecs)>{}, src, slices...) /*;*/
-  )
-)
-/* clang-format: on */
+constexpr auto submdspan_extents(const extents<IndexType, Extents...> &src_exts,
+                                 SliceSpecifiers... slices) {
 
-} // end namespace experimental
+  using ext_t = extents<IndexType, Extents...>;
+  return detail::extents_constructor<ext_t::rank(), ext_t>::next_extent(
+      src_exts, slices...);
+}
+} // namespace experimental
 } // namespace std
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/submdspan.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_extents.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_mapping.hpp
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
+//
+// Under the terms of Contract DE-NA0003525 with NTESS,
+// the U.S. Government retains certain rights in this software.
+//
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//@HEADER
+
+#include <array>
+#include <type_traits>
+#include <tuple>
+#include <utility> // index_sequence
+
+namespace std {
+namespace experimental {
+
+//******************************************
+// Return type of submdspan_mapping overloads
+//******************************************
+template <class Mapping> struct mapping_offset {
+  Mapping mapping;
+  size_t offset;
+};
+
+namespace detail {
+// constructs sub strides
+template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+construct_sub_strides(const SrcMapping &src_mapping,
+                      index_sequence<InvMapIdxs...>,
+                      const tuple<slice_strides...> &slices_stride_factor) {
+  using index_type = typename SrcMapping::index_type;
+  return array<typename SrcMapping::index_type, sizeof...(InvMapIdxs)>{
+      (static_cast<index_type>(src_mapping.stride(InvMapIdxs)) *
+       static_cast<index_type>(get<InvMapIdxs>(slices_stride_factor)))...};
+}
+} // namespace detail
+
+//**********************************
+// layout_left submdspan_mapping
+//*********************************
+namespace detail {
+
+// Figure out whether to preserve layout_left
+template <class IndexSequence, size_t SubRank, class... SliceSpecifiers>
+struct preserve_layout_left_mapping;
+
+template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
+struct preserve_layout_left_mapping<index_sequence<Idx...>, SubRank,
+                                    SliceSpecifiers...> {
+  constexpr static bool value =
+      // Preserve layout for rank 0
+      (SubRank == 0) ||
+      (
+          // Slice specifiers up to subrank need to be full_extent_t - except
+          // for the last one which could also be tuple but not a strided index
+          // range slice specifiers after subrank are integrals
+          ((Idx > SubRank - 1) || // these are only integral slice specifiers
+           (is_same_v<SliceSpecifiers, full_extent_t>) ||
+           ((Idx == SubRank - 1) &&
+            is_convertible_v<SliceSpecifiers, tuple<size_t, size_t>>)) &&
+          ...);
+};
+} // namespace detail
+
+// Suppress spurious warning with NVCC about no return statement.
+// This is a known issue in NVCC and NVC++
+// Depending on the CUDA and GCC version we need both the builtin
+// and the diagnostic push. I tried really hard to find something shorter
+// but no luck ...
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic push
+        #pragma nv_diag_suppress = implicit_return_from_non_void_function
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic push
+        #pragma diag_suppress implicit_return_from_non_void_function
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic push
+    #pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
+// Actual submdspan mapping call
+template <class Extents, class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
+                  SliceSpecifiers... slices) {
+
+  // compute sub extents
+  using src_ext_t = Extents;
+  auto dst_ext = submdspan_extents(src_mapping.extents(), slices...);
+  using dst_ext_t = decltype(dst_ext);
+
+  // figure out sub layout type
+  constexpr bool preserve_layout = detail::preserve_layout_left_mapping<
+      decltype(make_index_sequence<src_ext_t::rank()>()), dst_ext_t::rank(),
+      SliceSpecifiers...>::value;
+  using dst_layout_t =
+      conditional_t<preserve_layout, layout_left, layout_stride>;
+  using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
+
+  if constexpr (is_same_v<dst_layout_t, layout_left>) {
+    // layout_left case
+    return mapping_offset<dst_mapping_t>{
+        dst_mapping_t(dst_ext),
+        static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
+  } else {
+    // layout_stride case
+    auto inv_map = detail::inv_map_rank(
+      integral_constant<size_t,0>(),
+      index_sequence<>(),
+      slices...);
+    return mapping_offset<dst_mapping_t>{
+        dst_mapping_t(dst_ext, detail::construct_sub_strides(
+                                   src_mapping, inv_map,
+                                   tuple{detail::stride_of(slices)...})),
+        static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
+  }
+#if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+  __builtin_unreachable();
+#endif
+}
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic pop
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic pop
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic pop
+#endif
+
+//**********************************
+// layout_right submdspan_mapping
+//*********************************
+namespace detail {
+
+// Figure out whether to preserve layout_right
+template <class IndexSequence, size_t SubRank, class... SliceSpecifiers>
+struct preserve_layout_right_mapping;
+
+template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
+struct preserve_layout_right_mapping<index_sequence<Idx...>, SubRank,
+                                     SliceSpecifiers...> {
+  constexpr static size_t SrcRank = sizeof...(SliceSpecifiers);
+  constexpr static bool value =
+      // Preserve layout for rank 0
+      (SubRank == 0) ||
+      (
+          // The last subrank slice specifiers need to be full_extent_t - except
+          // for the srcrank-subrank one which could also be tuple but not a
+          // strided index range slice specifiers before srcrank-subrank are
+          // integrals
+          ((Idx <
+            SrcRank - SubRank) || // these are only integral slice specifiers
+           (is_same_v<SliceSpecifiers, full_extent_t>) ||
+           ((Idx == SrcRank - SubRank) &&
+            is_convertible_v<SliceSpecifiers, tuple<size_t, size_t>>)) &&
+          ...);
+};
+} // namespace detail
+
+// Suppress spurious warning with NVCC about no return statement.
+// This is a known issue in NVCC and NVC++
+// Depending on the CUDA and GCC version we need both the builtin
+// and the diagnostic push. I tried really hard to find something shorter
+// but no luck ...
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic push
+        #pragma nv_diag_suppress = implicit_return_from_non_void_function
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic push
+        #pragma diag_suppress implicit_return_from_non_void_function
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic push
+    #pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
+template <class Extents, class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
+                  SliceSpecifiers... slices) {
+
+  // get sub extents
+  using src_ext_t = Extents;
+  auto dst_ext = submdspan_extents(src_mapping.extents(), slices...);
+  using dst_ext_t = decltype(dst_ext);
+
+  // determine new layout type
+  constexpr bool preserve_layout = detail::preserve_layout_right_mapping<
+      decltype(make_index_sequence<src_ext_t::rank()>()), dst_ext_t::rank(),
+      SliceSpecifiers...>::value;
+  using dst_layout_t =
+      conditional_t<preserve_layout, layout_right, layout_stride>;
+  using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
+
+  if constexpr (is_same_v<dst_layout_t, layout_right>) {
+    // layout_right case
+    return mapping_offset<dst_mapping_t>{
+        dst_mapping_t(dst_ext),
+        static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
+  } else {
+    // layout_stride case
+    auto inv_map = detail::inv_map_rank(
+      integral_constant<size_t,0>(),
+      index_sequence<>(),
+      slices...);
+    return mapping_offset<dst_mapping_t>{
+        dst_mapping_t(dst_ext, detail::construct_sub_strides(
+                                   src_mapping, inv_map,
+                                   tuple{detail::stride_of(slices)...})),
+        static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
+  }
+#if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+  __builtin_unreachable();
+#endif
+}
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic pop
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic pop
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic pop
+#endif
+
+//**********************************
+// layout_stride submdspan_mapping
+//*********************************
+template <class Extents, class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
+                  SliceSpecifiers... slices) {
+  auto dst_ext = submdspan_extents(src_mapping.extents(), slices...);
+  using dst_ext_t = decltype(dst_ext);
+  auto inv_map = detail::inv_map_rank(
+      integral_constant<size_t,0>(),
+      index_sequence<>(),
+      slices...);
+  using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
+  return mapping_offset<dst_mapping_t>{
+      dst_mapping_t(dst_ext, detail::construct_sub_strides(
+                                 src_mapping, inv_map,
+                                 tuple{detail::stride_of(slices)...})),
+      static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
+}
+} // namespace experimental
+} // namespace std
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_mapping.hpp
+
+namespace std {
+namespace experimental {
+template <class ElementType, class Extents, class LayoutPolicy,
+          class AccessorPolicy, class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
+          SliceSpecifiers... slices) {
+  const auto sub_mapping_offset = submdspan_mapping(src.mapping(), slices...);
+  // NVCC has a problem with the deduction so lets figure out the type
+  using sub_mapping_t = std::remove_cv_t<decltype(sub_mapping_offset.mapping)>;
+  using sub_extents_t = typename sub_mapping_t::extents_type;
+  using sub_layout_t = typename sub_mapping_t::layout_type;
+  using sub_accessor_t = typename AccessorPolicy::offset_policy;
+  return mdspan<ElementType, sub_extents_t, sub_layout_t, sub_accessor_t>(
+      src.accessor().offset(src.data_handle(), sub_mapping_offset.offset),
+      sub_mapping_offset.mapping,
+      sub_accessor_t(src.accessor()));
+}
+} // namespace experimental
+} // namespace std
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan.hpp
+#endif
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/mdspan
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p1684_bits/mdarray.hpp
 //@HEADER
@@ -5078,50 +5143,25 @@ _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(
 
 
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p1684_bits/../mdspan
-/*
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 2.0
-//              Copyright (2019) Sandia Corporation
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
 //
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+// Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
 //@HEADER
-*/
 
 
+#if MDSPAN_HAS_CXX_17
+#endif
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p1684_bits/../mdspan
 #include <cassert>
 #include <vector>
