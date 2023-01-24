@@ -18,6 +18,11 @@
 
 #include <gtest/gtest.h>
 
+#include <utility>
+
+#include "offload_utils.hpp"
+#include "foo_customizations.hpp"
+
 namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
@@ -95,61 +100,90 @@ TEST(TestSubmdspanLayoutRightStaticSizedTuples, test_submdspan_layout_right_stat
 //template<class LayoutOrg, class LayoutSub, class ExtentsOrg, class ExtentsSub, class ... SubArgs>
 
 
+template<size_t ... Args>
+using args_t = std::index_sequence<Args...>;
+
 using submdspan_test_types =
   ::testing::Types<
       // LayoutLeft to LayoutLeft
-      std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,1>,stdex::dextents<size_t,1>, stdex::full_extent_t>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,1>,stdex::dextents<size_t,1>, std::pair<int,int>>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,1>,stdex::dextents<size_t,0>, int>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,2>,stdex::dextents<size_t,2>, stdex::full_extent_t, stdex::full_extent_t>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,2>,stdex::dextents<size_t,2>, stdex::full_extent_t, std::pair<int,int>>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,2>,stdex::dextents<size_t,1>, stdex::full_extent_t, int>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,3>,stdex::dextents<size_t,3>, stdex::full_extent_t, stdex::full_extent_t, std::pair<int,int>>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,3>,stdex::dextents<size_t,2>, stdex::full_extent_t, std::pair<int,int>, int>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,3>,stdex::dextents<size_t,1>, stdex::full_extent_t, int, int>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,3>,stdex::dextents<size_t,1>, std::pair<int,int>, int, int>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,6>,stdex::dextents<size_t,3>, stdex::full_extent_t, stdex::full_extent_t, std::pair<int,int>, int, int, int>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,6>,stdex::dextents<size_t,2>, stdex::full_extent_t, std::pair<int,int>, int, int, int, int>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,6>,stdex::dextents<size_t,1>, stdex::full_extent_t, int, int, int ,int, int>
-    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,6>,stdex::dextents<size_t,1>, std::pair<int,int>, int, int, int, int, int>
+      std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,1>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,1>, std::pair<int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,0>, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,2>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,2>, stdex::full_extent_t, std::pair<int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,1>, stdex::full_extent_t, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,3>, args_t<10,20,30>,    stdex::dextents<size_t,3>, stdex::full_extent_t, stdex::full_extent_t, std::pair<int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,3>, args_t<10,20,30>,    stdex::dextents<size_t,2>, stdex::full_extent_t, std::pair<int,int>, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,3>, args_t<10,20,30>,    stdex::dextents<size_t,1>, stdex::full_extent_t, int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,3>, args_t<10,20,30>,    stdex::dextents<size_t,1>, std::pair<int,int>, int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,6>, args_t<6,4,5,6,7,8>, stdex::dextents<size_t,3>, stdex::full_extent_t, stdex::full_extent_t, std::pair<int,int>, int, int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,6>, args_t<6,4,5,6,7,8>, stdex::dextents<size_t,2>, stdex::full_extent_t, std::pair<int,int>, int, int, int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,6>, args_t<6,4,5,6,7,8>, stdex::dextents<size_t,1>, stdex::full_extent_t, int, int, int ,int, int>
+    , std::tuple<stdex::layout_left, stdex::layout_left, stdex::dextents<size_t,6>, args_t<6,4,5,6,7,8>, stdex::dextents<size_t,1>, std::pair<int,int>, int, int, int, int, int>
     // LayoutRight to LayoutRight
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,1>,stdex::dextents<size_t,1>, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,1>,stdex::dextents<size_t,1>, std::pair<int,int>>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,1>,stdex::dextents<size_t,0>, int>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,2>,stdex::dextents<size_t,2>, stdex::full_extent_t, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,2>,stdex::dextents<size_t,2>, std::pair<int,int>, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,2>,stdex::dextents<size_t,1>, int, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,3>,stdex::dextents<size_t,3>, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,3>,stdex::dextents<size_t,2>, int, std::pair<int,int>, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,3>,stdex::dextents<size_t,1>, int, int, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,6>,stdex::dextents<size_t,3>, int, int, int, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,6>,stdex::dextents<size_t,2>, int, int, int, int, std::pair<int,int>, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,6>,stdex::dextents<size_t,1>, int, int, int, int, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,1>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,1>, std::pair<int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,0>, int>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,2>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,2>, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,1>, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,3>, args_t<10,20,30>,    stdex::dextents<size_t,3>, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,3>, args_t<10,20,30>,    stdex::dextents<size_t,2>, int, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,3>, args_t<10,20,30>,    stdex::dextents<size_t,1>, int, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,6>, args_t<6,4,5,6,7,8>, stdex::dextents<size_t,3>, int, int, int, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,6>, args_t<6,4,5,6,7,8>, stdex::dextents<size_t,2>, int, int, int, int, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::dextents<size_t,6>, args_t<6,4,5,6,7,8>, stdex::dextents<size_t,1>, int, int, int, int, int, stdex::full_extent_t>
     // LayoutRight to LayoutRight Check Extents Preservation
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1>,stdex::extents<size_t,1>, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1>,stdex::extents<size_t,dyn>, std::pair<int,int>>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1>,stdex::extents<size_t>, int>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1,2>,stdex::extents<size_t,1,2>, stdex::full_extent_t, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1,2>,stdex::extents<size_t,dyn,2>, std::pair<int,int>, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1,2>,stdex::extents<size_t,2>, int, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1,2,3>,stdex::extents<size_t,dyn,2,3>, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1,2,3>,stdex::extents<size_t,dyn,3>, int, std::pair<int,int>, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1,2,3>,stdex::extents<size_t,3>, int, int, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1,2,3,4,5,6>,stdex::extents<size_t,dyn,5,6>, int, int, int, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1,2,3,4,5,6>,stdex::extents<size_t,dyn,6>, int, int, int, int, std::pair<int,int>, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,1,2,3,4,5,6>,stdex::extents<size_t,6>, int, int, int, int, int, stdex::full_extent_t>
-
-    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::extents<size_t,1,2,3,4,5,6>,stdex::extents<size_t,1,dyn,6>, stdex::full_extent_t, int, std::pair<int,int>, int, int, stdex::full_extent_t>
-    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::extents<size_t,1,2,3,4,5,6>,stdex::extents<size_t,2,dyn,5>, int, stdex::full_extent_t, std::pair<int,int>, int, stdex::full_extent_t, int>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,10>,           args_t<10>,          stdex::extents<size_t,10>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,10>,           args_t<10>,          stdex::extents<size_t,dyn>, std::pair<int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,10>,           args_t<10>,          stdex::extents<size_t>, int>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,10,20>,        args_t<10,20>,       stdex::extents<size_t,10,20>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,10,20>,        args_t<10,20>,       stdex::extents<size_t,dyn,20>, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,10,20>,        args_t<10,20>,       stdex::extents<size_t,20>, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,10,20,30>,     args_t<10,20,30>,    stdex::extents<size_t,dyn,20,30>, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,10,20,30>,     args_t<10,20,30>,    stdex::extents<size_t,dyn,30>, int, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,10,20,30>,     args_t<10,20,30>,    stdex::extents<size_t,30>, int, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,6,4,5,6,7,8>,  args_t<6,4,5,6,7,8>, stdex::extents<size_t,dyn,7,8>, int, int, int, std::pair<int,int>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,6,4,5,6,7,8>,  args_t<6,4,5,6,7,8>, stdex::extents<size_t,dyn,8>, int, int, int, int, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,6,4,5,6,7,8>,  args_t<6,4,5,6,7,8>, stdex::extents<size_t,8>, int, int, int, int, int, stdex::full_extent_t>
+    // LayoutLeft to LayoutStride
+    , std::tuple<stdex::layout_left, stdex::layout_stride,  stdex::dextents<size_t,1>,          args_t<10>,          stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_stride,  stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>, int>
+    , std::tuple<stdex::layout_left, stdex::layout_stride,  stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<stdex::layout_left, stdex::layout_stride,  stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, std::pair<int,int>, stdex::strided_index_range<int,int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_stride,  stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, stdex::strided_index_range<int,int,int>, std::pair<int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_stride,  stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, stdex::strided_index_range<int,int,int>, stdex::strided_index_range<int,int,int>>
+    , std::tuple<stdex::layout_left, stdex::layout_stride,  stdex::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, stdex::extents<size_t,6,dyn,8>, stdex::full_extent_t, int, std::pair<int,int>, int, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_left, stdex::layout_stride,  stdex::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, stdex::extents<size_t,4,dyn,7>, int, stdex::full_extent_t, std::pair<int,int>, int, stdex::full_extent_t, int>
+    // layout_right to layout_stride
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,1>,          args_t<10>,          stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,1>,          args_t<10>,          stdex::extents<size_t,0>,  stdex::strided_index_range<int,std::integral_constant<int,0>,std::integral_constant<int,0>>>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>, int>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, stdex::full_extent_t, std::pair<int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, std::pair<int,int>, stdex::strided_index_range<int,int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, stdex::strided_index_range<int,int,int>, std::pair<int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,2>, stdex::strided_index_range<int,int,int>, stdex::strided_index_range<int,int,int>>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, stdex::extents<size_t,6,dyn,8>, stdex::full_extent_t, int, std::pair<int,int>, int, int, stdex::full_extent_t>
+    , std::tuple<stdex::layout_right, stdex::layout_stride, stdex::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, stdex::extents<size_t,4,dyn,7>, int, stdex::full_extent_t, std::pair<int,int>, int, stdex::full_extent_t, int>
+    // Testing of customization point design
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,1>, stdex::full_extent_t>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,1>, std::pair<int,int>>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,1>, args_t<10>,          stdex::dextents<size_t,0>, int>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,2>, stdex::full_extent_t, stdex::full_extent_t>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,2>, std::pair<int,int>, stdex::full_extent_t>
+    , std::tuple<Foo::layout_foo, Foo::layout_foo, stdex::dextents<size_t,2>, args_t<10,20>,       stdex::dextents<size_t,1>, int, stdex::full_extent_t>
+    , std::tuple<Foo::layout_foo, stdex::layout_stride, stdex::dextents<size_t,1>,          args_t<10>,          stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>>
+    , std::tuple<Foo::layout_foo, stdex::layout_stride, stdex::dextents<size_t,2>,          args_t<10,20>,       stdex::dextents<size_t,1>, stdex::strided_index_range<int,int,int>, int>
     >;
 
 template<class T> struct TestSubMDSpan;
 
-template<class LayoutOrg, class LayoutSub, class ExtentsOrg, class ExtentsSub, class ... SubArgs>
+template<class LayoutOrg, class LayoutSub, class ExtentsOrg, class ExtentsSub, class ... SubArgs, size_t ... ConstrArgs>
 struct TestSubMDSpan<
   std::tuple<LayoutOrg,
              LayoutSub,
              ExtentsOrg,
+	     std::index_sequence<ConstrArgs...>,
              ExtentsSub,
              SubArgs...>>
   : public ::testing::Test {
@@ -161,6 +195,76 @@ struct TestSubMDSpan<
   using mds_sub_deduced_t = decltype(stdex::submdspan(mds_org_t(nullptr, map_t()), SubArgs()...));
   using sub_args_t = std::tuple<SubArgs...>;
 
+  MDSPAN_INLINE_FUNCTION
+  static int create_slice_arg(int) {
+    return 2;
+  }
+  MDSPAN_INLINE_FUNCTION
+  static auto create_slice_arg(std::pair<int,int>) {
+    return std::pair<int,int>(1,3);
+  }
+  MDSPAN_INLINE_FUNCTION
+  static auto create_slice_arg(stdex::strided_index_range<int,int,int>) {
+    return stdex::strided_index_range<int,int,int>{1,3,2};
+  }
+  template<int Ext, int Stride>
+  MDSPAN_INLINE_FUNCTION
+  static auto create_slice_arg(stdex::strided_index_range<int,std::integral_constant<int, Ext>, std::integral_constant<int, Stride>>) {
+    return stdex::strided_index_range<int,std::integral_constant<int, Ext>, std::integral_constant<int, Stride>>{1,std::integral_constant<int, Ext>(), std::integral_constant<int, Ext>()};
+  }
+  MDSPAN_INLINE_FUNCTION
+  static auto create_slice_arg(stdex::full_extent_t) {
+    return stdex::full_extent;
+  }
+
+  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
+  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, int, SliceArgs ... slices) {
+    return match_expected_extents(++src_idx, sub_idx, src_ext, sub_ext, slices...);
+  }
+  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
+  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, std::pair<int,int> p, SliceArgs ... slices) {
+    using idx_t = typename SubExtents::index_type;
+    return (sub_ext.extent(sub_idx)==static_cast<idx_t>(p.second-p.first)) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+  }
+  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
+  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext,
+                                     stdex::strided_index_range<int,int,int> p, SliceArgs ... slices) {
+    using idx_t = typename SubExtents::index_type;
+    return (sub_ext.extent(sub_idx)==static_cast<idx_t>((p.extent+p.stride-1)/p.stride)) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+  }
+  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
+  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext,
+                                     stdex::strided_index_range<int,std::integral_constant<int, 0>,std::integral_constant<int,0>>, SliceArgs ... slices) {
+    return (sub_ext.extent(sub_idx)==0) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+  }
+  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
+  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, stdex::full_extent_t, SliceArgs ... slices) {
+    return (sub_ext.extent(sub_idx)==src_ext.extent(src_idx)) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+  }
+  template<class SrcExtents, class SubExtents>
+  MDSPAN_INLINE_FUNCTION
+  static bool match_expected_extents(int, int, SrcExtents, SubExtents) { return true; }
+
+  static void run() {
+    typename mds_org_t::mapping_type map(typename mds_org_t::extents_type(ConstrArgs...));
+    int data[25000];
+    mds_org_t src(data, map);
+    size_t* result = allocate_array<size_t>(1);
+
+    dispatch([=] _MDSPAN_HOST_DEVICE () {
+      auto sub = stdex::submdspan(src, create_slice_arg(SubArgs())...);
+      bool match = match_expected_extents(0, 0, src.extents(), sub.extents(), create_slice_arg(SubArgs())...);
+      result[0] = match?1:0;
+    });
+    EXPECT_EQ(result[0], 1);
+    free_array(result);
+  }
+
 };
 
 
@@ -170,5 +274,5 @@ TYPED_TEST(TestSubMDSpan, submdspan_return_type) {
   static_assert(std::is_same<typename TestFixture::mds_sub_t,
                              typename TestFixture::mds_sub_deduced_t>::value,
                 "SubMDSpan: wrong return type");
-
+  __MDSPAN_TESTS_RUN_TEST(TestFixture::run());
 }

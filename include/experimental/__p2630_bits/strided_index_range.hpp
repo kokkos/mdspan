@@ -1,3 +1,4 @@
+
 //@HEADER
 // ************************************************************************
 //
@@ -14,18 +15,20 @@
 //
 //@HEADER
 
-#pragma once
+namespace std {
+namespace experimental {
 
-#include "__p0009_bits/default_accessor.hpp"
-#include "__p0009_bits/full_extent_t.hpp"
-#include "__p0009_bits/mdspan.hpp"
-#include "__p0009_bits/dynamic_extent.hpp"
-#include "__p0009_bits/extents.hpp"
-#include "__p0009_bits/layout_stride.hpp"
-#include "__p0009_bits/layout_left.hpp"
-#include "__p0009_bits/layout_right.hpp"
-#include "__p0009_bits/macros.hpp"
-#include "__p0009_bits/static_array.hpp"
-#if MDSPAN_HAS_CXX_17
-#include "__p2630_bits/submdspan.hpp"
-#endif
+// Slice Specifier allowing for strides and compile time extent
+template <class OffsetType, class ExtentType, class StrideType>
+struct strided_index_range {
+  using offset_type = OffsetType;
+  using extent_type = ExtentType;
+  using stride_type = StrideType;
+
+  OffsetType offset;
+  ExtentType extent;
+  StrideType stride;
+};
+
+} // experimental
+} // std

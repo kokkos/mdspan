@@ -19,11 +19,11 @@
 
 #include<experimental/mdspan>
 
-
 namespace Foo {
   template<class T>
   struct foo_ptr {
     T* data;
+    MDSPAN_INLINE_FUNCTION
     foo_ptr(T* ptr):data(ptr) {}
   };
 
@@ -46,10 +46,12 @@ namespace Foo {
     constexpr foo_accessor(foo_accessor<OtherElementType> other) noexcept { flag = other.flag; }
 
 
+    MDSPAN_INLINE_FUNCTION
     constexpr reference access(data_handle_type p, size_t i) const noexcept {
       return p.data[i];
     }
 
+    MDSPAN_INLINE_FUNCTION
     constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept {
       return data_handle_type(p.data+i);
     }
@@ -222,21 +224,31 @@ class layout_foo::mapping {
     }
 #endif
 
-    // Not really public, but currently needed to implement fully constexpr useable submdspan:
-    template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
-    constexpr index_type __get_stride(std::experimental::extents<SizeType, E...>, std::integer_sequence<size_t, Idx...>) const {
-      return _MDSPAN_FOLD_TIMES_RIGHT((Idx>N? __extents.template __extent<Idx>():1),1);
-    }
-    template<size_t N>
-    constexpr index_type __stride() const noexcept {
-      return __get_stride<N>(__extents, std::make_index_sequence<extents_type::rank()>());
-    }
-
 private:
    _MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents{};
 
 };
 
+#if MDSPAN_HAS_CXX_17
+template <class Extents, class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan_mapping(const layout_foo::mapping<Extents> &src_mapping,
+		                  SliceSpecifiers... slices) {
+   // use the fact that layout_foo is layout_right with rank 1 or rank 2
+   // i.e. we don't need to implement everything here, we just reuse submdspan_mapping for layout_right
+   std::experimental::layout_right::mapping<Extents> compatible_mapping(src_mapping.extents());
+   auto sub_right = submdspan_mapping(compatible_mapping, slices...);
+   if constexpr (std::is_same_v<typename decltype(sub_right.mapping)::layout_type, std::experimental::layout_right>) {
+     // NVCC does not like deduction here, so get the extents type explicitly
+     using sub_ext_t = std::remove_const_t<std::remove_reference_t<decltype(sub_right.mapping.extents())>>;
+     auto sub_mapping = layout_foo::mapping<sub_ext_t>(sub_right.mapping.extents());
+     return std::experimental::mapping_offset<decltype(sub_mapping)>{sub_mapping, sub_right.offset};
+   } else {
+     return sub_right;
+   }
+}
+#endif
 }
 #endif
 
