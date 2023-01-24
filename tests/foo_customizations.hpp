@@ -19,11 +19,11 @@
 
 #include<experimental/mdspan>
 
-
 namespace Foo {
   template<class T>
   struct foo_ptr {
     T* data;
+    MDSPAN_INLINE_FUNCTION
     foo_ptr(T* ptr):data(ptr) {}
   };
 

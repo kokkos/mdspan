@@ -72,6 +72,25 @@ struct preserve_layout_left_mapping<index_sequence<Idx...>, SubRank,
 };
 } // namespace detail
 
+// Suppress spurious warning with NVCC about no return statement.
+// This is a known issue in NVCC and NVC++
+// Depending on the CUDA and GCC version we need both the builtin
+// and the diagnostic push. I tried really hard to find something shorter
+// but no luck ...
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic push
+        #pragma nv_diag_suppress = implicit_return_from_non_void_function
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic push
+        #pragma diag_suppress implicit_return_from_non_void_function
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic push
+    #pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
 // Actual submdspan mapping call
 template <class Extents, class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION
@@ -109,7 +128,21 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
                                    tuple{detail::stride_of(slices)...})),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
+#if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+  __builtin_unreachable();
+#endif
 }
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic pop
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic pop
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic pop
+#endif
 
 //**********************************
 // layout_right submdspan_mapping
@@ -141,6 +174,25 @@ struct preserve_layout_right_mapping<index_sequence<Idx...>, SubRank,
 };
 } // namespace detail
 
+// Suppress spurious warning with NVCC about no return statement.
+// This is a known issue in NVCC and NVC++
+// Depending on the CUDA and GCC version we need both the builtin
+// and the diagnostic push. I tried really hard to find something shorter
+// but no luck ...
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic push
+        #pragma nv_diag_suppress = implicit_return_from_non_void_function
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic push
+        #pragma diag_suppress implicit_return_from_non_void_function
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic push
+    #pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
 template <class Extents, class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
@@ -177,7 +229,21 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
                                    tuple{detail::stride_of(slices)...})),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
+#if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+  __builtin_unreachable();
+#endif
 }
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic pop
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic pop
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic pop
+#endif
 
 //**********************************
 // layout_stride submdspan_mapping

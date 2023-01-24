@@ -27,7 +27,7 @@ template <size_t Counter, size_t... MapIdxs>
 MDSPAN_INLINE_FUNCTION
 constexpr auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<MapIdxs...>) {
   return index_sequence<MapIdxs...>();
-};
+}
 
 // specialization reducing rank by one (i.e., integral slice specifier)
 template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
@@ -40,7 +40,7 @@ constexpr auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<M
 
   return inv_map_rank(integral_constant<size_t,Counter + 1>(), next_idx_seq_t(),
                                      slices...);
-};
+}
 
 // Helper for identifying strided_index_range
 template <class T> struct is_strided_index_range : false_type {};
@@ -107,13 +107,18 @@ constexpr auto last_of(integral_constant<size_t, k>, const Extents &,
 
 // Suppress spurious warning with NVCC about no return statement.
 // This is a known issue in NVCC and NVC++
+// Depending on the CUDA and GCC version we need both the builtin
+// and the diagnostic push. I tried really hard to find something shorter
+// but no luck ...
 #if defined __NVCC__
     #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
         #pragma nv_diagnostic push
         #pragma nv_diag_suppress = implicit_return_from_non_void_function
     #else
-        #pragma    diagnostic push
-        #pragma    diag_suppress = implicit_return_from_non_void_function
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic push
+        #pragma diag_suppress implicit_return_from_non_void_function
+      #endif
     #endif
 #elif defined __NVCOMPILER
     #pragma    diagnostic push
@@ -128,12 +133,18 @@ constexpr auto last_of(integral_constant<size_t, k>, const Extents &ext,
   } else {
     return integral_constant<size_t, Extents::static_extent(k)>();
   }
+#if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+  // Even with CUDA_ARCH protection this thing warns about calling host function
+  __builtin_unreachable();
+#endif
 }
 #if defined __NVCC__
     #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
         #pragma nv_diagnostic pop
     #else
-        #pragma    diagnostic pop
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic pop
+      #endif
     #endif
 #elif defined __NVCOMPILER
     #pragma    diagnostic pop
