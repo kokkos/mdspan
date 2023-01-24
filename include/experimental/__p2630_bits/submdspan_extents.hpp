@@ -42,12 +42,12 @@ constexpr auto inv_map_rank(integral_constant<size_t, Counter>, index_sequence<M
                                      slices...);
 }
 
-// Helper for identifying strided_index_range
-template <class T> struct is_strided_index_range : false_type {};
+// Helper for identifying strided_slice
+template <class T> struct is_strided_slice : false_type {};
 
 template <class OffsetType, class ExtentType, class StrideType>
-struct is_strided_index_range<
-    strided_index_range<OffsetType, ExtentType, StrideType>> : true_type {};
+struct is_strided_slice<
+    strided_slice<OffsetType, ExtentType, StrideType>> : true_type {};
 
 // first_of(slice): getting begin of slice specifier range
 MDSPAN_TEMPLATE_REQUIRES(
@@ -77,7 +77,7 @@ constexpr auto first_of(const Slice &i) {
 template <class OffsetType, class ExtentType, class StrideType>
 MDSPAN_INLINE_FUNCTION
 constexpr OffsetType
-first_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
+first_of(const strided_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.offset;
 }
 
@@ -155,7 +155,7 @@ template <size_t k, class Extents, class OffsetType, class ExtentType,
 MDSPAN_INLINE_FUNCTION
 constexpr OffsetType
 last_of(integral_constant<size_t, k>, const Extents &,
-        const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
+        const strided_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.extent;
 }
 
@@ -169,7 +169,7 @@ constexpr auto stride_of(const T &) {
 template <class OffsetType, class ExtentType, class StrideType>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
-stride_of(const strided_index_range<OffsetType, ExtentType, StrideType> &r) {
+stride_of(const strided_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.stride;
 }
 
@@ -185,7 +185,7 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto divide(const integral_constant<T0, v0> &,
                       const integral_constant<T1, v1> &) {
   // cutting short division by zero
-  // this is used for strided_index_range with zero extent/stride
+  // this is used for strided_slice with zero extent/stride
   return integral_constant<IndexT, v0 == 0 ? 0 : v0 / v1>();
 }
 
@@ -214,7 +214,7 @@ struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
   constexpr static size_t value = val1 - val0;
 };
 
-// compute new static extent from strided_index_range, preserving static
+// compute new static extent from strided_slice, preserving static
 // knowledge
 template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
   constexpr static size_t value = dynamic_extent;
@@ -233,7 +233,7 @@ struct extents_constructor {
   MDSPAN_TEMPLATE_REQUIRES(
     class Slice, class... SlicesAndExtents,
     /* requires */(!is_convertible_v<Slice, size_t> &&
-                   !is_strided_index_range<Slice>::value)
+                   !is_strided_slice<Slice>::value)
   )
   MDSPAN_INLINE_FUNCTION
   constexpr static auto next_extent(const Extents &ext, const Slice &sl,
@@ -270,7 +270,7 @@ struct extents_constructor {
   MDSPAN_INLINE_FUNCTION
   constexpr static auto
   next_extent(const Extents &ext,
-              const strided_index_range<OffsetType, ExtentType, StrideType> &r,
+              const strided_slice<OffsetType, ExtentType, StrideType> &r,
               SlicesAndExtents... slices_and_extents) {
     using index_t = typename Extents::index_type;
     using new_static_extent_t =
