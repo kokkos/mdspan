@@ -210,7 +210,7 @@ struct TestSubMDSpan<
   template<int Ext, int Stride>
   MDSPAN_INLINE_FUNCTION
   static auto create_slice_arg(stdex::strided_index_range<int,std::integral_constant<int, Ext>, std::integral_constant<int, Stride>>) {
-    return stdex::strided_index_range<int,std::integral_constant<int, Ext>, std::integral_constant<int, Stride>>{1};
+    return stdex::strided_index_range<int,std::integral_constant<int, Ext>, std::integral_constant<int, Stride>>{1,std::integral_constant<int, Ext>(), std::integral_constant<int, Ext>()};
   }
   MDSPAN_INLINE_FUNCTION
   static auto create_slice_arg(stdex::full_extent_t) {
@@ -225,18 +225,20 @@ struct TestSubMDSpan<
   template<class SrcExtents, class SubExtents, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
   static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, std::pair<int,int> p, SliceArgs ... slices) {
-    return (sub_ext.extent(sub_idx)==p.second-p.first) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+    using idx_t = typename SubExtents::index_type;
+    return (sub_ext.extent(sub_idx)==static_cast<idx_t>(p.second-p.first)) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
   }
   template<class SrcExtents, class SubExtents, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
   static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext,
                                      stdex::strided_index_range<int,int,int> p, SliceArgs ... slices) {
-    return (sub_ext.extent(sub_idx)==(p.extent+p.stride-1)/p.stride) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+    using idx_t = typename SubExtents::index_type;
+    return (sub_ext.extent(sub_idx)==static_cast<idx_t>((p.extent+p.stride-1)/p.stride)) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
   }
   template<class SrcExtents, class SubExtents, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
   static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext,
-                                     stdex::strided_index_range<int,std::integral_constant<int, 0>,std::integral_constant<int,0>> p, SliceArgs ... slices) {
+                                     stdex::strided_index_range<int,std::integral_constant<int, 0>,std::integral_constant<int,0>>, SliceArgs ... slices) {
     return (sub_ext.extent(sub_idx)==0) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
   }
   template<class SrcExtents, class SubExtents, class ... SliceArgs>

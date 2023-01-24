@@ -220,13 +220,13 @@ struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
 template <size_t K, class Extents, size_t... NewExtents>
 struct extents_constructor {
   MDSPAN_TEMPLATE_REQUIRES(
-    class Slice, class... SliceSpecifiers,
+    class Slice, class... SlicesAndExtents,
     /* requires */(!is_convertible_v<Slice, size_t> &&
                    !is_strided_index_range<Slice>::value)
   )
   MDSPAN_INLINE_FUNCTION
   constexpr static auto next_extent(const Extents &ext, const Slice &sl,
-                                    SliceSpecifiers... slices) {
+                                    SlicesAndExtents... slices_and_extents) {
     constexpr size_t new_static_extent = StaticExtentFromRange<
         decltype(first_of(std::declval<Slice>())),
         decltype(last_of(integral_constant<size_t, Extents::rank() - K>(),
@@ -237,30 +237,30 @@ struct extents_constructor {
         extents_constructor<K - 1, Extents, NewExtents..., new_static_extent>;
     using index_t = typename Extents::index_type;
     return next_t::next_extent(
-        ext, slices...,
+        ext, slices_and_extents...,
         index_t(last_of(integral_constant<size_t, Extents::rank() - K>(), ext,
                         sl)) -
             index_t(first_of(sl)));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
-    class Slice, class... SliceSpecifiers,
+    class Slice, class... SlicesAndExtents,
     /* requires */ (is_convertible_v<Slice, size_t>)
   )
   MDSPAN_INLINE_FUNCTION
   constexpr static auto next_extent(const Extents &ext, const Slice &,
-                                    SliceSpecifiers... slices) {
+                                    SlicesAndExtents... slices_and_extents) {
     using next_t = extents_constructor<K - 1, Extents, NewExtents...>;
-    return next_t::next_extent(ext, slices...);
+    return next_t::next_extent(ext, slices_and_extents...);
   }
 
   template <class OffsetType, class ExtentType, class StrideType,
-            class... SliceSpecifiers>
+            class... SlicesAndExtents>
   MDSPAN_INLINE_FUNCTION
   constexpr static auto
   next_extent(const Extents &ext,
               const strided_index_range<OffsetType, ExtentType, StrideType> &r,
-              SliceSpecifiers... slices) {
+              SlicesAndExtents... slices_and_extents) {
     using index_t = typename Extents::index_type;
     using new_static_extent_t =
         StaticExtentFromStridedRange<ExtentType, StrideType>;
@@ -268,14 +268,14 @@ struct extents_constructor {
       using next_t =
           extents_constructor<K - 1, Extents, NewExtents..., dynamic_extent>;
       return next_t::next_extent(
-          ext, slices...,
+          ext, slices_and_extents...,
           r.extent > 0 ? 1 + divide<index_t>(r.extent - 1, r.stride) : 0);
     } else {
       constexpr size_t new_static_extent = new_static_extent_t::value;
       using next_t =
           extents_constructor<K - 1, Extents, NewExtents..., new_static_extent>;
       return next_t::next_extent(
-          ext, slices..., index_t(divide<index_t>(ExtentType(), StrideType())));
+          ext, slices_and_extents..., index_t(divide<index_t>(ExtentType(), StrideType())));
     }
   }
 };
