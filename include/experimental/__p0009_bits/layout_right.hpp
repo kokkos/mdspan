@@ -121,18 +121,20 @@ class layout_right::mapping {
     )
     MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping(layout_stride::mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
+    mapping(layout_stride::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {
        /*
         * TODO: check precondition
         * other.required_span_size() is a representable value of type index_type
         */
-       #ifndef __CUDA_ARCH__
-       size_t stride = 1;
+       #if !defined(_MDSPAN_HAS_CUDA) && !defined(_MDSPAN_HAS_HIP) && !defined(NDEBUG)
+       index_type stride = 1;
        for(rank_type r=__extents.rank(); r>0; r--) {
-         if(stride != other.stride(r-1))
+         if(stride != static_cast<index_type>(other.stride(r-1))) {
+           // Note this throw will lead to a terminate if triggered since this function is marked noexcept
            throw std::runtime_error("Assigning layout_stride to layout_right with invalid strides.");
+         }
          stride *= __extents.extent(r-1);
        }
        #endif
