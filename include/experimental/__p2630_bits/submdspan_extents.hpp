@@ -14,7 +14,7 @@
 //
 //@HEADER
 
-#include "strided_index_range.hpp"
+#include "strided_slice.hpp"
 namespace std {
 namespace experimental {
 namespace detail {
