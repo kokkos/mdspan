@@ -15,12 +15,21 @@
 //
 //@HEADER
 
+#include <type_traits>
+
 namespace std {
 namespace experimental {
 
+namespace {
+  template<class T>
+  struct __mdspan_is_integral_constant: std::false_type {};
+
+  template<class T, T val>
+  struct __mdspan_is_integral_constant<integral_constant<T,val>>: std::true_type {};
+}
 // Slice Specifier allowing for strides and compile time extent
 template <class OffsetType, class ExtentType, class StrideType>
-struct strided_index_range {
+struct strided_slice {
   using offset_type = OffsetType;
   using extent_type = ExtentType;
   using stride_type = StrideType;
@@ -28,6 +37,10 @@ struct strided_index_range {
   OffsetType offset;
   ExtentType extent;
   StrideType stride;
+
+  static_assert(is_integral_v<OffsetType> || __mdspan_is_integral_constant<OffsetType>::value);
+  static_assert(is_integral_v<ExtentType> || __mdspan_is_integral_constant<ExtentType>::value);
+  static_assert(is_integral_v<StrideType> || __mdspan_is_integral_constant<StrideType>::value);
 };
 
 } // experimental
