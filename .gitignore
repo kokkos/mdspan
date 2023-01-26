@@ -1,5 +1,9 @@
 .vs
 CMakeSettings.json
+CMakeUserPresets.json
 out
 build*
 Makefile
+cmake-build-*/
+*.user
+.idea/
