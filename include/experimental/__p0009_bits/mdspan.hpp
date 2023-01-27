@@ -327,15 +327,9 @@ public:
     swap(x.__mapping_ref(), y.__mapping_ref());
     swap(x.__accessor_ref(), y.__accessor_ref());
     #else
-    auto tmp_ptr = y.__ptr_ref();
-    auto tmp_mapping = y.__mapping_ref();
-    auto tmp_accessor = y.__accessor_ref();
-    y.__ptr_ref() = x.__ptr_ref();
-    y.__mapping_ref() = x.__mapping_ref();
-    y.__accessor_ref() = x.__accessor_ref();
-    x.__ptr_ref() = tmp_ptr;
-    x.__mapping_ref() = tmp_mapping;
-    x.__accessor_ref() = tmp_accessor;
+    mdspan tmp = y;
+    y = x;
+    x = tmp;
     #endif
   }
 
