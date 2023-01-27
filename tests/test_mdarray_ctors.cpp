@@ -166,7 +166,7 @@ void test_mdarray_ctor_data_carray() {
   errors[0] = 0;
 
   dispatch([=] _MDSPAN_HOST_DEVICE () {
-    stdex::mdarray<int, stdex::extents<size_t,1>> m(stdex::extents<int,1>{});
+    stdex::mdarray<int, stdex::extents<size_t,1>, stdex::layout_right, std::array<int, 1>> m(stdex::extents<int,1>{});
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
     __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 1);
@@ -181,12 +181,9 @@ void test_mdarray_ctor_data_carray() {
   free_array(errors);
 }
 
-// host data can't be used in device code
-#if !defined(_MDSPAN_HAS_SYCL)
 TEST(TestMdarrayCtorDataCArray, test_mdarray_ctor_data_carray) {
   __MDSPAN_TESTS_RUN_TEST(test_mdarray_ctor_data_carray())
 }
-#endif
 
 // Construct from extents only
 TEST(TestMdarrayCtorFromExtents, 0d_static) {
