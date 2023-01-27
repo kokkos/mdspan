@@ -18,6 +18,7 @@ option(MDSPAN_ENABLE_EXAMPLES "Build examples." Off)
 option(MDSPAN_ENABLE_BENCHMARKS "Enable benchmarks." Off)
 option(MDSPAN_ENABLE_COMP_BENCH "Enable compilation benchmarks." Off)
 option(MDSPAN_ENABLE_CUDA "Enable Cuda tests/benchmarks/examples if tests/benchmarks/examples are enabled." Off)
+option(MDSPAN_ENABLE_SYCL "Enable SYCL tests/benchmarks/examples if tests/benchmarks/examples are enabled." Off)
 option(MDSPAN_ENABLE_OPENMP "Enable OpenMP benchmarks if benchmarks are enabled." On)
 option(MDSPAN_USE_SYSTEM_GTEST "Use system-installed GoogleTest library for tests." Off)
 
@@ -119,6 +120,11 @@ endif()
 
 add_library(mdspan INTERFACE)
 add_library(std::mdspan ALIAS mdspan)
+
+if(MDSPAN_ENABLE_SYCL)
+  target_compile_options(mdspan INTERFACE "-fsycl")
+  target_link_options(mdspan INTERFACE "-fsycl")
+endif()
 
 target_include_directories(mdspan INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
