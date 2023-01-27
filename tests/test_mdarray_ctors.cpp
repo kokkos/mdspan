@@ -181,9 +181,12 @@ void test_mdarray_ctor_data_carray() {
   free_array(errors);
 }
 
+// host data can't be used in device code
+#if !defined(_MDSPAN_HAS_SYCL)
 TEST(TestMdarrayCtorDataCArray, test_mdarray_ctor_data_carray) {
   __MDSPAN_TESTS_RUN_TEST(test_mdarray_ctor_data_carray())
 }
+#endif
 
 // Construct from extents only
 TEST(TestMdarrayCtorFromExtents, 0d_static) {
