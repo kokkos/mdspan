@@ -82,6 +82,12 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  endif
 #endif
 
+#ifndef _MDSPAN_HAS_SYCL
+#  if defined(SYCL_LANGUAGE_VERSION)
+#    define _MDSPAN_HAS_SYCL SYCL_LANGUAGE_VERSION
+#  endif
+#endif
+
 #ifndef __has_cpp_attribute
 #  define __has_cpp_attribute(x) 0
 #endif
