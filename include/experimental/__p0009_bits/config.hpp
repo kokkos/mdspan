@@ -121,10 +121,14 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  define _MDSPAN_NO_UNIQUE_ADDRESS
 #endif
 
+// AMDs HIP compiler seems to have issues with concepts
+// it pretends concepts exist, but doesn't ship <concept>
+#ifndef __HIPCC__
 #ifndef _MDSPAN_USE_CONCEPTS
 #  if defined(__cpp_concepts) && __cpp_concepts >= 201507L
 #    define _MDSPAN_USE_CONCEPTS 1
 #  endif
+#endif
 #endif
 
 #ifndef _MDSPAN_USE_FOLD_EXPRESSIONS

@@ -18,6 +18,13 @@
 #include <sycl/sycl.hpp>
 #endif
 
+#ifdef _MDSPAN_HAS_HIP
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
+#endif
+
+#include<cstdio>
+
 namespace {
 bool dispatch_host = true;
 
@@ -35,7 +42,23 @@ if (!(LHS == RHS)) { \
 }
 #endif
 
-#ifdef _MDSPAN_HAS_CUDA
+#if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
+
+#if defined(_MDSPAN_HAS_CUDA)
+void deviceSynchronize() { (void) cudaDeviceSynchronize(); }
+template<class T>
+void mallocManaged(T** ptr, size_t size) { (void) cudaMallocManaged(ptr, size); }
+template<class T>
+void freeManaged(T* ptr) { (void) cudaFree(ptr); }
+#endif
+
+#if defined(_MDSPAN_HAS_HIP)
+void deviceSynchronize() { (void) hipDeviceSynchronize(); }
+template<class T>
+void mallocManaged(T** ptr, size_t size) { (void) hipMallocManaged(ptr, size); }
+template<class T>
+void freeManaged(T* ptr) { (void) hipFree(ptr); }
+#endif
 
 template<class LAMBDA>
 __global__ void dispatch_kernel(const LAMBDA f) {
@@ -48,7 +71,7 @@ void dispatch(LAMBDA&& f) {
     static_cast<LAMBDA&&>(f)();
   } else {
     dispatch_kernel<<<1,1>>>(static_cast<LAMBDA&&>(f));
-    cudaDeviceSynchronize();
+    deviceSynchronize();
   }
 }
 
@@ -58,7 +81,7 @@ T* allocate_array(size_t size) {
   if(dispatch_host == true)
     ptr = new T[size];
   else
-    cudaMallocManaged(&ptr, sizeof(T)*size);
+    mallocManaged(&ptr, sizeof(T)*size);
   return ptr;
 }
 
@@ -67,7 +90,7 @@ void free_array(T* ptr) {
   if(dispatch_host == true)
     delete [] ptr;
   else
-    cudaFree(ptr);
+    freeManaged(ptr);
 }
 
 #define __MDSPAN_TESTS_RUN_TEST(A) \

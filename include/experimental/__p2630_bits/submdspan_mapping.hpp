@@ -125,7 +125,12 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                    src_mapping, inv_map,
+    // HIP needs deduction guides to have markups so we need to be explicit
+    #ifdef _MDSPAN_HAS_HIP
+                                   tuple<decltype(detail::stride_of(slices))...>{detail::stride_of(slices)...})),
+    #else
                                    tuple{detail::stride_of(slices)...})),
+    #endif
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
@@ -226,7 +231,12 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                    src_mapping, inv_map,
+    // HIP needs deduction guides to have markups so we need to be explicit
+    #ifdef _MDSPAN_HAS_HIP
+                                   tuple<decltype(detail::stride_of(slices))...>{detail::stride_of(slices)...})),
+    #else
                                    tuple{detail::stride_of(slices)...})),
+    #endif
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
