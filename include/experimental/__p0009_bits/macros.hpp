@@ -45,9 +45,9 @@
 #endif
 
 #ifdef _MDSPAN_HAS_HIP
-#  define MDSPAN_CTAD _MDSPAN_HOST_DEVICE
+#  define MDSPAN_DEDUCTION_GUIDE _MDSPAN_HOST_DEVICE
 #else
-#  define MDSPAN_CTAD
+#  define MDSPAN_DEDUCTION_GUIDE
 #endif
 
 // In CUDA defaulted functions do not need host device markup
