@@ -321,9 +321,16 @@ public:
 
   MDSPAN_INLINE_FUNCTION
   friend constexpr void swap(mdspan& x, mdspan& y) noexcept {
+    // can't call the std::swap inside on HIP
+    #ifndef _MDSPAN_HAS_HIP
     swap(x.__ptr_ref(), y.__ptr_ref());
     swap(x.__mapping_ref(), y.__mapping_ref());
     swap(x.__accessor_ref(), y.__accessor_ref());
+    #else
+    mdspan tmp = y;
+    y = x;
+    x = tmp;
+    #endif
   }
 
   //--------------------------------------------------------------------------------
@@ -369,28 +376,28 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_integral, SizeTypes) /* && ... */) &&
   (sizeof...(SizeTypes) > 0)
 )
-explicit mdspan(ElementType*, SizeTypes...)
+MDSPAN_DEDUCTION_GUIDE explicit mdspan(ElementType*, SizeTypes...)
   -> mdspan<ElementType, ::std::experimental::dextents<size_t, sizeof...(SizeTypes)>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class Pointer,
   (_MDSPAN_TRAIT(is_pointer, std::remove_reference_t<Pointer>))
 )
-mdspan(Pointer&&) -> mdspan<std::remove_pointer_t<std::remove_reference_t<Pointer>>, extents<size_t>>;
+MDSPAN_DEDUCTION_GUIDE mdspan(Pointer&&) -> mdspan<std::remove_pointer_t<std::remove_reference_t<Pointer>>, extents<size_t>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class CArray,
   (_MDSPAN_TRAIT(is_array, CArray) && (rank_v<CArray> == 1))
 )
-mdspan(CArray&) -> mdspan<std::remove_all_extents_t<CArray>, extents<size_t, ::std::extent_v<CArray,0>>>;
+MDSPAN_DEDUCTION_GUIDE mdspan(CArray&) -> mdspan<std::remove_all_extents_t<CArray>, extents<size_t, ::std::extent_v<CArray,0>>>;
 
 template <class ElementType, class SizeType, size_t N>
-mdspan(ElementType*, const ::std::array<SizeType, N>&)
+MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, const ::std::array<SizeType, N>&)
   -> mdspan<ElementType, ::std::experimental::dextents<size_t, N>>;
 
 #ifdef __cpp_lib_span
 template <class ElementType, class SizeType, size_t N>
-mdspan(ElementType*, ::std::span<SizeType, N>)
+MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, ::std::span<SizeType, N>)
   -> mdspan<ElementType, ::std::experimental::dextents<size_t, N>>;
 #endif
 
@@ -398,15 +405,15 @@ mdspan(ElementType*, ::std::span<SizeType, N>)
 // `ElementType*`s, and `data_handle_type` is taken from `accessor_type::data_handle_type`, which
 // seems to throw off automatic deduction guides.
 template <class ElementType, class SizeType, size_t... ExtentsPack>
-mdspan(ElementType*, const extents<SizeType, ExtentsPack...>&)
+MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, const extents<SizeType, ExtentsPack...>&)
   -> mdspan<ElementType, ::std::experimental::extents<SizeType, ExtentsPack...>>;
 
 template <class ElementType, class MappingType>
-mdspan(ElementType*, const MappingType&)
+MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, const MappingType&)
   -> mdspan<ElementType, typename MappingType::extents_type, typename MappingType::layout_type>;
 
 template <class MappingType, class AccessorType>
-mdspan(const typename AccessorType::data_handle_type, const MappingType&, const AccessorType&)
+MDSPAN_DEDUCTION_GUIDE mdspan(const typename AccessorType::data_handle_type, const MappingType&, const AccessorType&)
   -> mdspan<typename AccessorType::element_type, typename MappingType::extents_type, typename MappingType::layout_type, AccessorType>;
 #endif
 
