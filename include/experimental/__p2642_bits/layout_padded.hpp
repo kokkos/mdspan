@@ -16,10 +16,69 @@
 #pragma once
 
 #include "../__p0009_bits/dynamic_extent.hpp"
+#include "../__p0009_bits/extents.hpp"
 
 namespace std {
 namespace experimental {
 namespace detail {
+
+// offset_index_sequence idea comes from "offset_sequence" here:
+// https://devblogs.microsoft.com/oldnewthing/20200625-00/?p=103903
+//
+// offset_index_sequence adds N to each element of the given IndexSequence.
+// We can't just template on the parameter pack of indices directly;
+// the pack needs to be contained in some type.
+// We choose index_sequence because it stores no run-time data.
+template <size_t N, class IndexSequence>
+struct offset_index_sequence;
+
+template <size_t N, size_t... Indices>
+struct offset_index_sequence<N, index_sequence<Indices...>>
+{
+  using type = index_sequence<(Indices + N)...>;
+};
+
+template <size_t N, typename IndexSequence>
+using offset_index_sequence_t = typename offset_index_sequence<N, IndexSequence>::type;
+
+// iota_index_sequence defines the half-open sequence
+// begin, begin+1, begin+2, ..., end-1.
+// If end == begin, then the sequence is empty (we permit this).
+//
+// Defining the struct first, rather than going straight to the type alias,
+// lets us check the template arguments.
+template <size_t begin, size_t end>
+struct iota_index_sequence
+{
+  static_assert(end >= begin, "end must be >= begin.");
+  using type =
+      offset_index_sequence_t<begin, std::make_index_sequence<end - begin>>;
+};
+
+template <class Extents, class Enabled = void>
+struct p_left;
+
+template <class Extents>
+struct p_left<Extents, enable_if_t<(Extents::rank() < 2)>>
+{
+  using type = std::index_sequence<>;
+};
+
+template <class IndexType, size_t... Extents>
+struct p_left<extents<IndexType, Extents...>>
+{
+  using extents_type = extents<IndexType, Extents...>;
+  using type = typename iota_index_sequence<1, extents_type::rank()>;
+};
+
+template<class Alignment, class Offset>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+find_aligned_offset(Alignment align, Offset offset)
+{
+  static_assert(Alignment != 0, "alignment of 0 is not allowed");
+  return ( ( offset + align - 1 ) / align ) * align;
+}
 
 template<class ExtentsType, size_t padding_stride>
 MDSPAN_INLINE_FUNCTION
@@ -34,34 +93,35 @@ get_actual_padding_stride()
     return padding_stride;
   } else if constexpr (padding_stride != dynamic_extent &&
                        ExtentsType::static_extent(0) != dynamic_extent) {
-    // Least multiple of padding_stride
-    // that is >= ExtentsType::static_extent(0).
-    if constexpr (padding_stride >= ExtentsType::static_extent(0)) {
-      return padding_stride;
-    }
-    else if constexpr (padding_stride == 0) {
-      // FIXME (mfh 2023/01/16) Perhaps the spec needs
-      // fixing for this case.  It's not clear what to do.
-      return padding_stride;
-    }
-    else if constexpr (ExtentsType::static_extent(0)) {
-      // FIXME (mfh 2023/01/16) Perhaps the spec needs
-      // fixing for this case.  It's not clear what to do.
-      return padding_stride;
-    }
-    else {
-      return least_multiple_of_x_greater_than_or_equal_to_y(
-          padding_stride, ExtentsType::static_extent(0));
-    }
-  }
-  else {
-    return dyn;
+    return find_aligned_offset(padding_stride, ExtentsType::static_extent(0));
+  } else {
+    return dynamic_extent;
   }
 }
+
+
+
+template <class Extents, class Enabled = void>
+struct inner_extents_impl;
+
+template <class Extents>
+struct inner_extents_impl<Extents, enable_if_t<(Extents::rank() < 2)>>
+{
+  using type = Extents;
+};
+
+template <class IndexType, size_t... Extents>
+struct inner_extents_impl<extents<IndexType, Extents...>>
+{
+  using extents_type = extents<IndexType, Extents...>;
+  using type = extents<IndexType, extents_type::static_extent(iota_index_sequence<1,)
+};
+
 }
 
 template<size_t padding_stride = dynamic_extent>
-struct layout_left_padded {
+struct layout_left_padded
+{
   template<class Extents>
   class mapping {
 public:
@@ -72,7 +132,10 @@ public:
     using layout_type = layout_left_padded<padding_stride>;
 
 private:
-    static constexpr size_t actual_padding_stride = /* see-below */; // exposition only
+
+    static_assert(padding_stride != 0, "padding stride cannot be 0");
+
+    static constexpr size_t actual_padding_stride = detail::get_actual_padding_stride<Extents, padding_stide>();
 
     using <it>inner-extents-type</it> = /* see-below */; // exposition only
     using <it>unpadded-extent-type</it> = /* see-below */; // exposition only
@@ -121,6 +184,5 @@ public:
     constexpr index_type stride(rank_type r) const noexcept;
   };
 };
-
 }
 }
