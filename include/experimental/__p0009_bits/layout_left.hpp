@@ -47,13 +47,8 @@ class layout_left::mapping {
     _MDSPAN_HOST_DEVICE
     constexpr index_type __compute_offset(
       __rank_count<r,Rank>, const I& i, Indices... idx) const {
-#ifndef _MDSPAN_NEW_EXTENTS
-      return __compute_offset(__rank_count<r+1,Rank>(), idx...) *
-                 __extents.template __extent<r>() + i;
-#else
       return __compute_offset(__rank_count<r+1,Rank>(), idx...) *
                  __extents.extent(r) + i;
-#endif
     }
 
     template<class I>

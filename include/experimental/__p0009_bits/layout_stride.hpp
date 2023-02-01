@@ -188,15 +188,6 @@ struct layout_stride {
       }
 #endif
 
-#ifndef _MDSPAN_NEW_EXTENTS
-      MDSPAN_INLINE_FUNCTION
-      static constexpr const __strides_storage_t fill_strides(
-        detail::__extents_to_partially_static_sizes_t<
-          ::std::experimental::dextents<index_type, extents_type::rank()>>&& s) {
-        return __strides_storage_t{static_cast<index_type>(s.template __get_n<Idxs>())...};
-      }
-#endif
-
       template<size_t K>
       MDSPAN_INLINE_FUNCTION
       static constexpr size_t __return_zero() { return 0; }
@@ -220,33 +211,6 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION constexpr explicit
     mapping(__base_t&& __b) : __base_t(::std::move(__b)) {}
 #endif
-
-  public: // but not really
-#ifndef _MDSPAN_NEW_EXTENTS
-    MDSPAN_INLINE_FUNCTION
-    static constexpr mapping
-    __make_mapping(
-      detail::__extents_to_partially_static_sizes_t<Extents>&& __exts,
-      detail::__extents_to_partially_static_sizes_t<
-        ::std::experimental::dextents<index_type, Extents::rank()>>&& __strs
-    ) noexcept {
-      // call the private constructor we created for this purpose
-      return mapping(
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-        __base_t{
-#endif
-          __member_pair_t(
-            extents_type::__make_extents_impl(::std::move(__exts)),
-            __strides_storage_t{__impl::fill_strides(::std::move(__strs))}
-          )
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-        }
-#endif
-      );
-    }
-#endif
-    //----------------------------------------------------------------------------
-
 
   public:
 

@@ -43,16 +43,6 @@ private:
   template <size_t... Idxs>
   struct __deduction_workaround<index_sequence<Idxs...>>
   {
-#ifndef _MDSPAN_NEW_EXTENTS
-    MDSPAN_FORCE_INLINE_FUNCTION static constexpr
-    size_t __size(mdspan const& __self) noexcept {
-      return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().template __extent<Idxs>()), /* * ... * */ size_t(1));
-    }
-    MDSPAN_FORCE_INLINE_FUNCTION static constexpr
-    bool __empty(mdspan const& __self) noexcept {
-      return (__self.rank()>0) && _MDSPAN_FOLD_OR((__self.__mapping_ref().extents().template __extent<Idxs>()==index_type(0)));
-    }
-#else
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     size_t __size(mdspan const& __self) noexcept {
       return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().extent(Idxs)), /* * ... * */ size_t(1));
@@ -61,7 +51,6 @@ private:
     bool __empty(mdspan const& __self) noexcept {
       return (__self.rank()>0) && _MDSPAN_FOLD_OR((__self.__mapping_ref().extents().extent(Idxs)==index_type(0)));
     }
-#endif
     template <class ReferenceType, class SizeType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ReferenceType __callop(mdspan const& __self, const array<SizeType, N>& indices) noexcept {
