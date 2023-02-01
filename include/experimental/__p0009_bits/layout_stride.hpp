@@ -16,7 +16,6 @@
 #pragma once
 
 #include "macros.hpp"
-#include "static_array.hpp"
 #include "extents.hpp"
 #include "trait_backports.hpp"
 #include "compressed_pair.hpp"

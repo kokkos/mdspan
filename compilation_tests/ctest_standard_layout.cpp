@@ -21,25 +21,6 @@
 
 namespace stdex = std::experimental;
 
-//==============================================================================
-// <editor-fold desc="helper utilities"> {{{1
-
-MDSPAN_STATIC_TEST(
-  !std::is_base_of<stdex::extents<int, 1, 2, 3>, stdex::detail::__partially_static_sizes<int, size_t, 1, 2, 3>>::value
-);
-
-MDSPAN_STATIC_TEST(
-  !std::is_base_of<stdex::detail::__partially_static_sizes<int, size_t, 1, 2, 3>, stdex::extents<int, 1, 2, 3>>::value
-);
-
-MDSPAN_STATIC_TEST(
-  std::is_standard_layout<
-    stdex::detail::__partially_static_sizes<int, size_t, 1, 2, 3>
-  >::value
-);
-
-// </editor-fold> end helper utilities }}}1
-//==============================================================================
 
 //==============================================================================
 // <editor-fold desc="extents"> {{{1

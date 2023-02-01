@@ -25,7 +25,6 @@
 #include "__p0009_bits/layout_left.hpp"
 #include "__p0009_bits/layout_right.hpp"
 #include "__p0009_bits/macros.hpp"
-#include "__p0009_bits/static_array.hpp"
 #if MDSPAN_HAS_CXX_17
 #include "__p2630_bits/submdspan.hpp"
 #endif
