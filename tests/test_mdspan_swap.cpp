@@ -102,9 +102,9 @@ TEST(TestMDSpanSwap, std_swap_dynamic_extents) {
   __MDSPAN_TESTS_RUN_TEST(test_mdspan_std_swap_dynamic_extents())
 }
 
-// On HIP we actually don't call through to swap via ADL
+// On HIP/CUDA we actually don't call through to swap via ADL
 // so the foo swap test which has side effects will fail
-#ifndef _MDSPAN_HAS_HIP
+#if !defined(_MDSPAN_HAS_HIP) && !defined(_MDSPAN_HAS_CUDA)
 void test_mdspan_foo_swap_dynamic_extents() {
   size_t* errors = allocate_array<size_t>(1);
   errors[0] = 0;

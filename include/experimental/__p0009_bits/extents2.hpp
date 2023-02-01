@@ -123,7 +123,7 @@ struct index_sequence_scan_impl<R, FirstVal, Values...> {
 
 template<size_t R, size_t FirstVal>
 struct index_sequence_scan_impl<R, FirstVal> {
-#ifdef __NVCC__
+#if defined(__NVCC__) || defined(__NVCOMPILER)
   // NVCC warns about pointless comparison with 0 for R==0 and r being const evaluatable and also 0
   MDSPAN_INLINE_FUNCTION
   constexpr static size_t get(size_t r) { return static_cast<int64_t>(R)>static_cast<int64_t>(r)?FirstVal:0; }

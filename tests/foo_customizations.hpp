@@ -24,7 +24,7 @@ namespace Foo {
   struct foo_ptr {
     T* data;
     MDSPAN_INLINE_FUNCTION
-    foo_ptr(T* ptr):data(ptr) {}
+    constexpr foo_ptr(T* ptr):data(ptr) {}
   };
 
   template<class T>
@@ -57,6 +57,7 @@ namespace Foo {
     }
     int* flag;
 
+    MDSPAN_INLINE_FUNCTION
     friend constexpr void swap(foo_accessor& x, foo_accessor& y) {
       x.flag[0] = 99;
       y.flag[0] = 77;

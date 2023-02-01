@@ -333,7 +333,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   friend constexpr void swap(mdspan& x, mdspan& y) noexcept {
     // can't call the std::swap inside on HIP
-    #ifndef _MDSPAN_HAS_HIP
+    #if !defined(_MDSPAN_HAS_HIP) && !defined(_MDSPAN_HAS_CUDA)
     swap(x.__ptr_ref(), y.__ptr_ref());
     swap(x.__mapping_ref(), y.__mapping_ref());
     swap(x.__accessor_ref(), y.__accessor_ref());
