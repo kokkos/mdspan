@@ -17,6 +17,8 @@
 
 #include "../__p0009_bits/dynamic_extent.hpp"
 #include "../__p0009_bits/extents.hpp"
+#include "../__p0009_bits/mdspan.hpp"
+#include "../__p0009_bits/layout_left.hpp"
 
 namespace std {
 namespace experimental {
@@ -55,74 +57,151 @@ struct iota_index_sequence
       offset_index_sequence_t<begin, std::make_index_sequence<end - begin>>;
 };
 
-template <class Extents, class Enabled = void>
-struct p_left;
+template <class _Extents, class _Enabled = void>
+struct __p_left;
 
-template <class Extents>
-struct p_left<Extents, enable_if_t<(Extents::rank() < 2)>>
+template <class _Extents>
+struct __p_left<_Extents, enable_if_t<(_Extents::rank() < 2)>>
 {
-  using type = std::index_sequence<>;
+  using __type = std::index_sequence<>;
 };
 
-template <class IndexType, size_t... Extents>
-struct p_left<extents<IndexType, Extents...>>
+template <class _IndexType, size_t... _Extents>
+struct __p_left<extents<_IndexType, _Extents...>>
 {
-  using extents_type = extents<IndexType, Extents...>;
-  using type = typename iota_index_sequence<1, extents_type::rank()>;
+  using __extents_type = extents<_IndexType, _Extents...>;
+  using __type = typename iota_index_sequence<1, __extents_type::rank()>::type;
 };
 
-template<class Alignment, class Offset>
+template<class _T>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
-find_aligned_offset(Alignment align, Offset offset)
+__find_aligned_offset(_T __alignment, _T __offset)
 {
-  static_assert(Alignment != 0, "alignment of 0 is not allowed");
-  return ( ( offset + align - 1 ) / align ) * align;
+  if ( __alignment == 0 )
+    return _T(0);
+  else
+    return ( ( __offset + __alignment - 1 ) / __alignment) * __alignment;
 }
 
-template<class ExtentsType, size_t padding_stride>
+template<class _ExtentsType, size_t _PaddingStride>
 MDSPAN_INLINE_FUNCTION
 constexpr size_t
-get_actual_padding_stride()
+__get_actual_padding_stride()
 {
-  using index_type = typename ExtentsType::index_type;
+  constexpr auto __rank = _ExtentsType::rank();
 
-  constexpr auto rank = ExtentsType::rank();
-
-  if constexpr (rank == 0 || rank == size_t(1)) {
-    return padding_stride;
-  } else if constexpr (padding_stride != dynamic_extent &&
-                       ExtentsType::static_extent(0) != dynamic_extent) {
-    return find_aligned_offset(padding_stride, ExtentsType::static_extent(0));
+  if constexpr (__rank <= size_t(1)) {
+    return _PaddingStride;
+  } else if constexpr (_PaddingStride != dynamic_extent &&
+                       _ExtentsType::static_extent(0) != dynamic_extent) {
+    static_assert((_PaddingStride != 0) || (_ExtentsType::static_extent(0) == 0), "padding stride can be 0 only if extents_type::static_extent(0) is 0");
+    return __find_aligned_offset(_PaddingStride, _ExtentsType::static_extent(0));
   } else {
     return dynamic_extent;
   }
 }
 
+template<size_t _ExtentToSub, class _Extents, size_t _NewExtent, class _Indices>
+struct __substitute_extents_impl;
 
-
-template <class Extents, class Enabled = void>
-struct inner_extents_impl;
-
-template <class Extents>
-struct inner_extents_impl<Extents, enable_if_t<(Extents::rank() < 2)>>
+template<size_t _ExtentToSub, class _Extents, size_t _NewExtent, size_t... _Indices>
+struct __substitute_extents_impl<_ExtentToSub, _Extents, _NewExtent, index_sequence<_Indices...>>
 {
-  using type = Extents;
+  using __type = extents<typename _Extents::index_type, ((_Indices == _ExtentToSub) ? _NewExtent : _Extents::static_extent(_Indices))...>;
+
+  MDSPAN_INLINE_FUNCTION
+  static constexpr auto
+  __construct(const _Extents &__extents, const extents<typename _Extents::index_type, _NewExtent> &__new_extents)
+  {
+    return __type{((_Indices == _ExtentToSub) ? __new_extents.extent(0) : __extents.extent(_Indices))...};
+  }
+
+  MDSPAN_INLINE_FUNCTION
+  static constexpr auto
+  __construct(const _Extents &__extents)
+  {
+    return __type{__extents.extent(_Indices)...};
+  }
 };
 
-template <class IndexType, size_t... Extents>
-struct inner_extents_impl<extents<IndexType, Extents...>>
+template<size_t _ExtentToSub, class _Extents, size_t _NewExtent>
+using __substitute_extents = __substitute_extents_impl<_ExtentToSub, _Extents, _NewExtent, make_index_sequence<_Extents::rank()>>;
+
+template<class _Extents, size_t _ActualPaddingStride, class _Enabled = void>
+struct __inner_extents_left
 {
-  using extents_type = extents<IndexType, Extents...>;
-  using type = extents<IndexType, extents_type::static_extent(iota_index_sequence<1,)
+  using __subs_type = __substitute_extents< 0, _Extents, _ActualPaddingStride >;
+  using __type = typename __subs_type::__type;
+
+  template<size_t _PaddingStride>
+  MDSPAN_INLINE_FUNCTION
+  static constexpr auto
+  __construct(const _Extents &__extents)
+  {
+    if constexpr (_PaddingStride == dynamic_extent)
+    {
+      return __subs_type::__construct(__extents);
+    } else {
+      // This is a corner case where `_PaddingStride` is not dynamic but `_ActualPaddingStride` is
+      // because `_Extents::static_extents(0)` is dynamic. We need to initialize it with a run-time
+      // value that is the least multiple of `_PaddingStride` greater than or equal to `_Extents::static_extents(0)`
+      if constexpr (_Extents::static_extent(0) == dynamic_extent)
+      {
+        const auto __s_left = __find_aligned_offset(_PaddingStride, __extents.extent(0));
+        return __subs_type::__construct(__extents, extents<typename _Extents::index_type, _ActualPaddingStride>(__s_left));
+      } else {
+        return __subs_type::__construct(__extents, extents<typename _Extents::index_type, _ActualPaddingStride>{});
+      }
+    }
+  }
 };
 
+template<class _Extents, size_t _ActualPaddingStride>
+struct __inner_extents_left<_Extents, _ActualPaddingStride, enable_if_t<_Extents::rank() <= size_t(1)>>
+{
+  using __type = _Extents;
+
+  template<size_t _PaddingStride>
+  MDSPAN_INLINE_FUNCTION
+  static constexpr const _Extents &
+  __construct(const _Extents &__extents)
+  {
+    return __extents;
+  }
+};
+
+template <class _Extents, typename _Enabled = void>
+struct __unpadded_extent_type_impl
+{
+  using __type = extents<typename _Extents::index_type, _Extents::static_extent(0)>;
+
+  MDSPAN_INLINE_FUNCTION
+  static constexpr auto
+  __construct(const _Extents &__extents)
+  {
+    return __type(__extents.extent(0));
+  }
+};
+
+template <class _Extents>
+struct __unpadded_extent_type_impl<_Extents, enable_if_t<(_Extents::rank() == 0)>>
+{
+  using __type = extents<typename _Extents::index_type>;
+
+  MDSPAN_INLINE_FUNCTION
+  static constexpr auto
+  __construct([[maybe_unused]] const _Extents &__extents)
+  {
+    return __type{};
+  }
+};
 }
 
-template<size_t padding_stride = dynamic_extent>
+template <size_t padding_stride = dynamic_extent>
 struct layout_left_padded
 {
-  template<class Extents>
+  template <class Extents>
   class mapping {
 public:
     using extents_type = Extents;
@@ -131,27 +210,56 @@ public:
     using rank_type = typename extents_type::rank_type;
     using layout_type = layout_left_padded<padding_stride>;
 
+#ifndef MDSPAN_INTERNAL_TEST
 private:
+#endif // MDSPAN_INTERNAL_TEST
 
-    static_assert(padding_stride != 0, "padding stride cannot be 0");
+    static_assert((padding_stride != 0) || (extents_type::static_extent(0) == 0), "padding stride can be 0 only if extents_type::static_extent(0) is 0");
 
-    static constexpr size_t actual_padding_stride = detail::get_actual_padding_stride<Extents, padding_stide>();
+    static constexpr size_t __actual_padding_stride = detail::__get_actual_padding_stride<extents_type, padding_stride>();
 
-    using <it>inner-extents-type</it> = /* see-below */; // exposition only
-    using <it>unpadded-extent-type</it> = /* see-below */; // exposition only
-    using <it>inner-mapping-type</it> =
-        layout_left::template mapping<<it>inner-extents-type</it>>; // exposition only
+    using __inner_extents_type = typename detail::__inner_extents_left<extents_type, __actual_padding_stride>::__type;
+    using __unpadded_extent_type = typename detail::__unpadded_extent_type_impl<extents_type>::__type;
+    using __inner_mapping_type = layout_left::template mapping<__inner_extents_type>;
 
-    <it>inner-mapping-type</it> <it>inner-mapping_</it>; // exposition only
-    <it>unpadded-extent-type</it> <it>unpadded-extent_</it>; // exposition only
+    __inner_mapping_type __inner_mapping;
+    __unpadded_extent_type __unpadded_extent;
 
 public:
+#if !MDSPAN_HAS_CXX_20
+    MDSPAN_INLINE_FUNCTION_DEFAULTED
+    constexpr mapping()
+        : mapping(extents_type{})
+    {}
+#else
+    MDSPAN_INLINE_FUNCTION_DEFAULTED
+    constexpr mdspan()
+      requires(__actual_padding_stride != dynamic_extent) = default;
+
+    MDSPAN_INLINE_FUNCTION
+    constexpr mdspan()
+      requires(__actual_padding_stride == dynamic_extent)
+        : mapping(extents_type{})
+    {}
+#endif
+
+    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(const mapping&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED mapping& operator=(const mapping&) noexcept = default;
+
     MDSPAN_INLINE_FUNCTION constexpr
-    mapping(const extents_type& ext);
+    mapping(const extents_type& __ext)
+      : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext)),
+        __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__ext))
+    {}
 
     template<class Size>
-    constexpr mapping(const extents_type& ext, Size padding_value);
+    // TODO: constraints
+    constexpr mapping(const extents_type& ext, Size padding_value)
+    {
 
+    }
+
+#if 0
     template<size_t other_padding_stride, class OtherExtents>
     constexpr explicit( /* see below */ )
         mapping(const layout_left_padded<other_padding_stride>::mapping<OtherExtents>&);
@@ -160,8 +268,6 @@ public:
     constexpr explicit(not is_convertible_v<OtherExtents, extents_type>)
         mapping(const layout_right_padded<other_padding_stride>::mapping<OtherExtents>&) noexcept;
 
-    constexpr mapping(const mapping&) noexcept = default;
-    mapping& operator=(const mapping&) noexcept = default;
 
     constexpr extents_type extents() const noexcept;
 
@@ -182,6 +288,7 @@ public:
     static constexpr bool is_strided() noexcept { return true; }
 
     constexpr index_type stride(rank_type r) const noexcept;
+#endif
   };
 };
 }
