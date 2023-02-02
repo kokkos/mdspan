@@ -33,56 +33,6 @@ template <size_t padding_stride>
 struct layout_right_padded;
 
 namespace detail {
-
-// offset_index_sequence idea comes from "offset_sequence" here:
-// https://devblogs.microsoft.com/oldnewthing/20200625-00/?p=103903
-//
-// offset_index_sequence adds N to each element of the given IndexSequence.
-// We can't just template on the parameter pack of indices directly;
-// the pack needs to be contained in some type.
-// We choose index_sequence because it stores no run-time data.
-template <size_t N, class IndexSequence>
-struct offset_index_sequence;
-
-template <size_t N, size_t... Indices>
-struct offset_index_sequence<N, index_sequence<Indices...>>
-{
-  using type = index_sequence<(Indices + N)...>;
-};
-
-template <size_t N, typename IndexSequence>
-using offset_index_sequence_t = typename offset_index_sequence<N, IndexSequence>::type;
-
-// iota_index_sequence defines the half-open sequence
-// begin, begin+1, begin+2, ..., end-1.
-// If end == begin, then the sequence is empty (we permit this).
-//
-// Defining the struct first, rather than going straight to the type alias,
-// lets us check the template arguments.
-template <size_t begin, size_t end>
-struct iota_index_sequence
-{
-  static_assert(end >= begin, "end must be >= begin.");
-  using type =
-      offset_index_sequence_t<begin, std::make_index_sequence<end - begin>>;
-};
-
-template <class _Extents, class _Enabled = void>
-struct __p_left;
-
-template <class _Extents>
-struct __p_left<_Extents, enable_if_t<(_Extents::rank() < 2)>>
-{
-  using __type = std::index_sequence<>;
-};
-
-template <class _IndexType, size_t... _Extents>
-struct __p_left<extents<_IndexType, _Extents...>>
-{
-  using __extents_type = extents<_IndexType, _Extents...>;
-  using __type = typename iota_index_sequence<1, __extents_type::rank()>::type;
-};
-
 template<class _T>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
