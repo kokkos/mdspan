@@ -120,11 +120,18 @@ struct __substitute_extents_impl<_ExtentToSub, _Extents, _NewExtent, index_seque
 {
   using __type = extents<typename _Extents::index_type, ((_Indices == _ExtentToSub) ? _NewExtent : _Extents::static_extent(_Indices))...>;
 
+  template <typename _T>
+  static constexpr auto
+  __construct_with_type(const _Extents &__extents, const extents<typename _Extents::index_type, _NewExtent> &__new_extents)
+  {
+    return _T{((_Indices == _ExtentToSub) ? __new_extents.extent(0) : __extents.extent(_Indices))...};
+  }
+
   MDSPAN_INLINE_FUNCTION
   static constexpr auto
   __construct(const _Extents &__extents, const extents<typename _Extents::index_type, _NewExtent> &__new_extents)
   {
-    return __type{((_Indices == _ExtentToSub) ? __new_extents.extent(0) : __extents.extent(_Indices))...};
+    return __construct_with_type<__type>(__extents, __new_extents);
   }
 
   MDSPAN_INLINE_FUNCTION
@@ -331,10 +338,19 @@ public:
         : __inner_mapping(__other_mapping.extents()),
           __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
     {}
+
+    constexpr extents_type extents() const noexcept
+    {
+      if constexpr (extents_type::rank() == size_t(0))
+      {
+        return {};
+      } else {
+        return detail::__substitute_extents<0, __inner_extents_type, __unpadded_extent_type::static_extent(0)>::template __construct_with_type<extents_type>(__inner_mapping.extents(), __unpadded_extent);
+      }
+    }
 #if 0
 
 
-    constexpr extents_type extents() const noexcept;
 
     constexpr std::array<index_type, extents_type::rank()>
     strides() const noexcept;

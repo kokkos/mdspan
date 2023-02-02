@@ -147,3 +147,38 @@ TEST(LayoutLeftTests, construction)
   test_inner_mapping_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 5, 7>{}, stdex::extents<std::size_t, stdex::dynamic_extent, 7>{8}, 4);
   test_inner_mapping_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7}, stdex::extents<std::size_t, stdex::dynamic_extent, 13>{8}, 4);
 }
+
+namespace
+{
+  template <class PaddedLayout, class Extents>
+  void test_extent(const Extents &input_extents)
+  {
+    auto mapping = typename PaddedLayout::template mapping<Extents>(input_extents);
+    ASSERT_EQ(mapping.extents(), input_extents);
+  }
+
+  template <class PaddedLayout, class Extents, class Size>
+  void test_extent(const Extents &input_extents, Size padding_value)
+  {
+    auto mapping = typename PaddedLayout::template mapping<Extents>(input_extents, padding_value);
+    ASSERT_EQ(mapping.extents(), input_extents);
+  }
+}
+
+TEST(LayoutLeftTests, extents)
+{
+  test_extent<stdex::layout_left_padded<4>>(stdex::extents<std::size_t>{});
+  test_extent<stdex::layout_left_padded<0>>(stdex::extents<std::size_t, 0, 7>{});
+  test_extent<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, 5, 7>{});
+  test_extent<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7});
+  test_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 0, 7>{});
+  test_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 5, 7>{});
+  test_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7});
+
+  test_extent<stdex::layout_left_padded<0>>(stdex::extents<std::size_t, 0, 7>{}, 0);
+  test_extent<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, 5, 7>{}, 4);
+  test_extent<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7}, 4);
+  test_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 0, 7>{}, 1);
+  test_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 5, 7>{}, 3);
+  test_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7}, 5);
+}
