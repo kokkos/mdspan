@@ -15,13 +15,23 @@
 //@HEADER
 #pragma once
 
+#include <cassert>
 #include "../__p0009_bits/dynamic_extent.hpp"
 #include "../__p0009_bits/extents.hpp"
 #include "../__p0009_bits/mdspan.hpp"
 #include "../__p0009_bits/layout_left.hpp"
+#include "../__p0009_bits/layout_right.hpp"
+#include "../__p0009_bits/layout_stride.hpp"
 
 namespace std {
 namespace experimental {
+
+template <size_t padding_stride>
+struct layout_left_padded;
+
+template <size_t padding_stride>
+struct layout_right_padded;
+
 namespace detail {
 
 // offset_index_sequence idea comes from "offset_sequence" here:
@@ -155,6 +165,22 @@ struct __inner_extents_left
       }
     }
   }
+
+  template <size_t _PaddingStride, class _Size>
+  MDSPAN_INLINE_FUNCTION static constexpr auto
+  __construct(const _Extents &__extents, _Size __padding_value)
+  {
+    const auto __s_left = __find_aligned_offset(__padding_value, __extents.extent(0));
+
+    return __subs_type::__construct(__extents, extents<typename _Extents::index_type, _ActualPaddingStride>(__s_left));
+  }
+
+  template <size_t _PaddingStride, class _IndexType>
+  MDSPAN_INLINE_FUNCTION static constexpr auto
+  __construct_other(const _Extents &__extents, _IndexType __stride0)
+  {
+    return __subs_type::__construct(__extents, extents<typename _Extents::index_type, _ActualPaddingStride>(__stride0));
+  }
 };
 
 template<class _Extents, size_t _ActualPaddingStride>
@@ -166,6 +192,20 @@ struct __inner_extents_left<_Extents, _ActualPaddingStride, enable_if_t<_Extents
   MDSPAN_INLINE_FUNCTION
   static constexpr const _Extents &
   __construct(const _Extents &__extents)
+  {
+    return __extents;
+  }
+
+  template <size_t _PaddingStride, class _Size>
+  MDSPAN_INLINE_FUNCTION static constexpr auto
+  __construct(const _Extents &__extents, _Size)
+  {
+    return __extents;
+  }
+
+  template <size_t _PaddingStride, class _IndexType>
+  MDSPAN_INLINE_FUNCTION static constexpr auto
+  __construct_other(const _Extents &__extents, _IndexType)
   {
     return __extents;
   }
@@ -233,11 +273,11 @@ public:
     {}
 #else
     MDSPAN_INLINE_FUNCTION_DEFAULTED
-    constexpr mdspan()
+    constexpr mapping()
       requires(__actual_padding_stride != dynamic_extent) = default;
 
     MDSPAN_INLINE_FUNCTION
-    constexpr mdspan()
+    constexpr mapping()
       requires(__actual_padding_stride == dynamic_extent)
         : mapping(extents_type{})
     {}
@@ -252,21 +292,46 @@ public:
         __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__ext))
     {}
 
-    template<class Size>
+    template <class _Size>
     // TODO: constraints
-    constexpr mapping(const extents_type& ext, Size padding_value)
+    constexpr mapping(const extents_type &__ext, _Size __padding_value)
+        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext, static_cast<index_type>(__padding_value))),
+          __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__ext))
     {
-
+      assert((padding_stride == dynamic_extent) || (padding_stride == static_cast<index_type>(__padding_value)));
     }
 
-#if 0
-    template<size_t other_padding_stride, class OtherExtents>
-    constexpr explicit( /* see below */ )
-        mapping(const layout_left_padded<other_padding_stride>::mapping<OtherExtents>&);
+    template <class _OtherExtents>
+    constexpr MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
+        mapping(const layout_left::mapping<_OtherExtents> &__other_mapping)
+        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(0))),
+          __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
+    {
+    }
 
-    template<size_t other_padding_stride, class OtherExtents>
-    constexpr explicit(not is_convertible_v<OtherExtents, extents_type>)
-        mapping(const layout_right_padded<other_padding_stride>::mapping<OtherExtents>&) noexcept;
+    template <class _OtherExtents>
+    constexpr MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
+        mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
+        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(0))),
+          __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
+    {
+    }
+
+    template <size_t _OtherPaddingStride, class _OtherExtents>
+    constexpr MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || _OtherPaddingStride == dynamic_extent)))
+        mapping(const typename layout_left_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__other_mapping)
+        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(0))),
+          __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
+    {
+    }
+
+    template <size_t _OtherPaddingStride, class _OtherExtents>
+    constexpr MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
+        mapping(const typename layout_right_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__other_mapping) noexcept
+        : __inner_mapping(__other_mapping.extents()),
+          __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
+    {}
+#if 0
 
 
     constexpr extents_type extents() const noexcept;

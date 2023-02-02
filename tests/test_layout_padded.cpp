@@ -83,15 +83,29 @@ void test_inner_mapping_extent(const InnerExtents &inner_extents, const TestExte
   ASSERT_EQ(mapping.__inner_mapping.extents(), test_extents);
 }
 
+template <class LayoutLeftPadded, class InnerExtents, class TestExtents, class Size>
+void test_inner_mapping_extent(const InnerExtents &inner_extents, const TestExtents &test_extents, Size padding_value)
+{
+  auto mapping = typename LayoutLeftPadded::template mapping<InnerExtents>(inner_extents, padding_value);
+  ASSERT_EQ(mapping.__inner_mapping.extents(), test_extents);
+}
+
 template<class LayoutLeftPadded, class Extents>
 void test_0_or_1_rank_inner_mapping_extents(const Extents &extents)
 {
   test_inner_mapping_extent<LayoutLeftPadded>(extents, extents);
 }
+
+template <class LayoutLeftPadded, class Extents, class Size>
+void test_0_or_1_rank_inner_mapping_extents(const Extents &extents, Size padding_value)
+{
+  test_inner_mapping_extent<LayoutLeftPadded>(extents, extents, padding_value);
+}
 }
 
 TEST(LayoutLeftTests, construction)
 {
+  // Constructor only taking an extent
   // Direct-non-list-initializes inner-mapping with:
   // - ext, if extents_type::rank() is zero or one; else,
   test_0_or_1_rank_inner_mapping_extents<stdex::layout_left_padded<4>>(stdex::extents<std::size_t>{});
@@ -113,4 +127,23 @@ TEST(LayoutLeftTests, construction)
   test_inner_mapping_extent<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, 5, 7>{}, stdex::extents<std::size_t, 8, 7>{});
   test_inner_mapping_extent<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7}, stdex::extents<std::size_t, stdex::dynamic_extent, 13>{8});
 
+  // Constructor taking an extent and a dynamic value
+  // Direct-non-list-initializes inner-mapping with:
+  // - ext, if extents_type::rank() is zero or one; else,
+  test_0_or_1_rank_inner_mapping_extents<stdex::layout_left_padded<4>>(stdex::extents<std::size_t>{}, 4);
+  test_0_or_1_rank_inner_mapping_extents<stdex::layout_left_padded<0>>(stdex::extents<std::size_t, 0>{}, 0);
+  test_0_or_1_rank_inner_mapping_extents<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, 5>{}, 4);
+  test_0_or_1_rank_inner_mapping_extents<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, stdex::dynamic_extent>{7}, 4);
+  test_0_or_1_rank_inner_mapping_extents<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t>{}, 3);
+  test_0_or_1_rank_inner_mapping_extents<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 0>{}, 3255);
+  test_0_or_1_rank_inner_mapping_extents<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 5>{}, 1337);
+  test_0_or_1_rank_inner_mapping_extents<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, stdex::dynamic_extent>{7}, 6323);
+
+  // - S_left, ext.extent(P_left)..., where S_left is the least multiple of padding_value greater than or equal to ext.extent(0)
+  test_inner_mapping_extent<stdex::layout_left_padded<0>>(stdex::extents<std::size_t, 0, 7>{}, stdex::extents<std::size_t, 0, 7>{}, 0);
+  test_inner_mapping_extent<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, 5, 7>{}, stdex::extents<std::size_t, 8, 7>{}, 4);
+  test_inner_mapping_extent<stdex::layout_left_padded<4>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7}, stdex::extents<std::size_t, stdex::dynamic_extent, 13>{8}, 4);
+  test_inner_mapping_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 0, 7>{}, stdex::extents<std::size_t, stdex::dynamic_extent, 7>{0}, 2);
+  test_inner_mapping_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 5, 7>{}, stdex::extents<std::size_t, stdex::dynamic_extent, 7>{8}, 4);
+  test_inner_mapping_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7}, stdex::extents<std::size_t, stdex::dynamic_extent, 13>{8}, 4);
 }
