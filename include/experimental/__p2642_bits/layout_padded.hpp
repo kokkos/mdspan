@@ -348,18 +348,31 @@ public:
         return detail::__substitute_extents<0, __inner_extents_type, __unpadded_extent_type::static_extent(0)>::template __construct_with_type<extents_type>(__inner_mapping.extents(), __unpadded_extent);
       }
     }
-#if 0
-
-
 
     constexpr std::array<index_type, extents_type::rank()>
-    strides() const noexcept;
+    strides() const noexcept
+    {
+      array<index_type, extents_type::rank()> __s{};
+      for (rank_type __r = 0; __r < extents_type::rank(); ++__r)
+      {
+        __s[__r] = __inner_mapping.stride(__r);
+      }
+      return __s;
+    }
 
-    constexpr index_type required_span_size() const noexcept;
+    constexpr index_type
+    required_span_size() const noexcept
+    {
+      return __inner_mapping.required_span_size();
+    }
 
-    template<class... Indices>
-    constexpr size_t operator()(Indices... idxs) const noexcept;
+    template<class... _Indices>
+    constexpr size_t operator()(_Indices... __idxs) const noexcept
+    {
+      return __inner_mapping(std::forward<_Indices>(__idxs)...);
+    }
 
+#if 0
     static constexpr bool is_always_unique() noexcept { return true; }
     static constexpr bool is_always_exhaustive() noexcept;
     static constexpr bool is_always_strided() noexcept { return true; }

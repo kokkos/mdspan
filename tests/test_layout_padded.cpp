@@ -81,6 +81,16 @@ void test_inner_mapping_extent(const InnerExtents &inner_extents, const TestExte
 {
   auto mapping = typename LayoutLeftPadded::template mapping<InnerExtents>(inner_extents);
   ASSERT_EQ(mapping.__inner_mapping.extents(), test_extents);
+
+  auto strs = mapping.strides();
+  size_t prod = 1;
+  for (typename decltype(mapping)::rank_type r = 0; r < TestExtents::rank(); ++r)
+  {
+    ASSERT_EQ(strs[r], prod);
+    prod *= test_extents.extent(r);
+  }
+
+  ASSERT_EQ(prod, mapping.required_span_size());
 }
 
 template <class LayoutLeftPadded, class InnerExtents, class TestExtents, class Size>
@@ -88,6 +98,16 @@ void test_inner_mapping_extent(const InnerExtents &inner_extents, const TestExte
 {
   auto mapping = typename LayoutLeftPadded::template mapping<InnerExtents>(inner_extents, padding_value);
   ASSERT_EQ(mapping.__inner_mapping.extents(), test_extents);
+
+  auto strs = mapping.strides();
+  size_t prod = 1;
+  for (typename decltype(mapping)::rank_type r = 0; r < TestExtents::rank(); ++r)
+  {
+    ASSERT_EQ(strs[r], prod);
+    prod *= test_extents.extent(r);
+  }
+
+  ASSERT_EQ(prod, mapping.required_span_size());
 }
 
 template<class LayoutLeftPadded, class Extents>
@@ -182,3 +202,4 @@ TEST(LayoutLeftTests, extents)
   test_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 5, 7>{}, 3);
   test_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7}, 5);
 }
+
