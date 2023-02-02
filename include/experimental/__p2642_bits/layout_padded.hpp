@@ -65,28 +65,29 @@ __get_actual_padding_stride()
 template<size_t _ExtentToSub, class _Extents, size_t _NewExtent, class _Indices>
 struct __substitute_extents_impl;
 
-template<size_t _ExtentToSub, class _Extents, size_t _NewExtent, size_t... _Indices>
-struct __substitute_extents_impl<_ExtentToSub, _Extents, _NewExtent, index_sequence<_Indices...>>
+template<size_t _ExtentToSub, class _IndexType, size_t... _OrigExtents, size_t _NewExtent, size_t... _Indices>
+struct __substitute_extents_impl<_ExtentToSub, extents<_IndexType, _OrigExtents...>, _NewExtent, index_sequence<_Indices...>>
 {
-  using __type = extents<typename _Extents::index_type, ((_Indices == _ExtentToSub) ? _NewExtent : _Extents::static_extent(_Indices))...>;
+  using __orig_extents_type = extents<_IndexType, _OrigExtents...>;
+  using __type = extents<_IndexType, ((_Indices == _ExtentToSub) ? _NewExtent : _OrigExtents)...>;
 
   template <typename _T>
   static constexpr auto
-  __construct_with_type(const _Extents &__extents, const extents<typename _Extents::index_type, _NewExtent> &__new_extents)
+  __construct_with_type(const __orig_extents_type &__extents, const extents<_IndexType, _NewExtent> &__new_extents)
   {
     return _T{((_Indices == _ExtentToSub) ? __new_extents.extent(0) : __extents.extent(_Indices))...};
   }
 
   MDSPAN_INLINE_FUNCTION
   static constexpr auto
-  __construct(const _Extents &__extents, const extents<typename _Extents::index_type, _NewExtent> &__new_extents)
+  __construct(const __orig_extents_type &__extents, const extents<_IndexType, _NewExtent> &__new_extents)
   {
     return __construct_with_type<__type>(__extents, __new_extents);
   }
 
   MDSPAN_INLINE_FUNCTION
   static constexpr auto
-  __construct(const _Extents &__extents)
+  __construct(const __orig_extents_type &__extents)
   {
     return __type{__extents.extent(_Indices)...};
   }
