@@ -212,7 +212,8 @@ public:
 private:
 #endif // MDSPAN_INTERNAL_TEST
 
-    static_assert((padding_stride != 0) || (extents_type::static_extent(0) == 0), "padding stride can be 0 only if extents_type::static_extent(0) is 0");
+    static_assert((padding_stride != 0) || (extents_type::static_extent(0) == 0) || (extents_type::static_extent(0) == dynamic_extent),
+                  "if padding stride is 0, static_extent(0) must also be 0 or dynamic_extent");
 
     static constexpr size_t __actual_padding_stride = detail::__get_actual_padding_stride<extents_type, padding_stride>();
 
@@ -244,14 +245,34 @@ public:
     MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(const mapping&) noexcept = default;
     MDSPAN_INLINE_FUNCTION_DEFAULTED mapping& operator=(const mapping&) noexcept = default;
 
-    MDSPAN_INLINE_FUNCTION constexpr
-    mapping(const extents_type& __ext)
+    /**
+     * Initializes the mapping with the given extents.
+     *
+     * \param ext the given extents
+     */
+    MDSPAN_INLINE_FUNCTION
+    constexpr mapping(const extents_type& __ext)
       : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext)),
         __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__ext))
     {}
 
-    template <class _Size>
-    // TODO: constraints
+    /**
+     * Initializes the mapping with the given extents and the specified padding value.
+     *
+     * This overload participates in overload resolution only if `is_convertible_v<Size, index_type>`
+     * is `true` and `is_nothrow_constructible_v<index_type, Size>` is `true`
+     *
+     * \param ext the given extents
+     * \param padding_value the padding value
+     */
+    MDSPAN_TEMPLATE_REQUIRES(
+      class _Size,
+      /* requires */ (
+        is_convertible_v<_Size, index_type>
+        && is_nothrow_constructible_v<index_type, _Size>
+      )
+    )
+    MDSPAN_INLINE_FUNCTION
     constexpr mapping(const extents_type &__ext, _Size __padding_value)
         : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext, static_cast<index_type>(__padding_value))),
           __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__ext))
@@ -259,33 +280,82 @@ public:
       assert((padding_stride == dynamic_extent) || (padding_stride == static_cast<index_type>(__padding_value)));
     }
 
-    template <class _OtherExtents>
-    constexpr MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
-        mapping(const layout_left::mapping<_OtherExtents> &__other_mapping)
+    /**
+     * Converting constructor from `layout_left::mapping`.
+     *
+     * This overload participates in overload resolution only if `is_constructible_v<extents_type, OtherExtents>` is true.
+     * If `OtherExtents::rank() > 1` then one of `padding_stride`, `static_extent(0)`, or `OtherExtents::static_extent(0)` must be `dynamic_extent`;
+     * otherwise, `OtherExtents::static_extent(0)` must be equal to the least multiple of `padding_stride` greater than or equal to `extents_type::static_extent(0)`
+     */
+    MDSPAN_TEMPLATE_REQUIRES(
+      class _OtherExtents,
+      /* requires */ (
+        is_constructible_v<extents_type, _OtherExtents>
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
+    constexpr mapping(const layout_left::mapping<_OtherExtents> &__other_mapping)
+        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(1))),
+          __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
+    {
+      static_assert(!((_OtherExtents::rank() > 1) && (__actual_padding_stride != dynamic_extent) && (_OtherExtents::static_extent(0) != dynamic_extent))
+                    || (__actual_padding_stride == _OtherExtents::static_extent(0)));
+    }
+
+    /**
+     * Converting constructor from `layout_stride::mapping`.
+     *
+     * This overload participates in overload resolution only if `is_constructible_v<extents_type, OtherExtents>` is true
+     */
+    MDSPAN_TEMPLATE_REQUIRES(
+      class _OtherExtents,
+      /* requires */ (
+        is_constructible_v<extents_type, _OtherExtents>
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
+    constexpr mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
         : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(1))),
           __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
     {
     }
 
-    template <class _OtherExtents>
-    constexpr MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
-        mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
+    /**
+     * Converting constructor from `layout_left_padded::mapping`.
+     *
+     * This overload participates in overload resolution only if `is_constructible_v<extents_type, OtherExtents>` is true.
+     * Either `padding_stride` or `OtherPaddingStride` must be `std::dynamic_extent`, or `padding_stride == OtherPaddingStride`.
+     */
+    MDSPAN_TEMPLATE_REQUIRES(
+      size_t _OtherPaddingStride, class _OtherExtents,
+      /* requires */ (
+        is_constructible_v<extents_type, _OtherExtents>
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || _OtherPaddingStride == dynamic_extent)))
+    constexpr
+    mapping(const typename layout_left_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__other_mapping)
         : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(1))),
           __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
     {
+      static_assert(padding_stride == dynamic_extent || _OtherPaddingStride == dynamic_extent || padding_stride == _OtherPaddingStride);
     }
 
-    template <size_t _OtherPaddingStride, class _OtherExtents>
-    constexpr MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || _OtherPaddingStride == dynamic_extent)))
-        mapping(const typename layout_left_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__other_mapping)
-        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(1))),
-          __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
-    {
-    }
-
-    template <size_t _OtherPaddingStride, class _OtherExtents>
-    constexpr MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
-        mapping(const typename layout_right_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__other_mapping) noexcept
+    /**
+     * Converting constructor from `layout_right_padded::mapping`.
+     *
+     * This overload participates in overload resolution only if `extents_type::rank()` is 0 or 1 and `is_constructible_v<extents_type, OtherExtents>` is `true`.
+     */
+    MDSPAN_TEMPLATE_REQUIRES(
+      size_t _OtherPaddingStride, class _OtherExtents,
+      /* requires */ (
+        extents_type::rank() <= 1
+        && is_constructible_v<extents_type, _OtherExtents>
+      )
+    )
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
+    constexpr
+    mapping(const typename layout_right_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__other_mapping) noexcept
         : __inner_mapping(__other_mapping.extents()),
           __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
     {}
@@ -317,7 +387,22 @@ public:
       return __inner_mapping.required_span_size();
     }
 
-    template<class... _Indices>
+    /**
+     * Return the mapping given the provided indices per rank.
+     *
+     * This overload participates in overload resolution only if:
+     * - `sizeof...(Indices) == extents_type::rank()`,
+     * - `(is_convertible_v<Indices, index_type> && ...) is true`, and
+     * - (is_nothrow_constructible_v<index_type, Indices> && ...) is true.
+     */
+    MDSPAN_TEMPLATE_REQUIRES(
+      class... _Indices,
+      /* requires */ (
+        sizeof...(_Indices) == extents_type::rank()
+        && (is_convertible_v<_Indices, index_type> && ...)
+        && (is_nothrow_constructible_v<index_type, _Indices> && ...)
+      )
+    )
     constexpr size_t operator()(_Indices... __idxs) const noexcept
     {
       return __inner_mapping(std::forward<_Indices>(__idxs)...);
@@ -345,7 +430,17 @@ public:
       return __inner_mapping.stride(__r);
     }
 
-    template <size_t _OtherPaddingStride, class _OtherExtents>
+    /**
+     * Equality operator between `layout_left_padded`s
+     *
+     * This overload only participates in overload resolution if `OtherExtents::rank() == extents_type::rank()`.
+     */
+    MDSPAN_TEMPLATE_REQUIRES(
+    size_t _OtherPaddingStride, class _OtherExtents,
+      /* requires */ (
+        _OtherExtents::rank() == extents_type::rank()
+      )
+    )
     friend constexpr bool operator==(const mapping &__left, const typename layout_left_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__right) noexcept
     {
       return (__left.extents() == __right.extents()) && (!(extents_type::rank() > size_t(1)) || (__left.stride(1) == __right.stride(1)));
