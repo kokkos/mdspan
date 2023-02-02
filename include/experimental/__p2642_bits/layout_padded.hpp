@@ -311,7 +311,7 @@ public:
     template <class _OtherExtents>
     constexpr MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
         mapping(const layout_left::mapping<_OtherExtents> &__other_mapping)
-        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(0))),
+        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(1))),
           __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
     {
     }
@@ -319,7 +319,7 @@ public:
     template <class _OtherExtents>
     constexpr MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
         mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
-        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(0))),
+        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(1))),
           __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
     {
     }
@@ -327,7 +327,7 @@ public:
     template <size_t _OtherPaddingStride, class _OtherExtents>
     constexpr MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || _OtherPaddingStride == dynamic_extent)))
         mapping(const typename layout_left_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__other_mapping)
-        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(0))),
+        : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(1))),
           __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
     {
     }
