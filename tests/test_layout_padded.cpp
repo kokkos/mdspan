@@ -235,4 +235,25 @@ TEST(LayoutLeftTests, properties)
   ASSERT_TRUE((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 6>>{stdex::extents<std::size_t, stdex::dynamic_extent, 6>{8}}.is_exhaustive()));
   ASSERT_FALSE((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 6, 6>>{stdex::extents<std::size_t, 6, 6>{}, 4}.is_exhaustive()));
   ASSERT_FALSE((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 6>>{stdex::extents<std::size_t, stdex::dynamic_extent, 6>{7}}.is_exhaustive()));
+
+  // Equality
+  ASSERT_EQ((stdex::layout_left_padded<0>::mapping<stdex::extents<std::size_t, 0>>{}), (stdex::layout_left_padded<0>::mapping<stdex::extents<std::size_t, 0>>{}));
+  ASSERT_EQ((stdex::layout_left_padded<0>::mapping<stdex::extents<std::size_t, 0>>{}), (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 0>>{}));
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3>>{}), (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3>>{}));
+  ASSERT_NE((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3>>{}), (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 5>>{}));
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent>>{stdex::extents<std::size_t, stdex::dynamic_extent>{5}}),
+            (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent>>{stdex::extents<std::size_t, stdex::dynamic_extent>{5}}));
+  ASSERT_NE((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent>>{stdex::extents<std::size_t, stdex::dynamic_extent>{3}}),
+            (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent>>{stdex::extents<std::size_t, stdex::dynamic_extent>{5}}));
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3, 7>>{}), (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3, 7>>{}));
+  ASSERT_NE((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3, 7>>{}), (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3, 4>>{}));
+  ASSERT_NE((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3, 7>>{}), (stdex::layout_left_padded<8>::mapping<stdex::extents<std::size_t, 3, 7>>{}));
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 3>>{stdex::extents<std::size_t, stdex::dynamic_extent, 3>{5}}),
+            (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 3>>{stdex::extents<std::size_t, stdex::dynamic_extent, 3>{5}}));
+  ASSERT_NE((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 3>>{stdex::extents<std::size_t, stdex::dynamic_extent, 3>{3}}),
+            (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 3>>{stdex::extents<std::size_t, stdex::dynamic_extent, 3>{5}}));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 4}), (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3, 7>>{}));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 4}), (stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 4}));
+  ASSERT_NE((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 4}), (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3, 4>>{}));
+  ASSERT_NE((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 4}), (stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 8}));
 }

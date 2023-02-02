@@ -429,14 +429,32 @@ public:
    * This overload only participates in overload resolution if `OtherExtents::rank() == extents_type::rank()`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-  size_t _OtherPaddingStride, class _OtherExtents,
+    class _Mapping,
     /* requires */ (
-      _OtherExtents::rank() == extents_type::rank()
+      detail::__is_layout_left_padded_mapping_of<_Mapping>
+          && (_Mapping::extents_type::rank() == extents_type::rank())
     )
   )
-  friend constexpr bool operator==(const mapping &__left, const typename layout_left_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__right) noexcept
+  friend constexpr bool operator==(const mapping &__left, const _Mapping &__right) noexcept
   {
     return (__left.extents() == __right.extents()) && (!(extents_type::rank() > size_t(1)) || (__left.stride(1) == __right.stride(1)));
+  }
+
+  /**
+   * Inequality operator between `layout_left_padded`s
+   *
+   * This overload only participates in overload resolution if `OtherExtents::rank() == extents_type::rank()`.
+   */
+  MDSPAN_TEMPLATE_REQUIRES(
+    class _Mapping,
+    /* requires */ (
+      detail::__is_layout_left_padded_mapping_of<_Mapping>
+      && (_Mapping::extents_type::rank() == extents_type::rank())
+    )
+  )
+  friend constexpr bool operator!=(const mapping &__left, const _Mapping &__right) noexcept
+  {
+    return !(__left == __right);
   }
 };
 }
