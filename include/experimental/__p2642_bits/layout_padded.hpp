@@ -372,17 +372,33 @@ public:
       return __inner_mapping(std::forward<_Indices>(__idxs)...);
     }
 
-#if 0
     static constexpr bool is_always_unique() noexcept { return true; }
-    static constexpr bool is_always_exhaustive() noexcept;
+    static constexpr bool is_always_exhaustive() noexcept
+    {
+      return (extents_type::rank() <= size_t(1))
+        || (extents_type::static_extent(0) != dynamic_extent
+            && extents_type::static_extent(0) == __inner_extents_type::static_extent(0));
+    }
     static constexpr bool is_always_strided() noexcept { return true; }
 
     static constexpr bool is_unique() noexcept { return true; }
-    constexpr bool is_exhaustive() const noexcept;
+    constexpr bool is_exhaustive() const noexcept
+    {
+      return (extents_type::rank() == 0)
+        || (__inner_mapping.extents().extent(0) == __unpadded_extent.extent(0));
+    }
     static constexpr bool is_strided() noexcept { return true; }
 
-    constexpr index_type stride(rank_type r) const noexcept;
-#endif
+    constexpr index_type stride(rank_type __r) const noexcept
+    {
+      return __inner_mapping.stride(__r);
+    }
+
+    template <size_t _OtherPaddingStride, class _OtherExtents>
+    friend constexpr bool operator==(const mapping &__left, const typename layout_left_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__right) noexcept
+    {
+      return (__left.extents() == __right.extents()) && (!(extents_type::rank() > size_t(1)) || (__left.stride(1) == __right.stride(1)));
+    }
   };
 };
 }
