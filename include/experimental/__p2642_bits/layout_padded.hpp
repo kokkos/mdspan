@@ -320,18 +320,19 @@ public:
    * Either `padding_stride` or `OtherPaddingStride` must be `std::dynamic_extent`, or `padding_stride == OtherPaddingStride`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-    size_t _OtherPaddingStride, class _OtherExtents,
+    class _Mapping,
     /* requires */ (
-      is_constructible_v<extents_type, _OtherExtents>
+      detail::__is_layout_left_padded_mapping<_Mapping>::value
+      && is_constructible_v<extents_type, typename _Mapping::extents_type>
     )
   )
-  MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || _OtherPaddingStride == dynamic_extent)))
+  MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || _Mapping::padding_stride == dynamic_extent)))
   constexpr
-  mapping(const typename layout_left_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__other_mapping)
+  mapping(const _Mapping &__other_mapping)
       : __inner_mapping(detail::__inner_extents_left<extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(1))),
         __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
   {
-    static_assert(padding_stride == dynamic_extent || _OtherPaddingStride == dynamic_extent || padding_stride == _OtherPaddingStride);
+    static_assert(padding_stride == dynamic_extent || _Mapping::padding_stride == dynamic_extent || padding_stride == _Mapping::padding_stride);
   }
 
   /**
@@ -340,15 +341,16 @@ public:
    * This overload participates in overload resolution only if `extents_type::rank()` is 0 or 1 and `is_constructible_v<extents_type, OtherExtents>` is `true`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-    size_t _OtherPaddingStride, class _OtherExtents,
+    class _Mapping,
     /* requires */ (
-      extents_type::rank() <= 1
-      && is_constructible_v<extents_type, _OtherExtents>
+      detail::__is_layout_right_padded_mapping<_Mapping>::value
+      && extents_type::rank() <= 1
+      && is_constructible_v<extents_type, typename _Mapping::extents_type>
     )
   )
-  MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
+  MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<typename _Mapping::extents_type, extents_type>))
   constexpr
-  mapping(const typename layout_right_padded<_OtherPaddingStride>::template mapping<_OtherExtents> &__other_mapping) noexcept
+  mapping(const _Mapping &__other_mapping) noexcept
       : __inner_mapping(__other_mapping.extents()),
         __unpadded_extent(detail::__unpadded_extent_type_impl<extents_type>::__construct(__other_mapping.extents()))
   {}
@@ -431,8 +433,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class _Mapping,
     /* requires */ (
-      detail::__is_layout_left_padded_mapping_of<_Mapping>
-          && (_Mapping::extents_type::rank() == extents_type::rank())
+      detail::__is_layout_left_padded_mapping<_Mapping>::value
+      && (_Mapping::extents_type::rank() == extents_type::rank())
     )
   )
   friend constexpr bool operator==(const mapping &__left, const _Mapping &__right) noexcept
@@ -448,7 +450,7 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class _Mapping,
     /* requires */ (
-      detail::__is_layout_left_padded_mapping_of<_Mapping>
+      detail::__is_layout_left_padded_mapping<_Mapping>::value
       && (_Mapping::extents_type::rank() == extents_type::rank())
     )
   )
