@@ -410,20 +410,20 @@ private:
 public:
   // [mdspan.extents.obs], observers of multidimensional index space
   MDSPAN_INLINE_FUNCTION
-  constexpr static rank_type rank() { return m_rank; }
+  constexpr static rank_type rank() noexcept { return m_rank; }
   MDSPAN_INLINE_FUNCTION
-  constexpr static rank_type rank_dynamic() { return m_rank_dynamic; }
+  constexpr static rank_type rank_dynamic() noexcept { return m_rank_dynamic; }
 
   MDSPAN_INLINE_FUNCTION
-  constexpr index_type extent(rank_type r) const { return m_vals.value(r); }
+  constexpr index_type extent(rank_type r) const noexcept { return m_vals.value(r); }
   MDSPAN_INLINE_FUNCTION
-  constexpr static size_t static_extent(rank_type r) {
+  constexpr static size_t static_extent(rank_type r) noexcept {
     return vals_t::static_value(r);
   }
 
   // [mdspan.extents.cons], constructors
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr extents() = default;
+  constexpr extents() noexcept = default;
 
   // Construction from just dynamic or all values.
   // Precondition check is deferred to maybe_static_array constructor
@@ -437,19 +437,20 @@ public:
           (sizeof...(OtherIndexTypes) == m_rank ||
            sizeof...(OtherIndexTypes) == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(OtherIndexTypes... dynvals)
+  constexpr explicit extents(OtherIndexTypes... dynvals) noexcept
       : m_vals(static_cast<index_type>(dynvals)...) {}
 
   MDSPAN_TEMPLATE_REQUIRES(
       class OtherIndexType, size_t N,
       /* requires */
       (
-          //    _MDSPAN_TRAIT(is_convertible, OtherIndexType, index_type) &&
-          //    _MDSPAN_TRAIT(is_nothrow_constructible, index_type,
-          //    OtherIndexType) &&
+          _MDSPAN_TRAIT(is_convertible, OtherIndexType, index_type) &&
+          _MDSPAN_TRAIT(is_nothrow_constructible, index_type,
+              OtherIndexType) &&
           (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(const array<OtherIndexType, N> &exts)
+  MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
+  constexpr extents(const array<OtherIndexType, N> &exts) noexcept
       : m_vals(std::move(exts)) {}
 
 #ifdef __cpp_lib_span
@@ -460,7 +461,8 @@ public:
        _MDSPAN_TRAIT(is_nothrow_constructible, index_type, OtherIndexType) &&
        (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
-  constexpr extents(const span<OtherIndexType, N> &exts)
+  MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
+  constexpr extents(const span<OtherIndexType, N> &exts) noexcept
       : m_vals(std::move(exts)) {}
 #endif
 
@@ -476,7 +478,7 @@ private:
   vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &exts,
-                                       DynamicValues... dynamic_values) {
+                                       DynamicValues... dynamic_values) noexcept {
     return __construct_vals_from_extents(
         std::integral_constant<size_t, DynCount + 1>(),
         std::integral_constant<size_t, R + 1>(), exts, dynamic_values...,
@@ -490,7 +492,7 @@ private:
   vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &exts,
-                                       DynamicValues... dynamic_values) {
+                                       DynamicValues... dynamic_values) noexcept {
     return __construct_vals_from_extents(
         std::integral_constant<size_t, DynCount>(),
         std::integral_constant<size_t, R + 1>(), exts, dynamic_values...);
@@ -503,7 +505,7 @@ private:
   vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &,
-                                       DynamicValues... dynamic_values) {
+                                       DynamicValues... dynamic_values) noexcept {
     return vals_t{static_cast<index_type>(dynamic_values)...};
   }
 
@@ -527,7 +529,7 @@ public:
                                ...) ||
                               (std::numeric_limits<index_type>::max() <
                                std::numeric_limits<OtherIndexType>::max()))
-  constexpr extents(const extents<OtherIndexType, OtherExtents...> &other)
+  constexpr extents(const extents<OtherIndexType, OtherExtents...> &other) noexcept
       : m_vals(__construct_vals_from_extents(
             std::integral_constant<size_t, 0>(),
             std::integral_constant<size_t, 0>(), other)) {}

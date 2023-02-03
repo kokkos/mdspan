@@ -57,10 +57,11 @@ MDSPAN_STATIC_TEST(
   >::value
 );
 
+// constructibility test from integrals
 MDSPAN_STATIC_TEST(
   std::is_constructible<
     stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>,
-    int, int, int
+    int, size_t, int
   >::value
 );
 
@@ -78,6 +79,7 @@ MDSPAN_STATIC_TEST(
   >::value
 );
 
+// conversion construction from extents
 MDSPAN_STATIC_TEST(
   std::is_constructible<
     stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>,
@@ -90,6 +92,13 @@ MDSPAN_STATIC_TEST(
   std::is_convertible<
     stdex::extents<size_t,2, 3>,
     stdex::extents<size_t,2, stdex::dynamic_extent>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_constructible<
+    stdex::extents<size_t,2, stdex::dynamic_extent>,
+    stdex::extents<size_t,2, 3>
   >::value
 );
 
@@ -109,24 +118,71 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_constructible<
+    stdex::extents<size_t>,
+    stdex::extents<int>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_convertible<
+    stdex::extents<int>,
+    stdex::extents<size_t>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_constructible<
+    stdex::extents<int>,
+    stdex::extents<size_t>
+  >::value
+);
+
+#if MDSPAN_HAS_CXX_20
+// GNU gets the is_convertible with conditional explicit
+// wrong in some older versions.
+#if !defined(__GNUC__) || (__GNUC__ > 10)
+MDSPAN_STATIC_TEST(
+  !std::is_convertible<
+    stdex::extents<size_t>,
+    stdex::extents<int>
+  >::value
+);
+#endif
+#endif
+
+MDSPAN_STATIC_TEST(
+  std::is_constructible<
     stdex::extents<size_t,2, stdex::dynamic_extent>,
-    stdex::extents<size_t,2, 3>
+    std::array<int, 1>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  std::is_convertible<
+    std::array<int, 1>,
+    stdex::extents<size_t,2, stdex::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_constructible<
     stdex::extents<size_t,2, stdex::dynamic_extent>,
-    std::array<int,1>
+    std::array<int, 2>
   >::value
 );
 
+#if MDSPAN_HAS_CXX_20
+// GNU gets the is_convertible with conditional explicit
+// wrong in some older versions.
+#if !defined(__GNUC__) || (__GNUC__ > 10)
 MDSPAN_STATIC_TEST(
-  std::is_constructible<
-    stdex::extents<size_t,2, stdex::dynamic_extent>,
-    std::array<int,2>
+  !std::is_convertible<
+    std::array<int, 2>,
+    stdex::extents<size_t,2, stdex::dynamic_extent>
   >::value
 );
+#endif
+#endif
 
 MDSPAN_STATIC_TEST(
   !std::is_constructible<
@@ -144,11 +200,31 @@ MDSPAN_STATIC_TEST(
 );
 
 MDSPAN_STATIC_TEST(
+  std::is_convertible<
+    std::span<int,1>,
+    stdex::extents<size_t,2, stdex::dynamic_extent>
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
   std::is_constructible<
     stdex::extents<size_t,2, stdex::dynamic_extent>,
     std::span<int,2>
   >::value
 );
+
+#if MDSPAN_HAS_CXX_20
+// GNU gets the is_convertible with conditional explicit
+// wrong in some older versions.
+#if !defined(__GNUC__) || (__GNUC__ > 10)
+MDSPAN_STATIC_TEST(
+  !std::is_convertible<
+    std::span<int, 2>,
+    stdex::extents<size_t,2, stdex::dynamic_extent>
+  >::value
+);
+#endif
+#endif
 
 // this is not supported in the standard
 MDSPAN_STATIC_TEST(
