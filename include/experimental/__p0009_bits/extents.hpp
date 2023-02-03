@@ -62,11 +62,11 @@ template <size_t R, class T, T... Extents> struct static_array_impl;
 template <size_t R, class T, T FirstExt, T... Extents>
 struct static_array_impl<R, T, FirstExt, Extents...> {
   MDSPAN_INLINE_FUNCTION
-  constexpr static T value(size_t r) {
+  constexpr static T get(size_t r) {
     if (r == R)
       return FirstExt;
     else
-      return static_array_impl<R + 1, T, Extents...>::value(r);
+      return static_array_impl<R + 1, T, Extents...>::get(r);
   }
   template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static T get() {
 #if MDSPAN_HAS_CXX_17
@@ -75,10 +75,7 @@ struct static_array_impl<R, T, FirstExt, Extents...> {
     else
       return static_array_impl<R + 1, T, Extents...>::template get<r>();
 #else
-    if (r == R)
-      return FirstExt;
-    else
-      return static_array_impl<R + 1, T, Extents...>::value(r);
+    get(r);
 #endif
   }
 };
@@ -87,7 +84,7 @@ struct static_array_impl<R, T, FirstExt, Extents...> {
 template <size_t R, class T, T FirstExt>
 struct static_array_impl<R, T, FirstExt> {
   MDSPAN_INLINE_FUNCTION
-  constexpr static T value(int) { return FirstExt; }
+  constexpr static T get(int) { return FirstExt; }
   template <size_t> MDSPAN_INLINE_FUNCTION constexpr static T get() {
     return FirstExt;
   }
@@ -96,7 +93,7 @@ struct static_array_impl<R, T, FirstExt> {
 // Don't start recursion if size 0
 template <class T> struct static_array_impl<0, T> {
   MDSPAN_INLINE_FUNCTION
-  constexpr static T value(int) { return T(); }
+  constexpr static T get(int) { return T(); }
   template <size_t> MDSPAN_INLINE_FUNCTION constexpr static T get() {
     return T();
   }
@@ -111,9 +108,9 @@ public:
   using value_type = T;
 
   MDSPAN_INLINE_FUNCTION
-  constexpr T operator[](int r) const { return get(r); }
+  constexpr T operator[](int r) const { return impl_t::get(r); }
   MDSPAN_INLINE_FUNCTION
-  constexpr static T get(int r) { return impl_t::value(r); }
+  constexpr static T get(int r) { return impl_t::get(r); }
   template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static T get() {
     return impl_t::template get<r>();
   }
@@ -142,8 +139,15 @@ struct index_sequence_scan_impl<R, FirstVal, Values...> {
       return 0;
   }
   template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static size_t get() {
-    return r > R ? FirstVal + index_sequence_scan_impl<R + 1, Values...>::get(r)
-                 : 0;
+#if MDSPAN_HAS_CXX_17
+    if constexpr (r > R) {
+      return FirstVal + index_sequence_scan_impl<R + 1, Values...>::get(r);
+    } else {
+      return 0;
+    }
+#else
+    return get(r);
+#endif
   }
 };
 
@@ -161,7 +165,15 @@ struct index_sequence_scan_impl<R, FirstVal> {
   constexpr static size_t get(size_t r) { return R > r ? FirstVal : 0; }
 #endif
   template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static size_t get() {
-    return R > r ? FirstVal : 0;
+#if MDSPAN_HAS_CXX_17
+    if constexpr (r > R) {
+      return FirstVal;
+    } else {
+      return 0;
+    }
+#else
+    return get(r);
+#endif
   }
 };
 template <> struct index_sequence_scan_impl<0> {
@@ -233,7 +245,7 @@ public:
   // TODO: add precondition check?
   MDSPAN_TEMPLATE_REQUIRES(class... Vals,
                            /* requires */ ((m_size_dynamic == 0) &&
-                                           (sizeof...(DynVals) > 0)))
+                                           (sizeof...(Vals) > 0)))
   MDSPAN_INLINE_FUNCTION
   constexpr maybe_static_array(Vals...) : m_dyn_vals{} {}
 
@@ -541,7 +553,7 @@ public:
 #endif
 };
 
-// Helper classes to implement dextents alias for extents
+// Recursive helper classes to implement dextents alias for extents
 namespace detail {
 
 template <class IndexType, size_t Rank,
@@ -588,7 +600,12 @@ struct __is_extents<::std::experimental::extents<IndexType, ExtentsPack...>>
     : ::std::true_type {};
 
 template <class T>
-static constexpr bool __is_extents_v = __is_extents<T>::value;
+#if MDSPAN_HAS_CXX_17
+inline
+#else
+static
+#endif
+constexpr bool __is_extents_v = __is_extents<T>::value;
 
 } // namespace detail
 } // namespace experimental
