@@ -176,6 +176,12 @@ class layout_left::mapping {
     MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const noexcept { return true; }
     MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
 
+    MDSPAN_TEMPLATE_REQUIRES(
+      class E = Extents,
+      /* requires */ (
+        E::rank() > 0
+      )
+    )
     MDSPAN_INLINE_FUNCTION
     constexpr index_type stride(rank_type i) const noexcept {
       index_type value = 1;

@@ -141,17 +141,23 @@ void check_correctness(MDA& m, size_t rank, size_t rank_dynamic,
                        bool exhaustive) {
   ASSERT_EQ(m.rank(), rank);
   ASSERT_EQ(m.rank_dynamic(), rank_dynamic);
-  if(rank>0) {
+  if (rank>0) {
     ASSERT_EQ(m.extent(0), extent_0);
-    ASSERT_EQ(m.stride(0), stride_0);
+    if constexpr (m.rank()>0) {
+      ASSERT_EQ(m.stride(0), stride_0);
+    }
   }
   if(rank>1) {
     ASSERT_EQ(m.extent(1), extent_1);
-    ASSERT_EQ(m.stride(1), stride_1);
+    if constexpr (m.rank()>0) {
+      ASSERT_EQ(m.stride(1), stride_1);
+    }
   }
   if(rank>2) {
     ASSERT_EQ(m.extent(2), extent_2);
-    ASSERT_EQ(m.stride(2), stride_2);
+    if constexpr (m.rank()>0) {
+      ASSERT_EQ(m.stride(2), stride_2);
+    }
   }
   if(ptr_matches)
     ASSERT_EQ(m.data(),ptr);

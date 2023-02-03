@@ -239,3 +239,35 @@ TEST(TestLayoutRightCTAD, test_layout_right_ctad) {
   ASSERT_TRUE(m.is_exhaustive());
 }
 #endif
+
+template< class T, class RankType, class = void >
+struct is_stride_avail : std::false_type {};
+
+template< class T, class RankType >
+struct is_stride_avail< T
+                      , RankType
+                      , std::enable_if_t< std::is_same< decltype( std::declval<T>().stride( std::declval<RankType>() ) )
+                                                      , typename T::index_type
+                                                      >::value
+                                        >
+                      > : std::true_type {};
+
+TEST(TestLayoutLeftStrideConstraint, test_layout_left_stride_constraint) {
+  stdex::extents<int,16> ext1d{};
+  stdex::layout_left::mapping m1d{ext1d};
+  ASSERT_TRUE ((is_stride_avail< decltype(m1d), int >::value));
+
+  stdex::extents<int> ext0d{};
+  stdex::layout_left::mapping m0d{ext0d};
+  ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
+}
+
+TEST(TestLayoutRightStrideConstraint, test_layout_right_stride_constraint) {
+  stdex::extents<int,16> ext1d{};
+  stdex::layout_right::mapping m1d{ext1d};
+  ASSERT_TRUE ((is_stride_avail< decltype(m1d), int >::value));
+
+  stdex::extents<int> ext0d{};
+  stdex::layout_right::mapping m0d{ext0d};
+  ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
+}
