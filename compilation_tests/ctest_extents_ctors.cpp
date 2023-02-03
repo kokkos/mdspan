@@ -19,6 +19,7 @@
 
 namespace stdex = std::experimental;
 
+
 MDSPAN_STATIC_TEST(
   std::is_constructible<
     stdex::extents<size_t,1, 2, stdex::dynamic_extent>,
@@ -92,12 +93,18 @@ MDSPAN_STATIC_TEST(
   >::value
 );
 
+#if MDSPAN_HAS_CXX_20
+// GNU gets the is_convertible with conditional explicit
+// wrong in some older versions.
+#if !defined(__GNUC__) || (__GNUC__ > 10)
 MDSPAN_STATIC_TEST(
   !std::is_convertible<
-    stdex::extents<size_t,3, 2>,
-    stdex::extents<size_t,2, stdex::dynamic_extent>
+    stdex::extents<size_t,2, stdex::dynamic_extent>,
+    stdex::extents<size_t,2, 3>
   >::value
 );
+#endif
+#endif
 
 
 MDSPAN_STATIC_TEST(
