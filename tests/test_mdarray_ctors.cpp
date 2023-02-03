@@ -141,7 +141,7 @@ void check_correctness(MDA& m, size_t rank, size_t rank_dynamic,
                        bool exhaustive) {
   ASSERT_EQ(m.rank(), rank);
   ASSERT_EQ(m.rank_dynamic(), rank_dynamic);
-  if (rank>0) {
+  if(rank>0) {
     ASSERT_EQ(m.extent(0), extent_0);
     if constexpr (m.rank()>0) {
       ASSERT_EQ(m.stride(0), stride_0);
