@@ -64,4 +64,5 @@ endif()
 # both of those don't work yet since its using vector
 if(NOT MDSPAN_ENABLE_CUDA AND NOT MDSPAN_ENABLE_HIP)
 mdspan_add_test(test_mdarray_ctors)
+mdspan_add_test(test_mdarray_to_mdspan)
 endif()

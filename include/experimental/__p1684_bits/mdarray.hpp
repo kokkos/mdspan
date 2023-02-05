@@ -407,7 +407,7 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr rank_type rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
   MDSPAN_INLINE_FUNCTION static constexpr size_t static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
 
-  MDSPAN_INLINE_FUNCTION constexpr extents_type extents() const noexcept { return map_.extents(); };
+  MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return map_.extents(); };
   MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return map_.extents().extent(r); };
   MDSPAN_INLINE_FUNCTION constexpr index_type size() const noexcept {
 //    return __impl::__size(*this);
@@ -422,11 +422,60 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() noexcept { return mapping_type::is_always_exhaustive(); };
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return mapping_type::is_always_strided(); };
 
-  MDSPAN_INLINE_FUNCTION constexpr mapping_type mapping() const noexcept { return map_; };
+  MDSPAN_INLINE_FUNCTION constexpr const mapping_type& mapping() const noexcept { return map_; };
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return map_.is_unique(); };
   MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const noexcept { return map_.is_exhaustive(); };
   MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return map_.is_strided(); };
   MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return map_.stride(r); };
+
+  // Converstion to mdspan
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherElementType, class OtherExtents,
+    class OtherLayoutType, class OtherAccessorType,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_assignable, mdspan_type,
+                       mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>)
+    )
+  )
+  constexpr operator mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType> () {
+    return mdspan_type(data(), map_);
+  }
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherElementType, class OtherExtents,
+    class OtherLayoutType, class OtherAccessorType,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_assignable, const_mdspan_type,
+                      mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>)
+    )
+  )
+  constexpr operator mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType> () const {
+    return const_mdspan_type(data(), map_);
+  }
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherAccessorType = default_accessor<element_type>,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_assignable, mdspan_type,
+                      mdspan<element_type, extents_type, layout_type, OtherAccessorType>)
+    )
+  )
+  constexpr mdspan<element_type, extents_type, layout_type, OtherAccessorType>
+    to_mdspan(const OtherAccessorType& a = default_accessor<element_type>()) {
+      return mdspan<element_type, extents_type, layout_type, OtherAccessorType>(data(), map_, a);
+  }
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class OtherAccessorType = default_accessor<const element_type>,
+    /* requires */ (
+      _MDSPAN_TRAIT(is_assignable, const_mdspan_type,
+                      mdspan<const element_type, extents_type, layout_type, OtherAccessorType>)
+    )
+  )
+  constexpr mdspan<const element_type, extents_type, layout_type, OtherAccessorType>
+    to_mdspan(const OtherAccessorType& a = default_accessor<const element_type>()) const {
+      return mdspan<const element_type, extents_type, layout_type, OtherAccessorType>(data(), map_, a);
+  }
 
 private:
   mapping_type map_;
