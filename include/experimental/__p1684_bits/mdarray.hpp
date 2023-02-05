@@ -72,6 +72,8 @@ public:
   using container_type = Container;
   using mapping_type = typename layout_type::template mapping<extents_type>;
   using element_type = ElementType;
+  using mdspan_type = mdspan<element_type, extents_type, layout_type>;
+  using const_mdspan_type = mdspan<const element_type, extents_type, layout_type>;
   using value_type = remove_cv_t<element_type>;
   using index_type = typename Extents::index_type;
   using size_type = typename Extents::size_type;
