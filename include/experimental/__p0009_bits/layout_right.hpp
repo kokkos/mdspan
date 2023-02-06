@@ -20,6 +20,7 @@
 #include "extents.hpp"
 #include <stdexcept>
 #include "layout_stride.hpp"
+#include "../__p2642_bits/layout_padded_fwd.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
@@ -112,6 +113,29 @@ class layout_right::mapping {
         * other.required_span_size() is a representable value of type index_type
         */
     }
+
+#if MDSPAN_HAS_CXX_17
+    MDSPAN_TEMPLATE_REQUIRES(
+        class _Mapping,
+        /* requires */ (
+            detail::__is_layout_right_padded_mapping<_Mapping>::value
+                && is_constructible_v<extents_type, typename _Mapping::extents_type>))
+    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<typename _Mapping::extents_type, extents_type>))
+    mapping(const _Mapping &__other) noexcept
+        : __extents(__other.extents())
+    {
+      if constexpr ((extents_type::rank() > 1)
+                    && (extents_type::static_extent(extents_type::rank() - 1) != dynamic_extent)
+                    && (_Mapping::extents_type::static_extent(extents_type::rank() - 1) != dynamic_extent)
+                    && (detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value != dynamic_extent)) {
+        if constexpr (extents_type::static_extent(extents_type::rank() - 1) == 0) {
+          static_assert(detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == 0);
+        } else {
+          static_assert(detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value % extents_type::static_extent(extents_type::rank() - 1) == 0);
+        }
+      }
+    }
+#endif
 
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,

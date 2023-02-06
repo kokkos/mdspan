@@ -66,6 +66,14 @@ struct __is_layout_right_padded_mapping<_Mapping, enable_if_t<__is_layout_right_
 template <class _Mapping>
 inline constexpr bool __is_layout_right_padded_mapping_of = __is_layout_right_padded<typename _Mapping::layout_type>::value;
 
+template <class _Layout>
+struct __padded_layout_padding_stride;
+
+template <size_t _PaddingStride>
+struct __padded_layout_padding_stride<layout_left_padded<_PaddingStride>> : std::integral_constant<size_t, _PaddingStride> {};
+
+template <size_t _PaddingStride>
+struct __padded_layout_padding_stride<layout_right_padded<_PaddingStride>> : std::integral_constant<size_t, _PaddingStride> {};
 }
 }
 }

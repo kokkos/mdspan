@@ -112,16 +112,24 @@ void test_inner_mapping_extent(const InnerExtents &inner_extents, const TestExte
   ASSERT_EQ(prod, mapping.required_span_size());
 }
 
-template<class LayoutrightPadded, class Extents>
+template <class LayoutRightPadded, class Extents>
 void test_0_or_1_rank_inner_mapping_extents(const Extents &extents)
 {
-  test_inner_mapping_extent<LayoutrightPadded>(extents, extents);
+  test_inner_mapping_extent<LayoutRightPadded>(extents, extents);
 }
 
-template <class LayoutrightPadded, class Extents, class Size>
+template <class LayoutRightPadded, class Extents, class Size>
 void test_0_or_1_rank_inner_mapping_extents(const Extents &extents, Size padding_value)
 {
-  test_inner_mapping_extent<LayoutrightPadded>(extents, extents, padding_value);
+  test_inner_mapping_extent<LayoutRightPadded>(extents, extents, padding_value);
+}
+
+template <class LayoutRightPadded, class OtherLayoutType, class Extents, class TestExtents>
+void test_converting_constructor(const Extents &extents, const TestExtents &test_extents)
+{
+  auto mapping = typename LayoutRightPadded::template mapping<Extents>(extents);
+  auto other_mapping = typename OtherLayoutType::template mapping<TestExtents>{mapping};
+  ASSERT_EQ(other_mapping.extents(), test_extents);
 }
 }
 
@@ -168,6 +176,10 @@ TEST(LayoutrightTests, construction)
   test_inner_mapping_extent<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 7, 0>{}, stdex::extents<std::size_t, 7, stdex::dynamic_extent>{0}, 2);
   test_inner_mapping_extent<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 7, 5>{}, stdex::extents<std::size_t, 7, stdex::dynamic_extent>{8}, 4);
   test_inner_mapping_extent<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 13, stdex::dynamic_extent>{7}, stdex::extents<std::size_t, 13, stdex::dynamic_extent>{8}, 4);
+
+  // Construct layout_left from layout_left_padded
+  test_converting_constructor<stdex::layout_right_padded<4>, stdex::layout_right>(stdex::extents<std::size_t, 5, 3, 2>{}, stdex::extents<std::size_t, 5, 3, 2>{});
+  test_converting_constructor<stdex::layout_right_padded<4>, stdex::layout_right>(stdex::extents<std::size_t, 5, 3, 2>{}, stdex::extents<std::size_t, 5, 3, stdex::dynamic_extent>{2});
 }
 
 namespace
