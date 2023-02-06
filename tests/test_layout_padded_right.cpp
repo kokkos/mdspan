@@ -131,6 +131,14 @@ void test_converting_constructor(const Extents &extents, const TestExtents &test
   auto other_mapping = typename OtherLayoutType::template mapping<TestExtents>{mapping};
   ASSERT_EQ(other_mapping.extents(), test_extents);
 }
+
+template <class LayoutRightPadded, class OtherLayoutType, class Extents, class Size, class TestExtents>
+void test_converting_constructor(const Extents &extents, Size sz, const TestExtents &test_extents)
+{
+  auto mapping = typename LayoutRightPadded::template mapping<Extents>(extents, sz);
+  auto other_mapping = typename OtherLayoutType::template mapping<TestExtents>{mapping};
+  ASSERT_EQ(other_mapping.extents(), test_extents);
+}
 }
 
 TEST(LayoutrightTests, construction)
@@ -177,7 +185,11 @@ TEST(LayoutrightTests, construction)
   test_inner_mapping_extent<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 7, 5>{}, stdex::extents<std::size_t, 7, stdex::dynamic_extent>{8}, 4);
   test_inner_mapping_extent<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 13, stdex::dynamic_extent>{7}, stdex::extents<std::size_t, 13, stdex::dynamic_extent>{8}, 4);
 
-  // Construct layout_left from layout_left_padded
+  // Construct layout_right_padded from another layout_right_padded
+  test_converting_constructor<stdex::layout_right_padded<4>, stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 5, 3, 2>{}, stdex::extents<std::size_t, 5, 3, 2>{});
+  test_converting_constructor<stdex::layout_right_padded<stdex::dynamic_extent>, stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 5, 3, 2>{}, 4, stdex::extents<std::size_t, 5, 3, 2>{});
+
+  // Construct layout_right from layout_right_padded
   test_converting_constructor<stdex::layout_right_padded<4>, stdex::layout_right>(stdex::extents<std::size_t, 5, 3, 2>{}, stdex::extents<std::size_t, 5, 3, 2>{});
   test_converting_constructor<stdex::layout_right_padded<4>, stdex::layout_right>(stdex::extents<std::size_t, 5, 3, 2>{}, stdex::extents<std::size_t, 5, 3, stdex::dynamic_extent>{2});
 }

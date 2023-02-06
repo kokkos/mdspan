@@ -129,6 +129,14 @@ void test_converting_constructor(const Extents &extents, const TestExtents &test
   auto other_mapping = typename OtherLayoutType::template mapping<TestExtents>{mapping};
   ASSERT_EQ(other_mapping.extents(), test_extents);
 }
+
+template <class LayoutLeftPadded, class OtherLayoutType, class Extents, class Size, class TestExtents>
+void test_converting_constructor(const Extents &extents, Size sz, const TestExtents &test_extents)
+{
+  auto mapping = typename LayoutLeftPadded::template mapping<Extents>(extents, sz);
+  auto other_mapping = typename OtherLayoutType::template mapping<TestExtents>{mapping};
+  ASSERT_EQ(other_mapping.extents(), test_extents);
+}
 }
 
 TEST(LayoutLeftTests, construction)
@@ -174,6 +182,10 @@ TEST(LayoutLeftTests, construction)
   test_inner_mapping_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 0, 7>{}, stdex::extents<std::size_t, stdex::dynamic_extent, 7>{0}, 2);
   test_inner_mapping_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 5, 7>{}, stdex::extents<std::size_t, stdex::dynamic_extent, 7>{8}, 4);
   test_inner_mapping_extent<stdex::layout_left_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, stdex::dynamic_extent, 13>{7}, stdex::extents<std::size_t, stdex::dynamic_extent, 13>{8}, 4);
+
+  // Construct layout_left_padded from another layout_left_padded
+  test_converting_constructor<stdex::layout_left_padded<4>, stdex::layout_left_padded<4>>(stdex::extents<std::size_t, 2, 3, 5>{}, stdex::extents<std::size_t, 2, 3, 5>{});
+  test_converting_constructor<stdex::layout_left_padded<stdex::dynamic_extent>, stdex::layout_left_padded<4>>(stdex::extents<std::size_t, 2, 3, 5>{}, 2, stdex::extents<std::size_t, 2, 3, 5>{});
 
   // Construct layout_left from layout_left_padded
   test_converting_constructor<stdex::layout_left_padded<4>, stdex::layout_left>(stdex::extents<std::size_t, 2, 3, 5>{}, stdex::extents<std::size_t, 2, 3, 5>{});

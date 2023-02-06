@@ -331,13 +331,15 @@ public:
       && is_constructible_v<extents_type, typename _Mapping::extents_type>
     )
   )
-  MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || _Mapping::padding_stride == dynamic_extent)))
+  MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent)))
   constexpr
   mapping(const _Mapping &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(__padding_stride_idx))),
         __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
   {
-    static_assert(padding_stride == dynamic_extent || _Mapping::padding_stride == dynamic_extent || padding_stride == _Mapping::padding_stride);
+    static_assert(padding_stride == dynamic_extent
+                  || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent
+                  || padding_stride == detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value);
   }
 
   /**
@@ -607,13 +609,15 @@ class layout_right_padded<padding_stride>::mapping {
               && is_constructible_v<extents_type, typename _Mapping::extents_type>
           )
       )
-  MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || _Mapping::padding_stride == dynamic_extent)))
+  MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent)))
   constexpr
       mapping(const _Mapping &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __other_mapping.stride(__padding_stride_idx))),
         __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
   {
-    static_assert(padding_stride == dynamic_extent || _Mapping::padding_stride == dynamic_extent || padding_stride == _Mapping::padding_stride);
+    static_assert(padding_stride == dynamic_extent
+                  || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent
+                  || padding_stride == detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value);
   }
 
   /**
