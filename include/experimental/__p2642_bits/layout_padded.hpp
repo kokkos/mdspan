@@ -106,7 +106,7 @@ struct __inner_extents_type
     {
       return __subs_type::__construct(__extents);
     } else {
-      // This is a corner case where `_PaddingStride` is not dynamic but `_ActualPaddingStride` is
+      // This is a case where `_PaddingStride` is not dynamic but `_ActualPaddingStride` is
       // because `_Extents::static_extents(extent-to-pad-rank)` is dynamic. We need to initialize it with a run-time
       // value that is the least multiple of `_PaddingStride` greater than or equal to `_Extents::static_extents(0)`
       if constexpr (_Extents::static_extent(_ExtentToPadIdx) == dynamic_extent)
