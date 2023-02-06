@@ -209,8 +209,8 @@ private:
   static constexpr rank_type __extent_to_pad_idx = 0;
 
   static_assert((padding_stride != 0)
-                    || (extents_type::static_extent(__extent_to_pad_idx) == 0)
-                    || (extents_type::static_extent(__extent_to_pad_idx) == dynamic_extent),
+                || (extents_type::static_extent(__extent_to_pad_idx) == 0)
+                || (extents_type::static_extent(__extent_to_pad_idx) == dynamic_extent),
                 "if padding stride is 0, static_extent(0) must also be 0 or dynamic_extent");
 
   static constexpr size_t __actual_padding_stride = detail::__get_actual_static_padding_stride<extents_type, padding_stride, __extent_to_pad_idx>();
@@ -485,8 +485,8 @@ class layout_right_padded<padding_stride>::mapping {
   static constexpr rank_type __extent_to_pad_idx = extents_type::rank() - 1;
 
   static_assert((padding_stride != 0)
-                    || (extents_type::static_extent(__extent_to_pad_idx) == 0)
-                    || (extents_type::static_extent(__extent_to_pad_idx) == dynamic_extent),
+                || (extents_type::static_extent(__extent_to_pad_idx) == 0)
+                || (extents_type::static_extent(__extent_to_pad_idx) == dynamic_extent),
                 "if padding stride is 0, static_extent(extent-to-pad-rank) must also be 0 or dynamic_extent");
 
   static constexpr size_t __actual_padding_stride = detail::__get_actual_static_padding_stride<extents_type, padding_stride, __extent_to_pad_idx>();
