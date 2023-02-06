@@ -447,7 +447,7 @@ public:
     return (__left.extents() == __right.extents()) && (!(extents_type::rank() > size_t(1)) || (__left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx)));
   }
 
-#if __cplusplus < 202002L
+#if !MDSPAN_HAS_CXX_20
   /**
    * Inequality operator between `layout_left_padded`s
    *
