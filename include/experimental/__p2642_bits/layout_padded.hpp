@@ -447,6 +447,7 @@ public:
     return (__left.extents() == __right.extents()) && (!(extents_type::rank() > size_t(1)) || (__left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx)));
   }
 
+#if __cplusplus < 202002L
   /**
    * Inequality operator between `layout_left_padded`s
    *
@@ -463,6 +464,7 @@ public:
   {
     return !(__left == __right);
   }
+#endif
 };
 
 template <size_t padding_stride>
@@ -721,6 +723,7 @@ class layout_right_padded<padding_stride>::mapping {
     return (__left.extents() == __right.extents()) && (!(extents_type::rank() > size_t(1)) || (__left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx)));
   }
 
+#if __cplusplus < 202002L
   /**
    * Inequality operator between `layout_right_padded`s
    *
@@ -737,6 +740,7 @@ class layout_right_padded<padding_stride>::mapping {
   {
     return !(__left == __right);
   }
+#endif
 };
 }
 }
