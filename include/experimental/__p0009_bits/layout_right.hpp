@@ -128,10 +128,10 @@ class layout_right::mapping {
                     && (extents_type::static_extent(extents_type::rank() - 1) != dynamic_extent)
                     && (_Mapping::extents_type::static_extent(extents_type::rank() - 1) != dynamic_extent)
                     && (detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value != dynamic_extent)) {
-        if constexpr (extents_type::static_extent(extents_type::rank() - 1) == 0) {
-          static_assert(detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == 0);
+        if constexpr (detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == 0) {
+          static_assert(extents_type::static_extent(extents_type::rank() - 1) == 0);
         } else {
-          static_assert(detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value % extents_type::static_extent(extents_type::rank() - 1) == 0);
+          static_assert(extents_type::static_extent(extents_type::rank() - 1) % detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == 0);
         }
       }
     }

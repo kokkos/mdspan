@@ -190,7 +190,7 @@ TEST(LayoutrightTests, construction)
   test_converting_constructor<stdex::layout_right_padded<stdex::dynamic_extent>, stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 5, 3, 2>{}, 4, stdex::extents<std::size_t, 5, 3, 2>{});
 
   // Construct layout_right from layout_right_padded
-  test_converting_constructor<stdex::layout_right_padded<4>, stdex::layout_right>(stdex::extents<std::size_t, 5, 3, 2>{}, stdex::extents<std::size_t, 5, 3, 2>{});
+  test_converting_constructor<stdex::layout_right_padded<4>, stdex::layout_right>(stdex::extents<std::size_t, 5, 3, 4>{}, stdex::extents<std::size_t, 5, 3, 4>{});
   test_converting_constructor<stdex::layout_right_padded<4>, stdex::layout_right>(stdex::extents<std::size_t, 5, 3, 2>{}, stdex::extents<std::size_t, 5, 3, stdex::dynamic_extent>{2});
 }
 

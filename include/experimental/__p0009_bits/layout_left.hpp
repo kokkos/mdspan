@@ -125,10 +125,10 @@ class layout_left::mapping {
                     && (extents_type::static_extent(0) != dynamic_extent)
                     && (_Mapping::extents_type::static_extent(0) != dynamic_extent)
                     && (detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value != dynamic_extent)) {
-        if constexpr (extents_type::static_extent(0) == 0) {
-          static_assert(detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == 0);
+        if constexpr (detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == 0) {
+          static_assert(extents_type::static_extent(0) == 0);
         } else {
-          static_assert(detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value % extents_type::static_extent(0) == 0);
+          static_assert(extents_type::static_extent(0) % detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == 0);
         }
       }
     }
