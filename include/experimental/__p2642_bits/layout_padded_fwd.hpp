@@ -47,9 +47,6 @@ template <class _Mapping>
 struct __is_layout_left_padded_mapping<_Mapping, enable_if_t<__is_layout_left_padded<typename _Mapping::layout_type>::value>>
     : true_type {};
 
-template <class _Mapping>
-inline constexpr bool __is_layout_left_padded_mapping_of = __is_layout_left_padded<typename _Mapping::layout_type>::value;
-
 template <class _Layout>
 struct __is_layout_right_padded : false_type {};
 
@@ -62,9 +59,6 @@ struct __is_layout_right_padded_mapping : false_type {};
 template <class _Mapping>
 struct __is_layout_right_padded_mapping<_Mapping, enable_if_t<__is_layout_right_padded<typename _Mapping::layout_type>::value>>
     : true_type {};
-
-template <class _Mapping>
-inline constexpr bool __is_layout_right_padded_mapping_of = __is_layout_right_padded<typename _Mapping::layout_type>::value;
 
 template <class _Layout>
 struct __padded_layout_padding_stride;
