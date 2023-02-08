@@ -22,6 +22,7 @@ static_assert(stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::e
 // - extents_type::static_extent(0) does not equal dynamic_extent,
 // then the size_t value which is the least multiple of padding_stride that is greater than or equal to extents_type::static_extent(0).
 static_assert(stdex::layout_left_padded<2>::mapping<stdex::extents<std::size_t, 3, 7>>::__actual_padding_stride == 4);
+static_assert(stdex::layout_left_padded<2>::mapping<stdex::extents<std::size_t, 3, stdex::dynamic_extent>>::__actual_padding_stride == 4);
 
 // Otherwise, dynamic_extent.
 static_assert(stdex::layout_left_padded<2>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>::__actual_padding_stride == stdex::dynamic_extent);
