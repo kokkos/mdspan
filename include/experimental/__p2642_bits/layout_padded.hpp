@@ -30,7 +30,7 @@ namespace experimental {
 namespace detail {
 template<class _T>
 MDSPAN_INLINE_FUNCTION
-constexpr auto
+constexpr _T
 __find_aligned_offset(_T __alignment, _T __offset)
 {
   if ( __alignment == 0 )
