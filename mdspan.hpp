@@ -461,8 +461,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
      /**/
 #endif
 
-
-#if defined(_MDSPAN_COMPILER_MSVC)
+#if defined(_MDSPAN_COMPILER_MSVC) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
 #  define MDSPAN_TEMPLATE_REQUIRES(...) \
       MDSPAN_PP_CAT( \
         MDSPAN_PP_CAT(MDSPAN_TEMPLATE_REQUIRES_, MDSPAN_PP_COUNT(__VA_ARGS__))\
