@@ -18,9 +18,9 @@
 #include "dynamic_extent.hpp"
 
 #ifdef __cpp_lib_span
-#include "span"
+#include <span>
 #endif
-#include "array"
+#include <array>
 
 namespace std {
 namespace experimental {
@@ -84,7 +84,7 @@ struct static_array_impl<R, T, FirstExt, Extents...> {
 template <size_t R, class T, T FirstExt>
 struct static_array_impl<R, T, FirstExt> {
   MDSPAN_INLINE_FUNCTION
-  constexpr static T get(int) { return FirstExt; }
+  constexpr static T get(size_t) { return FirstExt; }
   template <size_t> MDSPAN_INLINE_FUNCTION constexpr static T get() {
     return FirstExt;
   }
@@ -93,7 +93,7 @@ struct static_array_impl<R, T, FirstExt> {
 // Don't start recursion if size 0
 template <class T> struct static_array_impl<0, T> {
   MDSPAN_INLINE_FUNCTION
-  constexpr static T get(int) { return T(); }
+  constexpr static T get(size_t) { return T(); }
   template <size_t> MDSPAN_INLINE_FUNCTION constexpr static T get() {
     return T();
   }
@@ -230,13 +230,13 @@ private:
       m_dyn_vals;
 
 public:
-  // static mapping of indicies to the position in the dynamic values array
+  // static mapping of indices to the position in the dynamic values array
   using dyn_map_t = index_sequence_scan_impl<0, size_t(Values == dyn_tag)...>;
 
   // two types for static and dynamic values
   using value_type = TDynamic;
   using static_value_type = TStatic;
-  // tag value indiciating dynamic value
+  // tag value indicating dynamic value
   constexpr static static_value_type tag_value = dyn_tag;
 
   constexpr maybe_static_array() = default;
