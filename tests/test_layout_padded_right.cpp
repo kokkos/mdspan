@@ -230,22 +230,22 @@ TEST(LayoutrightTests, extents)
   test_extent<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 13, stdex::dynamic_extent>{7}, 5);
 }
 
+// is_always_exhaustive
+static_assert(stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t>>{}.is_always_exhaustive());
+static_assert(stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 3>>{}.is_always_exhaustive());
+static_assert(stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent>>{stdex::extents<std::size_t, stdex::dynamic_extent>{5}}.is_always_exhaustive());
+static_assert(stdex::layout_right_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3>>{}.is_always_exhaustive());
+
+static_assert(!stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 4, 3>>{}.is_always_exhaustive());
+static_assert(stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 6, 4>>{}.is_always_exhaustive());
+static_assert(stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 6, 8>>{}.is_always_exhaustive());
+static_assert(!stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 4, stdex::dynamic_extent>>{stdex::extents<std::size_t, 4, stdex::dynamic_extent>{5}}.is_always_exhaustive());
+static_assert(!stdex::layout_right_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 5, 4>>{}.is_always_exhaustive());
+static_assert(stdex::layout_right_padded<0>::mapping<stdex::extents<std::size_t, 6, 0>>{}.is_always_exhaustive());
+static_assert(stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 6, 0>>{}.is_always_exhaustive());
+
 TEST(LayoutrightTests, properties)
 {
-  // is_always_exhaustive
-  ASSERT_TRUE((stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t>>{}.is_always_exhaustive()));
-  ASSERT_TRUE((stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 3>>{}.is_always_exhaustive()));
-  ASSERT_TRUE((stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent>>{}.is_always_exhaustive()));
-  ASSERT_TRUE((stdex::layout_right_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3>>{}.is_always_exhaustive()));
-
-  ASSERT_FALSE((stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 4, 3>>{}.is_always_exhaustive()));
-  ASSERT_TRUE((stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 6, 4>>{}.is_always_exhaustive()));
-  ASSERT_TRUE((stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 6, 8>>{}.is_always_exhaustive()));
-  ASSERT_FALSE((stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 4, stdex::dynamic_extent>>{}.is_always_exhaustive()));
-  ASSERT_FALSE((stdex::layout_right_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 5, 4>>{}.is_always_exhaustive()));
-  ASSERT_TRUE((stdex::layout_right_padded<0>::mapping<stdex::extents<std::size_t, 6, 0>>{}.is_always_exhaustive()));
-  ASSERT_TRUE((stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t, 6, 0>>{}.is_always_exhaustive()));
-
   // is_exhaustive
   // Sanity check -- if it is always exhaustive it should be exhaustive ^-^
   ASSERT_TRUE((stdex::layout_right_padded<4>::mapping<stdex::extents<std::size_t>>{}.is_exhaustive()));
