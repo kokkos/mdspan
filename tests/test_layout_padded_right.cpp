@@ -7,6 +7,11 @@ namespace stdex = std::experimental;
 
 // Compile time tests
 
+// layout_left_padded must be trivial
+static_assert(std::is_trivial_v<stdex::layout_right_padded<0>>);
+static_assert(std::is_trivial_v<stdex::layout_right_padded<4>>);
+static_assert(std::is_trivial_v<stdex::layout_right_padded<stdex::dynamic_extent>>);
+
 // actual padding stride
 // If extents_type::rank() equals zero or one, then padding_stride.
 static_assert(stdex::layout_right_padded<0>::mapping<stdex::extents<std::size_t, 0>>::__actual_padding_stride == 0);
@@ -140,10 +145,103 @@ void test_converting_constructor(const Extents &extents, Size sz, const TestExte
   auto other_mapping = typename OtherLayoutType::template mapping<TestExtents>{mapping};
   ASSERT_EQ(other_mapping.extents(), test_extents);
 }
+
+template <class LayoutRightPadded, class Extents>
+void test_default_constructor_equivalence()
+{
+  using mapping_type = typename LayoutRightPadded::template mapping<Extents>;
+
+  ASSERT_EQ(mapping_type(), mapping_type(Extents{}));
+}
+
+template <class LayoutRightPadded, class Extents>
+void test_copy_constructor(const Extents &extents)
+{
+  using mapping_type = typename LayoutRightPadded::template mapping<Extents>;
+  auto a = mapping_type(extents);
+  auto b = a;
+
+  ASSERT_EQ(a, b);
+}
+
+template <class LayoutRightPadded, class Extents, class Size>
+void test_copy_constructor(const Extents &extents, Size padding_value)
+{
+  using mapping_type = typename LayoutRightPadded::template mapping<Extents>;
+  auto a = mapping_type(extents, padding_value);
+  auto b = a;
+
+  ASSERT_EQ(a, b);
+}
+
+template <class LayoutRightPadded, class Extents>
+void test_copy_assignment(const Extents &extents)
+{
+  using mapping_type = typename LayoutRightPadded::template mapping<Extents>;
+  auto a = mapping_type(extents);
+  mapping_type b;
+
+  b = a;
+
+  ASSERT_EQ(a, b);
+}
+
+template <class LayoutRightPadded, class Extents, class Size>
+void test_copy_assignment(const Extents &extents, Size padding_value)
+{
+  using mapping_type = typename LayoutRightPadded::template mapping<Extents>;
+  auto a = mapping_type(extents, padding_value);
+  mapping_type b;
+
+  b = a;
+
+  ASSERT_EQ(a, b);
+}
 }
 
 TEST(LayoutrightTests, construction)
 {
+  // Default Constructor
+  test_default_constructor_equivalence<stdex::layout_right_padded<4>, stdex::extents<std::size_t>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<4>, stdex::extents<std::size_t, 3>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<4>, stdex::extents<std::size_t, 3, 2>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<4>, stdex::extents<std::size_t, 3, 2, 1>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<stdex::dynamic_extent>, stdex::extents<std::size_t>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<stdex::dynamic_extent>, stdex::extents<std::size_t, 3>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<stdex::dynamic_extent>, stdex::extents<std::size_t, 3, 2>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<stdex::dynamic_extent>, stdex::extents<std::size_t, 3, 2, 1>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<4>, stdex::extents<std::size_t, 3, 2, stdex::dynamic_extent>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<4>, stdex::extents<std::size_t, 3, stdex::dynamic_extent, stdex::dynamic_extent>>();
+  test_default_constructor_equivalence<stdex::layout_right_padded<4>, stdex::extents<std::size_t, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>>();
+
+  // Copy constructor
+  test_copy_constructor<stdex::layout_right_padded<4>>(stdex::extents<std::size_t>());
+  test_copy_constructor<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3>());
+  test_copy_constructor<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3, 2>());
+  test_copy_constructor<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3, 2, 1>());
+  test_copy_constructor<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3, 2, stdex::dynamic_extent>(10));
+  test_copy_constructor<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3, stdex::dynamic_extent, stdex::dynamic_extent>(9, 10));
+  test_copy_constructor<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>(8, 9, 10));
+
+  test_copy_constructor<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t>(), 5);
+  test_copy_constructor<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 3>(), 5);
+  test_copy_constructor<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 3, 2>(), 5);
+  test_copy_constructor<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 3, 2, 1>(), 5);
+
+  // Copy assignment
+  test_copy_assignment<stdex::layout_right_padded<4>>(stdex::extents<std::size_t>());
+  test_copy_assignment<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3>());
+  test_copy_assignment<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3, 2>());
+  test_copy_assignment<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3, 2, 1>());
+  test_copy_assignment<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3, 2, stdex::dynamic_extent>(10));
+  test_copy_assignment<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, 3, stdex::dynamic_extent, stdex::dynamic_extent>(9, 10));
+  test_copy_assignment<stdex::layout_right_padded<4>>(stdex::extents<std::size_t, stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>(8, 9, 10));
+
+  test_copy_assignment<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t>(), 5);
+  test_copy_assignment<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 3>(), 5);
+  test_copy_assignment<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 3, 2>(), 5);
+  test_copy_assignment<stdex::layout_right_padded<stdex::dynamic_extent>>(stdex::extents<std::size_t, 3, 2, 1>(), 5);
+
   // Constructor only taking an extent
   // Direct-non-list-initializes inner-mapping with:
   // - ext, if extents_type::rank() is zero or one; else,
