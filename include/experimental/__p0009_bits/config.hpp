@@ -206,15 +206,6 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION
-// GCC 10's CTAD seems sufficiently broken to prevent its use.
-#  if (defined(_MDSPAN_COMPILER_CLANG) || !defined(__GNUC__) || __GNUC__ >= 11) \
-      && ((defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201907) \
-          || (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_20))
-#    define _MDSPAN_USE_ALIAS_TEMPLATE_ARGUMENT_DEDUCTION 1
-#  endif
-#endif
-
 #ifndef _MDSPAN_USE_STANDARD_TRAIT_ALIASES
 #  if (defined(__cpp_lib_transformation_trait_aliases) && __cpp_lib_transformation_trait_aliases >= 201304) \
           || (!defined(__cpp_lib_transformation_trait_aliases) && MDSPAN_HAS_CXX_14)
