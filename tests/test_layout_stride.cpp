@@ -152,7 +152,6 @@ TYPED_TEST(TestLayoutEquality, equality_op) {
   ASSERT_EQ(this->map1 == this->map2, this->equal);
 }
 
-// This fails on GCC 9.2 and others
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestLayoutStrideCTAD, test_ctad) {
   // This is not possible wiht the array constructor we actually provide
