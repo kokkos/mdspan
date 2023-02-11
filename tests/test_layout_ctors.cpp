@@ -240,6 +240,7 @@ TEST(TestLayoutRightCTAD, test_layout_right_ctad) {
 }
 #endif
 
+#if MDSPAN_HAS_CXX_20
 template< class T, class RankType, class = void >
 struct is_stride_avail : std::false_type {};
 
@@ -271,3 +272,4 @@ TEST(TestLayoutRightStrideConstraint, test_layout_right_stride_constraint) {
   stdex::layout_right::mapping m0d{ext0d};
   ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
 }
+#endif
