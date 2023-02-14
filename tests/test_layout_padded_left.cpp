@@ -291,15 +291,37 @@ TEST(LayoutLeftTests, construction)
   ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::layout_left::mapping<stdex::extents<std::size_t, 4, 7>>()).extents()), (stdex::extents<std::size_t, 4, 7>()));
   ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::layout_left::mapping<stdex::extents<std::size_t, 4, 7>>()).__inner_mapping.extents()), (stdex::extents<std::size_t, 4, 7>()));
 
-#if 0
+  ASSERT_EQ(stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t>>(stdex::layout_left::mapping<stdex::extents<std::size_t>>()).extents(), stdex::extents<std::size_t>());
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3>>(stdex::layout_left::mapping<stdex::extents<std::size_t, 3>>()).extents()), (stdex::extents<std::size_t, 3>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3>>(stdex::layout_left::mapping<stdex::extents<std::size_t, 3>>()).__inner_mapping.extents()), (stdex::extents<std::size_t, 3>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 4, 7>>(stdex::layout_left::mapping<stdex::extents<std::size_t, 4, 7>>()).extents()), (stdex::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 4, 7>>(stdex::layout_left::mapping<stdex::extents<std::size_t, 4, 7>>()).__inner_mapping.extents()), (stdex::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::layout_left::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::extents<std::size_t, stdex::dynamic_extent, 7>{4})).extents()), (stdex::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::layout_left::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::extents<std::size_t, stdex::dynamic_extent, 7>{4})).__inner_mapping.extents()), (stdex::extents<std::size_t, 4, 7>()));
+
+
   // Construct layout_left_padded mapping from another layout_left_padded mapping
-  test_converting_constructor<stdex::layout_left_padded<4>, stdex::layout_left_padded<4>>(stdex::extents<std::size_t, 2, 3, 5>{}, stdex::extents<std::size_t, 2, 3, 5>{});
-  test_converting_constructor<stdex::layout_left_padded<stdex::dynamic_extent>, stdex::layout_left_padded<4>>(stdex::extents<std::size_t, 2, 3, 5>{}, 2, stdex::extents<std::size_t, 2, 3, 5>{});
+  ASSERT_EQ(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t>>()).extents(), stdex::extents<std::size_t>());
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3>>()).extents()), (stdex::extents<std::size_t, 3>()));
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3>>()).__inner_mapping.extents()), (stdex::extents<std::size_t, 3>()));
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 4, 7>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 4, 7>>()).extents()), (stdex::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 4, 7>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 4, 7>>()).__inner_mapping.extents()), (stdex::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 4, 7>>()).extents()), (stdex::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 4, 7>>()).__inner_mapping.extents()), (stdex::extents<std::size_t, 4, 7>()));
+
+  ASSERT_EQ(stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t>>()).extents(), stdex::extents<std::size_t>());
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3>>()).extents()), (stdex::extents<std::size_t, 3>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3>>()).__inner_mapping.extents()), (stdex::extents<std::size_t, 3>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 5, 7>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 5, 7>>()).extents()), (stdex::extents<std::size_t, 5, 7>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 5, 7>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 5, 7>>()).__inner_mapping.extents()), (stdex::extents<std::size_t, 8, 7>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 5, 7>>()).extents()), (stdex::extents<std::size_t, 5, 7>()));
+  ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, stdex::dynamic_extent, 7>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 5, 7>>()).__inner_mapping.extents()), (stdex::extents<std::size_t, 8, 7>()));
 
   // Construct layout_left mapping from layout_left_padded mapping
-  test_converting_constructor<stdex::layout_left_padded<4>, stdex::layout_left>(stdex::extents<std::size_t, 4, 3, 5>{}, stdex::extents<std::size_t, 4, 3, 5>{});
-  test_converting_constructor<stdex::layout_left_padded<4>, stdex::layout_left>(stdex::extents<std::size_t, 2, 3, 5>{}, stdex::extents<std::size_t, stdex::dynamic_extent, 3, 5>{2});
-#endif
+  ASSERT_EQ(stdex::layout_left::mapping<stdex::extents<std::size_t>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t>>()).extents(), stdex::extents<std::size_t>());
+  ASSERT_EQ((stdex::layout_left::mapping<stdex::extents<std::size_t, 5>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 5>>()).extents()), (stdex::extents<std::size_t, 5>()));
+  ASSERT_EQ((stdex::layout_left::mapping<stdex::extents<std::size_t, 8, 4>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 8, 4>>()).extents()), (stdex::extents<std::size_t, 8, 4>()));
+  ASSERT_EQ((stdex::layout_left::mapping<stdex::extents<std::size_t, 8, 4, 3>>(stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 8, 4, 3>>()).extents()), (stdex::extents<std::size_t, 8, 4, 3>()));
 }
 
 namespace
@@ -390,4 +412,10 @@ TEST(LayoutLeftTests, properties)
   ASSERT_EQ((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 4}), (stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 4}));
   ASSERT_NE((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 4}), (stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 3, 4>>{}));
   ASSERT_NE((stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 4}), (stdex::layout_left_padded<stdex::dynamic_extent>::mapping<stdex::extents<std::size_t, 3, 7>>{{}, 8}));
+}
+
+TEST(LayoutLeftTests, stride)
+{
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 5, 7>>().stride(0)), 1);
+  ASSERT_EQ((stdex::layout_left_padded<4>::mapping<stdex::extents<std::size_t, 5, 7>>().stride(1)), 8);
 }
