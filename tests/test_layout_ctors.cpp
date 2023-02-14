@@ -203,7 +203,8 @@ TEST(TestLayoutLeftListInitialization, test_layout_left_extent_initialization) {
   ASSERT_TRUE(m.is_exhaustive());
 }
 
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+// FIXME: CUDA NVCC including 12.0 does not like CTAD on nested classes
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION) && !defined(__NVCC__)
 TEST(TestLayoutLeftCTAD, test_layout_left_ctad) {
   stdex::layout_left::mapping m{stdex::extents{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
@@ -227,7 +228,8 @@ TEST(TestLayoutRightListInitialization, test_layout_right_extent_initialization)
   ASSERT_TRUE(m.is_exhaustive());
 }
 
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+// FIXME: CUDA NVCC including 12.0 does not like CTAD on nested classes
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION) && !defined(__NVCC__)
 TEST(TestLayoutRightCTAD, test_layout_right_ctad) {
   stdex::layout_right::mapping m{stdex::extents{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
