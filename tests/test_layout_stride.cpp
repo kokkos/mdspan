@@ -152,8 +152,8 @@ TYPED_TEST(TestLayoutEquality, equality_op) {
   ASSERT_EQ(this->map1 == this->map2, this->equal);
 }
 
-// This fails on GCC 9.2 and others
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+// FIXME: CUDA NVCC including 12.0 does not like CTAD on nested classes
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION) && !defined(__NVCC__)
 TEST(TestLayoutStrideCTAD, test_ctad) {
   // This is not possible wiht the array constructor we actually provide
   /*
@@ -167,7 +167,6 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m0.strides(), (std::array<std::size_t, 2>{1, 128}));
   ASSERT_FALSE(m0.is_exhaustive());
   */
-
   stdex::layout_stride::mapping m1{stdex::extents{16, 32}, std::array{1, 128}};
   ASSERT_EQ(m1.extents().rank(), 2);
   ASSERT_EQ(m1.extents().rank_dynamic(), 2);
