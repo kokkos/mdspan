@@ -177,7 +177,11 @@ class layout_left::mapping {
     MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
 
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type stride(rank_type i) const noexcept {
+    constexpr index_type stride(rank_type i) const noexcept
+#if MDSPAN_HAS_CXX_20
+      requires ( Extents::rank() > 0 )
+#endif
+    {
       index_type value = 1;
       for(rank_type r=0; r<i; r++) value*=__extents.extent(r);
       return value;

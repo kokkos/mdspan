@@ -205,3 +205,26 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
 }
 #endif
 
+#if MDSPAN_HAS_CXX_20
+template< class T, class RankType, class = void >
+struct is_stride_avail : std::false_type {};
+
+template< class T, class RankType >
+struct is_stride_avail< T
+                      , RankType
+                      , std::enable_if_t< std::is_same< decltype( std::declval<T>().stride( std::declval<RankType>() ) )
+                                                      , typename T::index_type
+                                                      >::value
+                                        >
+                      > : std::true_type {};
+
+TEST(TestLayoutStrideStrideConstraint, test_layout_stride_stride_constraint) {
+  stdex::extents<int,16> ext1d{};
+  stdex::layout_stride::mapping m1d{ext1d, std::array<int,1>{1}};
+  ASSERT_TRUE ((is_stride_avail< decltype(m1d), int >::value));
+
+  stdex::extents<int> ext0d{};
+  stdex::layout_stride::mapping m0d{ext0d, std::array<int,0>{}};
+  ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
+}
+#endif

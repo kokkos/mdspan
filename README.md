@@ -66,6 +66,7 @@ When not in C++23 mode the implementation deviates from the proposal as follows:
 - mdspan has a default constructor even in cases where it shouldn't (i.e. all static extents, and default constructible mapping/accessor)
 - the conditional explicit markup is missing, making certain constructors implicit
   - most notably you can implicitly convert from dynamic extent to static extent, which you can't in C++20 mode
+- there is a constraint on `layout_left::mapping::stride()`, `layout_right::mapping::stride()` and `layout_stride::mapping::stride()` that `extents_type::rank() > 0` is `true`, which is not implemented in C++17 or C++14.
 
 ### C++14
 - deduction guides don't exist
