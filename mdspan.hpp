@@ -3577,7 +3577,11 @@ struct layout_stride {
 
 
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type stride(rank_type r) const noexcept {
+    constexpr index_type stride(rank_type r) const noexcept
+#if MDSPAN_HAS_CXX_20
+      requires ( Extents::rank() > 0 )
+#endif
+    {
       return __strides_storage()[r];
     }
 
@@ -3811,7 +3815,11 @@ class layout_right::mapping {
     MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
 
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type stride(rank_type i) const noexcept {
+    constexpr index_type stride(rank_type i) const noexcept
+#if MDSPAN_HAS_CXX_20
+      requires ( Extents::rank() > 0 )
+#endif
+    {
       index_type value = 1;
       for(rank_type r=extents_type::rank()-1; r>i; r--) value*=__extents.extent(r);
       return value;
@@ -4428,7 +4436,11 @@ class layout_left::mapping {
     MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return true; }
 
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type stride(rank_type i) const noexcept {
+    constexpr index_type stride(rank_type i) const noexcept
+#if MDSPAN_HAS_CXX_20
+      requires ( Extents::rank() > 0 )
+#endif
+    {
       index_type value = 1;
       for(rank_type r=0; r<i; r++) value*=__extents.extent(r);
       return value;
