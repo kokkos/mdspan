@@ -128,22 +128,6 @@ void test_0_or_1_rank_inner_mapping_extents(const Extents &extents, Size padding
   test_inner_mapping_extent<LayoutLeftPadded>(extents, extents, padding_value);
 }
 
-template <class From, class To, class ToExtents, class FromExtents, class TestExtents>
-void test_converting_constructor(const FromExtents &extents, const TestExtents &test_extents)
-{
-  auto mapping = typename From::template mapping<FromExtents>(extents);
-  auto other_mapping = typename To::template mapping<ToExtents>{mapping};
-  ASSERT_EQ(other_mapping.extents(), test_extents);
-}
-
-template <class From, class To, class ToExtents, class FromExtents, class Size, class TestExtents>
-void test_converting_constructor(const FromExtents &extents, Size sz, const TestExtents &test_extents)
-{
-  auto mapping = typename From::template mapping<FromExtents>(extents, sz);
-  auto other_mapping = typename To::template mapping<ToExtents>{mapping};
-  ASSERT_EQ(other_mapping.extents(), test_extents);
-}
-
 template <class LayoutLeftPadded, class Extents>
 void test_default_constructor_equivalence()
 {
