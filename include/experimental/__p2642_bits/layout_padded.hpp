@@ -446,7 +446,14 @@ public:
   )
   friend constexpr bool operator==(const mapping &__left, const _Mapping &__right) noexcept
   {
-    return (__left.extents() == __right.extents()) && ((extents_type::rank() > size_t(1)) ? (__left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx)) : true);
+    // Workaround for some compilers not short-circuiting properly with compile-time checks
+    // i.e. we can't access stride(_padding_stride_idx) of a rank 0 mapping
+    bool strides_equal = true;
+    if constexpr (extents_type::rank() > size_t(1))
+    {
+      strides_equal = __left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx);
+    }
+    return (__left.extents() == __right.extents()) && strides_equal;
   }
 
 #if !MDSPAN_HAS_CXX_20
@@ -723,7 +730,14 @@ class layout_right_padded<padding_stride>::mapping {
       )
   friend constexpr bool operator==(const mapping &__left, const _Mapping &__right) noexcept
   {
-    return (__left.extents() == __right.extents()) && ((extents_type::rank() > size_t(1)) ? (__left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx)) : true);
+    // Workaround for some compilers not short-circuiting properly with compile-time checks
+    // i.e. we can't access stride(_padding_stride_idx) of a rank 0 mapping
+    bool strides_equal = true;
+    if constexpr (extents_type::rank() > size_t(1))
+    {
+      strides_equal = __left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx);
+    }
+    return (__left.extents() == __right.extents()) && strides_equal;
   }
 
 #if !MDSPAN_HAS_CXX_20
