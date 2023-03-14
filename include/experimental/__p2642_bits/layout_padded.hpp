@@ -446,7 +446,7 @@ public:
   )
   friend constexpr bool operator==(const mapping &__left, const _Mapping &__right) noexcept
   {
-    return (__left.extents() == __right.extents()) && (!(extents_type::rank() > size_t(1)) || (__left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx)));
+    return (__left.extents() == __right.extents()) && ((extents_type::rank() > size_t(1)) ? (__left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx)) : true);
   }
 
 #if !MDSPAN_HAS_CXX_20
@@ -723,7 +723,7 @@ class layout_right_padded<padding_stride>::mapping {
       )
   friend constexpr bool operator==(const mapping &__left, const _Mapping &__right) noexcept
   {
-    return (__left.extents() == __right.extents()) && (!(extents_type::rank() > size_t(1)) || (__left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx)));
+    return (__left.extents() == __right.extents()) && ((extents_type::rank() > size_t(1)) ? (__left.stride(__padding_stride_idx) == __right.stride(__padding_stride_idx)) : true);
   }
 
 #if !MDSPAN_HAS_CXX_20
