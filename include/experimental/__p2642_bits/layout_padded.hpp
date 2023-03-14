@@ -375,12 +375,18 @@ public:
   constexpr std::array<index_type, extents_type::rank()>
   strides() const noexcept
   {
-    array<index_type, extents_type::rank()> __s{};
-    for (rank_type __r = 0; __r < extents_type::rank(); ++__r)
+    // Some compilers are over-zealous in their requirements checking on stride here
+    if constexpr ( extents_type::rank() == 0 )
     {
-      __s[__r] = __inner_mapping.stride(__r);
+      return {};
+    } else {
+      array<index_type, extents_type::rank()> __s{};
+      for (rank_type __r = 0; __r < extents_type::rank(); ++__r)
+      {
+        __s[__r] = __inner_mapping.stride(__r);
+      }
+      return __s;
     }
-    return __s;
   }
 
   constexpr index_type
@@ -659,12 +665,18 @@ class layout_right_padded<padding_stride>::mapping {
   constexpr std::array<index_type, extents_type::rank()>
   strides() const noexcept
   {
-    array<index_type, extents_type::rank()> __s{};
-    for (rank_type __r = 0; __r < extents_type::rank(); ++__r)
+    // Some compilers are over-zealous in their requirements checking on stride here
+    if constexpr ( extents_type::rank() == 0 )
     {
-      __s[__r] = __inner_mapping.stride(__r);
+      return {};
+    } else {
+      array<index_type, extents_type::rank()> __s{};
+      for (rank_type __r = 0; __r < extents_type::rank(); ++__r)
+      {
+        __s[__r] = __inner_mapping.stride(__r);
+      }
+      return __s;
     }
-    return __s;
   }
 
   constexpr index_type
