@@ -50,14 +50,20 @@ static constexpr std::false_type _check_compatible_extents(
   std::false_type, std::integer_sequence<size_t, Extents...>, std::integer_sequence<size_t, OtherExtents...>
 ) noexcept { return { }; }
 
+// This helper prevents ICE's on MSVC.
+template <size_t Lhs, size_t Rhs>
+struct _compare_extent_compatible : std::integral_constant<bool,
+    Lhs == dynamic_extent ||
+    Rhs == dynamic_extent ||
+    Lhs == Rhs>
+{};
+
 template <size_t... Extents, size_t... OtherExtents>
 static std::integral_constant<
   bool,
   _MDSPAN_FOLD_AND(
     (
-      Extents == dynamic_extent
-        || OtherExtents == dynamic_extent
-        || Extents == OtherExtents
+      _compare_extent_compatible<Extents, OtherExtents>::value
     ) /* && ... */
   )
 >
