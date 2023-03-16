@@ -90,7 +90,7 @@ template <size_t _PaddingStride>
 struct __padded_layout_padding_stride<layout_right_padded<_PaddingStride>> : integral_constant<size_t, _PaddingStride> {};
 
 template <class _LayoutExtentsType, class _PaddedLayoutMappingType>
-constexpr void __check_layout_padded_layout_extents_compatibility()
+constexpr void __check_layout_padded_layout_mandates()
 {
   using __padded_layout_extents_type = typename _PaddedLayoutMappingType::extents_type;
   constexpr auto __padded_layout_padding = __padded_layout_padding_stride<typename _PaddedLayoutMappingType::layout_type>::value;
