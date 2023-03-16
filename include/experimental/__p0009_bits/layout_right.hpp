@@ -114,6 +114,15 @@ class layout_right::mapping {
         */
     }
 
+    /**
+     * Converting constructor from `layout_right_padded::mapping`.
+     *
+     * This overload participates in overload resolution only if _Mapping is a layout_right_padded mapping and
+     * extents_type is constructible from _Mapping::extents_type.
+     *
+     * \note There is currently a difference from p2642r2, where this function is specified as taking
+     * `layout_right_padded< padding_stride >::mapping< Extents>`. However, this makes `padding_stride` non-deducible.
+     */
 #if MDSPAN_HAS_CXX_17
     MDSPAN_TEMPLATE_REQUIRES(
         class _Mapping,

@@ -436,6 +436,9 @@ public:
    * Equality operator between `layout_left_padded`s
    *
    * This overload only participates in overload resolution if `OtherExtents::rank() == extents_type::rank()`.
+   *
+   * \note There is currently a difference from p2642r2, where this function is specified as taking
+   * `layout_left_padded< padding_stride >::mapping< Extents>`. However, this makes `padding_stride` non-deducible.
    */
   MDSPAN_TEMPLATE_REQUIRES(
     class _Mapping,
@@ -724,6 +727,9 @@ class layout_right_padded<padding_stride>::mapping {
    * Equality operator between `layout_right_padded`s
    *
    * This overload only participates in overload resolution if `OtherExtents::rank() == extents_type::rank()`.
+   *
+   * \note There is currently a difference from p2642r2, where this function is specified as taking
+   * `layout_right_padded< padding_stride >::mapping< Extents>`. However, this makes `padding_stride` non-deducible.
    */
   MDSPAN_TEMPLATE_REQUIRES(
       class _Mapping,
