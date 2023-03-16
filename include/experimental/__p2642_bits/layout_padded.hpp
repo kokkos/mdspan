@@ -165,31 +165,24 @@ struct __inner_extents_type<_ExtentToPadIdx, _Extents, _ActualPaddingStride, ena
   }
 };
 
-template <size_t _ExtentToPadIdx, class _Extents, typename _Enabled = void>
-struct __unpadded_extent_type_impl
+template <size_t _ExtentToPadIdx, class _IndexType>
+MDSPAN_INLINE_FUNCTION
+static constexpr auto
+__construct_unpadded_extent_type(const extents<_IndexType>&, integral_constant<size_t, _ExtentToPadIdx>)
 {
-  using __type = extents<typename _Extents::index_type, _Extents::static_extent(_ExtentToPadIdx)>;
+  return extents<_IndexType>{};
+}
 
-  MDSPAN_INLINE_FUNCTION
-  static constexpr auto
-  __construct(const _Extents &__extents)
-  {
-    return __type(__extents.extent(_ExtentToPadIdx));
-  }
-};
-
-template <size_t _ExtentToPadIdx, class _Extents>
-struct __unpadded_extent_type_impl<_ExtentToPadIdx, _Extents, enable_if_t<(_Extents::rank() == 0)>>
+template <size_t _ExtentToPadIdx, class _IndexType, size_t _FirstIndex, size_t... _Indices>
+MDSPAN_INLINE_FUNCTION
+static constexpr auto
+__construct_unpadded_extent_type(const extents<_IndexType, _FirstIndex, _Indices...>& __extents, integral_constant<size_t, _ExtentToPadIdx>)
 {
-  using __type = extents<typename _Extents::index_type>;
+  using __input_type = extents<_IndexType, _FirstIndex, _Indices...>;
+  using __return_type = extents<_IndexType, __input_type::static_extent(_ExtentToPadIdx)>;
 
-  MDSPAN_INLINE_FUNCTION
-  static constexpr auto
-  __construct([[maybe_unused]] const _Extents &__extents)
-  {
-    return __type{};
-  }
-};
+  return __return_type(__extents.extent(_ExtentToPadIdx));
+}
 }
 
 template <size_t padding_stride>
@@ -217,7 +210,7 @@ private:
   static constexpr size_t __actual_padding_stride = detail::__get_actual_static_padding_stride<extents_type, padding_stride, __extent_to_pad_idx>();
 
   using __inner_extents_type = typename detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::__type;
-  using __unpadded_extent_type = typename detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__type;
+  using __unpadded_extent_type = decltype(detail::__construct_unpadded_extent_type(declval<Extents>(), integral_constant<rank_type, __extent_to_pad_idx>{}));
   using __inner_mapping_type = layout_left::template mapping<__inner_extents_type>;
 
   __inner_mapping_type __inner_mapping;
@@ -252,7 +245,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type& __ext)
     : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext)),
-      __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__ext))
+      __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   /**
@@ -274,7 +267,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type &__ext, _Size __padding_value)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext, static_cast<index_type>(__padding_value))),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__ext))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     assert((padding_stride == dynamic_extent) || (padding_stride == static_cast<index_type>(__padding_value)));
   }
@@ -295,7 +288,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
   constexpr mapping(const layout_left::mapping<_OtherExtents> &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     static_assert(!((_OtherExtents::rank() > 1) && (__actual_padding_stride != dynamic_extent) && (_OtherExtents::static_extent(__extent_to_pad_idx) != dynamic_extent))
                   || (__actual_padding_stride == _OtherExtents::static_extent(__extent_to_pad_idx)));
@@ -315,7 +308,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
   constexpr mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
   }
 
@@ -336,7 +329,7 @@ public:
   constexpr
   mapping(const _Mapping &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     static_assert(padding_stride == dynamic_extent
                   || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent
@@ -360,7 +353,7 @@ public:
   constexpr
   mapping(const _Mapping &__other_mapping) noexcept
       : __inner_mapping(__other_mapping.extents()),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   constexpr extents_type extents() const noexcept
@@ -508,7 +501,7 @@ class layout_right_padded<padding_stride>::mapping {
   static constexpr size_t __actual_padding_stride = detail::__get_actual_static_padding_stride<extents_type, padding_stride, __extent_to_pad_idx>();
 
   using __inner_extents_type = typename detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::__type;
-  using __unpadded_extent_type = typename detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__type;
+  using __unpadded_extent_type = decltype(detail::__construct_unpadded_extent_type(declval<Extents>(), integral_constant<rank_type, __extent_to_pad_idx>{}));
   using __inner_mapping_type = layout_right::template mapping<__inner_extents_type>;
 
   __inner_mapping_type __inner_mapping;
@@ -541,9 +534,9 @@ class layout_right_padded<padding_stride>::mapping {
    * \param ext the given extents
    */
   MDSPAN_INLINE_FUNCTION
-      constexpr mapping(const extents_type& __ext)
+  constexpr mapping(const extents_type &__ext)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext)),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__ext))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   /**
@@ -563,9 +556,9 @@ class layout_right_padded<padding_stride>::mapping {
           )
       )
   MDSPAN_INLINE_FUNCTION
-      constexpr mapping(const extents_type &__ext, _Size __padding_value)
+  constexpr mapping(const extents_type &__ext, _Size __padding_value)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext, static_cast<index_type>(__padding_value))),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__ext))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     assert((padding_stride == dynamic_extent) || (padding_stride == static_cast<index_type>(__padding_value)));
   }
@@ -586,7 +579,7 @@ class layout_right_padded<padding_stride>::mapping {
   MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
   constexpr mapping(const layout_right::mapping<_OtherExtents> &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     static_assert(!((_OtherExtents::rank() > 1) && (__actual_padding_stride != dynamic_extent) && (_OtherExtents::static_extent(__extent_to_pad_idx) != dynamic_extent))
                   || (__actual_padding_stride == _OtherExtents::static_extent(__extent_to_pad_idx)));
@@ -606,7 +599,7 @@ class layout_right_padded<padding_stride>::mapping {
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
   constexpr mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   /**
@@ -623,10 +616,9 @@ class layout_right_padded<padding_stride>::mapping {
           )
       )
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent)))
-  constexpr
-      mapping(const _Mapping &__other_mapping)
+  constexpr mapping(const _Mapping &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     static_assert(padding_stride == dynamic_extent
                   || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent
@@ -647,10 +639,9 @@ class layout_right_padded<padding_stride>::mapping {
           )
       )
   MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<typename _Mapping::extents_type, extents_type>))
-  constexpr
-      mapping(const _Mapping &__other_mapping) noexcept
+  constexpr mapping(const _Mapping &__other_mapping) noexcept
       : __inner_mapping(__other_mapping.extents()),
-        __unpadded_extent(detail::__unpadded_extent_type_impl<__extent_to_pad_idx, extents_type>::__construct(__other_mapping.extents()))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   constexpr extents_type extents() const noexcept
