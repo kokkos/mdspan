@@ -113,9 +113,9 @@ public:
   using value_type = T;
 
   MDSPAN_INLINE_FUNCTION
-  constexpr T operator[](int r) const { return impl_t::get(r); }
+  constexpr T operator[](size_t r) const { return impl_t::get(r); }
   MDSPAN_INLINE_FUNCTION
-  constexpr static T get(int r) { return impl_t::get(r); }
+  constexpr static T get(size_t r) { return impl_t::get(r); }
   template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static T get() {
     return impl_t::template get<r>();
   }
@@ -366,16 +366,17 @@ public:
 
   // access functions
   MDSPAN_INLINE_FUNCTION
-  constexpr static TStatic static_value(int r) { return static_vals_t::get(r); }
+  constexpr static TStatic static_value(size_t r) { return static_vals_t::get(r); }
 
   MDSPAN_INLINE_FUNCTION
-  constexpr TDynamic value(int r) const {
+  constexpr TDynamic value(size_t r) const {
     TStatic static_val = static_vals_t::get(r);
     return static_val == dynamic_extent ? m_dyn_vals[dyn_map_t::get(r)]
                                         : static_cast<TDynamic>(static_val);
   }
   MDSPAN_INLINE_FUNCTION
-  constexpr TDynamic operator[](int r) const { return value(r); }
+  constexpr TDynamic operator[](size_t r) const { return value(r); }
+
 
   // observers
   MDSPAN_INLINE_FUNCTION
