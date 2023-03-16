@@ -33,10 +33,11 @@ MDSPAN_INLINE_FUNCTION
 constexpr _T
 __find_aligned_offset(_T __alignment, _T __offset)
 {
-  if ( __alignment == 0 )
+  if ( __alignment == 0 ) {
     return _T(0);
-  else
+  } else {
     return ( ( __offset + __alignment - 1 ) / __alignment) * __alignment;
+  }
 }
 
 template<class _ExtentsType, size_t _PaddingStride, size_t _ExtentToPadIdx>
