@@ -205,8 +205,8 @@ public:
 private:
 #endif // MDSPAN_INTERNAL_TEST
 
-  static constexpr rank_type __padding_stride_idx = 1;
-  static constexpr rank_type __extent_to_pad_idx = 0;
+  static constexpr rank_type __padding_stride_idx = detail::__layout_padded_constants<layout_type, extents_type>::__padding_stride_idx;
+  static constexpr rank_type __extent_to_pad_idx = detail::__layout_padded_constants<layout_type, extents_type>::__extent_to_pad_idx;
 
   static_assert((padding_stride != 0)
                 || (extents_type::static_extent(__extent_to_pad_idx) == 0)
@@ -496,8 +496,8 @@ class layout_right_padded<padding_stride>::mapping {
   private:
 #endif // MDSPAN_INTERNAL_TEST
 
-  static constexpr rank_type __padding_stride_idx = extents_type::rank() - 2;
-  static constexpr rank_type __extent_to_pad_idx = extents_type::rank() - 1;
+  static constexpr rank_type __padding_stride_idx = detail::__layout_padded_constants<layout_type, extents_type>::__padding_stride_idx;
+  static constexpr rank_type __extent_to_pad_idx = detail::__layout_padded_constants<layout_type, extents_type>::__extent_to_pad_idx;
 
   static_assert((padding_stride != 0)
                 || (extents_type::static_extent(__extent_to_pad_idx) == 0)

@@ -121,7 +121,8 @@ class layout_left::mapping {
     mapping(const _Mapping& __other) noexcept
       : __extents(__other.extents())
     {
-      detail::__check_layout_padded_layout_extents_compatibility<extents_type, _Mapping>(integral_constant<rank_type, 0 >{});
+      detail::__check_layout_padded_layout_extents_compatibility<extents_type, _Mapping>();
+      detail::__check_layout_padded_layout_preconditions<extents_type>(__other);
     }
 #endif
 

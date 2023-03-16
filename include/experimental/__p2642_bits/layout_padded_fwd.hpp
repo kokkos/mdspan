@@ -15,6 +15,7 @@
 //@HEADER
 #pragma once
 
+#include <cassert>
 #include "../__p0009_bits/dynamic_extent.hpp"
 
 namespace std {
@@ -33,6 +34,25 @@ struct layout_right_padded {
 };
 
 namespace detail {
+
+template <class _Layout, class _ExtentsType>
+struct __layout_padded_constants;
+
+template <class _ExtentsType, size_t _PaddingStride>
+struct __layout_padded_constants<layout_left_padded<_PaddingStride>, _ExtentsType>
+{
+  using rank_type = typename _ExtentsType::rank_type;
+  static constexpr rank_type __padding_stride_idx = 1;
+  static constexpr rank_type __extent_to_pad_idx = 0;
+};
+
+template <class _ExtentsType, size_t _PaddingStride>
+struct __layout_padded_constants<layout_right_padded<_PaddingStride>, _ExtentsType>
+{
+  using rank_type = typename _ExtentsType::rank_type;
+  static constexpr rank_type __padding_stride_idx = _ExtentsType::rank() - 2;
+  static constexpr rank_type __extent_to_pad_idx = _ExtentsType::rank() - 1;
+};
 
 template <class _Layout>
 struct __is_layout_left_padded : false_type {};
@@ -64,17 +84,17 @@ template <class _Layout>
 struct __padded_layout_padding_stride;
 
 template <size_t _PaddingStride>
-struct __padded_layout_padding_stride<layout_left_padded<_PaddingStride>> : std::integral_constant<size_t, _PaddingStride> {};
+struct __padded_layout_padding_stride<layout_left_padded<_PaddingStride>> : integral_constant<size_t, _PaddingStride> {};
 
 template <size_t _PaddingStride>
-struct __padded_layout_padding_stride<layout_right_padded<_PaddingStride>> : std::integral_constant<size_t, _PaddingStride> {};
+struct __padded_layout_padding_stride<layout_right_padded<_PaddingStride>> : integral_constant<size_t, _PaddingStride> {};
 
-template <class _LayoutExtentsType, class _PaddedLayoutMappingType, class RankType, RankType _CheckExtentToPadIdx>
-constexpr void __check_layout_padded_layout_extents_compatibility(integral_constant< RankType, _CheckExtentToPadIdx >)
+template <class _LayoutExtentsType, class _PaddedLayoutMappingType>
+constexpr void __check_layout_padded_layout_extents_compatibility()
 {
   using __padded_layout_extents_type = typename _PaddedLayoutMappingType::extents_type;
   constexpr auto __padded_layout_padding = __padded_layout_padding_stride<typename _PaddedLayoutMappingType::layout_type>::value;
-  constexpr RankType __check_extent_to_pad_idx = _CheckExtentToPadIdx;
+  constexpr auto __check_extent_to_pad_idx = __layout_padded_constants<typename _PaddedLayoutMappingType::layout_type, _LayoutExtentsType >::__extent_to_pad_idx;
   if constexpr ((_LayoutExtentsType::rank() > 1)
                 && (_LayoutExtentsType::static_extent(__check_extent_to_pad_idx) != dynamic_extent)
                 && (__padded_layout_extents_type::static_extent(__check_extent_to_pad_idx) != dynamic_extent)
@@ -85,6 +105,16 @@ constexpr void __check_layout_padded_layout_extents_compatibility(integral_const
     } else {
       static_assert(_LayoutExtentsType::static_extent(__check_extent_to_pad_idx) % __padded_layout_padding == 0);
     }
+  }
+}
+
+template< typename _ExtentsType, typename _OtherMapping >
+constexpr void __check_layout_padded_layout_preconditions(const _OtherMapping &__other_mapping)
+{
+  constexpr auto __padding_stride_idx = __layout_padded_constants<typename _OtherMapping::layout_type, _ExtentsType>::__padding_stride_idx;
+  constexpr auto __extent_to_pad_idx = __layout_padded_constants<typename _OtherMapping::layout_type, _ExtentsType>::__extent_to_pad_idx;
+  if constexpr (_ExtentsType::rank() > 1) {
+    assert(__other_mapping.stride(__padding_stride_idx) == __other_mapping.extents().extent(__extent_to_pad_idx));
   }
 }
 }
