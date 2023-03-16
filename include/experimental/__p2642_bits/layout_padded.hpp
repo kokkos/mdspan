@@ -371,8 +371,7 @@ public:
   {
     // Some compilers are over-zealous in their requirements checking on stride here
     // constraints on stride() are that rank > 0 so we need to take a different branch if rank == 0
-    if constexpr ( extents_type::rank() == 0 )
-    {
+    if constexpr ( extents_type::rank() == 0 ) {
       return {};
     } else {
       array<index_type, extents_type::rank()> __s{};
@@ -660,8 +659,7 @@ class layout_right_padded<padding_stride>::mapping {
   {
     // Some compilers are over-zealous in their requirements checking on stride here
     // constraints on stride() are that rank > 0 so we need to take a different branch if rank == 0
-    if constexpr ( extents_type::rank() == 0 )
-    {
+    if constexpr ( extents_type::rank() == 0 ) {
       return {};
     } else {
       array<index_type, extents_type::rank()> __s{};
