@@ -223,6 +223,10 @@ template <class T> struct possibly_empty_array<T, 0> {
 // The position of a dynamic value is indicated through a tag value.
 template <class TDynamic, class TStatic, TStatic dyn_tag, TStatic... Values>
 struct maybe_static_array {
+
+  static_assert(is_convertible<TStatic, TDynamic>::value, "maybe_static_array: TStatic must be convertible to TDynamic");
+  static_assert(is_convertible<TDynamic, TStatic>::value, "maybe_static_array: TDynamic must be convertible to TStatic");
+
 private:
   // Static values member
   using static_vals_t = static_array<TStatic, Values...>;
