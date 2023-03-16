@@ -121,16 +121,7 @@ class layout_left::mapping {
     mapping(const _Mapping& __other) noexcept
       : __extents(__other.extents())
     {
-      if constexpr ((extents_type::rank() > 1)
-                    && (extents_type::static_extent(0) != dynamic_extent)
-                    && (_Mapping::extents_type::static_extent(0) != dynamic_extent)
-                    && (detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value != dynamic_extent)) {
-        if constexpr (detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == 0) {
-          static_assert(extents_type::static_extent(0) == 0);
-        } else {
-          static_assert(extents_type::static_extent(0) % detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == 0);
-        }
-      }
+      detail::__check_layout_padded_layout_extents_compatibility<extents_type, _Mapping>(integral_constant<rank_type, 0 >{});
     }
 #endif
 

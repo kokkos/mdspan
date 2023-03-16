@@ -68,6 +68,25 @@ struct __padded_layout_padding_stride<layout_left_padded<_PaddingStride>> : std:
 
 template <size_t _PaddingStride>
 struct __padded_layout_padding_stride<layout_right_padded<_PaddingStride>> : std::integral_constant<size_t, _PaddingStride> {};
+
+template <class _LayoutExtentsType, class _PaddedLayoutMappingType, class RankType, RankType _CheckExtentToPadIdx>
+constexpr void __check_layout_padded_layout_extents_compatibility(integral_constant< RankType, _CheckExtentToPadIdx >)
+{
+  using __padded_layout_extents_type = typename _PaddedLayoutMappingType::extents_type;
+  constexpr auto __padded_layout_padding = __padded_layout_padding_stride<typename _PaddedLayoutMappingType::layout_type>::value;
+  constexpr RankType __check_extent_to_pad_idx = _CheckExtentToPadIdx;
+  if constexpr ((_LayoutExtentsType::rank() > 1)
+                && (_LayoutExtentsType::static_extent(__check_extent_to_pad_idx) != dynamic_extent)
+                && (__padded_layout_extents_type::static_extent(__check_extent_to_pad_idx) != dynamic_extent)
+                && (__padded_layout_padding != dynamic_extent))
+  {
+    if constexpr (__padded_layout_padding == 0) {
+      static_assert(_LayoutExtentsType::static_extent(__check_extent_to_pad_idx) == 0);
+    } else {
+      static_assert(_LayoutExtentsType::static_extent(__check_extent_to_pad_idx) % __padded_layout_padding == 0);
+    }
+  }
+}
 }
 }
 }
