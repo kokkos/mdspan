@@ -51,7 +51,7 @@ __get_actual_static_padding_stride()
     return _PaddingStride;
   } else if constexpr (_PaddingStride != dynamic_extent &&
                        _ExtentsType::static_extent(_ExtentToPadIdx) != dynamic_extent) {
-    static_assert((_PaddingStride != 0) || (_ExtentsType::static_extent(_ExtentToPadIdx) == 0), "padding stride can be 0 only if extents_type::static_extent(extent-to-pad) is 0");
+    static_assert((_PaddingStride != 0) || (_ExtentsType::static_extent(_ExtentToPadIdx) == 0), "padding stride can be 0 only if extents_type::static_extent(extent-to-pad) is 0 or dynamic_extent");
     return __find_aligned_offset(_PaddingStride, _ExtentsType::static_extent(_ExtentToPadIdx));
   } else {
     return dynamic_extent;
