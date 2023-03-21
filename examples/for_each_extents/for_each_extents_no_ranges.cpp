@@ -12,7 +12,10 @@ namespace stdex = std::experimental;
 #  define MDSPAN_EXAMPLE_CAN_USE_LAMBDA_TEMPLATE_PARAM_LIST 1
 #endif
 
-#if defined(MDSPAN_EXAMPLE_CAN_USE_LAMBDA_TEMPLATE_PARAM_LIST)
+// This example doesn't currently work with Clang,
+// because Clang doesn't like structured binding results
+// being captured by inner lambdas.
+#if ! defined(__clang__) && defined(MDSPAN_EXAMPLE_CAN_USE_LAMBDA_TEMPLATE_PARAM_LIST)
 
 //////////////////////////////////////////////////////////////////////////
 // Part 1: Compile-time iteration
@@ -339,11 +342,11 @@ void for_each_in_extents(Callable&& callable,
     extents_reverse, split_extents_at_rightmost, indices_reverse);
 }
 
-#endif // defined(MDSPAN_EXAMPLE_CAN_USE_LAMBDA_TEMPLATE_PARAM_LIST)
+#endif // ! defined(__clang__) && defined(MDSPAN_EXAMPLE_CAN_USE_LAMBDA_TEMPLATE_PARAM_LIST)
 
 int main() {
 
-#if defined(MDSPAN_EXAMPLE_CAN_USE_LAMBDA_TEMPLATE_PARAM_LIST)
+#if ! defined(__clang__) && defined(MDSPAN_EXAMPLE_CAN_USE_LAMBDA_TEMPLATE_PARAM_LIST)
   // The functions work for any combination
   // of compile-time or run-time extents.
   stdex::extents<int, 3, stdex::dynamic_extent, 5> e{4};
