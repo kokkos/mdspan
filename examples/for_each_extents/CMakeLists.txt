@@ -1,0 +1,1 @@
+mdspan_add_example(for_each_extents)
