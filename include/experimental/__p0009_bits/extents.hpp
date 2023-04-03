@@ -238,9 +238,9 @@ private:
   _MDSPAN_NO_UNIQUE_ADDRESS possibly_empty_array<TDynamic, m_size_dynamic>
       m_dyn_vals;
 
-public:
   // static mapping of indices to the position in the dynamic values array
   using dyn_map_t = index_sequence_scan_impl<0, static_cast<size_t>(Values == dyn_tag)...>;
+public:
 
   // two types for static and dynamic values
   using value_type = TDynamic;
