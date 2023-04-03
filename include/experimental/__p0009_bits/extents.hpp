@@ -105,20 +105,12 @@ template <class T> struct static_array_impl<0, T> {
 };
 
 // Static array, provides get<r>(), get(r) and operator[r]
-template <class T, T... Values> struct static_array {
-private:
-  using impl_t = static_array_impl<0, T, Values...>;
+template <class T, T... Values> struct static_array:
+  public static_array_impl<0, T, Values...>  {
 
 public:
   using value_type = T;
 
-  MDSPAN_INLINE_FUNCTION
-  constexpr T operator[](size_t r) const { return impl_t::get(r); }
-  MDSPAN_INLINE_FUNCTION
-  constexpr static T get(size_t r) { return impl_t::get(r); }
-  template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static T get() {
-    return impl_t::template get<r>();
-  }
   MDSPAN_INLINE_FUNCTION
   constexpr static size_t size() { return sizeof...(Values); }
 };
@@ -407,6 +399,8 @@ public:
   using size_type = make_unsigned_t<index_type>;
   using rank_type = size_t;
 
+  static_assert(std::is_integral<index_type>::value && !std::is_same<index_type, bool>::value,
+                "extents::index_type must be a signed or unsigned integer type");
 private:
   constexpr static rank_type m_rank = sizeof...(Extents);
   constexpr static rank_type m_rank_dynamic =
