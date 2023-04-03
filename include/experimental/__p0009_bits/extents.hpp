@@ -240,7 +240,7 @@ private:
 
 public:
   // static mapping of indices to the position in the dynamic values array
-  using dyn_map_t = index_sequence_scan_impl<0, size_t(Values == dyn_tag)...>;
+  using dyn_map_t = index_sequence_scan_impl<0, static_cast<size_t>(Values == dyn_tag)...>;
 
   // two types for static and dynamic values
   using value_type = TDynamic;
@@ -302,7 +302,7 @@ public:
     TDynamic values[m_size]{static_cast<TDynamic>(vals)...};
     for (size_t r = 0; r < m_size; r++) {
       TStatic static_val = static_vals_t::get(r);
-      if (static_val == dynamic_extent) {
+      if (static_val == dyn_tag) {
         m_dyn_vals[dyn_map_t::get(r)] = values[r];
       }
 // Precondition check
@@ -326,7 +326,7 @@ public:
 #endif
     for (size_t r = 0; r < m_size; r++) {
       TStatic static_val = static_vals_t::get(r);
-      if (static_val == dynamic_extent) {
+      if (static_val == dyn_tag) {
         m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
       }
 // Precondition check
@@ -351,7 +351,7 @@ public:
 #endif
     for (size_t r = 0; r < m_size; r++) {
       TStatic static_val = static_vals_t::get(r);
-      if (static_val == dynamic_extent) {
+      if (static_val == dyn_tag) {
         m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
       }
 #ifdef _MDSPAN_DEBUG
@@ -371,7 +371,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr TDynamic value(size_t r) const {
     TStatic static_val = static_vals_t::get(r);
-    return static_val == dynamic_extent ? m_dyn_vals[dyn_map_t::get(r)]
+    return static_val == dyn_tag ? m_dyn_vals[dyn_map_t::get(r)]
                                         : static_cast<TDynamic>(static_val);
   }
   MDSPAN_INLINE_FUNCTION

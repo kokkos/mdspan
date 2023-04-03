@@ -197,7 +197,7 @@ if(MDSPAN_ENABLE_BENCHMARKS)
   if(NOT MDSPAN_CXX_STANDARD STREQUAL "14" AND NOT MDSPAN_CXX_STANDARD STREQUAL "23")
     add_subdirectory(benchmarks)
   else()
-    MESSAGE(FATAL_ERROR "Benchmarks are not available in C++14 or C++23 mode. Turn MDSPAN_ENABLE_BENCHMARKS OFF or use C++17/20 or newer.")
+    MESSAGE(FATAL_ERROR "Benchmarks are not available in C++14 or C++23 mode. Turn MDSPAN_ENABLE_BENCHMARKS OFF or use C++17 or C++20.")
   endif()
 endif()
 
