@@ -239,11 +239,7 @@ struct layout_stride {
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
-#ifndef _MDSPAN_NEW_EXTENT2S
           e, __strides_storage_t(__impl::fill_strides(s))
-#else
-          e, __strides_storage_t(s)
-#endif
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
