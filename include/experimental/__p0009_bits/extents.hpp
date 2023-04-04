@@ -137,17 +137,6 @@ struct index_sequence_scan_impl<R, FirstVal, Values...> {
     else
       return 0;
   }
-  template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static size_t get() {
-#if MDSPAN_HAS_CXX_17
-    if constexpr (r > R) {
-      return FirstVal + index_sequence_scan_impl<R + 1, Values...>::get(r);
-    } else {
-      return 0;
-    }
-#else
-    return get(r);
-#endif
-  }
 };
 
 template <size_t R, size_t FirstVal>
@@ -163,24 +152,10 @@ struct index_sequence_scan_impl<R, FirstVal> {
   MDSPAN_INLINE_FUNCTION
   constexpr static size_t get(size_t r) { return R > r ? FirstVal : 0; }
 #endif
-  template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static size_t get() {
-#if MDSPAN_HAS_CXX_17
-    if constexpr (r > R) {
-      return FirstVal;
-    } else {
-      return 0;
-    }
-#else
-    return get(r);
-#endif
-  }
 };
 template <> struct index_sequence_scan_impl<0> {
   MDSPAN_INLINE_FUNCTION
   constexpr static size_t get(size_t) { return 0; }
-  template <size_t> MDSPAN_INLINE_FUNCTION constexpr static size_t get() {
-    return 0;
-  }
 };
 
 // ------------------------------------------------------------------
