@@ -186,13 +186,23 @@ int main() {
   int failures = 0;
   for (int irow = 0; irow < n_rows; ++irow) {
     for (int icol = 0; icol < n_cols; ++icol) {
+#if MDSPAN_USE_BRACKET_OPERATOR
+      if(tiled[irow, icol] != row_major[irow, icol]) {
+        std::cout << "Mismatch for entry " << irow << ", " << icol << ":" << std::endl;
+        std::cout << "  tiled(" << irow << ", " << icol << ") = "
+                  << tiled[irow, icol] << std::endl;
+        std::cout << "  row_major(" << irow << ", " << icol << ") = "
+                  << row_major[irow, icol] << std::endl;
+#else
       if(tiled(irow, icol) != row_major(irow, icol)) {
         std::cout << "Mismatch for entry " << irow << ", " << icol << ":" << std::endl;
         std::cout << "  tiled(" << irow << ", " << icol << ") = "
                   << tiled(irow, icol) << std::endl;
         std::cout << "  row_major(" << irow << ", " << icol << ") = "
                   << row_major(irow, icol) << std::endl;
+#endif
         ++failures;
+
       }
 
     }
