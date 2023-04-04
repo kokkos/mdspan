@@ -48,7 +48,7 @@ class layout_left::mapping {
     constexpr index_type __compute_offset(
       __rank_count<r,Rank>, const I& i, Indices... idx) const {
       return __compute_offset(__rank_count<r+1,Rank>(), idx...) *
-                 __extents.template __extent<r>() + i;
+                 __extents.extent(r) + i;
     }
 
     template<class I>

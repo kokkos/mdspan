@@ -59,7 +59,11 @@ T dot_product(
   T result = 0;
   for(int i = 0; i < a.extent(0); ++i) {
     for(int j = 0; j < a.extent(1); ++j) {
+#if MDSPAN_USE_BRACKET_OPERATOR
+      result += a[i, j] * b[i, j];
+#else
       result += a(i, j) * b(i, j);
+#endif
     }
   }
   return result;
@@ -78,7 +82,11 @@ void fill_in_order(
   T count = 0;
   for(int i = 0; i < a.extent(0); ++i) {
     for(int j = 0; j < a.extent(1); ++j) {
+#if MDSPAN_USE_BRACKET_OPERATOR
+      a[i, j] = count++;
+#else
       a(i, j) = count++;
+#endif
     }
   }
 }

@@ -44,6 +44,7 @@ MDSPAN_STATIC_TEST(
   sizeof(stdex::extents<size_t,45, stdex::dynamic_extent, 1>) == sizeof(ptrdiff_t)
 );
 
+#ifdef _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
 MDSPAN_STATIC_TEST(
   std::is_empty<stdex::extents<size_t,1, 2, 3>>::value
 );
@@ -51,6 +52,7 @@ MDSPAN_STATIC_TEST(
 MDSPAN_STATIC_TEST(
   std::is_empty<stdex::extents<size_t,42>>::value
 );
+#endif
 
 // </editor-fold> end extents }}}1
 //==============================================================================

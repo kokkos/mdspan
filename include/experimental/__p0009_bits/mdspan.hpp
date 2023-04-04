@@ -45,11 +45,11 @@ private:
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     size_t __size(mdspan const& __self) noexcept {
-      return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().template __extent<Idxs>()), /* * ... * */ size_t(1));
+      return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().extent(Idxs)), /* * ... * */ size_t(1));
     }
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     bool __empty(mdspan const& __self) noexcept {
-      return (__self.rank()>0) && _MDSPAN_FOLD_OR((__self.__mapping_ref().extents().template __extent<Idxs>()==index_type(0)));
+      return (__self.rank()>0) && _MDSPAN_FOLD_OR((__self.__mapping_ref().extents().extent(Idxs)==index_type(0)));
     }
     template <class ReferenceType, class SizeType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
@@ -97,7 +97,8 @@ public:
 #else
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan()
     requires(
-       (rank_dynamic() > 0) &&
+       // nvhpc has a bug where using just rank_dynamic() here doesn't work ...
+       (extents_type::rank_dynamic() > 0) &&
        _MDSPAN_TRAIT(is_default_constructible, data_handle_type) &&
        _MDSPAN_TRAIT(is_default_constructible, mapping_type) &&
        _MDSPAN_TRAIT(is_default_constructible, accessor_type)
@@ -322,7 +323,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   friend constexpr void swap(mdspan& x, mdspan& y) noexcept {
     // can't call the std::swap inside on HIP
-    #ifndef _MDSPAN_HAS_HIP
+    #if !defined(_MDSPAN_HAS_HIP) && !defined(_MDSPAN_HAS_CUDA)
     swap(x.__ptr_ref(), y.__ptr_ref());
     swap(x.__mapping_ref(), y.__mapping_ref());
     swap(x.__accessor_ref(), y.__accessor_ref());
