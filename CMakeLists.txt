@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.14)
 
+file(READ VERSION _MDSPAN_VERSION_FILE)
+string(STRIP "${_MDSPAN_VERSION_FILE}" _MDSPAN_VERSION_FILE)
+
 project(MDSpan
-  VERSION 0.4.0
+  VERSION ${_MDSPAN_VERSION_FILE}
   LANGUAGES CXX
 )
+
+message(STATUS "MDSpan version ${MDSpan_VERSION}" )
 
 include(GNUInstallDirs)
 
