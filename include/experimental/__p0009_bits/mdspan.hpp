@@ -97,7 +97,8 @@ public:
 #else
   MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan()
     requires(
-       (rank_dynamic() > 0) &&
+       // nvhpc has a bug where using just rank_dynamic() here doesn't work ...
+       (extents_type::rank_dynamic() > 0) &&
        _MDSPAN_TRAIT(is_default_constructible, data_handle_type) &&
        _MDSPAN_TRAIT(is_default_constructible, mapping_type) &&
        _MDSPAN_TRAIT(is_default_constructible, accessor_type)

@@ -22,6 +22,8 @@
 #endif
 #include <array>
 
+#include<inttypes.h>
+
 namespace std {
 namespace experimental {
 namespace detail {
