@@ -14,6 +14,8 @@
 //
 //@HEADER
 
+#include <tuple>
+
 #include "strided_slice.hpp"
 namespace std {
 namespace experimental {
