@@ -17,7 +17,7 @@
 
 #include "macros.hpp"
 
-#include <cstddef> // size_t
+#include <cstddef> // std::size_t
 
 namespace std {
 namespace experimental {
@@ -35,7 +35,7 @@ struct default_accessor {
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, OtherElementType(*)[], element_type(*)[])
+      _MDSPAN_TRAIT(std::is_convertible, OtherElementType(*)[], element_type(*)[])
     )
   )
   MDSPAN_INLINE_FUNCTION
@@ -43,12 +43,12 @@ struct default_accessor {
 
   MDSPAN_INLINE_FUNCTION
   constexpr data_handle_type
-  offset(data_handle_type p, size_t i) const noexcept {
+  offset(data_handle_type p, std::size_t i) const noexcept {
     return p + i;
   }
 
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference access(data_handle_type p, size_t i) const noexcept {
+  constexpr reference access(data_handle_type p, std::size_t i) const noexcept {
     return p[i];
   }
 

@@ -25,7 +25,7 @@ namespace {
   struct __mdspan_is_integral_constant: std::false_type {};
 
   template<class T, T val>
-  struct __mdspan_is_integral_constant<integral_constant<T,val>>: std::true_type {};
+  struct __mdspan_is_integral_constant<std::integral_constant<T,val>>: std::true_type {};
 }
 // Slice Specifier allowing for strides and compile time extent
 template <class OffsetType, class ExtentType, class StrideType>
@@ -38,9 +38,9 @@ struct strided_slice {
   ExtentType extent;
   StrideType stride;
 
-  static_assert(is_integral_v<OffsetType> || __mdspan_is_integral_constant<OffsetType>::value);
-  static_assert(is_integral_v<ExtentType> || __mdspan_is_integral_constant<ExtentType>::value);
-  static_assert(is_integral_v<StrideType> || __mdspan_is_integral_constant<StrideType>::value);
+  static_assert(std::is_integral_v<OffsetType> || __mdspan_is_integral_constant<OffsetType>::value);
+  static_assert(std::is_integral_v<ExtentType> || __mdspan_is_integral_constant<ExtentType>::value);
+  static_assert(std::is_integral_v<StrideType> || __mdspan_is_integral_constant<StrideType>::value);
 };
 
 } // experimental

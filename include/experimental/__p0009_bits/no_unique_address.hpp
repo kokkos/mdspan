@@ -24,7 +24,7 @@ namespace detail {
 
 //==============================================================================
 
-template <class _T, size_t _Disambiguator = 0, class _Enable = void>
+template <class _T, std::size_t _Disambiguator = 0, class _Enable = void>
 struct __no_unique_address_emulation {
   using __stored_type = _T;
   _T __v;
@@ -39,14 +39,14 @@ struct __no_unique_address_emulation {
 // Empty case
 // This doesn't work if _T is final, of course, but we're not using anything
 // like that currently. That kind of thing could be added pretty easily though
-template <class _T, size_t _Disambiguator>
+template <class _T, std::size_t _Disambiguator>
 struct __no_unique_address_emulation<
     _T, _Disambiguator,
-    enable_if_t<_MDSPAN_TRAIT(is_empty, _T) &&
+    std::enable_if_t<_MDSPAN_TRAIT(std::is_empty, _T) &&
                 // If the type isn't trivially destructible, its destructor
                 // won't be called at the right time, so don't use this
                 // specialization
-                _MDSPAN_TRAIT(is_trivially_destructible, _T)>> : 
+                _MDSPAN_TRAIT(std::is_trivially_destructible, _T)>> :
 #ifdef _MDSPAN_COMPILER_MSVC
     // MSVC doesn't allow you to access public static member functions of a type
     // when you *happen* to privately inherit from that type.
