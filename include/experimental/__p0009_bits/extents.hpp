@@ -193,8 +193,8 @@ template <class T> struct possibly_empty_array<T, 0> {
 template <class TDynamic, class TStatic, TStatic dyn_tag, TStatic... Values>
 struct maybe_static_array {
 
-  static_assert(is_convertible<TStatic, TDynamic>::value, "maybe_static_array: TStatic must be convertible to TDynamic");
-  static_assert(is_convertible<TDynamic, TStatic>::value, "maybe_static_array: TDynamic must be convertible to TStatic");
+  static_assert(std::is_convertible<TStatic, TDynamic>::value, "maybe_static_array: TStatic must be convertible to TDynamic");
+  static_assert(std::is_convertible<TDynamic, TStatic>::value, "maybe_static_array: TDynamic must be convertible to TStatic");
 
 private:
   // Static values member
@@ -373,7 +373,7 @@ template <class IndexType, size_t... Extents> class extents {
 public:
   // typedefs for integral types used
   using index_type = IndexType;
-  using size_type = make_unsigned_t<index_type>;
+  using size_type = std::make_unsigned_t<index_type>;
   using rank_type = size_t;
 
   static_assert(std::is_integral<index_type>::value && !std::is_same<index_type, bool>::value,
@@ -411,9 +411,9 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
       class... OtherIndexTypes,
       /* requires */ (
-          _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, OtherIndexTypes,
+          _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_convertible, OtherIndexTypes,
                                          index_type) /* && ... */) &&
-          _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_nothrow_constructible, index_type,
+          _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_nothrow_constructible, index_type,
                                          OtherIndexTypes) /* && ... */) &&
           (sizeof...(OtherIndexTypes) == m_rank ||
            sizeof...(OtherIndexTypes) == m_rank_dynamic)))
@@ -425,25 +425,25 @@ public:
       class OtherIndexType, size_t N,
       /* requires */
       (
-          _MDSPAN_TRAIT(is_convertible, OtherIndexType, index_type) &&
-          _MDSPAN_TRAIT(is_nothrow_constructible, index_type,
+          _MDSPAN_TRAIT(std::is_convertible, OtherIndexType, index_type) &&
+          _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type,
               OtherIndexType) &&
           (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
-  constexpr extents(const array<OtherIndexType, N> &exts) noexcept
+  constexpr extents(const std::array<OtherIndexType, N> &exts) noexcept
       : m_vals(std::move(exts)) {}
 
 #ifdef __cpp_lib_span
   MDSPAN_TEMPLATE_REQUIRES(
       class OtherIndexType, size_t N,
       /* requires */
-      (_MDSPAN_TRAIT(is_convertible, OtherIndexType, index_type) &&
-       _MDSPAN_TRAIT(is_nothrow_constructible, index_type, OtherIndexType) &&
+      (_MDSPAN_TRAIT(std::is_convertible, OtherIndexType, index_type) &&
+       _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, OtherIndexType) &&
        (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
-  constexpr extents(const span<OtherIndexType, N> &exts) noexcept
+  constexpr extents(const std::span<OtherIndexType, N> &exts) noexcept
       : m_vals(std::move(exts)) {}
 #endif
 

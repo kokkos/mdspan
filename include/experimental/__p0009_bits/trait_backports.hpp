@@ -62,12 +62,12 @@ namespace std {
 
 template <class T, T... Vals>
 struct integer_sequence {
-  static constexpr std::size_t size() noexcept { return sizeof...(Vals); }
+  static constexpr size_t size() noexcept { return sizeof...(Vals); }
   using value_type = T;
 };
 
-template <std::size_t... Vals>
-using index_sequence = std::integer_sequence<std::size_t, Vals...>;
+template <size_t... Vals>
+using index_sequence = std::integer_sequence<size_t, Vals...>;
 
 namespace __detail {
 
@@ -91,7 +91,7 @@ struct __make_int_seq_impl<
 template <class T, T N>
 using make_integer_sequence = typename __detail::__make_int_seq_impl<T, N, 0, integer_sequence<T>>::type;
 
-template <std::size_t N>
+template <size_t N>
 using make_index_sequence = typename __detail::__make_int_seq_impl<size_t, N, 0, integer_sequence<size_t>>::type;
 
 template <class... T>

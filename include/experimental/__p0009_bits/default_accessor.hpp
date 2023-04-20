@@ -35,7 +35,7 @@ struct default_accessor {
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType,
     /* requires */ (
-      _MDSPAN_TRAIT(is_convertible, OtherElementType(*)[], element_type(*)[])
+      _MDSPAN_TRAIT(std::is_convertible, OtherElementType(*)[], element_type(*)[])
     )
   )
   MDSPAN_INLINE_FUNCTION

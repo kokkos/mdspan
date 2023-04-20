@@ -81,10 +81,10 @@ class layout_right::mapping {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, extents_type, OtherExtents)
+        _MDSPAN_TRAIT(std::is_constructible, extents_type, OtherExtents)
       )
     )
-    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
+    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
@@ -98,11 +98,11 @@ class layout_right::mapping {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, extents_type, OtherExtents) &&
+        _MDSPAN_TRAIT(std::is_constructible, extents_type, OtherExtents) &&
         (extents_type::rank() <= 1)
       )
     )
-    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
+    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(layout_left::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
@@ -116,7 +116,7 @@ class layout_right::mapping {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, extents_type, OtherExtents)
+        _MDSPAN_TRAIT(std::is_constructible, extents_type, OtherExtents)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
@@ -161,8 +161,8 @@ class layout_right::mapping {
       /* requires */ (
         (sizeof...(Indices) == extents_type::rank()) &&
         _MDSPAN_FOLD_AND(
-           (_MDSPAN_TRAIT(is_convertible, Indices, index_type) &&
-            _MDSPAN_TRAIT(is_nothrow_constructible, index_type, Indices))
+           (_MDSPAN_TRAIT(std::is_convertible, Indices, index_type) &&
+            _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, Indices))
         )
       )
     )
@@ -206,12 +206,12 @@ class layout_right::mapping {
 
     // Not really public, but currently needed to implement fully constexpr useable submdspan:
     template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
-    constexpr index_type __get_stride(std::experimental::extents<SizeType, E...>,integer_sequence<size_t, Idx...>) const {
+    constexpr index_type __get_stride(std::experimental::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT((Idx>N? __extents.template __extent<Idx>():1),1);
     }
     template<size_t N>
     constexpr index_type __stride() const noexcept {
-      return __get_stride<N>(__extents, make_index_sequence<extents_type::rank()>());
+      return __get_stride<N>(__extents, std::make_index_sequence<extents_type::rank()>());
     }
 
 private:

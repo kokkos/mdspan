@@ -36,12 +36,12 @@ template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
 construct_sub_strides(const SrcMapping &src_mapping,
-                      index_sequence<InvMapIdxs...>,
-                      const tuple<slice_strides...> &slices_stride_factor) {
+                      std::index_sequence<InvMapIdxs...>,
+                      const std::tuple<slice_strides...> &slices_stride_factor) {
   using index_type = typename SrcMapping::index_type;
-  return array<typename SrcMapping::index_type, sizeof...(InvMapIdxs)>{
+  return std::array<typename SrcMapping::index_type, sizeof...(InvMapIdxs)>{
       (static_cast<index_type>(src_mapping.stride(InvMapIdxs)) *
-       static_cast<index_type>(get<InvMapIdxs>(slices_stride_factor)))...};
+       static_cast<index_type>(std::get<InvMapIdxs>(slices_stride_factor)))...};
 }
 } // namespace detail
 
@@ -55,7 +55,7 @@ template <class IndexSequence, size_t SubRank, class... SliceSpecifiers>
 struct preserve_layout_left_mapping;
 
 template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
-struct preserve_layout_left_mapping<index_sequence<Idx...>, SubRank,
+struct preserve_layout_left_mapping<std::index_sequence<Idx...>, SubRank,
                                     SliceSpecifiers...> {
   constexpr static bool value =
       // Preserve layout for rank 0
@@ -65,9 +65,9 @@ struct preserve_layout_left_mapping<index_sequence<Idx...>, SubRank,
           // for the last one which could also be tuple but not a strided index
           // range slice specifiers after subrank are integrals
           ((Idx > SubRank - 1) || // these are only integral slice specifiers
-           (is_same_v<SliceSpecifiers, full_extent_t>) ||
+           (std::is_same_v<SliceSpecifiers, full_extent_t>) ||
            ((Idx == SubRank - 1) &&
-            is_convertible_v<SliceSpecifiers, tuple<size_t, size_t>>)) &&
+            std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
           ...);
 };
 } // namespace detail
@@ -105,13 +105,13 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
 
   // figure out sub layout type
   constexpr bool preserve_layout = detail::preserve_layout_left_mapping<
-      decltype(make_index_sequence<src_ext_t::rank()>()), dst_ext_t::rank(),
+      decltype(std::make_index_sequence<src_ext_t::rank()>()), dst_ext_t::rank(),
       SliceSpecifiers...>::value;
   using dst_layout_t =
-      conditional_t<preserve_layout, layout_left, layout_stride>;
+      std::conditional_t<preserve_layout, layout_left, layout_stride>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
-  if constexpr (is_same_v<dst_layout_t, layout_left>) {
+  if constexpr (std::is_same_v<dst_layout_t, layout_left>) {
     // layout_left case
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext),
@@ -119,17 +119,17 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(
-      integral_constant<size_t,0>(),
-      index_sequence<>(),
+      std::integral_constant<size_t,0>(),
+      std::index_sequence<>(),
       slices...);
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                    src_mapping, inv_map,
     // HIP needs deduction guides to have markups so we need to be explicit
     #ifdef _MDSPAN_HAS_HIP
-                                   tuple<decltype(detail::stride_of(slices))...>{detail::stride_of(slices)...})),
+                                   std::tuple<decltype(detail::stride_of(slices))...>{detail::stride_of(slices)...})),
     #else
-                                   tuple{detail::stride_of(slices)...})),
+                                   std::tuple{detail::stride_of(slices)...})),
     #endif
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
@@ -159,7 +159,7 @@ template <class IndexSequence, size_t SubRank, class... SliceSpecifiers>
 struct preserve_layout_right_mapping;
 
 template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
-struct preserve_layout_right_mapping<index_sequence<Idx...>, SubRank,
+struct preserve_layout_right_mapping<std::index_sequence<Idx...>, SubRank,
                                      SliceSpecifiers...> {
   constexpr static size_t SrcRank = sizeof...(SliceSpecifiers);
   constexpr static bool value =
@@ -172,9 +172,9 @@ struct preserve_layout_right_mapping<index_sequence<Idx...>, SubRank,
           // integrals
           ((Idx <
             SrcRank - SubRank) || // these are only integral slice specifiers
-           (is_same_v<SliceSpecifiers, full_extent_t>) ||
+           (std::is_same_v<SliceSpecifiers, full_extent_t>) ||
            ((Idx == SrcRank - SubRank) &&
-            is_convertible_v<SliceSpecifiers, tuple<size_t, size_t>>)) &&
+            std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
           ...);
 };
 } // namespace detail
@@ -211,13 +211,13 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
 
   // determine new layout type
   constexpr bool preserve_layout = detail::preserve_layout_right_mapping<
-      decltype(make_index_sequence<src_ext_t::rank()>()), dst_ext_t::rank(),
+      decltype(std::make_index_sequence<src_ext_t::rank()>()), dst_ext_t::rank(),
       SliceSpecifiers...>::value;
   using dst_layout_t =
-      conditional_t<preserve_layout, layout_right, layout_stride>;
+      std::conditional_t<preserve_layout, layout_right, layout_stride>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
-  if constexpr (is_same_v<dst_layout_t, layout_right>) {
+  if constexpr (std::is_same_v<dst_layout_t, layout_right>) {
     // layout_right case
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext),
@@ -225,17 +225,17 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(
-      integral_constant<size_t,0>(),
-      index_sequence<>(),
+      std::integral_constant<size_t,0>(),
+      std::index_sequence<>(),
       slices...);
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                    src_mapping, inv_map,
     // HIP needs deduction guides to have markups so we need to be explicit
     #ifdef _MDSPAN_HAS_HIP
-                                   tuple<decltype(detail::stride_of(slices))...>{detail::stride_of(slices)...})),
+                                   std::tuple<decltype(detail::stride_of(slices))...>{detail::stride_of(slices)...})),
     #else
-                                   tuple{detail::stride_of(slices)...})),
+                                   std::tuple{detail::stride_of(slices)...})),
     #endif
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
@@ -266,14 +266,14 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
   auto dst_ext = submdspan_extents(src_mapping.extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
   auto inv_map = detail::inv_map_rank(
-      integral_constant<size_t,0>(),
-      index_sequence<>(),
+      std::integral_constant<size_t,0>(),
+      std::index_sequence<>(),
       slices...);
   using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
   return mapping_offset<dst_mapping_t>{
       dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                  src_mapping, inv_map,
-                                 tuple{detail::stride_of(slices)...})),
+                                 std::tuple{detail::stride_of(slices)...})),
       static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
 }
 } // namespace experimental

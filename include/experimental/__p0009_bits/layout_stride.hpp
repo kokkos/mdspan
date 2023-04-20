@@ -49,18 +49,18 @@ struct layout_right {
 namespace detail {
   template<class Layout, class Mapping>
   constexpr bool __is_mapping_of =
-    is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
+    std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
 
 #if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
   template<class M>
   concept __layout_mapping_alike = requires {
     requires __is_extents<typename M::extents_type>::value;
-    { M::is_always_strided() } -> same_as<bool>;
-    { M::is_always_exhaustive() } -> same_as<bool>;
-    { M::is_always_unique() } -> same_as<bool>;
-    bool_constant<M::is_always_strided()>::value;
-    bool_constant<M::is_always_exhaustive()>::value;
-    bool_constant<M::is_always_unique()>::value;
+    { M::is_always_strided() } -> std::same_as<bool>;
+    { M::is_always_exhaustive() } -> std::same_as<bool>;
+    { M::is_always_unique() } -> std::same_as<bool>;
+    std::bool_constant<M::is_always_strided()>::value;
+    std::bool_constant<M::is_always_exhaustive()>::value;
+    std::bool_constant<M::is_always_unique()>::value;
   };
 #endif
 } // namespace detail
@@ -92,7 +92,7 @@ struct layout_stride {
 
     //----------------------------------------------------------------------------
 
-    using __strides_storage_t = array<index_type, extents_type::rank()>;//::std::experimental::dextents<index_type, extents_type::rank()>;
+    using __strides_storage_t = std::array<index_type, extents_type::rank()>;
     using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -118,9 +118,9 @@ struct layout_stride {
 #endif
     }
 
-    template<class SizeType, ::std::size_t ... Ep, ::std::size_t ... Idx>
+    template<class SizeType, size_t ... Ep, size_t ... Idx>
     _MDSPAN_HOST_DEVICE
-    constexpr index_type __get_size(::std::experimental::extents<SizeType, Ep...>,integer_sequence<::std::size_t, Idx...>) const {
+    constexpr index_type __get_size(::std::experimental::extents<SizeType, Ep...>,std::integer_sequence<size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT( static_cast<index_type>(extents().extent(Idx)), 1 );
     }
 
@@ -136,7 +136,7 @@ struct layout_stride {
     struct __deduction_workaround;
 
     template <size_t... Idxs>
-    struct __deduction_workaround<index_sequence<Idxs...>>
+    struct __deduction_workaround<std::index_sequence<Idxs...>>
     {
       template <class OtherExtents>
       MDSPAN_INLINE_FUNCTION
@@ -176,14 +176,14 @@ struct layout_stride {
 
       template<class IntegralType>
       MDSPAN_INLINE_FUNCTION
-      static constexpr const __strides_storage_t fill_strides(const array<IntegralType,extents_type::rank()>& s) {
+      static constexpr const __strides_storage_t fill_strides(const std::array<IntegralType,extents_type::rank()>& s) {
         return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
       }
 
 #ifdef __cpp_lib_span
       template<class IntegralType>
       MDSPAN_INLINE_FUNCTION
-      static constexpr const __strides_storage_t fill_strides(const span<IntegralType,extents_type::rank()>& s) {
+      static constexpr const __strides_storage_t fill_strides(const std::span<IntegralType,extents_type::rank()>& s) {
         return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
       }
 #endif
@@ -199,7 +199,7 @@ struct layout_stride {
     };
 
     // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
-    using __impl = __deduction_workaround<make_index_sequence<Extents::rank()>>;
+    using __impl = __deduction_workaround<std::make_index_sequence<Extents::rank()>>;
 
 
     //----------------------------------------------------------------------------
@@ -224,15 +224,15 @@ struct layout_stride {
       /* requires */ (
         // MSVC 19.32 does not like using index_type here, requires the typename Extents::index_type
         // error C2641: cannot deduce template arguments for 'std::experimental::layout_stride::mapping'
-        _MDSPAN_TRAIT(is_convertible, const remove_const_t<IntegralTypes>&, typename Extents::index_type) &&
-        _MDSPAN_TRAIT(is_nothrow_constructible, typename Extents::index_type, const remove_const_t<IntegralTypes>&)
+        _MDSPAN_TRAIT(std::is_convertible, const std::remove_const_t<IntegralTypes>&, typename Extents::index_type) &&
+        _MDSPAN_TRAIT(std::is_nothrow_constructible, typename Extents::index_type, const std::remove_const_t<IntegralTypes>&)
       )
     )
     MDSPAN_INLINE_FUNCTION
     constexpr
     mapping(
       extents_type const& e,
-      array<IntegralTypes, extents_type::rank()> const& s
+      std::array<IntegralTypes, extents_type::rank()> const& s
     ) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
@@ -262,15 +262,15 @@ struct layout_stride {
       /* requires */ (
         // MSVC 19.32 does not like using index_type here, requires the typename Extents::index_type
         // error C2641: cannot deduce template arguments for 'std::experimental::layout_stride::mapping'
-        _MDSPAN_TRAIT(is_convertible, const remove_const_t<IntegralTypes>&, typename Extents::index_type) &&
-        _MDSPAN_TRAIT(is_nothrow_constructible, typename Extents::index_type, const remove_const_t<IntegralTypes>&)
+        _MDSPAN_TRAIT(std::is_convertible, const std::remove_const_t<IntegralTypes>&, typename Extents::index_type) &&
+        _MDSPAN_TRAIT(std::is_nothrow_constructible, typename Extents::index_type, const std::remove_const_t<IntegralTypes>&)
       )
     )
     MDSPAN_INLINE_FUNCTION
     constexpr
     mapping(
       extents_type const& e,
-      span<IntegralTypes, extents_type::rank()> const& s
+      std::span<IntegralTypes, extents_type::rank()> const& s
     ) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
@@ -299,7 +299,7 @@ struct layout_stride {
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
       /* requires */ (
-        _MDSPAN_TRAIT(is_constructible, extents_type, typename StridedLayoutMapping::extents_type) &&
+        _MDSPAN_TRAIT(std::is_constructible, extents_type, typename StridedLayoutMapping::extents_type) &&
         detail::__is_mapping_of<typename StridedLayoutMapping::layout_type, StridedLayoutMapping> &&
         StridedLayoutMapping::is_always_unique() &&
         StridedLayoutMapping::is_always_strided()
@@ -309,13 +309,13 @@ struct layout_stride {
     template<class StridedLayoutMapping>
     requires(
          detail::__layout_mapping_alike<StridedLayoutMapping> &&
-         _MDSPAN_TRAIT(is_constructible, extents_type, typename StridedLayoutMapping::extents_type) &&
+         _MDSPAN_TRAIT(std::is_constructible, extents_type, typename StridedLayoutMapping::extents_type) &&
          StridedLayoutMapping::is_always_unique() &&
          StridedLayoutMapping::is_always_strided()
     )
 #endif
     MDSPAN_CONDITIONAL_EXPLICIT(
-      (!is_convertible<typename StridedLayoutMapping::extents_type, extents_type>::value) &&
+      (!std::is_convertible<typename StridedLayoutMapping::extents_type, extents_type>::value) &&
       (detail::__is_mapping_of<layout_left, StridedLayoutMapping> ||
        detail::__is_mapping_of<layout_right, StridedLayoutMapping> ||
        detail::__is_mapping_of<layout_stride, StridedLayoutMapping>)
@@ -356,7 +356,7 @@ struct layout_stride {
     };
 
     MDSPAN_INLINE_FUNCTION
-    constexpr array< index_type, extents_type::rank() > strides() const noexcept {
+    constexpr std::array< index_type, extents_type::rank() > strides() const noexcept {
       return __strides_storage();
     }
 
@@ -376,8 +376,8 @@ struct layout_stride {
       class... Indices,
       /* requires */ (
         sizeof...(Indices) == Extents::rank() &&
-        _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_convertible, Indices, index_type) /*&& ...*/ ) &&
-        _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(is_nothrow_constructible, index_type, Indices) /*&& ...*/)
+        _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_convertible, Indices, index_type) /*&& ...*/ ) &&
+        _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, Indices) /*&& ...*/)
       )
     )
     MDSPAN_FORCE_INLINE_FUNCTION
@@ -393,7 +393,7 @@ struct layout_stride {
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_unique() noexcept { return true; }
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_exhaustive() const noexcept {
-      return required_span_size() == __get_size(extents(), make_index_sequence<extents_type::rank()>());
+      return required_span_size() == __get_size(extents(), std::make_index_sequence<extents_type::rank()>());
     }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_strided() noexcept { return true; }
 
