@@ -118,9 +118,9 @@ struct layout_stride {
 #endif
     }
 
-    template<class SizeType, ::size_t ... Ep, ::size_t ... Idx>
+    template<class SizeType, size_t ... Ep, size_t ... Idx>
     _MDSPAN_HOST_DEVICE
-    constexpr index_type __get_size(::std::experimental::extents<SizeType, Ep...>,std::integer_sequence<::size_t, Idx...>) const {
+    constexpr index_type __get_size(::std::experimental::extents<SizeType, Ep...>,std::integer_sequence<size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT( static_cast<index_type>(extents().extent(Idx)), 1 );
     }
 
