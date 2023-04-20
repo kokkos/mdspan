@@ -261,7 +261,7 @@ struct layout_stride {
       class IntegralTypes,
       /* requires */ (
         // MSVC 19.32 does not like using index_type here, requires the typename Extents::index_type
-        // error C2641: cannot deduce template arguments for 'MDSPAN_IMPL_STANDARD_NAMESPACE::layout_stride::mapping'
+        // error C2641: cannot deduce template arguments for 'std::experimental::layout_stride::mapping'
         _MDSPAN_TRAIT(std::is_convertible, const std::remove_const_t<IntegralTypes>&, typename Extents::index_type) &&
         _MDSPAN_TRAIT(std::is_nothrow_constructible, typename Extents::index_type, const std::remove_const_t<IntegralTypes>&)
       )
