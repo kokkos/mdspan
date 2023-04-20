@@ -41,10 +41,10 @@ class layout_right::mapping {
     friend class mapping;
 
     // i0+(i1 + E(1)*(i2 + E(2)*i3))
-    template <std::size_t r, std::size_t Rank>
+    template <size_t r, size_t Rank>
     struct __rank_count {};
 
-    template <std::size_t r, std::size_t Rank, class I, class... Indices>
+    template <size_t r, size_t Rank, class I, class... Indices>
     _MDSPAN_HOST_DEVICE
     constexpr index_type __compute_offset(
       index_type offset, __rank_count<r,Rank>, const I& i, Indices... idx) const {
@@ -59,7 +59,7 @@ class layout_right::mapping {
     }
 
     _MDSPAN_HOST_DEVICE
-    constexpr index_type __compute_offset(std::size_t offset, __rank_count<extents_type::rank(), extents_type::rank()>) const {
+    constexpr index_type __compute_offset(size_t offset, __rank_count<extents_type::rank(), extents_type::rank()>) const {
       return static_cast<index_type>(offset);
     }
 
@@ -205,11 +205,11 @@ class layout_right::mapping {
 #endif
 
     // Not really public, but currently needed to implement fully constexpr useable submdspan:
-    template<std::size_t N, class SizeType, std::size_t ... E, std::size_t ... Idx>
-    constexpr index_type __get_stride(std::experimental::extents<SizeType, E...>,std::integer_sequence<std::size_t, Idx...>) const {
+    template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
+    constexpr index_type __get_stride(std::experimental::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT((Idx>N? __extents.template __extent<Idx>():1),1);
     }
-    template<std::size_t N>
+    template<size_t N>
     constexpr index_type __stride() const noexcept {
       return __get_stride<N>(__extents, std::make_index_sequence<extents_type::rank()>());
     }

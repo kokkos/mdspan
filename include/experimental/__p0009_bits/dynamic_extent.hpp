@@ -17,13 +17,13 @@
 
 #include "macros.hpp"
 
-#include <cstddef>  // std::size_t
+#include <cstddef>  // size_t
 #include <limits>   // numeric_limits
 
 namespace std {
 namespace experimental {
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<std::size_t>::max();
+_MDSPAN_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<size_t>::max();
 
 } // end namespace experimental
 } // namespace std

@@ -27,10 +27,10 @@ namespace detail {
 template <class... _Ts> struct __type_list { static constexpr auto __size = sizeof...(_Ts); };
 
 // Implementation of type_list at() that's heavily optimized for small typelists
-template <std::size_t, class> struct __type_at;
-template <std::size_t, class _Seq, class=std::make_index_sequence<_Seq::__size>> struct __type_at_large_impl;
+template <size_t, class> struct __type_at;
+template <size_t, class _Seq, class=std::make_index_sequence<_Seq::__size>> struct __type_at_large_impl;
 
-template <std::size_t _I, std::size_t _Idx, class _T>
+template <size_t _I, size_t _Idx, class _T>
 struct __type_at_entry { };
 
 template <class _Result>
@@ -41,20 +41,20 @@ struct __type_at_assign_op_ignore_rest {
 };
 
 struct __type_at_assign_op_impl {
-  template <std::size_t _I, std::size_t _Idx, class _T>
+  template <size_t _I, size_t _Idx, class _T>
   __type_at_assign_op_impl operator=(__type_at_entry<_I, _Idx, _T>&&);
-  template <std::size_t _I, class _T>
+  template <size_t _I, class _T>
   __type_at_assign_op_ignore_rest<_T> operator=(__type_at_entry<_I, _I, _T>&&);
 };
 
-template <std::size_t _I, class... _Ts, std::size_t... _Idxs>
-struct __type_at_large_impl<_I, __type_list<_Ts...>, std::integer_sequence<std::size_t, _Idxs...>>
+template <size_t _I, class... _Ts, size_t... _Idxs>
+struct __type_at_large_impl<_I, __type_list<_Ts...>, std::integer_sequence<size_t, _Idxs...>>
   : decltype(
       _MDSPAN_FOLD_ASSIGN_LEFT(__type_at_assign_op_impl{}, /* = ... = */ __type_at_entry<_I, _Idxs, _Ts>{})
     )
 { };
 
-template <std::size_t _I, class... _Ts>
+template <size_t _I, class... _Ts>
 struct __type_at<_I, __type_list<_Ts...>>
     : __type_at_large_impl<_I, __type_list<_Ts...>>
 { };

@@ -118,9 +118,9 @@ struct layout_stride {
 #endif
     }
 
-    template<class SizeType, ::std::size_t ... Ep, ::std::size_t ... Idx>
+    template<class SizeType, ::size_t ... Ep, ::size_t ... Idx>
     _MDSPAN_HOST_DEVICE
-    constexpr index_type __get_size(::std::experimental::extents<SizeType, Ep...>,std::integer_sequence<::std::size_t, Idx...>) const {
+    constexpr index_type __get_size(::std::experimental::extents<SizeType, Ep...>,std::integer_sequence<::size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT( static_cast<index_type>(extents().extent(Idx)), 1 );
     }
 
@@ -135,7 +135,7 @@ struct layout_stride {
     template <class>
     struct __deduction_workaround;
 
-    template <std::size_t... Idxs>
+    template <size_t... Idxs>
     struct __deduction_workaround<std::index_sequence<Idxs...>>
     {
       template <class OtherExtents>
@@ -153,12 +153,12 @@ struct layout_stride {
 
       template <class... Integral>
       MDSPAN_FORCE_INLINE_FUNCTION
-      static constexpr std::size_t _call_op_impl(mapping const& self, Integral... idxs) noexcept {
+      static constexpr size_t _call_op_impl(mapping const& self, Integral... idxs) noexcept {
         return _MDSPAN_FOLD_PLUS_RIGHT((idxs * self.stride(Idxs)), /* + ... + */ 0);
       }
 
       MDSPAN_INLINE_FUNCTION
-      static constexpr std::size_t _req_span_size_impl(mapping const& self) noexcept {
+      static constexpr size_t _req_span_size_impl(mapping const& self) noexcept {
         // assumes no negative strides; not sure if I'm allowed to assume that or not
         return __impl::_call_op_impl(self, (self.extents().template __extent<Idxs>() - 1)...) + 1;
       }
@@ -188,9 +188,9 @@ struct layout_stride {
       }
 #endif
 
-      template<std::size_t K>
+      template<size_t K>
       MDSPAN_INLINE_FUNCTION
-      static constexpr std::size_t __return_zero() { return 0; }
+      static constexpr size_t __return_zero() { return 0; }
 
       template<class Mapping>
       MDSPAN_INLINE_FUNCTION

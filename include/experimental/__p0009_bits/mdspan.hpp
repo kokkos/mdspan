@@ -40,18 +40,18 @@ private:
   template <class>
   struct __deduction_workaround;
 
-  template <std::size_t... Idxs>
+  template <size_t... Idxs>
   struct __deduction_workaround<std::index_sequence<Idxs...>>
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
-    std::size_t __size(mdspan const& __self) noexcept {
-      return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().extent(Idxs)), /* * ... * */ std::size_t(1));
+    size_t __size(mdspan const& __self) noexcept {
+      return _MDSPAN_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().extent(Idxs)), /* * ... * */ size_t(1));
     }
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     bool __empty(mdspan const& __self) noexcept {
       return (__self.rank()>0) && _MDSPAN_FOLD_OR((__self.__mapping_ref().extents().extent(Idxs)==index_type(0)));
     }
-    template <class ReferenceType, class SizeType, std::size_t N>
+    template <class ReferenceType, class SizeType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     ReferenceType __callop(mdspan const& __self, const std::array<SizeType, N>& indices) noexcept {
       return __self.__accessor_ref().access(__self.__ptr_ref(), __self.__mapping_ref()(indices[Idxs]...));
@@ -75,10 +75,10 @@ public:
   using data_handle_type = typename accessor_type::data_handle_type;
   using reference = typename accessor_type::reference;
 
-  MDSPAN_INLINE_FUNCTION static constexpr std::size_t rank() noexcept { return extents_type::rank(); }
-  MDSPAN_INLINE_FUNCTION static constexpr std::size_t rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
-  MDSPAN_INLINE_FUNCTION static constexpr std::size_t static_extent(std::size_t r) noexcept { return extents_type::static_extent(r); }
-  MDSPAN_INLINE_FUNCTION constexpr index_type extent(std::size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
+  MDSPAN_INLINE_FUNCTION static constexpr size_t rank() noexcept { return extents_type::rank(); }
+  MDSPAN_INLINE_FUNCTION static constexpr size_t rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
+  MDSPAN_INLINE_FUNCTION static constexpr size_t static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
+  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
 
 private:
 
@@ -124,7 +124,7 @@ public:
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
-    class SizeType, std::size_t N,
+    class SizeType, size_t N,
     /* requires */ (
       _MDSPAN_TRAIT(std::is_convertible, SizeType, index_type) &&
       _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, SizeType) &&
@@ -141,7 +141,7 @@ public:
 
 #ifdef __cpp_lib_span
   MDSPAN_TEMPLATE_REQUIRES(
-    class SizeType, std::size_t N,
+    class SizeType, size_t N,
     /* requires */ (
       _MDSPAN_TRAIT(std::is_convertible, SizeType, index_type) &&
       _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, SizeType) &&
@@ -312,7 +312,7 @@ public:
   #endif // __cpp_lib_span
   #endif // MDSPAN_USE_PAREN_OPERATOR
 
-  MDSPAN_INLINE_FUNCTION constexpr std::size_t size() const noexcept {
+  MDSPAN_INLINE_FUNCTION constexpr size_t size() const noexcept {
     return __impl::__size(*this);
   };
 
@@ -354,7 +354,7 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return __mapping_ref().is_unique(); };
   MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const noexcept { return __mapping_ref().is_exhaustive(); };
   MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return __mapping_ref().is_strided(); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type stride(std::size_t r) const { return __mapping_ref().stride(r); };
+  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return __mapping_ref().stride(r); };
 
 private:
 
@@ -379,34 +379,34 @@ MDSPAN_TEMPLATE_REQUIRES(
   (sizeof...(SizeTypes) > 0)
 )
 MDSPAN_DEDUCTION_GUIDE explicit mdspan(ElementType*, SizeTypes...)
-  -> mdspan<ElementType, ::std::experimental::dextents<std::size_t, sizeof...(SizeTypes)>>;
+  -> mdspan<ElementType, ::std::experimental::dextents<size_t, sizeof...(SizeTypes)>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class Pointer,
   (_MDSPAN_TRAIT(std::is_pointer, std::remove_reference_t<Pointer>))
 )
-MDSPAN_DEDUCTION_GUIDE mdspan(Pointer&&) -> mdspan<std::remove_pointer_t<std::remove_reference_t<Pointer>>, extents<std::size_t>>;
+MDSPAN_DEDUCTION_GUIDE mdspan(Pointer&&) -> mdspan<std::remove_pointer_t<std::remove_reference_t<Pointer>>, extents<size_t>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class CArray,
   (_MDSPAN_TRAIT(std::is_array, CArray) && (std::rank_v<CArray> == 1))
 )
-MDSPAN_DEDUCTION_GUIDE mdspan(CArray&) -> mdspan<std::remove_all_extents_t<CArray>, extents<std::size_t, ::std::extent_v<CArray,0>>>;
+MDSPAN_DEDUCTION_GUIDE mdspan(CArray&) -> mdspan<std::remove_all_extents_t<CArray>, extents<size_t, ::std::extent_v<CArray,0>>>;
 
-template <class ElementType, class SizeType, std::size_t N>
+template <class ElementType, class SizeType, size_t N>
 MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, const ::std::array<SizeType, N>&)
-  -> mdspan<ElementType, ::std::experimental::dextents<std::size_t, N>>;
+  -> mdspan<ElementType, ::std::experimental::dextents<size_t, N>>;
 
 #ifdef __cpp_lib_span
-template <class ElementType, class SizeType, std::size_t N>
+template <class ElementType, class SizeType, size_t N>
 MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, ::std::span<SizeType, N>)
-  -> mdspan<ElementType, ::std::experimental::dextents<std::size_t, N>>;
+  -> mdspan<ElementType, ::std::experimental::dextents<size_t, N>>;
 #endif
 
 // This one is necessary because all the constructors take `data_handle_type`s, not
 // `ElementType*`s, and `data_handle_type` is taken from `accessor_type::data_handle_type`, which
 // seems to throw off automatic deduction guides.
-template <class ElementType, class SizeType, std::size_t... ExtentsPack>
+template <class ElementType, class SizeType, size_t... ExtentsPack>
 MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, const extents<SizeType, ExtentsPack...>&)
   -> mdspan<ElementType, ::std::experimental::extents<SizeType, ExtentsPack...>>;
 

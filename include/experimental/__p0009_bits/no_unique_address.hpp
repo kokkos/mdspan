@@ -24,7 +24,7 @@ namespace detail {
 
 //==============================================================================
 
-template <class _T, std::size_t _Disambiguator = 0, class _Enable = void>
+template <class _T, size_t _Disambiguator = 0, class _Enable = void>
 struct __no_unique_address_emulation {
   using __stored_type = _T;
   _T __v;
@@ -39,7 +39,7 @@ struct __no_unique_address_emulation {
 // Empty case
 // This doesn't work if _T is final, of course, but we're not using anything
 // like that currently. That kind of thing could be added pretty easily though
-template <class _T, std::size_t _Disambiguator>
+template <class _T, size_t _Disambiguator>
 struct __no_unique_address_emulation<
     _T, _Disambiguator,
     std::enable_if_t<_MDSPAN_TRAIT(std::is_empty, _T) &&
@@ -52,7 +52,7 @@ struct __no_unique_address_emulation<
     // when you *happen* to privately inherit from that type.
     protected
 #else
-    // But we still want this to be private if possible so that we don't accidentally 
+    // But we still want this to be private if possible so that we don't accidentally
     // access members of _T directly rather than calling __ref() first, which wouldn't
     // work if _T happens to be stateful and thus we're using the unspecialized definition
     // of __no_unique_address_emulation above.

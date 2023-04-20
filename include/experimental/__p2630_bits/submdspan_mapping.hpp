@@ -27,12 +27,12 @@ namespace experimental {
 //******************************************
 template <class Mapping> struct mapping_offset {
   Mapping mapping;
-  std::size_t offset;
+  size_t offset;
 };
 
 namespace detail {
 // constructs sub strides
-template <class SrcMapping, class... slice_strides, std::size_t... InvMapIdxs>
+template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
 construct_sub_strides(const SrcMapping &src_mapping,
@@ -51,10 +51,10 @@ construct_sub_strides(const SrcMapping &src_mapping,
 namespace detail {
 
 // Figure out whether to preserve layout_left
-template <class IndexSequence, std::size_t SubRank, class... SliceSpecifiers>
+template <class IndexSequence, size_t SubRank, class... SliceSpecifiers>
 struct preserve_layout_left_mapping;
 
-template <class... SliceSpecifiers, std::size_t... Idx, std::size_t SubRank>
+template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
 struct preserve_layout_left_mapping<std::index_sequence<Idx...>, SubRank,
                                     SliceSpecifiers...> {
   constexpr static bool value =
@@ -67,7 +67,7 @@ struct preserve_layout_left_mapping<std::index_sequence<Idx...>, SubRank,
           ((Idx > SubRank - 1) || // these are only integral slice specifiers
            (std::is_same_v<SliceSpecifiers, full_extent_t>) ||
            ((Idx == SubRank - 1) &&
-            std::is_convertible_v<SliceSpecifiers, std::tuple<std::size_t, std::size_t>>)) &&
+            std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
           ...);
 };
 } // namespace detail
@@ -115,11 +115,11 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
     // layout_left case
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext),
-        static_cast<std::size_t>(src_mapping(detail::first_of(slices)...))};
+        static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(
-      std::integral_constant<std::size_t,0>(),
+      std::integral_constant<size_t,0>(),
       std::index_sequence<>(),
       slices...);
     return mapping_offset<dst_mapping_t>{
@@ -131,7 +131,7 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
     #else
                                    std::tuple{detail::stride_of(slices)...})),
     #endif
-        static_cast<std::size_t>(src_mapping(detail::first_of(slices)...))};
+        static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
   __builtin_unreachable();
@@ -155,13 +155,13 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
 namespace detail {
 
 // Figure out whether to preserve layout_right
-template <class IndexSequence, std::size_t SubRank, class... SliceSpecifiers>
+template <class IndexSequence, size_t SubRank, class... SliceSpecifiers>
 struct preserve_layout_right_mapping;
 
-template <class... SliceSpecifiers, std::size_t... Idx, std::size_t SubRank>
+template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
 struct preserve_layout_right_mapping<std::index_sequence<Idx...>, SubRank,
                                      SliceSpecifiers...> {
-  constexpr static std::size_t SrcRank = sizeof...(SliceSpecifiers);
+  constexpr static size_t SrcRank = sizeof...(SliceSpecifiers);
   constexpr static bool value =
       // Preserve layout for rank 0
       (SubRank == 0) ||
@@ -174,7 +174,7 @@ struct preserve_layout_right_mapping<std::index_sequence<Idx...>, SubRank,
             SrcRank - SubRank) || // these are only integral slice specifiers
            (std::is_same_v<SliceSpecifiers, full_extent_t>) ||
            ((Idx == SrcRank - SubRank) &&
-            std::is_convertible_v<SliceSpecifiers, std::tuple<std::size_t, std::size_t>>)) &&
+            std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
           ...);
 };
 } // namespace detail
@@ -221,11 +221,11 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
     // layout_right case
     return mapping_offset<dst_mapping_t>{
         dst_mapping_t(dst_ext),
-        static_cast<std::size_t>(src_mapping(detail::first_of(slices)...))};
+        static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(
-      std::integral_constant<std::size_t,0>(),
+      std::integral_constant<size_t,0>(),
       std::index_sequence<>(),
       slices...);
     return mapping_offset<dst_mapping_t>{
@@ -237,7 +237,7 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
     #else
                                    std::tuple{detail::stride_of(slices)...})),
     #endif
-        static_cast<std::size_t>(src_mapping(detail::first_of(slices)...))};
+        static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
   __builtin_unreachable();
@@ -266,7 +266,7 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
   auto dst_ext = submdspan_extents(src_mapping.extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
   auto inv_map = detail::inv_map_rank(
-      std::integral_constant<std::size_t,0>(),
+      std::integral_constant<size_t,0>(),
       std::index_sequence<>(),
       slices...);
   using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
@@ -274,7 +274,7 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
       dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                  src_mapping, inv_map,
                                  std::tuple{detail::stride_of(slices)...})),
-      static_cast<std::size_t>(src_mapping(detail::first_of(slices)...))};
+      static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
 }
 } // namespace experimental
 } // namespace std
