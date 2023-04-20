@@ -15,10 +15,12 @@
 //
 //@HEADER
 
+#pragma once
+
 #include <type_traits>
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 
 namespace {
   template<class T>
@@ -43,5 +45,5 @@ struct strided_slice {
   static_assert(std::is_integral_v<StrideType> || __mdspan_is_integral_constant<StrideType>::value);
 };
 
-} // experimental
-} // std
+} // MDSPAN_IMPL_PROPOSED_NAMESPACE
+} // MDSPAN_IMPL_STANDARD_NAMESPACE

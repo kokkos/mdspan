@@ -15,39 +15,39 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <experimental/mdspan>
+#include <mdspan.hpp>
 
 #include <type_traits>
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 //==============================================================================
 // <editor-fold des4c="Test allowed pointer + extents ctors"> {{{1
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::extents<size_t,2, stdex::dynamic_extent>,
+        md::extents<size_t,2, md::dynamic_extent>,
         std::array<int,1>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::extents<size_t,2, stdex::dynamic_extent>,
+        md::extents<size_t,2, md::dynamic_extent>,
         std::array<int,2>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::extents<size_t,2, stdex::dynamic_extent>,
+        md::extents<size_t,2, md::dynamic_extent>,
         int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::extents<size_t,2, stdex::dynamic_extent>,
+        md::extents<size_t,2, md::dynamic_extent>,
         int, int64_t
     >::value
 );
@@ -55,63 +55,63 @@ MDSPAN_STATIC_TEST(
 // TODO @proposal-bug: not sure we really intended this???
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::extents<size_t,2, stdex::dynamic_extent>,
+        md::extents<size_t,2, md::dynamic_extent>,
         std::array<float,2>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::extents<size_t,2, stdex::dynamic_extent>,
+        md::extents<size_t,2, md::dynamic_extent>,
         float, double
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::mdspan<int, stdex::extents<size_t>>,
+        md::mdspan<int, md::extents<size_t>>,
         int*
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::mdspan<int, stdex::extents<size_t,2>>,
+        md::mdspan<int, md::extents<size_t,2>>,
         int*
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::mdspan<int, stdex::extents<size_t,2, stdex::dynamic_extent>>,
+        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
         int*, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::mdspan<double, stdex::extents<size_t,stdex::dynamic_extent, 2, stdex::dynamic_extent>>,
+        md::mdspan<double, md::extents<size_t,md::dynamic_extent, 2, md::dynamic_extent>>,
         double*, unsigned, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::mdspan<int, stdex::extents<size_t,2, stdex::dynamic_extent>>,
+        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
         int*, int, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::mdspan<int, stdex::extents<size_t,stdex::dynamic_extent, 2, stdex::dynamic_extent>>,
+        md::mdspan<int, md::extents<size_t,md::dynamic_extent, 2, md::dynamic_extent>>,
         int*, std::array<int,2>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        stdex::mdspan<int, stdex::extents<size_t,2, stdex::dynamic_extent>>,
+        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
         int*, std::array<int,2>
     >::value
 );
@@ -124,28 +124,28 @@ MDSPAN_STATIC_TEST(
 // <editor-fold desc="Test forbidden pointer + extents ctors"> {{{1
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        stdex::extents<size_t,2, stdex::dynamic_extent>,
+        md::extents<size_t,2, md::dynamic_extent>,
         std::array<int, 4>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        stdex::extents<size_t,2, stdex::dynamic_extent>,
+        md::extents<size_t,2, md::dynamic_extent>,
         int, int, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        stdex::mdspan<int, stdex::extents<size_t,2, stdex::dynamic_extent>>,
+        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
         int*, std::array<int, 4>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        stdex::mdspan<int, stdex::extents<size_t,2, stdex::dynamic_extent>>,
+        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
         double*, int
     >::value
 );
@@ -153,29 +153,29 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        stdex::mdspan<int, stdex::extents<size_t,2, stdex::dynamic_extent>>,
+        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
         int*, int, int, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
    !std::is_constructible<
-        stdex::mdspan<int, stdex::dextents<size_t,2>, stdex::layout_stride>,
+        md::mdspan<int, md::dextents<size_t,2>, md::layout_stride>,
         int*, int, int
    >::value
 );
 
 MDSPAN_STATIC_TEST(
    !std::is_constructible<
-        stdex::mdspan<int, stdex::dextents<size_t,2>, stdex::layout_stride>,
+        md::mdspan<int, md::dextents<size_t,2>, md::layout_stride>,
         int*, std::array<int,2>
    >::value
 );
 
 MDSPAN_STATIC_TEST(
    !std::is_constructible<
-        stdex::mdspan<int, stdex::dextents<size_t,2>, stdex::layout_stride>,
-        int*, stdex::dextents<size_t,2>
+        md::mdspan<int, md::dextents<size_t,2>, md::layout_stride>,
+        int*, md::dextents<size_t,2>
    >::value
 );
 

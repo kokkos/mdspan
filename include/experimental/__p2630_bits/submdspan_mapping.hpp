@@ -14,14 +14,15 @@
 //
 //@HEADER
 
+#pragma once
+
 #include <array>
 #include <type_traits>
 #include <tuple>
 #include <utility> // index_sequence
 
-namespace std {
-namespace experimental {
-
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 //******************************************
 // Return type of submdspan_mapping overloads
 //******************************************
@@ -29,8 +30,13 @@ template <class Mapping> struct mapping_offset {
   Mapping mapping;
   size_t offset;
 };
+} // namespace MDSPAN_IMPL_PROPOSED_NAMESPACE
 
 namespace detail {
+using MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::first_of;
+using MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::stride_of;
+using MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::inv_map_rank;
+
 // constructs sub strides
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
 MDSPAN_INLINE_FUNCTION
@@ -97,6 +103,8 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {
+  using MDSPAN_IMPL_PROPOSED_NAMESPACE::submdspan_extents;
+  using MDSPAN_IMPL_PROPOSED_NAMESPACE::mapping_offset;
 
   // compute sub extents
   using src_ext_t = Extents;
@@ -203,6 +211,8 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {
+  using MDSPAN_IMPL_PROPOSED_NAMESPACE::submdspan_extents;
+  using MDSPAN_IMPL_PROPOSED_NAMESPACE::mapping_offset;
 
   // get sub extents
   using src_ext_t = Extents;
@@ -263,6 +273,8 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {
+  using MDSPAN_IMPL_PROPOSED_NAMESPACE::submdspan_extents;
+  using MDSPAN_IMPL_PROPOSED_NAMESPACE::mapping_offset;
   auto dst_ext = submdspan_extents(src_mapping.extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
   auto inv_map = detail::inv_map_rank(
@@ -276,5 +288,4 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
                                  std::tuple{detail::stride_of(slices)...})),
       static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
 }
-} // namespace experimental
-} // namespace std
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE

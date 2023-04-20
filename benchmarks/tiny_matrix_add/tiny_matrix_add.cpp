@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan.hpp>
 
 #include <memory>
 #include <stdexcept>
@@ -25,9 +25,9 @@
 using index_type = int;
 
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_left>;
+using lmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_right>;
+using rmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_right>;
 
 //================================================================================
 
@@ -70,7 +70,7 @@ MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_TinyMatrixSum_right, left_, lmdspan, 1000000, 
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_Static_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::dextents<index_type, 3>>;
+  using MDSpan = md::mdspan<T, md::dextents<index_type, 3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
 
@@ -110,7 +110,7 @@ void BM_Raw_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, Si
   benchmark::DoNotOptimize(y);
   benchmark::DoNotOptimize(z);
 
-  using MDSpan = stdex::mdspan<T, stdex::dextents<index_type, 3>>;
+  using MDSpan = md::mdspan<T, md::dextents<index_type, 3>>;
   using value_type = typename MDSpan::value_type;
 
   auto buffer_s = std::make_unique<value_type[]>(x * y * z);

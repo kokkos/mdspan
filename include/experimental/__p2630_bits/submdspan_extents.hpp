@@ -14,11 +14,13 @@
 //
 //@HEADER
 
+#pragma once
+
 #include <tuple>
 
 #include "strided_slice.hpp"
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 namespace detail {
 
 // Mapping from submapping ranks to srcmapping ranks
@@ -63,7 +65,7 @@ constexpr Integral first_of(const Integral &i) {
 
 MDSPAN_INLINE_FUNCTION
 constexpr std::integral_constant<size_t, 0>
-first_of(const experimental::full_extent_t &) {
+first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
   return std::integral_constant<size_t, 0>();
 }
 
@@ -129,7 +131,7 @@ constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &,
 template <size_t k, class Extents>
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &ext,
-                       experimental::full_extent_t) {
+                       ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t) {
   if constexpr (Extents::static_extent(k) == dynamic_extent) {
     return ext.extent(k);
   } else {
@@ -317,5 +319,5 @@ constexpr auto submdspan_extents(const extents<IndexType, Extents...> &src_exts,
   return detail::extents_constructor<ext_t::rank(), ext_t>::next_extent(
       src_exts, slices...);
 }
-} // namespace experimental
-} // namespace std
+} // namespace MDSPAN_IMPL_PROPOSED_NAMESPACE
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE

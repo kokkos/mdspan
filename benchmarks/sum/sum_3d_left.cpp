@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan.hpp>
 
 #include <memory>
 #include <random>
@@ -25,9 +25,9 @@ using index_type = int;
 //================================================================================
 
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_left>;
+using lmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_right>;
+using rmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_right>;
 
 //================================================================================
 

@@ -19,7 +19,7 @@
 #include <experimental/mdspan>
 #include <iostream>
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 int main() {
   std::array d{
@@ -28,7 +28,7 @@ int main() {
     2, 7, 6,
   };
 
-  stdex::mdspan m{d.data(), stdex::extents{3, 3}};
+  md::mdspan m{d.data(), md::extents{3, 3}};
 
   for (std::size_t i = 0; i < m.extent(0); ++i)
     for (std::size_t j = 0; j < m.extent(1); ++j)

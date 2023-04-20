@@ -19,7 +19,7 @@
 
 #include <type_traits>
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 
 //==============================================================================
@@ -27,43 +27,43 @@ namespace stdex = std::experimental;
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,1, 2, stdex::dynamic_extent>
+    md::extents<size_t,1, 2, md::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,stdex::dynamic_extent>
+    md::extents<size_t,md::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>
+    md::extents<size_t,md::dynamic_extent, md::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,stdex::dynamic_extent, 1, 2, 45>
+    md::extents<size_t,md::dynamic_extent, 1, 2, 45>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,45, stdex::dynamic_extent, 1>
+    md::extents<size_t,45, md::dynamic_extent, 1>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,1, 2, 3>
+    md::extents<size_t,1, 2, 3>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,42>
+    md::extents<size_t,42>
   >::value
 );
 
@@ -75,55 +75,55 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_left::template mapping<
-      stdex::extents<size_t,42, stdex::dynamic_extent, 73>
+    md::layout_left::template mapping<
+      md::extents<size_t,42, md::dynamic_extent, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_right::template mapping<
-      stdex::extents<size_t,42, stdex::dynamic_extent, 73>
+    md::layout_right::template mapping<
+      md::extents<size_t,42, md::dynamic_extent, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_right::template mapping<
-      stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>
+    md::layout_right::template mapping<
+      md::extents<size_t,md::dynamic_extent, md::dynamic_extent>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_stride::template mapping<
-      stdex::extents<size_t,42, stdex::dynamic_extent, 73>
+    md::layout_stride::template mapping<
+      md::extents<size_t,42, md::dynamic_extent, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_stride::template mapping<
-      stdex::extents<size_t,42, 27, 73>
+    md::layout_stride::template mapping<
+      md::extents<size_t,42, 27, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_stride::template mapping<
-      stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>
+    md::layout_stride::template mapping<
+      md::extents<size_t,md::dynamic_extent, md::dynamic_extent>
     >
   >::value
 );
 
 struct layout_stride_as_member_should_be_standard_layout :
-  stdex::layout_stride::template mapping<
-    stdex::extents<size_t,1, 2, 3>
+  md::layout_stride::template mapping<
+    md::extents<size_t,1, 2, 3>
   >
 {
   int foo;
@@ -144,21 +144,21 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::mdspan<double, stdex::extents<size_t,1, 2, 3>>
+    md::mdspan<double, md::extents<size_t,1, 2, 3>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::mdspan<int, stdex::dextents<size_t,2>>
+    md::mdspan<int, md::dextents<size_t,2>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::mdspan<
-      double, stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>,
-      stdex::layout_left, stdex::default_accessor<double>
+    md::mdspan<
+      double, md::extents<size_t,md::dynamic_extent, md::dynamic_extent>,
+      md::layout_left, md::default_accessor<double>
     >
   >::value
 );

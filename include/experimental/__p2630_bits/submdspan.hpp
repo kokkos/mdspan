@@ -14,11 +14,13 @@
 //
 //@HEADER
 
+#pragma once
+
 #include "submdspan_extents.hpp"
 #include "submdspan_mapping.hpp"
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 template <class ElementType, class Extents, class LayoutPolicy,
           class AccessorPolicy, class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION
@@ -36,5 +38,5 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
       sub_mapping_offset.mapping,
       sub_accessor_t(src.accessor()));
 }
-} // namespace experimental
-} // namespace std
+} // namespace MDSPAN_IMPL_PROPOSED_NAMESPACE
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE

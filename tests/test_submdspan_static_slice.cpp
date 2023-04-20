@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan.hpp>
 #include <cstdint>
 #include <type_traits>
 #include <vector>
@@ -22,7 +22,8 @@
 
 namespace {
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
+namespace mdex = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
 template<class Integral, Integral Value>
 using IC = std::integral_constant<Integral, Value>;
@@ -36,7 +37,7 @@ void test_submdspan_static_slice(
   std::vector<typename InputMdspan::value_type> storage(input_mapping.required_span_size());
 
   input_type input(storage.data(), input_mapping);
-  auto output = stdex::submdspan(input, std::forward<Slices>(slices)...);
+  auto output = mdex::submdspan(input, std::forward<Slices>(slices)...);
   using output_mdspan_type = decltype(output);
   static_assert(std::is_same<typename output_mdspan_type::extents_type, typename ExpectedOutputMdspan::extents_type>::value, "Extents don't match.");
   static_assert(std::is_same<typename output_mdspan_type::layout_type, typename ExpectedOutputMdspan::layout_type>::value, "Layouts don't match.");
@@ -60,19 +61,19 @@ TEST(TestMdspan, StaticAsserts) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_FullFullIndex) {
-  using input_extents_type = stdex::dextents<int, 3>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 3>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents{3, 4, 5};
 
   {
-    using expected_extents_type = stdex::dextents<int, 2>;
-    using expected_layout_type = stdex::layout_left;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 2>;
+    using expected_layout_type = md::layout_left;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto integralConstant) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-	input_extents, stdex::full_extent, stdex::full_extent, integralConstant);
+	input_extents, md::full_extent, md::full_extent, integralConstant);
     };
     runTest(int(1));
     runTest(std::size_t(1));
@@ -86,19 +87,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_FullFullIndex) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_FullFullIndex) {
-  using input_extents_type = stdex::extents<int, 3, 4, 5>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, 3, 4, 5>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents;
 
   {
-    using expected_extents_type = stdex::extents<int, 3, 4>;
-    using expected_layout_type = stdex::layout_left;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 3, 4>;
+    using expected_layout_type = md::layout_left;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto integralConstant) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-	input_extents, stdex::full_extent, stdex::full_extent, integralConstant);
+	input_extents, md::full_extent, md::full_extent, integralConstant);
     };
     runTest(int(1));
     runTest(std::size_t(1));
@@ -112,19 +113,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_FullFullIndex) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_FullFullIndex) {
-  using input_extents_type = stdex::dextents<int, 3>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 3>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents{3, 4, 5};
 
   {
-    using expected_extents_type = stdex::dextents<int, 2>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 2>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-	input_extents, stdex::full_extent, stdex::full_extent, sliceSpec);
+	input_extents, md::full_extent, md::full_extent, sliceSpec);
     };
     runTest(int(1));
     runTest(std::size_t(1));
@@ -138,19 +139,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_FullFullIndex) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_FullFullIndex) {
-  using input_extents_type = stdex::extents<int, 3, 4, 5>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, 3, 4, 5>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents;
 
   {
-    using expected_extents_type = stdex::extents<int, 3, 4>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 3, 4>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto integralConstant) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-	input_extents, stdex::full_extent, stdex::full_extent, integralConstant);
+	input_extents, md::full_extent, md::full_extent, integralConstant);
     };
     runTest(int(1));
     runTest(std::size_t(1));
@@ -164,19 +165,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_FullFullIndex) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_FullIndexFull) {
-  using input_extents_type = stdex::dextents<int, 3>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 3>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents{3, 4, 5};
 
   {
-    using expected_extents_type = stdex::dextents<int, 2>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 2>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto integralConstant) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, integralConstant, stdex::full_extent);
+        input_extents, md::full_extent, integralConstant, md::full_extent);
     };
     runTest(int(1));
     runTest(std::size_t(1));
@@ -190,19 +191,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_FullIndexFull) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_FullIndexFull) {
-  using input_extents_type = stdex::extents<int, 3, 4, 5>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, 3, 4, 5>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents;
 
   {
-    using expected_extents_type = stdex::extents<int, 3, 5>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 3, 5>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto integralConstant) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, integralConstant, stdex::full_extent);
+        input_extents, md::full_extent, integralConstant, md::full_extent);
     };
     runTest(int(1));
     runTest(std::size_t(1));
@@ -217,19 +218,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_FullIndexFull) {
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_FullTupleFull) {
   using std::tuple;
-  using input_extents_type = stdex::dextents<int, 3>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 3>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents{3, 4, 5};
 
   {
-    using expected_extents_type = stdex::dextents<int, 3>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 3>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
+        input_extents, md::full_extent, sliceSpec, md::full_extent);
     };
     runTest(tuple<int, int>{int(1), int{3}});
     runTest(tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
@@ -237,13 +238,13 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_FullTupleFull) {
     runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent, 2, md::dynamic_extent>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
+        input_extents, md::full_extent, sliceSpec, md::full_extent);
     };
     runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}});
     runTest(tuple<IC<std::size_t,1 >, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
@@ -254,19 +255,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_FullTupleFull) {
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_FullTupleFull) {
   using std::tuple;
-  using input_extents_type = stdex::extents<int, 3, 4, 5>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, 3, 4, 5>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents;
 
   {
-    using expected_extents_type = stdex::extents<int, 3, stdex::dynamic_extent, 5>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 3, md::dynamic_extent, 5>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
+        input_extents, md::full_extent, sliceSpec, md::full_extent);
     };
     runTest(tuple<int, int>{int(1), int{3}});
     runTest(tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
@@ -274,13 +275,13 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_FullTupleFull) {
     runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, 3, 2, 5>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 3, 2, 5>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
+        input_extents, md::full_extent, sliceSpec, md::full_extent);
     };
     runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}});
     runTest(tuple<IC<std::size_t,1 >, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
@@ -291,19 +292,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_FullTupleFull) {
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_FullTupleFull) {
   using std::tuple;
-  using input_extents_type = stdex::dextents<int, 3>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 3>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents{3, 4, 5};
 
   {
-    using expected_extents_type = stdex::dextents<int, 3>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 3>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
+        input_extents, md::full_extent, sliceSpec, md::full_extent);
     };
     runTest(tuple<int, int>{int(1), int{3}});
     runTest(tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
@@ -311,13 +312,13 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_FullTupleFull) {
     runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent, 2, md::dynamic_extent>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
+        input_extents, md::full_extent, sliceSpec, md::full_extent);
     };
     runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}});
     runTest(tuple<IC<std::size_t,1 >, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
@@ -328,19 +329,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_FullTupleFull) {
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_FullTupleFull) {
   using std::tuple;
-  using input_extents_type = stdex::extents<int, 3, 4, 5>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, 3, 4, 5>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents;
 
   {
-    using expected_extents_type = stdex::extents<int, 3, stdex::dynamic_extent, 5>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 3, md::dynamic_extent, 5>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
+        input_extents, md::full_extent, sliceSpec, md::full_extent);
     };
     runTest(tuple<int, int>{int(1), int{3}});
     runTest(tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
@@ -348,13 +349,13 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_FullTupleFull) {
     runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t(1), std::uint32_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, 3, 2, 5>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 3, 2, 5>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, stdex::full_extent, sliceSpec, stdex::full_extent);
+        input_extents, md::full_extent, sliceSpec, md::full_extent);
     };
     runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}});
     runTest(tuple<IC<std::size_t,1 >, IC<std::size_t, 3>>{IC<std::size_t, 1>{}, IC<std::size_t, 3>{}});
@@ -365,19 +366,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_FullTupleFull) {
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_TupleFullTuple) {
   using std::tuple;
-  using input_extents_type = stdex::dextents<int, 3>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 3>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents{3, 4, 5};
 
   {
-    using expected_extents_type = stdex::dextents<int, 3>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 3>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec0, auto sliceSpec1) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
+        input_extents, sliceSpec0, md::full_extent, sliceSpec1);
     };
     runTest(tuple<int, int>{int{1}, int{3}}, tuple<int, int>{int{1}, int{4}});
     runTest(tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{3}}, tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{4}});
@@ -385,13 +386,13 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_TupleFullTuple) {
     runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{3}}, tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{4}});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent, 3>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2, md::dynamic_extent, 3>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec0, auto sliceSpec1) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
+        input_extents, sliceSpec0, md::full_extent, sliceSpec1);
     };
     runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}},
 	    tuple<IC<int, 1>, IC<int, 4>>{IC<int, 1>{}, IC<int, 4>{}});
@@ -406,19 +407,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_iddd_TupleFullTuple) {
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_TupleFullTuple) {
   using std::tuple;
-  using input_extents_type = stdex::extents<int, 3, 4, 5>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, 3, 4, 5>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents;
 
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 4, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent, 4, md::dynamic_extent>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec0, auto sliceSpec1) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
+        input_extents, sliceSpec0, md::full_extent, sliceSpec1);
     };
     runTest(tuple<int, int>{int{1}, int{3}}, tuple<int, int>{int{1}, int{4}});
     runTest(tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{3}}, tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{4}});
@@ -426,13 +427,13 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_TupleFullTuple) {
     runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{3}}, tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{4}});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2, 4, 3>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2, 4, 3>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec0, auto sliceSpec1) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
+        input_extents, sliceSpec0, md::full_extent, sliceSpec1);
     };
     runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}},
 	    tuple<IC<int, 1>, IC<int, 4>>{IC<int, 1>{}, IC<int, 4>{}});
@@ -447,19 +448,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i345_TupleFullTuple) {
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_TupleFullTuple) {
   using std::tuple;
-  using input_extents_type = stdex::dextents<int, 3>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 3>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents{3, 4, 5};
 
   {
-    using expected_extents_type = stdex::dextents<int, 3>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 3>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec0, auto sliceSpec1) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
+        input_extents, sliceSpec0, md::full_extent, sliceSpec1);
     };
     runTest(tuple<int, int>{int{1}, int{3}}, tuple<int, int>{int{1}, int{4}});
     runTest(tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{3}}, tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{4}});
@@ -467,13 +468,13 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_TupleFullTuple) {
     runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{3}}, tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{4}});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent, 3>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2, md::dynamic_extent, 3>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec0, auto sliceSpec1) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
+        input_extents, sliceSpec0, md::full_extent, sliceSpec1);
     };
     runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}},
 	    tuple<IC<int, 1>, IC<int, 4>>{IC<int, 1>{}, IC<int, 4>{}});
@@ -488,19 +489,19 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_iddd_TupleFullTuple) {
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_TupleFullTuple) {
   using std::tuple;
-  using input_extents_type = stdex::extents<int, 3, 4, 5>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, 3, 4, 5>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
   input_extents_type input_extents;
 
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 4, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent, 4, md::dynamic_extent>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec0, auto sliceSpec1) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
+        input_extents, sliceSpec0, md::full_extent, sliceSpec1);
     };
     runTest(tuple<int, int>{int{1}, int{3}}, tuple<int, int>{int{1}, int{4}});
     runTest(tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{3}}, tuple<std::size_t, std::size_t>{std::size_t{1}, std::size_t{4}});
@@ -508,13 +509,13 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i345_TupleFullTuple) {
     runTest(tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{3}}, tuple<std::uint32_t, std::uint32_t>{std::uint32_t{1}, std::uint32_t{4}});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2, 4, 3>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2, 4, 3>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&] (auto sliceSpec0, auto sliceSpec1) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(
-        input_extents, sliceSpec0, stdex::full_extent, sliceSpec1);
+        input_extents, sliceSpec0, md::full_extent, sliceSpec1);
     };
     runTest(tuple<IC<int, 1>, IC<int, 3>>{IC<int, 1>{}, IC<int, 3>{}},
 	    tuple<IC<int, 1>, IC<int, 4>>{IC<int, 1>{}, IC<int, 4>{}});
@@ -542,18 +543,18 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_FullTuple) {
                                     std::tuple<std::size_t, std::size_t>>::value,
                                     "convertibility of tuples of integral constant to size_t is false");
 
-  using input_extents_type = stdex::dextents<int, 2>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 2>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
 
   input_extents_type input_extents{3, 4};
   {
-    using expected_extents_type = stdex::dextents<int, 2>;
-    using expected_layout_type = stdex::layout_left;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 2>;
+    using expected_layout_type = md::layout_left;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, sliceSpec);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, md::full_extent, sliceSpec);
     };
     runTest(std::tuple<int, int>{int(1), int(3)});
     runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
@@ -561,12 +562,12 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_FullTuple) {
     runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2>;
-    using expected_layout_type = stdex::layout_left;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent, 2>;
+    using expected_layout_type = md::layout_left;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, sliceSpec);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, md::full_extent, sliceSpec);
     };
     runTest(std::tuple<IC<int, 1>, IC<int, 3>> {} );
     runTest(std::tuple<IC<std::size_t, 1>, IC<std::size_t, 3>> {} );
@@ -576,18 +577,18 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_FullTuple) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_idd_FullTuple) {
-  using input_extents_type = stdex::dextents<int, 2>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 2>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
 
   input_extents_type input_extents{3, 4};
   {
-    using expected_extents_type = stdex::dextents<int, 2>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 2>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, sliceSpec);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, md::full_extent, sliceSpec);
     };
     runTest(std::tuple<int, int>{int(1), int(3)});
     runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
@@ -595,12 +596,12 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_idd_FullTuple) {
     runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent, 2>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent, 2>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, stdex::full_extent, sliceSpec);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, md::full_extent, sliceSpec);
     };
     runTest(std::tuple<IC<int, 1>, IC<int, 3>> {} );
     runTest(std::tuple<IC<std::size_t, 1>, IC<std::size_t, 3>> {} );
@@ -610,18 +611,18 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_idd_FullTuple) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_TupleFull) {
-  using input_extents_type = stdex::dextents<int, 2>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 2>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
 
   input_extents_type input_extents{3, 4};
   {
-    using expected_extents_type = stdex::dextents<int, 2>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 2>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, stdex::full_extent);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, md::full_extent);
     };
     runTest(std::tuple<int, int>{int(1), int(3)});
     runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
@@ -629,12 +630,12 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_TupleFull) {
     runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2, md::dynamic_extent>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, stdex::full_extent);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, md::full_extent);
     };
     runTest(std::tuple<IC<int, 1>, IC<int, 3>> {} );
     runTest(std::tuple<IC<std::size_t, 1>, IC<std::size_t, 3>> {} );
@@ -644,18 +645,18 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_idd_TupleFull) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_idd_TupleFull) {
-  using input_extents_type = stdex::dextents<int, 2>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 2>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
 
   input_extents_type input_extents{3, 4};
   {
-    using expected_extents_type = stdex::dextents<int, 2>;
-    using expected_layout_type = stdex::layout_right;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 2>;
+    using expected_layout_type = md::layout_right;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, stdex::full_extent);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, md::full_extent);
     };
     runTest(std::tuple<int, int>{int(1), int(3)});
     runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
@@ -663,12 +664,12 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_idd_TupleFull) {
     runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_right;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2, md::dynamic_extent>;
+    using expected_layout_type = md::layout_right;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, stdex::full_extent);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec, md::full_extent);
     };
     runTest(std::tuple<IC<int, 1>, IC<int, 3>> {} );
     runTest(std::tuple<IC<std::size_t, 1>, IC<std::size_t, 3>> {} );
@@ -678,21 +679,21 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_idd_TupleFull) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Stride_idd_TupleFull) {
-  using input_extents_type = stdex::dextents<int, 2>;
-  using input_layout_type = stdex::layout_stride;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::dextents<int, 2>;
+  using input_layout_type = md::layout_stride;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
 
   input_extents_type input_extents{3, 4};
   std::array<int, 2> input_strides{1, 4}; // like layout_left
   using input_mapping_type = typename input_mdspan_type::mapping_type;
   input_mapping_type input_mapping(input_extents, input_strides);
   {
-    using expected_extents_type = stdex::dextents<int, 2>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::dextents<int, 2>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_mapping, sliceSpec, stdex::full_extent);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_mapping, sliceSpec, md::full_extent);
     };
     runTest(std::tuple<int, int>{int(1), int(3)});
     runTest(std::tuple<std::size_t, std::size_t>{std::size_t(1), std::size_t(3)});
@@ -700,12 +701,12 @@ TEST(TestMdspan, SubmdspanStaticSlice_Stride_idd_TupleFull) {
     runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_stride;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2, md::dynamic_extent>;
+    using expected_layout_type = md::layout_stride;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
-      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_mapping, sliceSpec, stdex::full_extent);
+      test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_mapping, sliceSpec, md::full_extent);
     };
     runTest(std::tuple<IC<int, 1>, IC<int, 3>> {} );
     runTest(std::tuple<IC<std::size_t, 1>, IC<std::size_t, 3>> {} );
@@ -717,15 +718,15 @@ TEST(TestMdspan, SubmdspanStaticSlice_Stride_idd_TupleFull) {
 // Rank 1 tests
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_id_Tuple) {
-  using input_extents_type = stdex::extents<int, stdex::dynamic_extent>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, md::dynamic_extent>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
 
   input_extents_type input_extents{5};
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_left;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent>;
+    using expected_layout_type = md::layout_left;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
@@ -736,9 +737,9 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_id_Tuple) {
     runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2>;
-    using expected_layout_type = stdex::layout_left;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2>;
+    using expected_layout_type = md::layout_left;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
@@ -751,15 +752,15 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_id_Tuple) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Left_i5_Tuple) {
-  using input_extents_type = stdex::extents<int, 5>;
-  using input_layout_type = stdex::layout_left;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, 5>;
+  using input_layout_type = md::layout_left;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
 
   input_extents_type input_extents;
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_left;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent>;
+    using expected_layout_type = md::layout_left;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
@@ -770,9 +771,9 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i5_Tuple) {
     runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2>;
-    using expected_layout_type = stdex::layout_left;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2>;
+    using expected_layout_type = md::layout_left;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
@@ -785,15 +786,15 @@ TEST(TestMdspan, SubmdspanStaticSlice_Left_i5_Tuple) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_id_Tuple) {
-  using input_extents_type = stdex::extents<int, stdex::dynamic_extent>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, md::dynamic_extent>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
 
   input_extents_type input_extents{5};
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_right;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent>;
+    using expected_layout_type = md::layout_right;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
@@ -804,9 +805,9 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_id_Tuple) {
     runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2>;
-    using expected_layout_type = stdex::layout_right;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2>;
+    using expected_layout_type = md::layout_right;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
@@ -819,15 +820,15 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_id_Tuple) {
 }
 
 TEST(TestMdspan, SubmdspanStaticSlice_Right_i5_Tuple) {
-  using input_extents_type = stdex::extents<int, 5>;
-  using input_layout_type = stdex::layout_right;
-  using input_mdspan_type = stdex::mdspan<float, input_extents_type, input_layout_type>;
+  using input_extents_type = md::extents<int, 5>;
+  using input_layout_type = md::layout_right;
+  using input_mdspan_type = md::mdspan<float, input_extents_type, input_layout_type>;
 
   input_extents_type input_extents;
   {
-    using expected_extents_type = stdex::extents<int, stdex::dynamic_extent>;
-    using expected_layout_type = stdex::layout_right;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, md::dynamic_extent>;
+    using expected_layout_type = md::layout_right;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);
@@ -838,9 +839,9 @@ TEST(TestMdspan, SubmdspanStaticSlice_Right_i5_Tuple) {
     runTest(std::tuple<std::int64_t, std::int64_t>{std::int64_t(1), std::int64_t(3)});
   }
   {
-    using expected_extents_type = stdex::extents<int, 2>;
-    using expected_layout_type = stdex::layout_right;
-    using expected_output_mdspan_type = stdex::mdspan<float, expected_extents_type, expected_layout_type>;
+    using expected_extents_type = md::extents<int, 2>;
+    using expected_layout_type = md::layout_right;
+    using expected_output_mdspan_type = md::mdspan<float, expected_extents_type, expected_layout_type>;
 
     auto runTest = [&](auto sliceSpec) {
       test_submdspan_static_slice<expected_output_mdspan_type, input_mdspan_type>(input_extents, sliceSpec);

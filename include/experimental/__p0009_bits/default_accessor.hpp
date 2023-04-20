@@ -19,8 +19,7 @@
 
 #include <cstddef> // size_t
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 template <class ElementType>
 struct default_accessor {
@@ -54,5 +53,4 @@ struct default_accessor {
 
 };
 
-} // end namespace experimental
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE

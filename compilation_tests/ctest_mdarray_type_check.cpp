@@ -22,10 +22,11 @@
 #include <concepts>
 #endif
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
+namespace mdex = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
-using E1 = stdex::extents<int32_t, stdex::dynamic_extent, 3>;
-using M1 = stdex::mdarray<float, E1, stdex::layout_left>;
+using E1 = md::extents<int32_t, md::dynamic_extent, 3>;
+using M1 = mdex::mdarray<float, E1, md::layout_left>;
 
 #if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 template<class T>
@@ -44,7 +45,7 @@ MDSPAN_STATIC_TEST(
   std::is_same<typename M1::index_type, int32_t>::value &&
   std::is_same<typename M1::size_type, uint32_t>::value &&
   std::is_same<typename M1::rank_type, size_t>::value &&
-  std::is_same<typename M1::layout_type, stdex::layout_left>::value &&
+  std::is_same<typename M1::layout_type, md::layout_left>::value &&
   std::is_same<typename M1::container_type, std::vector<float>>::value &&
   std::is_same<decltype(M1::rank()), typename M1::rank_type>::value &&
   std::is_same<decltype(M1::rank_dynamic()), typename M1::rank_type>::value &&
@@ -54,21 +55,21 @@ MDSPAN_STATIC_TEST(
   std::is_same<decltype(std::declval<M1>().extent(1)), typename E1::index_type>::value &&
   (M1::rank()==2) &&
   (M1::rank_dynamic()==1) &&
-  (M1::static_extent(0) == stdex::dynamic_extent) &&
+  (M1::static_extent(0) == md::dynamic_extent) &&
   (M1::static_extent(1) == 3) &&
   is_copyable<M1> &&
   std::is_default_constructible<M1>::value
 );
 
-using E2 = stdex::extents<int64_t, stdex::dynamic_extent, 3, stdex::dynamic_extent>;
-using M2 = stdex::mdarray<std::complex<double>, E2, stdex::layout_right, std::array<std::complex<double>,24>>;
+using E2 = md::extents<int64_t, md::dynamic_extent, 3, md::dynamic_extent>;
+using M2 = mdex::mdarray<std::complex<double>, E2, md::layout_right, std::array<std::complex<double>,24>>;
 
 MDSPAN_STATIC_TEST(
   std::is_same<typename M2::element_type, std::complex<double>>::value &&
   std::is_same<typename M2::index_type, int64_t>::value &&
   std::is_same<typename M2::size_type, uint64_t>::value &&
   std::is_same<typename M2::rank_type, size_t>::value &&
-  std::is_same<typename M2::layout_type, stdex::layout_right>::value &&
+  std::is_same<typename M2::layout_type, md::layout_right>::value &&
   std::is_same<typename M2::container_type, std::array<std::complex<double>,24>>::value &&
   std::is_same<decltype(M2::rank()), typename E2::rank_type>::value &&
   std::is_same<decltype(M2::rank_dynamic()), typename E2::rank_type>::value &&
@@ -80,22 +81,22 @@ MDSPAN_STATIC_TEST(
   std::is_same<decltype(std::declval<M2>().extent(2)), typename E2::index_type>::value &&
   (M2::rank()==3) &&
   (M2::rank_dynamic()==2) &&
-  (M2::static_extent(0) == stdex::dynamic_extent) &&
+  (M2::static_extent(0) == md::dynamic_extent) &&
   (M2::static_extent(1) == 3) &&
-  (M2::static_extent(2) == stdex::dynamic_extent) &&
+  (M2::static_extent(2) == md::dynamic_extent) &&
   is_copyable<M2> &&
   std::is_default_constructible<M2>::value
 );
 
-using E3 = stdex::extents<uint32_t, stdex::dynamic_extent, 3, stdex::dynamic_extent>;
-using M3 = stdex::mdarray<uint32_t, E3>;
+using E3 = md::extents<uint32_t, md::dynamic_extent, 3, md::dynamic_extent>;
+using M3 = mdex::mdarray<uint32_t, E3>;
 
 MDSPAN_STATIC_TEST(
   std::is_same<typename M3::element_type, uint32_t>::value &&
   std::is_same<typename M3::index_type, uint32_t>::value &&
   std::is_same<typename M3::size_type, uint32_t>::value &&
   std::is_same<typename M3::rank_type, size_t>::value &&
-  std::is_same<typename M3::layout_type, stdex::layout_right>::value &&
+  std::is_same<typename M3::layout_type, md::layout_right>::value &&
   std::is_same<typename M3::container_type, std::vector<uint32_t>>::value &&
   std::is_same<decltype(M3::rank()), typename E3::rank_type>::value &&
   std::is_same<decltype(M3::rank_dynamic()), typename E3::rank_type>::value &&
@@ -107,9 +108,9 @@ MDSPAN_STATIC_TEST(
   std::is_same<decltype(std::declval<M3>().extent(2)), typename E3::index_type>::value &&
   (M3::rank()==3) &&
   (M3::rank_dynamic()==2) &&
-  (M3::static_extent(0) == stdex::dynamic_extent) &&
+  (M3::static_extent(0) == md::dynamic_extent) &&
   (M3::static_extent(1) == 3) &&
-  (M3::static_extent(2) == stdex::dynamic_extent) &&
+  (M3::static_extent(2) == md::dynamic_extent) &&
   is_copyable<M3> &&
   std::is_default_constructible<M3>::value
 );

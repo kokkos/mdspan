@@ -15,11 +15,11 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <experimental/mdspan>
+#include <mdspan.hpp>
 
 #include <type_traits>
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 enum emptyness {
   non_empty = false,
@@ -51,7 +51,7 @@ void test() {
 }
 
 template <class T, class U>
-using CP = stdex::detail::__compressed_pair<T, U>;
+using CP = md::detail::__compressed_pair<T, U>;
 
 struct E0 {};
 struct E1 {};

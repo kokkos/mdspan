@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include "experimental/__p0009_bits/macros.hpp"
+#include <mdspan.hpp>
 
 #include <type_traits>
 #include <cassert>

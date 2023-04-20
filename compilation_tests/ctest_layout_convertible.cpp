@@ -17,7 +17,7 @@
 
 #include <experimental/mdspan>
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 struct NotARealLayout {
   template<class Extents>
@@ -71,10 +71,10 @@ struct AStridedLayout {
   };
 };
 
-using E1 = stdex::extents<int32_t, 2,2>;
-using E2 = stdex::extents<int64_t, 2,2>;
-using LS1 = stdex::layout_stride::mapping<E1>;
-using LS2 = stdex::layout_stride::mapping<E2>;
+using E1 = md::extents<int32_t, 2,2>;
+using E2 = md::extents<int64_t, 2,2>;
+using LS1 = md::layout_stride::mapping<E1>;
+using LS2 = md::layout_stride::mapping<E2>;
 
 MDSPAN_STATIC_TEST(
   !std::is_constructible<LS1, AStridedLayout<false>::mapping<E2>>::value &&

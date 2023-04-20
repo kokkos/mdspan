@@ -22,9 +22,7 @@
 #include "trait_backports.hpp"
 #include "compressed_pair.hpp"
 
-namespace std {
-namespace experimental {
-
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 template <
   class ElementType,
   class Extents,
@@ -34,7 +32,7 @@ template <
 class mdspan
 {
 private:
-  static_assert(detail::__is_extents_v<Extents>, "std::experimental::mdspan's Extents template parameter must be a specialization of std::experimental::extents.");
+  static_assert(detail::__is_extents_v<Extents>, "mdspan's Extents template parameter must be a specialization of extents.");
 
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
   template <class>
@@ -379,7 +377,7 @@ MDSPAN_TEMPLATE_REQUIRES(
   (sizeof...(SizeTypes) > 0)
 )
 MDSPAN_DEDUCTION_GUIDE explicit mdspan(ElementType*, SizeTypes...)
-  -> mdspan<ElementType, ::std::experimental::dextents<size_t, sizeof...(SizeTypes)>>;
+  -> mdspan<ElementType, ::MDSPAN_IMPL_STANDARD_NAMESPACE::dextents<size_t, sizeof...(SizeTypes)>>;
 
 MDSPAN_TEMPLATE_REQUIRES(
   class Pointer,
@@ -395,12 +393,12 @@ MDSPAN_DEDUCTION_GUIDE mdspan(CArray&) -> mdspan<std::remove_all_extents_t<CArra
 
 template <class ElementType, class SizeType, size_t N>
 MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, const ::std::array<SizeType, N>&)
-  -> mdspan<ElementType, ::std::experimental::dextents<size_t, N>>;
+  -> mdspan<ElementType, ::MDSPAN_IMPL_STANDARD_NAMESPACE::dextents<size_t, N>>;
 
 #ifdef __cpp_lib_span
 template <class ElementType, class SizeType, size_t N>
 MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, ::std::span<SizeType, N>)
-  -> mdspan<ElementType, ::std::experimental::dextents<size_t, N>>;
+  -> mdspan<ElementType, ::MDSPAN_IMPL_STANDARD_NAMESPACE::dextents<size_t, N>>;
 #endif
 
 // This one is necessary because all the constructors take `data_handle_type`s, not
@@ -408,7 +406,7 @@ MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, ::std::span<SizeType, N>)
 // seems to throw off automatic deduction guides.
 template <class ElementType, class SizeType, size_t... ExtentsPack>
 MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, const extents<SizeType, ExtentsPack...>&)
-  -> mdspan<ElementType, ::std::experimental::extents<SizeType, ExtentsPack...>>;
+  -> mdspan<ElementType, ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, ExtentsPack...>>;
 
 template <class ElementType, class MappingType>
 MDSPAN_DEDUCTION_GUIDE mdspan(ElementType*, const MappingType&)
@@ -419,7 +417,4 @@ MDSPAN_DEDUCTION_GUIDE mdspan(const typename AccessorType::data_handle_type, con
   -> mdspan<typename AccessorType::element_type, typename MappingType::extents_type, typename MappingType::layout_type, AccessorType>;
 #endif
 
-
-
-} // end namespace experimental
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE

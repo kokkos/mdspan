@@ -13,37 +13,37 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan.hpp>
 
 #include <gtest/gtest.h>
 
-namespace stdex = std::experimental;
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
 
 template <class> struct TestLayoutStride;
 template <size_t... Extents, size_t... DynamicSizes, size_t... StaticStrides, size_t... DynamicStrides>
 struct TestLayoutStride<std::tuple<
-  stdex::extents<size_t,Extents...>,
+  md::extents<size_t,Extents...>,
   std::integer_sequence<size_t, DynamicSizes...>,
   std::integer_sequence<size_t, StaticStrides...>,
   std::integer_sequence<size_t, DynamicStrides...>
 >> : public ::testing::Test {
-  using extents_type = stdex::extents<size_t,Extents...>;
-  using mapping_type = typename stdex::layout_stride::template mapping<extents_type>;
+  using extents_type = md::extents<size_t,Extents...>;
+  using mapping_type = typename md::layout_stride::template mapping<extents_type>;
   mapping_type map = { extents_type{ DynamicSizes... }, std::array<size_t, sizeof...(DynamicStrides)>{ DynamicStrides... } };
 };
 
 template <size_t... Extents>
-using _exts = stdex::extents<size_t,Extents...>;
+using _exts = md::extents<size_t,Extents...>;
 template <size_t... Vals>
 using _ints = std::integer_sequence<size_t, Vals...>;
 template <class E, class DSz, class SStr, class DStr>
 using layout_stride_case_t =
   std::tuple<E, DSz, SStr, DStr>;
 
-using extents_345_t = stdex::extents<size_t,3, 4, 5>;
-using extents_3dyn5_t = stdex::extents<size_t,3, dyn, 5>;
-using extents_ddd_t = stdex::extents<size_t,dyn, dyn, dyn>;
+using extents_345_t = md::extents<size_t,3, 4, 5>;
+using extents_3dyn5_t = md::extents<size_t,3, dyn, 5>;
+using extents_ddd_t = md::extents<size_t,dyn, dyn, dyn>;
 using zero_stride_maps =
   ::testing::Types<
     layout_stride_case_t<extents_345_t, _ints<>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>,
@@ -73,11 +73,11 @@ TYPED_TEST(TestLayoutStrideAllZero, test_mapping) {
 
 #ifdef __cpp_lib_span
 TEST(TestLayoutStrideSpanConstruction, test_from_span_construction) {
-  using map_t = stdex::layout_stride::mapping<stdex::extents<size_t,dyn, dyn>>;
+  using map_t = md::layout_stride::mapping<md::extents<size_t,dyn, dyn>>;
   std::array<int,2> strides{1,128};
-  map_t m1(stdex::dextents<size_t,2>{16, 32}, std::span<int,2>{strides.data(),2});
+  map_t m1(md::dextents<size_t,2>{16, 32}, std::span<int,2>{strides.data(),2});
   // The following is actually not supported by layout_stride in the standard?
-  //map_t m2(stdex::dextents<size_t,2>{16, 32}, std::span<int,std::dynamic_extent>{strides.data(),2});
+  //map_t m2(md::dextents<size_t,2>{16, 32}, std::span<int,std::dynamic_extent>{strides.data(),2});
   //ASSERT_EQ(m1, m2);
   ASSERT_EQ(m1.extents().rank(), 2);
   ASSERT_EQ(m1.extents().rank_dynamic(), 2);
@@ -93,7 +93,7 @@ TEST(TestLayoutStrideSpanConstruction, test_from_span_construction) {
 #endif
 
 TEST(TestLayoutStrideListInitialization, test_list_initialization) {
-  stdex::layout_stride::mapping<stdex::extents<size_t,dyn, dyn>> m{stdex::dextents<size_t,2>{16, 32}, std::array<int,2>{1, 128}};
+  md::layout_stride::mapping<md::extents<size_t,dyn, dyn>> m{md::dextents<size_t,2>{16, 32}, std::array<int,2>{1, 128}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);
@@ -126,14 +126,14 @@ struct TestLayoutEquality<std::tuple<
 
 template <class E1, class S1, class E2, class S2, class Equal>
 using test_stride_equality = std::tuple<
-  typename stdex::layout_stride::template mapping<E1>, S1,
-  typename stdex::layout_stride::template mapping<E2>, S2,
+  typename md::layout_stride::template mapping<E1>, S1,
+  typename md::layout_stride::template mapping<E2>, S2,
   Equal
 >;
 template <size_t... Ds>
 using _sizes = std::integer_sequence<size_t, Ds...>;
 template <size_t... Ds>
-using _exts = stdex::extents<size_t,Ds...>;
+using _exts = md::extents<size_t,Ds...>;
 
 template <template <class, class, class, class, class> class _test_case_type>
 using equality_test_types =
@@ -157,7 +157,7 @@ TYPED_TEST(TestLayoutEquality, equality_op) {
 TEST(TestLayoutStrideCTAD, test_ctad) {
   // This is not possible wiht the array constructor we actually provide
   /*
-  stdex::layout_stride::mapping m0{stdex::extents{16, 32}, stdex::extents{1, 128}};
+  md::layout_stride::mapping m0{md::extents{16, 32}, md::extents{1, 128}};
   ASSERT_EQ(m0.extents().rank(), 2);
   ASSERT_EQ(m0.extents().rank_dynamic(), 2);
   ASSERT_EQ(m0.extents().extent(0), 16);
@@ -167,7 +167,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m0.strides(), (std::array<std::size_t, 2>{1, 128}));
   ASSERT_FALSE(m0.is_exhaustive());
   */
-  stdex::layout_stride::mapping m1{stdex::extents{16, 32}, std::array{1, 128}};
+  md::layout_stride::mapping m1{md::extents{16, 32}, std::array{1, 128}};
   ASSERT_EQ(m1.extents().rank(), 2);
   ASSERT_EQ(m1.extents().rank_dynamic(), 2);
   ASSERT_EQ(m1.extents().extent(0), 16);
@@ -184,7 +184,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
 // get around this with a clever refactoring, or by using an alias template for
 // `mapping` and deduction guides.
 /*
-  stdex::layout_stride::mapping m2{std::array{16, 32}, stdex::extents{1, 128}};
+  md::layout_stride::mapping m2{std::array{16, 32}, md::extents{1, 128}};
   ASSERT_EQ(m2.extents().rank(), 2);
   ASSERT_EQ(m2.extents().rank_dynamic(), 2);
   ASSERT_EQ(m2.extents().extent(0), 16);
@@ -193,7 +193,7 @@ TEST(TestLayoutStrideCTAD, test_ctad) {
   ASSERT_EQ(m2.stride(1), 128);
   ASSERT_FALSE(m2.is_exhaustive());
 
-  stdex::layout_stride::mapping m3{std::array{16, 32}, std::array{1, 128}};
+  md::layout_stride::mapping m3{std::array{16, 32}, std::array{1, 128}};
   ASSERT_EQ(m3.extents().rank(), 2);
   ASSERT_EQ(m3.extents().rank_dynamic(), 2);
   ASSERT_EQ(m3.extents().extent(0), 16);
@@ -219,12 +219,12 @@ struct is_stride_avail< T
                       > : std::true_type {};
 
 TEST(TestLayoutStrideStrideConstraint, test_layout_stride_stride_constraint) {
-  stdex::extents<int,16> ext1d{};
-  stdex::layout_stride::mapping m1d{ext1d, std::array<int,1>{1}};
+  md::extents<int,16> ext1d{};
+  md::layout_stride::mapping m1d{ext1d, std::array<int,1>{1}};
   ASSERT_TRUE ((is_stride_avail< decltype(m1d), int >::value));
 
-  stdex::extents<int> ext0d{};
-  stdex::layout_stride::mapping m0d{ext0d, std::array<int,0>{}};
+  md::extents<int> ext0d{};
+  md::layout_stride::mapping m0d{ext0d, std::array<int,0>{}};
   ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
 }
 #endif

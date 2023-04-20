@@ -17,16 +17,16 @@
 
 #include <experimental/mdspan>
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
-using E1 = stdex::extents<int32_t, stdex::dynamic_extent, 3>;
-using MLR1 = stdex::layout_right::mapping<E1>;
+using E1 = md::extents<int32_t, md::dynamic_extent, 3>;
+using MLR1 = md::layout_right::mapping<E1>;
 // Note we already separately tested that the extents interface is correct
 MDSPAN_STATIC_TEST(
   std::is_same<typename MLR1::index_type, typename E1::index_type>::value &&
   std::is_same<typename MLR1::size_type,  typename E1::size_type>::value &&
   std::is_same<typename MLR1::rank_type,  typename E1::rank_type>::value &&
-  std::is_same<typename MLR1::layout_type, stdex::layout_right>::value &&
+  std::is_same<typename MLR1::layout_type, md::layout_right>::value &&
   std::is_same<decltype(MLR1::is_always_unique()), bool>::value &&
   std::is_same<decltype(MLR1::is_always_exhaustive()), bool>::value &&
   std::is_same<decltype(MLR1::is_always_strided()), bool>::value &&
@@ -42,13 +42,13 @@ MDSPAN_STATIC_TEST(
   (MLR1::is_always_strided() == true)
 );
 
-using MLL1 = stdex::layout_left::mapping<E1>;
+using MLL1 = md::layout_left::mapping<E1>;
 
 MDSPAN_STATIC_TEST(
   std::is_same<typename MLL1::index_type, typename E1::index_type>::value &&
   std::is_same<typename MLL1::size_type,  typename E1::size_type>::value &&
   std::is_same<typename MLL1::rank_type,  typename E1::rank_type>::value &&
-  std::is_same<typename MLL1::layout_type, stdex::layout_left>::value &&
+  std::is_same<typename MLL1::layout_type, md::layout_left>::value &&
   std::is_same<decltype(MLL1::is_always_unique()), bool>::value &&
   std::is_same<decltype(MLL1::is_always_exhaustive()), bool>::value &&
   std::is_same<decltype(MLL1::is_always_strided()), bool>::value &&
@@ -65,13 +65,13 @@ MDSPAN_STATIC_TEST(
 );
 
 
-using MLS1 = stdex::layout_stride::mapping<E1>;
+using MLS1 = md::layout_stride::mapping<E1>;
 
 MDSPAN_STATIC_TEST(
   std::is_same<typename MLS1::index_type, typename E1::index_type>::value &&
   std::is_same<typename MLS1::size_type,  typename E1::size_type>::value &&
   std::is_same<typename MLS1::rank_type,  typename E1::rank_type>::value &&
-  std::is_same<typename MLS1::layout_type, stdex::layout_stride>::value &&
+  std::is_same<typename MLS1::layout_type, md::layout_stride>::value &&
   std::is_same<decltype(MLS1::is_always_unique()), bool>::value &&
   std::is_same<decltype(MLS1::is_always_exhaustive()), bool>::value &&
   std::is_same<decltype(MLS1::is_always_strided()), bool>::value &&

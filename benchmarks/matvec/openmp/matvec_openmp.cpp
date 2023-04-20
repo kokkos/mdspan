@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan.hpp>
 
 #include <memory>
 #include <random>
@@ -30,9 +30,9 @@ static constexpr int global_repeat = 1;
 
 using index_type = int;
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_left>;
+using lmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_right>;
+using rmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_right>;
 
 void throw_runtime_exception(const std::string &msg) {
   std::ostringstream o;
@@ -64,7 +64,7 @@ template <class MDSpanMatrix, class... DynSizes>
 void BM_MDSpan_OpenMP_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... dyn) {
 
   using value_type = typename MDSpanMatrix::value_type;
-  using MDSpanVector = lmdspan<value_type,stdex::dynamic_extent>;
+  using MDSpanVector = lmdspan<value_type,md::dynamic_extent>;
 
   auto buffer_size_A = MDSpanMatrix{nullptr, dyn...}.mapping().required_span_size();
   auto buffer_A = std::make_unique<value_type[]>(buffer_size_A);
@@ -115,15 +115,15 @@ void BM_MDSpan_OpenMP_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... 
   state.counters["repeats"] = global_repeat;
 }
 
-BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec, left, lmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
-BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec, right, rmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
+BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec, left, lmdspan<double,md::dynamic_extent,md::dynamic_extent>(), 100000, 5000);
+BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec, right, rmdspan<double,md::dynamic_extent,md::dynamic_extent>(), 100000, 5000);
 
 
 template <class MDSpanMatrix, class... DynSizes>
 void BM_MDSpan_OpenMP_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSizes... dyn) {
 
   using value_type = typename MDSpanMatrix::value_type;
-  using MDSpanVector = lmdspan<value_type,stdex::dynamic_extent>;
+  using MDSpanVector = lmdspan<value_type,md::dynamic_extent>;
 
   auto buffer_size_A = MDSpanMatrix{nullptr, dyn...}.mapping().required_span_size();
   auto buffer_A = std::make_unique<value_type[]>(buffer_size_A);
@@ -181,13 +181,13 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, Dyn
   state.counters["repeats"] = global_repeat;
 }
 
-BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec_Raw_Left, left, lmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
+BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec_Raw_Left, left, lmdspan<double,md::dynamic_extent,md::dynamic_extent>(), 100000, 5000);
 
 template <class MDSpanMatrix, class... DynSizes>
 void BM_MDSpan_OpenMP_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynSizes... dyn) {
 
   using value_type = typename MDSpanMatrix::value_type;
-  using MDSpanVector = lmdspan<value_type,stdex::dynamic_extent>;
+  using MDSpanVector = lmdspan<value_type,md::dynamic_extent>;
 
   auto buffer_size_A = MDSpanMatrix{nullptr, dyn...}.mapping().required_span_size();
   auto buffer_A = std::make_unique<value_type[]>(buffer_size_A);
@@ -245,7 +245,7 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, Dy
   state.counters["repeats"] = global_repeat;
 }
 
-BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec_Raw_Right, right, rmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
+BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec_Raw_Right, right, rmdspan<double,md::dynamic_extent,md::dynamic_extent>(), 100000, 5000);
 
 //================================================================================
 

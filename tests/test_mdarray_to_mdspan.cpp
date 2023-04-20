@@ -13,19 +13,21 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdarray>
+#include <experimental/mdarray.hpp>
 #include <vector>
 
 #include <gtest/gtest.h>
 
 
-namespace stdex = std::experimental;
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
+namespace mdex = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
+
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
 
 template<class MDSpan, class MDArray>
 struct MDArrayToMDSpanOperatorTest {
   using mdspan_t = MDSpan;
-  using c_mdspan_t = stdex::mdspan<const typename mdspan_t::element_type,
+  using c_mdspan_t = md::mdspan<const typename mdspan_t::element_type,
                                    typename mdspan_t::extents_type,
                                    typename mdspan_t::layout_type>;
   static void test_check(mdspan_t mds, MDArray& mda) {
@@ -50,12 +52,12 @@ struct MDArrayToMDSpanOperatorTest {
 };
 
 TEST(TestMDArray,mdarray_to_mdspan) {
-  MDArrayToMDSpanOperatorTest<stdex::mdspan <int, stdex::extents<int, dyn>>,
-                              stdex::mdarray<int, stdex::extents<int, dyn>>>::test(
+  MDArrayToMDSpanOperatorTest<md::mdspan <int, md::extents<int, dyn>>,
+                              mdex::mdarray<int, md::extents<int, dyn>>>::test(
                               100
                               );
-  MDArrayToMDSpanOperatorTest<stdex::mdspan <int, stdex::extents<int, dyn>>,
-                              stdex::mdarray<int, stdex::extents<int, 100>>>::test(
+  MDArrayToMDSpanOperatorTest<md::mdspan <int, md::extents<int, dyn>>,
+                              mdex::mdarray<int, md::extents<int, 100>>>::test(
                               100
                               );
 }

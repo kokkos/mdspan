@@ -19,22 +19,22 @@
 
 #include <type_traits>
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 //==============================================================================
 // <editor-fold desc="mdspan"> {{{1
 
 MDSPAN_STATIC_TEST(
   std::is_convertible<
-    stdex::mdspan<double, stdex::dextents<size_t,1>>,
-    stdex::mdspan<double const, stdex::dextents<size_t,1>>
+    md::mdspan<double, md::dextents<size_t,1>>,
+    md::mdspan<double const, md::dextents<size_t,1>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   !std::is_convertible<
-    stdex::mdspan<double const, stdex::dextents<size_t,1>>,
-    stdex::mdspan<double, stdex::dextents<size_t,1>>
+    md::mdspan<double const, md::dextents<size_t,1>>,
+    md::mdspan<double, md::dextents<size_t,1>>
   >::value
 );
 

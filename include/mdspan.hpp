@@ -17,22 +17,22 @@
 #pragma once
 
 #ifndef MDSPAN_IMPL_STANDARD_NAMESPACE
-  #define MDSPAN_IMPL_STANDARD_NAMESPACE std
+  #define MDSPAN_IMPL_STANDARD_NAMESPACE md
 #endif
 
 #ifndef MDSPAN_IMPL_PROPOSED_NAMESPACE
   #define MDSPAN_IMPL_PROPOSED_NAMESPACE experimental
 #endif
 
-#include "__p0009_bits/default_accessor.hpp"
-#include "__p0009_bits/full_extent_t.hpp"
-#include "__p0009_bits/mdspan.hpp"
-#include "__p0009_bits/dynamic_extent.hpp"
-#include "__p0009_bits/extents.hpp"
-#include "__p0009_bits/layout_stride.hpp"
-#include "__p0009_bits/layout_left.hpp"
-#include "__p0009_bits/layout_right.hpp"
-#include "__p0009_bits/macros.hpp"
+#include "experimental/__p0009_bits/default_accessor.hpp"
+#include "experimental/__p0009_bits/full_extent_t.hpp"
+#include "experimental/__p0009_bits/mdspan.hpp"
+#include "experimental/__p0009_bits/dynamic_extent.hpp"
+#include "experimental/__p0009_bits/extents.hpp"
+#include "experimental/__p0009_bits/layout_stride.hpp"
+#include "experimental/__p0009_bits/layout_left.hpp"
+#include "experimental/__p0009_bits/layout_right.hpp"
+#include "experimental/__p0009_bits/macros.hpp"
 #if MDSPAN_HAS_CXX_17
-#include "__p2630_bits/submdspan.hpp"
+#include "experimental/__p2630_bits/submdspan.hpp"
 #endif

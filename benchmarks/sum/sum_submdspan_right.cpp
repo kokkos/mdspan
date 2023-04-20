@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan.hpp>
 
 #include <memory>
 #include <random>
@@ -26,9 +26,9 @@
 using index_type = int;
 
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, std::experimental::extents<index_type, Es...>, stdex::layout_left>;
+using lmdspan = md::mdspan<T, std::experimental::extents<index_type, Es...>, md::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, std::experimental::extents<index_type, Es...>, stdex::layout_right>;
+using rmdspan = md::mdspan<T, std::experimental::extents<index_type, Es...>, md::layout_right>;
 
 //================================================================================
 
@@ -49,9 +49,9 @@ void BM_MDSpan_Sum_Subspan_3D_right(benchmark::State& state, MDSpan, DynSizes...
     value_type sum = 0;
     using index_type = typename MDSpan::index_type;
     for(index_type i = 0; i < s.extent(0); ++i) {
-      auto sub_i = stdex::submdspan(s, i, stdex::full_extent, stdex::full_extent);
+      auto sub_i = mdex::submdspan(s, i, md::full_extent, md::full_extent);
       for (index_type j = 0; j < s.extent(1); ++j) {
-        auto sub_i_j = stdex::submdspan(sub_i, j, stdex::full_extent);
+        auto sub_i_j = mdex::submdspan(sub_i, j, md::full_extent);
         for (index_type k = 0; k < s.extent(2); ++k) {
           sum += sub_i_j(k);
         }
@@ -120,7 +120,7 @@ template <class T, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
-  stdex::mdspan<T, std::experimental::extents<index_type>, Rest...> s
+  md::mdspan<T, std::experimental::extents<index_type>, Rest...> s
 )
 {
   sum += s();
@@ -130,12 +130,12 @@ template <class T, size_t E, size_t... Es, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
-  stdex::mdspan<T, std::experimental::extents<index_type, E, Es...>, Rest...> s
+  md::mdspan<T, std::experimental::extents<index_type, E, Es...>, Rest...> s
 )
 {
   for(index_type i = 0; i < s.extent(0); ++i) {
-    _impl::_do_sum_submdspan(sum, stdex::submdspan(
-      s, i, _repeated_with<decltype(Es)>(stdex::full_extent)...)
+    _impl::_do_sum_submdspan(sum, mdex::submdspan(
+      s, i, _repeated_with<decltype(Es)>(md::full_extent)...)
     );
   }
 }
@@ -161,31 +161,31 @@ void BM_MDSpan_Sum_Subspan_MD_right(benchmark::State& state, MDSpan, DynSizes...
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed_10D_size_1024,
-  stdex::mdspan<int, stdex::extents<index_type, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2>>{nullptr}
+  md::mdspan<int, md::extents<index_type, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2>>{nullptr}
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, dyn_10D_size_1024,
-  stdex::mdspan<int, stdex::dextents<index_type, 10>>{},
+  md::mdspan<int, md::dextents<index_type, 10>>{},
   2, 2, 2, 2, 2,
   2, 2, 2, 2, 2
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed5_dyn5_10D_alternate_size_1024,
-  stdex::mdspan<int, stdex::extents<index_type, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent, 2, stdex::dynamic_extent>>{},
+  md::mdspan<int, md::extents<index_type, 2, md::dynamic_extent, 2, md::dynamic_extent, 2, md::dynamic_extent, 2, md::dynamic_extent, 2, md::dynamic_extent>>{},
   2, 2, 2, 2, 2
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed8_dyn2_10D_alternate_size_1024,
-  stdex::mdspan<int, stdex::extents<index_type, 2, 2, 2, 2, stdex::dynamic_extent, 2, 2, 2, 2, stdex::dynamic_extent>>{},
+  md::mdspan<int, md::extents<index_type, 2, 2, 2, 2, md::dynamic_extent, 2, 2, 2, 2, md::dynamic_extent>>{},
   2, 2
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed_5D_size_1024,
-  stdex::mdspan<int, stdex::extents<index_type, 4, 4, 4, 4, 4>>{nullptr}
+  md::mdspan<int, md::extents<index_type, 4, 4, 4, 4, 4>>{nullptr}
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, dyn_5D_size_1024,
-  stdex::mdspan<int, stdex::dextents<index_type, 5>>{},
+  md::mdspan<int, md::dextents<index_type, 5>>{},
   4, 4, 4, 4, 4
 );
 BENCHMARK_CAPTURE(

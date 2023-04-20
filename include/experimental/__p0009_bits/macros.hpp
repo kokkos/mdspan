@@ -275,7 +275,7 @@ struct __mdspan_enable_fold_comma { };
 #  define _MDSPAN_FOLD_COMMA(...) ((__VA_ARGS__), ...)
 #else
 
-namespace std {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 namespace __fold_compatibility_impl {
 
@@ -578,15 +578,15 @@ struct __bools;
 
 } // __fold_compatibility_impl
 
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
-#  define _MDSPAN_FOLD_AND(...) std::__fold_compatibility_impl::__fold_right_and_impl((__VA_ARGS__)...)
-#  define _MDSPAN_FOLD_OR(...) std::__fold_compatibility_impl::__fold_right_or_impl((__VA_ARGS__)...)
-#  define _MDSPAN_FOLD_ASSIGN_LEFT(INIT, ...) std::__fold_compatibility_impl::__fold_left_assign_impl(INIT, (__VA_ARGS__)...)
-#  define _MDSPAN_FOLD_ASSIGN_RIGHT(PACK, ...) std::__fold_compatibility_impl::__fold_right_assign_impl((PACK)..., __VA_ARGS__)
-#  define _MDSPAN_FOLD_TIMES_RIGHT(PACK, ...) std::__fold_compatibility_impl::__fold_right_times_impl((PACK)..., __VA_ARGS__)
-#  define _MDSPAN_FOLD_PLUS_RIGHT(PACK, ...) std::__fold_compatibility_impl::__fold_right_plus_impl((PACK)..., __VA_ARGS__)
-#  define _MDSPAN_FOLD_COMMA(...) std::__fold_compatibility_impl::__fold_comma_impl((__VA_ARGS__)...)
+#  define _MDSPAN_FOLD_AND(...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_and_impl((__VA_ARGS__)...)
+#  define _MDSPAN_FOLD_OR(...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_or_impl((__VA_ARGS__)...)
+#  define _MDSPAN_FOLD_ASSIGN_LEFT(INIT, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_left_assign_impl(INIT, (__VA_ARGS__)...)
+#  define _MDSPAN_FOLD_ASSIGN_RIGHT(PACK, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_assign_impl((PACK)..., __VA_ARGS__)
+#  define _MDSPAN_FOLD_TIMES_RIGHT(PACK, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_times_impl((PACK)..., __VA_ARGS__)
+#  define _MDSPAN_FOLD_PLUS_RIGHT(PACK, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_plus_impl((PACK)..., __VA_ARGS__)
+#  define _MDSPAN_FOLD_COMMA(...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_comma_impl((__VA_ARGS__)...)
 
 #  define _MDSPAN_FOLD_AND_TEMPLATE(...) \
   _MDSPAN_TRAIT(std::is_same, __fold_compatibility_impl::__bools<(__VA_ARGS__)..., true>, __fold_compatibility_impl::__bools<true, (__VA_ARGS__)...>)

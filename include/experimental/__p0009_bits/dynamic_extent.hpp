@@ -20,12 +20,10 @@
 #include <cstddef>  // size_t
 #include <limits>   // numeric_limits
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 _MDSPAN_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<size_t>::max();
 
-} // end namespace experimental
-} // namespace std
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
 //==============================================================================================================

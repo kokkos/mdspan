@@ -26,7 +26,7 @@
 
 namespace {
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 #if defined(_MDSPAN_COMPILER_MSVC) || defined(__INTEL_COMPILER)
 #  define _MDSPAN_RESTRICT_KEYWORD __restrict
@@ -67,7 +67,7 @@ namespace stdex = std::experimental;
 // look at the assembler output, and do performance experiments.
 template<class ElementType>
 struct restrict_accessor {
-  using offset_policy = stdex::default_accessor<ElementType>;
+  using offset_policy = md::default_accessor<ElementType>;
   using element_type = ElementType;
   using reference = ElementType&;
   using data_handle_type = _MDSPAN_RESTRICT_POINTER( ElementType );
@@ -95,16 +95,16 @@ using index_type = int;
 
 template<class ElementType>
 using restrict_mdspan_1d =
-  stdex::mdspan<ElementType, stdex::dextents<index_type, 1>, stdex::layout_right, restrict_accessor<ElementType>>;
+  md::mdspan<ElementType, md::dextents<index_type, 1>, md::layout_right, restrict_accessor<ElementType>>;
 
 template<class ElementType>
 using mdspan_1d =
-  stdex::mdspan<ElementType, stdex::dextents<index_type, 1>, stdex::layout_right, stdex::default_accessor<ElementType>>;
+  md::mdspan<ElementType, md::dextents<index_type, 1>, md::layout_right, md::default_accessor<ElementType>>;
 
 #define TICK() const auto tick = std::chrono::steady_clock::now()
 
 using double_seconds = std::chrono::duration<double, std::ratio<1>>;
-  
+
 #define TOCK() std::chrono::duration_cast<double_seconds>(std::chrono::steady_clock::now() - tick).count()
 
 template<class ElementType>
@@ -233,12 +233,12 @@ int main(int argc, char* argv[])
   using std::cout;
   using std::cerr;
   using std::endl;
-  
+
   if(argc != 3) {
     cerr << "Usage: main <n> <num_trials>" << endl;
     return -1;
   }
-  
+
   int n = 10000;
   int num_trials = 100;
   n = std::stoi(argv[1]);

@@ -13,28 +13,17 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include "ctest_common.hpp"
 
-#include <mdspan.hpp>
+#pragma once
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
+#ifndef MDSPAN_IMPL_STANDARD_NAMESPACE
+  #define MDSPAN_IMPL_STANDARD_NAMESPACE md
+#endif
 
-// Only works with newer constexpr
-#if defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
+#ifndef MDSPAN_IMPL_PROPOSED_NAMESPACE
+  #define MDSPAN_IMPL_PROPOSED_NAMESPACE experimental
+#endif
 
-constexpr std::ptrdiff_t
-layout_stride_simple(int i) {
-  using map_t = md::layout_stride::template mapping<
-    md::extents<size_t,3>
-  >;
-  return map_t(md::extents<size_t,3>{}, std::array<size_t,1>{1})(i);
-}
+#include "../mdspan.hpp"
+#include "__p1684_bits/mdarray.hpp"
 
-MDSPAN_STATIC_TEST(
-  layout_stride_simple(0) == 0
-);
-MDSPAN_STATIC_TEST(
-  layout_stride_simple(1) == 1
-);
-
-#endif // _MDSPAN_USE_CONSTEXPR_14

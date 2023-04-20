@@ -22,8 +22,7 @@
 #  include "no_unique_address.hpp"
 #endif
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
 // For no unique address emulation, this is the case taken when neither are empty.
@@ -193,5 +192,4 @@ struct __compressed_pair<
 #endif // !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 
 } // end namespace detail
-} // end namespace experimental
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE

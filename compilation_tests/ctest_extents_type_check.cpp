@@ -17,9 +17,9 @@
 
 #include <experimental/mdspan>
 
-namespace stdex = std::experimental;
+namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
-using E1 = stdex::extents<int32_t, stdex::dynamic_extent, 3>;
+using E1 = md::extents<int32_t, md::dynamic_extent, 3>;
 
 MDSPAN_STATIC_TEST(
   std::is_same<typename E1::index_type, int32_t>::value &&
@@ -33,11 +33,11 @@ MDSPAN_STATIC_TEST(
   std::is_same<decltype(std::declval<E1>().extent(1)), typename E1::index_type>::value &&
   (E1::rank()==2) &&
   (E1::rank_dynamic()==1) &&
-  (E1::static_extent(0) == stdex::dynamic_extent) &&
+  (E1::static_extent(0) == md::dynamic_extent) &&
   (E1::static_extent(1) == 3)
 );
 
-using E2 = stdex::extents<int64_t, stdex::dynamic_extent, 3, stdex::dynamic_extent>;
+using E2 = md::extents<int64_t, md::dynamic_extent, 3, md::dynamic_extent>;
 
 MDSPAN_STATIC_TEST(
   std::is_same<typename E2::index_type, int64_t>::value &&
@@ -53,12 +53,12 @@ MDSPAN_STATIC_TEST(
   std::is_same<decltype(std::declval<E2>().extent(2)), typename E2::index_type>::value &&
   (E2::rank()==3) &&
   (E2::rank_dynamic()==2) &&
-  (E2::static_extent(0) == stdex::dynamic_extent) &&
+  (E2::static_extent(0) == md::dynamic_extent) &&
   (E2::static_extent(1) == 3) &&
-  (E2::static_extent(2) == stdex::dynamic_extent)
+  (E2::static_extent(2) == md::dynamic_extent)
 );
 
-using E3 = stdex::extents<uint32_t, stdex::dynamic_extent, 3, stdex::dynamic_extent>;
+using E3 = md::extents<uint32_t, md::dynamic_extent, 3, md::dynamic_extent>;
 
 MDSPAN_STATIC_TEST(
   std::is_same<typename E3::index_type, uint32_t>::value &&
@@ -74,7 +74,7 @@ MDSPAN_STATIC_TEST(
   std::is_same<decltype(std::declval<E3>().extent(2)), typename E3::index_type>::value &&
   (E3::rank()==3) &&
   (E3::rank_dynamic()==2) &&
-  (E3::static_extent(0) == stdex::dynamic_extent) &&
+  (E3::static_extent(0) == md::dynamic_extent) &&
   (E3::static_extent(1) == 3) &&
-  (E3::static_extent(2) == stdex::dynamic_extent)
+  (E3::static_extent(2) == md::dynamic_extent)
 );
