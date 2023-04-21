@@ -241,7 +241,7 @@ BENCHMARK_CAPTURE(BM_Raw_OpenMP_Stencil_3D_left, size_400_400_400, int(), 400, 4
 
 template <class MDSpan>
 typename MDSpan::value_type*** make_3d_ptr_array(MDSpan s) {
-  static_assert(std::is_same<typename MDSpan::layout_type,std::experimental::layout_right>::value,"Creating MD Ptr only works from mdspan with layout_right");
+  static_assert(std::is_same<typename MDSpan::layout_type,md::layout_right>::value,"Creating MD Ptr only works from mdspan with layout_right");
   using value_type = typename MDSpan::value_type;
   value_type*** ptr= new value_type**[s.extent(0)];
   for(index_type i = 0; i<s.extent(0); i++) {

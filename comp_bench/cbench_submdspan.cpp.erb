@@ -3,22 +3,22 @@
 
 int test(int* data) {
   #if defined(METABENCH)
-  auto sub0 = std::experimental::mdspan<int,
-    std::experimental::extents<
+  auto sub0 = md::mdspan<int,
+    md::extents<
       <%= (["2"] * n).join(", ") %>
     >
   >(data);
   <% (32/n).times do |k| %>
-  auto <%= "sub0_#{k}" %> = std::experimental::mdspan<int,
-    std::experimental::extents<
+  auto <%= "sub0_#{k}" %> = md::mdspan<int,
+    md::extents<
       <%= (["#{k+2}"] * n).join(", ") %>
     >
   >(data);
   <% n.times do |i| %>
-    auto <%= "sub#{i+1}_#{k}" %> = std::experimental::submdspan(
+    auto <%= "sub#{i+1}_#{k}" %> = mdex::submdspan(
        <%= "sub#{i}_#{k}" %>,
        1
-       <%= ", std::experimental::full_extent" * (n - i - 1) %>
+       <%= ", md::full_extent" * (n - i - 1) %>
     );
   <% end %>
   <% end %>

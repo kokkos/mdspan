@@ -371,7 +371,7 @@ BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_left, size_1000000_3_3, int(), 100
 
 template <class MDSpan>
 typename MDSpan::value_type*** make_3d_ptr_array(MDSpan s) {
-  static_assert(std::is_same<typename MDSpan::layout_type,std::experimental::layout_right>::value,"Creating MD Ptr only works from mdspan with layout_right");
+  static_assert(std::is_same<typename MDSpan::layout_type,md::layout_right>::value,"Creating MD Ptr only works from mdspan with layout_right");
   using value_type = typename MDSpan::value_type;
   using index_type = typename MDSpan::index_type;
 

@@ -26,9 +26,9 @@
 using index_type = int;
 
 template <class T, size_t... Es>
-using lmdspan = md::mdspan<T, std::experimental::extents<index_type, Es...>, md::layout_left>;
+using lmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = md::mdspan<T, std::experimental::extents<index_type, Es...>, md::layout_right>;
+using rmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_right>;
 
 //================================================================================
 
@@ -120,7 +120,7 @@ template <class T, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
-  md::mdspan<T, std::experimental::extents<index_type>, Rest...> s
+  md::mdspan<T, md::extents<index_type>, Rest...> s
 )
 {
   sum += s();
@@ -130,7 +130,7 @@ template <class T, size_t E, size_t... Es, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
-  md::mdspan<T, std::experimental::extents<index_type, E, Es...>, Rest...> s
+  md::mdspan<T, md::extents<index_type, E, Es...>, Rest...> s
 )
 {
   for(index_type i = 0; i < s.extent(0); ++i) {
