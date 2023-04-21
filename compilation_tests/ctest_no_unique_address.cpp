@@ -19,7 +19,6 @@
 
 #include <type_traits>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 //==============================================================================
 // <editor-fold desc="extents"> {{{1

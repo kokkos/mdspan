@@ -23,7 +23,6 @@
 #include <memory>
 #include <random>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 
 #if !(defined(__cpp_lib_make_unique) && __cpp_lib_make_unique >= 201304) && !MDSPAN_HAS_CXX_14

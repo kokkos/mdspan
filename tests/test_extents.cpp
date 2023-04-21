@@ -18,7 +18,6 @@
 #include "offload_utils.hpp"
 #include <gtest/gtest.h>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 // Making actual test implementations part of the class,
 // can't create CUDA lambdas in the primary test functions, since they are private

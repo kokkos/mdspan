@@ -20,7 +20,6 @@
 #include <tuple>
 #include <utility>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
 
 template <class Extents>

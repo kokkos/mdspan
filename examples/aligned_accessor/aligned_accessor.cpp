@@ -42,7 +42,6 @@ constexpr std::size_t min_byte_alignment = min_overalignment_factor * sizeof(flo
 // Some compilers have trouble optimizing loops with unsigned or 64-bit index types.
 using index_type = int;
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 // Prefer std::assume_aligned if available, as it is in the C++ Standard.
 // Otherwise, use a compiler-specific equivalent if available.

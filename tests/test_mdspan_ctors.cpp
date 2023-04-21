@@ -19,7 +19,6 @@
 #include <gtest/gtest.h>
 #include "offload_utils.hpp"
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
 
 

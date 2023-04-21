@@ -26,7 +26,6 @@
 
 namespace {
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 #if defined(_MDSPAN_COMPILER_MSVC) || defined(__INTEL_COMPILER)
 #  define _MDSPAN_RESTRICT_KEYWORD __restrict

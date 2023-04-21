@@ -21,7 +21,6 @@
 
 using index_type = int;
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
 
 template <class MDSpan, class... DynSizes>

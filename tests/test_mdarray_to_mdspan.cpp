@@ -19,7 +19,6 @@
 #include <gtest/gtest.h>
 
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 namespace mdex = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;

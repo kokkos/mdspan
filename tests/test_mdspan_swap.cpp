@@ -21,7 +21,6 @@
 #include "offload_utils.hpp"
 #include "foo_customizations.hpp"
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 void test_mdspan_std_swap_static_extents() {
   size_t* errors = allocate_array<size_t>(1);

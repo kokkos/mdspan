@@ -19,7 +19,6 @@
 
 #include <gtest/gtest.h>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 TEST(TestMdspanConversionConst, test_mdspan_conversion_const) {
   std::array<double, 6> a{};

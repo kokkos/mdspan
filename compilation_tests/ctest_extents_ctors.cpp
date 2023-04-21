@@ -17,7 +17,6 @@
 
 #include <experimental/mdspan>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 
 MDSPAN_STATIC_TEST(

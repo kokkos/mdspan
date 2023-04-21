@@ -17,7 +17,6 @@
 
 #include <mdspan.hpp>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 namespace mdex = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
 // Only works with newer constexpr

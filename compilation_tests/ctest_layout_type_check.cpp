@@ -17,7 +17,6 @@
 
 #include <experimental/mdspan>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 using E1 = md::extents<int32_t, md::dynamic_extent, 3>;
 using MLR1 = md::layout_right::mapping<E1>;

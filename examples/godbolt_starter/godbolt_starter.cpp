@@ -19,7 +19,6 @@
 #include <experimental/mdspan>
 #include <iostream>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 int main() {
   std::array d{

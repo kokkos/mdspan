@@ -17,7 +17,6 @@
 
 #include <gtest/gtest.h>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
 
 template <class> struct TestLayoutCtors;

@@ -23,7 +23,6 @@
 
 namespace {
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 template<class Extents>
 std::size_t product_of_extents(const Extents& e)

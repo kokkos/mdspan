@@ -19,7 +19,6 @@
 #include <iomanip>
 #include <memory>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 #if !(defined(__cpp_lib_make_unique) && __cpp_lib_make_unique >= 201304) && !MDSPAN_HAS_CXX_14
 // Not actually conforming, but it works for the purposes of this file

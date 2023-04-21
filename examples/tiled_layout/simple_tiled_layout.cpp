@@ -19,7 +19,6 @@
 #include <iostream>
 #include <type_traits>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 // Simple tiled layout.
 // Hard-coded for 2D, column-major across tiles

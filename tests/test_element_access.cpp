@@ -18,7 +18,6 @@
 
 #include <gtest/gtest.h>
 
-namespace stdex = MDSPAN_IMPL_STANDARD_NAMESPACE;
 
 TEST(TestElementAccess, element_access_with_std_array) {
     std::array<double, 6> a{};
