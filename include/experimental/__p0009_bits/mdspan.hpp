@@ -32,7 +32,8 @@ template <
 class mdspan
 {
 private:
-  static_assert(detail::__is_extents_v<Extents>, "mdspan's Extents template parameter must be a specialization of extents.");
+  static_assert(detail::__is_extents_v<Extents>,
+                MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::mdspan's Extents template parameter must be a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
   template <class>

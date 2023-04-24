@@ -34,7 +34,8 @@ class layout_right::mapping {
     using layout_type = layout_right;
   private:
 
-    static_assert(detail::__is_extents_v<extents_type>, MDSPAN_PP_STRINGIFY(MDSPAN_IMPL_STANDARD_NAMESPACE) "::layout_right::mapping must be instantiated with a specialization of " MDSPAN_PP_STRINGIFY(MDSPAN_IMPL_STANDARD_NAMESPACE) "::extents.");
+    static_assert(detail::__is_extents_v<extents_type>,
+                  MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::layout_right::mapping must be instantiated with a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
     template <class>
     friend class mapping;

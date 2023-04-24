@@ -374,7 +374,7 @@ public:
   using rank_type = size_t;
 
   static_assert(std::is_integral<index_type>::value && !std::is_same<index_type, bool>::value,
-                "extents::index_type must be a signed or unsigned integer type");
+                MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents::index_type must be a signed or unsigned integer type");
 private:
   constexpr static rank_type m_rank = sizeof...(Extents);
   constexpr static rank_type m_rank_dynamic =
