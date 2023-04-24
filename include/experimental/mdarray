@@ -24,4 +24,6 @@
   #define MDSPAN_IMPL_PROPOSED_NAMESPACE experimental
 #endif
 
+#define MDSPAN_IMPL_NAMESPACE_STD
+
 #include "../mdspan/experimental/mdarray.hpp"
