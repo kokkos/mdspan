@@ -15,7 +15,7 @@
 //@HEADER
 
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 
 #include <gtest/gtest.h>
 

@@ -15,7 +15,7 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 
 #include <type_traits>
 

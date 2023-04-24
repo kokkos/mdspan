@@ -15,7 +15,7 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 
 
 using E1 = md::extents<int32_t, md::dynamic_extent, 3>;

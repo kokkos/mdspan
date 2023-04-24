@@ -16,7 +16,7 @@
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 // https://godbolt.org/z/ehErvsTce
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 #include <iostream>
 
 

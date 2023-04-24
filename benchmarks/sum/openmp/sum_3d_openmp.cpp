@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 
 #include "sum_3d_common.hpp"
 #include "fill.hpp"

@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 
 // Just checking __cpp_lib_int_pow2 isn't enough for some GCC versions.
 // The <bit> header exists, but std::has_single_bit does not.

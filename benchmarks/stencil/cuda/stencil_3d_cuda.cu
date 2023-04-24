@@ -57,7 +57,7 @@
 using idx_t = size_t;
 
 #include "fill.hpp"
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 //================================================================================
 
 static constexpr int global_delta = 1;

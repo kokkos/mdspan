@@ -14,7 +14,7 @@
 //
 //@HEADER
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 #include "offload_utils.hpp"
 #include <gtest/gtest.h>
 

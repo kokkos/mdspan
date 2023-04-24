@@ -15,7 +15,7 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 
 namespace mdex = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 

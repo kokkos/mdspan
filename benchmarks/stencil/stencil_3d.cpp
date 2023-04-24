@@ -15,7 +15,7 @@
 //@HEADER
 #include "fill.hpp"
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 
 #include <benchmark/benchmark.h>
 

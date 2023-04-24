@@ -16,7 +16,7 @@
 #ifndef MDSPAN_BENCHMARKS_FILL_HPP
 #define MDSPAN_BENCHMARKS_FILL_HPP
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 
 #include <benchmark/benchmark.h>
 

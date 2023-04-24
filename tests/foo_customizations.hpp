@@ -17,7 +17,7 @@
 #ifndef _FOO_CUSTOMIZATION_HPP_
 #define _FOO_CUSTOMIZATION_HPP_
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 
 #if MDSPAN_HAS_CXX_17
 namespace mdex = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
