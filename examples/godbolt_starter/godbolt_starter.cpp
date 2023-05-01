@@ -27,7 +27,7 @@ int main() {
     2, 7, 6,
   };
 
-  md::mdspan m{d.data(), md::extents{3, 3}};
+  Kokkos::mdspan m{d.data(), Kokkos::extents{3, 3}};
 
   for (std::size_t i = 0; i < m.extent(0); ++i)
     for (std::size_t j = 0; j < m.extent(1); ++j)

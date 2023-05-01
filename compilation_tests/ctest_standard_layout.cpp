@@ -26,43 +26,43 @@
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::extents<size_t,1, 2, md::dynamic_extent>
+    Kokkos::extents<size_t,1, 2, Kokkos::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::extents<size_t,md::dynamic_extent>
+    Kokkos::extents<size_t,Kokkos::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::extents<size_t,md::dynamic_extent, md::dynamic_extent>
+    Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::extents<size_t,md::dynamic_extent, 1, 2, 45>
+    Kokkos::extents<size_t,Kokkos::dynamic_extent, 1, 2, 45>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::extents<size_t,45, md::dynamic_extent, 1>
+    Kokkos::extents<size_t,45, Kokkos::dynamic_extent, 1>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::extents<size_t,1, 2, 3>
+    Kokkos::extents<size_t,1, 2, 3>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::extents<size_t,42>
+    Kokkos::extents<size_t,42>
   >::value
 );
 
@@ -74,48 +74,48 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::layout_left::template mapping<
-      md::extents<size_t,42, md::dynamic_extent, 73>
+    Kokkos::layout_left::template mapping<
+      Kokkos::extents<size_t,42, Kokkos::dynamic_extent, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::layout_right::template mapping<
-      md::extents<size_t,42, md::dynamic_extent, 73>
+    Kokkos::layout_right::template mapping<
+      Kokkos::extents<size_t,42, Kokkos::dynamic_extent, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::layout_right::template mapping<
-      md::extents<size_t,md::dynamic_extent, md::dynamic_extent>
+    Kokkos::layout_right::template mapping<
+      Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::layout_stride::template mapping<
-      md::extents<size_t,42, md::dynamic_extent, 73>
+    Kokkos::layout_stride::template mapping<
+      Kokkos::extents<size_t,42, Kokkos::dynamic_extent, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::layout_stride::template mapping<
-      md::extents<size_t,42, 27, 73>
+    Kokkos::layout_stride::template mapping<
+      Kokkos::extents<size_t,42, 27, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::layout_stride::template mapping<
-      md::extents<size_t,md::dynamic_extent, md::dynamic_extent>
+    Kokkos::layout_stride::template mapping<
+      Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>
     >
   >::value
 );
@@ -125,8 +125,8 @@ MDSPAN_STATIC_TEST(
 // I guess there is padding added after foo?
 #if 0
 struct layout_stride_as_member_should_be_standard_layout :
-  md::layout_stride::template mapping<
-    md::extents<size_t,1, 2, 3>>
+  Kokkos::layout_stride::template mapping<
+    Kokkos::extents<size_t,1, 2, 3>>
 {
   int foo;
 };
@@ -147,21 +147,21 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::mdspan<double, md::extents<size_t,1, 2, 3>>
+    Kokkos::mdspan<double, Kokkos::extents<size_t,1, 2, 3>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::mdspan<int, md::dextents<size_t,2>>
+    Kokkos::mdspan<int, Kokkos::dextents<size_t,2>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<
-    md::mdspan<
-      double, md::dextents<size_t,2>,
-      md::layout_left, md::default_accessor<double>
+    Kokkos::mdspan<
+      double, Kokkos::dextents<size_t,2>,
+      Kokkos::layout_left, Kokkos::default_accessor<double>
     >
   >::value
 );

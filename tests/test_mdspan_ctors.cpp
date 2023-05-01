@@ -19,7 +19,7 @@
 #include <gtest/gtest.h>
 #include "offload_utils.hpp"
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 
 void test_mdspan_ctor_default() {
@@ -27,7 +27,7 @@ void test_mdspan_ctor_default() {
   errors[0] = 0;
 
   dispatch([=] _MDSPAN_HOST_DEVICE () {
-    md::mdspan<int, md::dextents<size_t,1>> m;
+    Kokkos::mdspan<int, Kokkos::dextents<size_t,1>> m;
     __MDSPAN_DEVICE_ASSERT_EQ(m.data_handle(), nullptr);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 1);
@@ -52,7 +52,7 @@ void test_mdspan_ctor_data_carray() {
 
   dispatch([=] _MDSPAN_HOST_DEVICE () {
     int data[1] = {42};
-    md::mdspan<int, md::extents<size_t,1>> m(data);
+    Kokkos::mdspan<int, Kokkos::extents<size_t,1>> m(data);
     __MDSPAN_DEVICE_ASSERT_EQ(m.data_handle(), data);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
@@ -75,7 +75,7 @@ TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_data_carray) {
 
 TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
   std::array<int, 1> d = {42};
-  md::mdspan<int, md::extents<size_t,1>> m(d.data());
+  Kokkos::mdspan<int, Kokkos::extents<size_t,1>> m(d.data());
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
@@ -87,7 +87,7 @@ TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
 
 TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
   std::vector<int> d = {42};
-  md::mdspan<int, md::extents<size_t,1>> m(d.data());
+  Kokkos::mdspan<int, Kokkos::extents<size_t,1>> m(d.data());
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
@@ -100,7 +100,7 @@ TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
 TEST(TestMdspanCtorExtentsStdArrayConvertibleToSizeT, test_mdspan_ctor_extents_std_array_convertible_to_size_t) {
   std::array<int, 4> d{42, 17, 71, 24};
   std::array<int, 2> e{2, 2};
-  md::mdspan<int, md::dextents<size_t,2>> m(d.data(), e);
+  Kokkos::mdspan<int, Kokkos::dextents<size_t,2>> m(d.data(), e);
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -113,7 +113,7 @@ TEST(TestMdspanCtorExtentsStdArrayConvertibleToSizeT, test_mdspan_ctor_extents_s
 
 TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_layout_left) {
   std::array<int, 1> d{42};
-  md::mdspan<int, md::extents<size_t,dyn, dyn>, md::layout_left> m{d.data(), 16, 32};
+  Kokkos::mdspan<int, Kokkos::extents<size_t,dyn, dyn>, Kokkos::layout_left> m{d.data(), 16, 32};
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -126,7 +126,7 @@ TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_lay
 
 TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_layout_right) {
   std::array<int, 1> d{42};
-  md::mdspan<int, md::extents<size_t,dyn, dyn>, md::layout_right> m{d.data(), 16, 32};
+  Kokkos::mdspan<int, Kokkos::extents<size_t,dyn, dyn>, Kokkos::layout_right> m{d.data(), 16, 32};
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -139,7 +139,7 @@ TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_la
 
 TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_layout_stride) {
   std::array<int, 1> d{42};
-  md::mdspan<int, md::extents<size_t,dyn, dyn>, md::layout_stride> m{d.data(), {md::dextents<size_t,2>{16, 32}, std::array<std::size_t, 2>{1, 128}}};
+  Kokkos::mdspan<int, Kokkos::extents<size_t,dyn, dyn>, Kokkos::layout_stride> m{d.data(), {Kokkos::dextents<size_t,2>{16, 32}, std::array<std::size_t, 2>{1, 128}}};
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -153,7 +153,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestMdspanCTAD, extents_pack) {
   std::array<int, 1> d{42};
-  md::mdspan m(d.data(), 64, 128);
+  Kokkos::mdspan m(d.data(), 64, 128);
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -165,7 +165,7 @@ TEST(TestMdspanCTAD, extents_pack) {
 TEST(TestMdspanCTAD, ctad_pointer) {
   std::array<int,5> d = {1,2,3,4,5};
   int* ptr = d.data();
-  md::mdspan m(ptr);
+  Kokkos::mdspan m(ptr);
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 0);
@@ -175,7 +175,7 @@ TEST(TestMdspanCTAD, ctad_pointer) {
 
 TEST(TestMdspanCTAD, ctad_pointer_tmp) {
   std::array<int,5> d = {1,2,3,4,5};
-  md::mdspan m(d.data());
+  Kokkos::mdspan m(d.data());
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 0);
@@ -186,7 +186,7 @@ TEST(TestMdspanCTAD, ctad_pointer_tmp) {
 TEST(TestMdspanCTAD, ctad_pointer_move) {
   std::array<int,5> d = {1,2,3,4,5};
   int* ptr = d.data();
-  md::mdspan m(std::move(ptr));
+  Kokkos::mdspan m(std::move(ptr));
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 0);
@@ -196,7 +196,7 @@ TEST(TestMdspanCTAD, ctad_pointer_move) {
 
 TEST(TestMdspanCTAD, ctad_carray) {
   int data[5] = {1,2,3,4,5};
-  md::mdspan m(data);
+  Kokkos::mdspan m(data);
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
   ASSERT_EQ(m.data_handle(), &data[0]);
   ASSERT_EQ(m.rank(), 1);
@@ -207,7 +207,7 @@ TEST(TestMdspanCTAD, ctad_carray) {
   ASSERT_TRUE(m.is_exhaustive());
 
 
-  md::mdspan m2(data, 3);
+  Kokkos::mdspan m2(data, 3);
   static_assert(std::is_same<decltype(m2)::element_type,int>::value);
   ASSERT_EQ(m2.data_handle(), &data[0]);
   ASSERT_EQ(m2.rank(), 1);
@@ -219,7 +219,7 @@ TEST(TestMdspanCTAD, ctad_carray) {
 
 TEST(TestMdspanCTAD, ctad_const_carray) {
   const int data[5] = {1,2,3,4,5};
-  md::mdspan m(data);
+  Kokkos::mdspan m(data);
   static_assert(std::is_same<typename decltype(m)::element_type,const int>::value);
   ASSERT_EQ(m.data_handle(), &data[0]);
   ASSERT_EQ(m.rank(), 1);
@@ -232,7 +232,7 @@ TEST(TestMdspanCTAD, ctad_const_carray) {
 
 TEST(TestMdspanCTAD, extents_object) {
   std::array<int, 1> d{42};
-  md::mdspan m{d.data(), md::extents{64, 128}};
+  Kokkos::mdspan m{d.data(), Kokkos::extents{64, 128}};
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -243,7 +243,7 @@ TEST(TestMdspanCTAD, extents_object) {
 
 TEST(TestMdspanCTAD, extents_object_move) {
   std::array<int, 1> d{42};
-  md::mdspan m{d.data(), std::move(md::extents{64, 128})};
+  Kokkos::mdspan m{d.data(), std::move(Kokkos::extents{64, 128})};
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -254,7 +254,7 @@ TEST(TestMdspanCTAD, extents_object_move) {
 
 TEST(TestMdspanCTAD, extents_std_array) {
   std::array<int, 1> d{42};
-  md::mdspan m{d.data(), std::array{64, 128}};
+  Kokkos::mdspan m{d.data(), std::array{64, 128}};
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -266,7 +266,7 @@ TEST(TestMdspanCTAD, extents_std_array) {
 TEST(TestMdspanCTAD, cptr_extents_std_array) {
   std::array<int, 1> d{42};
   const int* const ptr= d.data();
-  md::mdspan m{ptr, std::array{64, 128}};
+  Kokkos::mdspan m{ptr, std::array{64, 128}};
   static_assert(std::is_same<typename decltype(m)::element_type, const int>::value);
   ASSERT_EQ(m.data_handle(), d.data());
   ASSERT_EQ(m.rank(), 2);
@@ -279,7 +279,7 @@ TEST(TestMdspanCTAD, cptr_extents_std_array) {
 TEST(TestMdspanCTAD, layout_left) {
   std::array<int, 1> d{42};
 
-  md::mdspan m0{d.data(), md::layout_left::mapping{md::extents{16, 32}}};
+  Kokkos::mdspan m0{d.data(), Kokkos::layout_left::mapping{Kokkos::extents{16, 32}}};
   ASSERT_EQ(m0.data_handle(), d.data());
   ASSERT_EQ(m0.rank(), 2);
   ASSERT_EQ(m0.rank_dynamic(), 2);
@@ -291,7 +291,7 @@ TEST(TestMdspanCTAD, layout_left) {
 
 // TODO: Perhaps one day I'll get this to work.
 /*
-  md::mdspan m1{d.data(), md::layout_left::mapping{{16, 32}}};
+  Kokkos::mdspan m1{d.data(), Kokkos::layout_left::mapping{{16, 32}}};
   ASSERT_EQ(m1.data(), d.data());
   ASSERT_EQ(m1.rank(), 2);
   ASSERT_EQ(m1.rank_dynamic(), 2);
@@ -306,7 +306,7 @@ TEST(TestMdspanCTAD, layout_left) {
 TEST(TestMdspanCTAD, layout_right) {
   std::array<int, 1> d{42};
 
-  md::mdspan m0{d.data(), md::layout_right::mapping{md::extents{16, 32}}};
+  Kokkos::mdspan m0{d.data(), Kokkos::layout_right::mapping{Kokkos::extents{16, 32}}};
   ASSERT_EQ(m0.data_handle(), d.data());
   ASSERT_EQ(m0.rank(), 2);
   ASSERT_EQ(m0.rank_dynamic(), 2);
@@ -318,7 +318,7 @@ TEST(TestMdspanCTAD, layout_right) {
 
 // TODO: Perhaps one day I'll get this to work.
 /*
-  md::mdspan m1{d.data(), md::layout_right::mapping{{16, 32}}};
+  Kokkos::mdspan m1{d.data(), Kokkos::layout_right::mapping{{16, 32}}};
   ASSERT_EQ(m1.data(), d.data());
   ASSERT_EQ(m1.rank(), 2);
   ASSERT_EQ(m1.rank_dynamic(), 2);
@@ -333,7 +333,7 @@ TEST(TestMdspanCTAD, layout_right) {
 TEST(TestMdspanCTAD, layout_stride) {
   std::array<int, 1> d{42};
 
-  md::mdspan m0{d.data(), md::layout_stride::mapping{md::extents{16, 32}, std::array{1, 128}}};
+  Kokkos::mdspan m0{d.data(), Kokkos::layout_stride::mapping{Kokkos::extents{16, 32}, std::array{1, 128}}};
   ASSERT_EQ(m0.data_handle(), d.data());
   ASSERT_EQ(m0.rank(), 2);
   ASSERT_EQ(m0.rank_dynamic(), 2);
@@ -344,7 +344,7 @@ TEST(TestMdspanCTAD, layout_stride) {
   ASSERT_FALSE(m0.is_exhaustive());
 
   /*
-  md::mdspan m1{d.data(), md::layout_stride::mapping{md::extents{16, 32}, md::extents{1, 128}}};
+  Kokkos::mdspan m1{d.data(), Kokkos::layout_stride::mapping{Kokkos::extents{16, 32}, Kokkos::extents{1, 128}}};
   ASSERT_EQ(m1.data(), d.data());
   ASSERT_EQ(m1.rank(), 2);
   ASSERT_EQ(m1.rank_dynamic(), 2);
@@ -357,7 +357,7 @@ TEST(TestMdspanCTAD, layout_stride) {
 
 // TODO: Perhaps one day I'll get this to work.
 /*
-  md::mdspan m2{d.data(), md::layout_stride::mapping{{16, 32}, {1, 128}}};
+  Kokkos::mdspan m2{d.data(), Kokkos::layout_stride::mapping{{16, 32}, {1, 128}}};
   ASSERT_EQ(m2.data_handle(), d.data());
   ASSERT_EQ(m2.rank(), 2);
   ASSERT_EQ(m2.rank_dynamic(), 2);

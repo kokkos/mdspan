@@ -173,10 +173,10 @@ int main() {
   };
   //----------------------------------------
   // Just use dynamic extents for the purposes of demonstration
-  using extents_type = md::dextents<size_t, 2>;
-  using tiled_mdspan = md::mdspan<int, extents_type, SimpleTileLayout2D>;
+  using extents_type = Kokkos::dextents<size_t, 2>;
+  using tiled_mdspan = Kokkos::mdspan<int, extents_type, SimpleTileLayout2D>;
   using tiled_layout_type = typename SimpleTileLayout2D::template mapping<extents_type>;
-  using row_major_mdspan = md::mdspan<int, extents_type, md::layout_right>;
+  using row_major_mdspan = Kokkos::mdspan<int, extents_type, Kokkos::layout_right>;
   //----------------------------------------
   auto tiled = tiled_mdspan(data_tiled, tiled_layout_type(extents_type(n_rows, n_cols), 3, 3));
   auto row_major = row_major_mdspan(data_row_major, n_rows, n_cols);

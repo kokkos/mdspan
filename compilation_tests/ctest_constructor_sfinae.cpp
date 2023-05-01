@@ -25,28 +25,28 @@
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::extents<size_t,2, md::dynamic_extent>,
+        Kokkos::extents<size_t,2, Kokkos::dynamic_extent>,
         std::array<int,1>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::extents<size_t,2, md::dynamic_extent>,
+        Kokkos::extents<size_t,2, Kokkos::dynamic_extent>,
         std::array<int,2>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::extents<size_t,2, md::dynamic_extent>,
+        Kokkos::extents<size_t,2, Kokkos::dynamic_extent>,
         int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::extents<size_t,2, md::dynamic_extent>,
+        Kokkos::extents<size_t,2, Kokkos::dynamic_extent>,
         int, int64_t
     >::value
 );
@@ -54,63 +54,63 @@ MDSPAN_STATIC_TEST(
 // TODO @proposal-bug: not sure we really intended this???
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::extents<size_t,2, md::dynamic_extent>,
+        Kokkos::extents<size_t,2, Kokkos::dynamic_extent>,
         std::array<float,2>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::extents<size_t,2, md::dynamic_extent>,
+        Kokkos::extents<size_t,2, Kokkos::dynamic_extent>,
         float, double
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::mdspan<int, md::extents<size_t>>,
+        Kokkos::mdspan<int, Kokkos::extents<size_t>>,
         int*
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::mdspan<int, md::extents<size_t,2>>,
+        Kokkos::mdspan<int, Kokkos::extents<size_t,2>>,
         int*
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
+        Kokkos::mdspan<int, Kokkos::extents<size_t,2, Kokkos::dynamic_extent>>,
         int*, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::mdspan<double, md::extents<size_t,md::dynamic_extent, 2, md::dynamic_extent>>,
+        Kokkos::mdspan<double, Kokkos::extents<size_t,Kokkos::dynamic_extent, 2, Kokkos::dynamic_extent>>,
         double*, unsigned, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
+        Kokkos::mdspan<int, Kokkos::extents<size_t,2, Kokkos::dynamic_extent>>,
         int*, int, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::mdspan<int, md::extents<size_t,md::dynamic_extent, 2, md::dynamic_extent>>,
+        Kokkos::mdspan<int, Kokkos::extents<size_t,Kokkos::dynamic_extent, 2, Kokkos::dynamic_extent>>,
         int*, std::array<int,2>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     std::is_constructible<
-        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
+        Kokkos::mdspan<int, Kokkos::extents<size_t,2, Kokkos::dynamic_extent>>,
         int*, std::array<int,2>
     >::value
 );
@@ -123,28 +123,28 @@ MDSPAN_STATIC_TEST(
 // <editor-fold desc="Test forbidden pointer + extents ctors"> {{{1
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        md::extents<size_t,2, md::dynamic_extent>,
+        Kokkos::extents<size_t,2, Kokkos::dynamic_extent>,
         std::array<int, 4>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        md::extents<size_t,2, md::dynamic_extent>,
+        Kokkos::extents<size_t,2, Kokkos::dynamic_extent>,
         int, int, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
+        Kokkos::mdspan<int, Kokkos::extents<size_t,2, Kokkos::dynamic_extent>>,
         int*, std::array<int, 4>
     >::value
 );
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
+        Kokkos::mdspan<int, Kokkos::extents<size_t,2, Kokkos::dynamic_extent>>,
         double*, int
     >::value
 );
@@ -152,29 +152,29 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
     !std::is_constructible<
-        md::mdspan<int, md::extents<size_t,2, md::dynamic_extent>>,
+        Kokkos::mdspan<int, Kokkos::extents<size_t,2, Kokkos::dynamic_extent>>,
         int*, int, int, int
     >::value
 );
 
 MDSPAN_STATIC_TEST(
    !std::is_constructible<
-        md::mdspan<int, md::dextents<size_t,2>, md::layout_stride>,
+        Kokkos::mdspan<int, Kokkos::dextents<size_t,2>, Kokkos::layout_stride>,
         int*, int, int
    >::value
 );
 
 MDSPAN_STATIC_TEST(
    !std::is_constructible<
-        md::mdspan<int, md::dextents<size_t,2>, md::layout_stride>,
+        Kokkos::mdspan<int, Kokkos::dextents<size_t,2>, Kokkos::layout_stride>,
         int*, std::array<int,2>
    >::value
 );
 
 MDSPAN_STATIC_TEST(
    !std::is_constructible<
-        md::mdspan<int, md::dextents<size_t,2>, md::layout_stride>,
-        int*, md::dextents<size_t,2>
+        Kokkos::mdspan<int, Kokkos::dextents<size_t,2>, Kokkos::layout_stride>,
+        int*, Kokkos::dextents<size_t,2>
    >::value
 );
 

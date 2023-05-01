@@ -24,32 +24,32 @@
 // <editor-fold desc="extents"> {{{1
 
 MDSPAN_STATIC_TEST(
-  sizeof(md::extents<size_t,1, 2, md::dynamic_extent>) == sizeof(ptrdiff_t)
+  sizeof(Kokkos::extents<size_t,1, 2, Kokkos::dynamic_extent>) == sizeof(ptrdiff_t)
 );
 
 MDSPAN_STATIC_TEST(
-  sizeof(md::extents<size_t,md::dynamic_extent>) == sizeof(ptrdiff_t)
+  sizeof(Kokkos::extents<size_t,Kokkos::dynamic_extent>) == sizeof(ptrdiff_t)
 );
 
 MDSPAN_STATIC_TEST(
-  sizeof(md::extents<size_t,md::dynamic_extent, md::dynamic_extent>) == 2 * sizeof(ptrdiff_t)
+  sizeof(Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>) == 2 * sizeof(ptrdiff_t)
 );
 
 MDSPAN_STATIC_TEST(
-  sizeof(md::extents<size_t,md::dynamic_extent, 1, 2, 45>) == sizeof(ptrdiff_t)
+  sizeof(Kokkos::extents<size_t,Kokkos::dynamic_extent, 1, 2, 45>) == sizeof(ptrdiff_t)
 );
 
 MDSPAN_STATIC_TEST(
-  sizeof(md::extents<size_t,45, md::dynamic_extent, 1>) == sizeof(ptrdiff_t)
+  sizeof(Kokkos::extents<size_t,45, Kokkos::dynamic_extent, 1>) == sizeof(ptrdiff_t)
 );
 
 #ifdef _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
 MDSPAN_STATIC_TEST(
-  std::is_empty<md::extents<size_t,1, 2, 3>>::value
+  std::is_empty<Kokkos::extents<size_t,1, 2, 3>>::value
 );
 
 MDSPAN_STATIC_TEST(
-  std::is_empty<md::extents<size_t,42>>::value
+  std::is_empty<Kokkos::extents<size_t,42>>::value
 );
 #endif
 
@@ -60,22 +60,22 @@ MDSPAN_STATIC_TEST(
 // <editor-fold desc="layouts"> {{{1
 
 MDSPAN_STATIC_TEST(
-  sizeof(md::layout_left::template mapping<
-    md::extents<size_t,42, md::dynamic_extent, 73>
+  sizeof(Kokkos::layout_left::template mapping<
+    Kokkos::extents<size_t,42, Kokkos::dynamic_extent, 73>
   >) == sizeof(size_t)
 );
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS) && !defined(_MDSPAN_USE_FAKE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 MDSPAN_STATIC_TEST(
-  std::is_empty<md::layout_right::template mapping<
-    md::extents<size_t,42, 123, 73>
+  std::is_empty<Kokkos::layout_right::template mapping<
+    Kokkos::extents<size_t,42, 123, 73>
   >>::value
 );
 #endif
 
 MDSPAN_STATIC_TEST(
-  sizeof(md::layout_stride::template mapping<
-    md::extents<size_t,42, md::dynamic_extent, 73>
+  sizeof(Kokkos::layout_stride::template mapping<
+    Kokkos::extents<size_t,42, Kokkos::dynamic_extent, 73>
   >) == 4 * sizeof(size_t)
 );
 

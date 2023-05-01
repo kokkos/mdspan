@@ -26,9 +26,9 @@
 using index_type = int;
 
 template <class T, size_t... Es>
-using lmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_left>;
+using lmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_right>;
+using rmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_right>;
 
 //================================================================================
 
@@ -49,9 +49,9 @@ void BM_MDSpan_Sum_Subspan_3D_right(benchmark::State& state, MDSpan, DynSizes...
     value_type sum = 0;
     using index_type = typename MDSpan::index_type;
     for(index_type i = 0; i < s.extent(0); ++i) {
-      auto sub_i = mdex::submdspan(s, i, md::full_extent, md::full_extent);
+      auto sub_i = KokkosEx::submdspan(s, i, Kokkos::full_extent, Kokkos::full_extent);
       for (index_type j = 0; j < s.extent(1); ++j) {
-        auto sub_i_j = mdex::submdspan(sub_i, j, md::full_extent);
+        auto sub_i_j = KokkosEx::submdspan(sub_i, j, Kokkos::full_extent);
         for (index_type k = 0; k < s.extent(2); ++k) {
           sum += sub_i_j(k);
         }
@@ -120,7 +120,7 @@ template <class T, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
-  md::mdspan<T, md::extents<index_type>, Rest...> s
+  Kokkos::mdspan<T, Kokkos::extents<index_type>, Rest...> s
 )
 {
   sum += s();
@@ -130,12 +130,12 @@ template <class T, size_t E, size_t... Es, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
 _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
-  md::mdspan<T, md::extents<index_type, E, Es...>, Rest...> s
+  Kokkos::mdspan<T, Kokkos::extents<index_type, E, Es...>, Rest...> s
 )
 {
   for(index_type i = 0; i < s.extent(0); ++i) {
-    _impl::_do_sum_submdspan(sum, mdex::submdspan(
-      s, i, _repeated_with<decltype(Es)>(md::full_extent)...)
+    _impl::_do_sum_submdspan(sum, KokkosEx::submdspan(
+      s, i, _repeated_with<decltype(Es)>(Kokkos::full_extent)...)
     );
   }
 }
@@ -161,31 +161,31 @@ void BM_MDSpan_Sum_Subspan_MD_right(benchmark::State& state, MDSpan, DynSizes...
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed_10D_size_1024,
-  md::mdspan<int, md::extents<index_type, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2>>{nullptr}
+  Kokkos::mdspan<int, Kokkos::extents<index_type, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2>>{nullptr}
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, dyn_10D_size_1024,
-  md::mdspan<int, md::dextents<index_type, 10>>{},
+  Kokkos::mdspan<int, Kokkos::dextents<index_type, 10>>{},
   2, 2, 2, 2, 2,
   2, 2, 2, 2, 2
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed5_dyn5_10D_alternate_size_1024,
-  md::mdspan<int, md::extents<index_type, 2, md::dynamic_extent, 2, md::dynamic_extent, 2, md::dynamic_extent, 2, md::dynamic_extent, 2, md::dynamic_extent>>{},
+  Kokkos::mdspan<int, Kokkos::extents<index_type, 2, Kokkos::dynamic_extent, 2, Kokkos::dynamic_extent, 2, Kokkos::dynamic_extent, 2, Kokkos::dynamic_extent, 2, Kokkos::dynamic_extent>>{},
   2, 2, 2, 2, 2
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed8_dyn2_10D_alternate_size_1024,
-  md::mdspan<int, md::extents<index_type, 2, 2, 2, 2, md::dynamic_extent, 2, 2, 2, 2, md::dynamic_extent>>{},
+  Kokkos::mdspan<int, Kokkos::extents<index_type, 2, 2, 2, 2, Kokkos::dynamic_extent, 2, 2, 2, 2, Kokkos::dynamic_extent>>{},
   2, 2
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, fixed_5D_size_1024,
-  md::mdspan<int, md::extents<index_type, 4, 4, 4, 4, 4>>{nullptr}
+  Kokkos::mdspan<int, Kokkos::extents<index_type, 4, 4, 4, 4, 4>>{nullptr}
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Sum_Subspan_MD_right, dyn_5D_size_1024,
-  md::mdspan<int, md::dextents<index_type, 5>>{},
+  Kokkos::mdspan<int, Kokkos::dextents<index_type, 5>>{},
   4, 4, 4, 4, 4
 );
 BENCHMARK_CAPTURE(

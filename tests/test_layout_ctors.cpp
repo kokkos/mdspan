@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 template <class> struct TestLayoutCtors;
 template <class Mapping, size_t... DynamicSizes>
@@ -32,30 +32,30 @@ struct TestLayoutCtors<std::tuple<
 
 template <class Extents, size_t... DynamicSizes>
 using test_left_type = std::tuple<
-  typename md::layout_left::template mapping<Extents>,
+  typename Kokkos::layout_left::template mapping<Extents>,
   std::integer_sequence<size_t, DynamicSizes...>
 >;
 
 template <class Extents, size_t... DynamicSizes>
 using test_right_type = std::tuple<
-  typename md::layout_right::template mapping<Extents>,
+  typename Kokkos::layout_right::template mapping<Extents>,
   std::integer_sequence<size_t, DynamicSizes...>
 >;
 
 using layout_test_types =
   ::testing::Types<
-    test_left_type<md::extents<size_t,10>>,
-    test_right_type<md::extents<size_t,10>>,
+    test_left_type<Kokkos::extents<size_t,10>>,
+    test_right_type<Kokkos::extents<size_t,10>>,
     //----------
-    test_left_type<md::extents<size_t,dyn>, 10>,
-    test_right_type<md::extents<size_t,dyn>, 10>,
+    test_left_type<Kokkos::extents<size_t,dyn>, 10>,
+    test_right_type<Kokkos::extents<size_t,dyn>, 10>,
     //----------
-    test_left_type<md::extents<size_t,dyn, 10>, 5>,
-    test_left_type<md::extents<size_t,5, dyn>, 10>,
-    test_left_type<md::extents<size_t,5, 10>>,
-    test_right_type<md::extents<size_t,dyn, 10>, 5>,
-    test_right_type<md::extents<size_t,5, dyn>, 10>,
-    test_right_type<md::extents<size_t,5, 10>>
+    test_left_type<Kokkos::extents<size_t,dyn, 10>, 5>,
+    test_left_type<Kokkos::extents<size_t,5, dyn>, 10>,
+    test_left_type<Kokkos::extents<size_t,5, 10>>,
+    test_right_type<Kokkos::extents<size_t,dyn, 10>, 5>,
+    test_right_type<Kokkos::extents<size_t,5, dyn>, 10>,
+    test_right_type<Kokkos::extents<size_t,5, 10>>
   >;
 
 TYPED_TEST_SUITE(TestLayoutCtors, layout_test_types);
@@ -88,18 +88,18 @@ struct TestLayoutCompatCtors<std::tuple<
 
 template <class E1, class S1, class E2, class S2>
 using test_left_type_compatible = std::tuple<
-  typename md::layout_left::template mapping<E1>, S1,
-  typename md::layout_left::template mapping<E2>, S2
+  typename Kokkos::layout_left::template mapping<E1>, S1,
+  typename Kokkos::layout_left::template mapping<E2>, S2
 >;
 template <class E1, class S1, class E2, class S2>
 using test_right_type_compatible = std::tuple<
-  typename md::layout_right::template mapping<E1>, S1,
-  typename md::layout_right::template mapping<E2>, S2
+  typename Kokkos::layout_right::template mapping<E1>, S1,
+  typename Kokkos::layout_right::template mapping<E2>, S2
 >;
 template <size_t... Ds>
 using _sizes = std::integer_sequence<size_t, Ds...>;
 template <size_t... Ds>
-using _exts = md::extents<size_t,Ds...>;
+using _exts = Kokkos::extents<size_t,Ds...>;
 
 template <template <class, class, class, class> class _test_case_type>
 using compatible_layout_test_types =
@@ -192,7 +192,7 @@ TYPED_TEST(TestLayoutRightCompatCtors, compatible_assign_2) {
 }
 
 TEST(TestLayoutLeftListInitialization, test_layout_left_extent_initialization) {
-  md::layout_left::mapping<md::extents<size_t,dyn, dyn>> m{md::dextents<size_t,2>{16, 32}};
+  Kokkos::layout_left::mapping<Kokkos::extents<size_t,dyn, dyn>> m{Kokkos::dextents<size_t,2>{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);
@@ -205,7 +205,7 @@ TEST(TestLayoutLeftListInitialization, test_layout_left_extent_initialization) {
 // FIXME: CUDA NVCC including 12.0 does not like CTAD on nested classes
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION) && !defined(__NVCC__)
 TEST(TestLayoutLeftCTAD, test_layout_left_ctad) {
-  md::layout_left::mapping m{md::extents{16, 32}};
+  Kokkos::layout_left::mapping m{Kokkos::extents{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);
@@ -217,7 +217,7 @@ TEST(TestLayoutLeftCTAD, test_layout_left_ctad) {
 #endif
 
 TEST(TestLayoutRightListInitialization, test_layout_right_extent_initialization) {
-  md::layout_right::mapping<md::extents<size_t,dyn, dyn>> m{md::dextents<size_t,2>{16, 32}};
+  Kokkos::layout_right::mapping<Kokkos::extents<size_t,dyn, dyn>> m{Kokkos::dextents<size_t,2>{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);
@@ -230,7 +230,7 @@ TEST(TestLayoutRightListInitialization, test_layout_right_extent_initialization)
 // FIXME: CUDA NVCC including 12.0 does not like CTAD on nested classes
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION) && !defined(__NVCC__)
 TEST(TestLayoutRightCTAD, test_layout_right_ctad) {
-  md::layout_right::mapping m{md::extents{16, 32}};
+  Kokkos::layout_right::mapping m{Kokkos::extents{16, 32}};
   ASSERT_EQ(m.extents().rank(), 2);
   ASSERT_EQ(m.extents().rank_dynamic(), 2);
   ASSERT_EQ(m.extents().extent(0), 16);
@@ -255,22 +255,22 @@ struct is_stride_avail< T
                       > : std::true_type {};
 
 TEST(TestLayoutLeftStrideConstraint, test_layout_left_stride_constraint) {
-  md::extents<int,16> ext1d{};
-  md::layout_left::mapping m1d{ext1d};
+  Kokkos::extents<int,16> ext1d{};
+  Kokkos::layout_left::mapping m1d{ext1d};
   ASSERT_TRUE ((is_stride_avail< decltype(m1d), int >::value));
 
-  md::extents<int> ext0d{};
-  md::layout_left::mapping m0d{ext0d};
+  Kokkos::extents<int> ext0d{};
+  Kokkos::layout_left::mapping m0d{ext0d};
   ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
 }
 
 TEST(TestLayoutRightStrideConstraint, test_layout_right_stride_constraint) {
-  md::extents<int,16> ext1d{};
-  md::layout_right::mapping m1d{ext1d};
+  Kokkos::extents<int,16> ext1d{};
+  Kokkos::layout_right::mapping m1d{ext1d};
   ASSERT_TRUE ((is_stride_avail< decltype(m1d), int >::value));
 
-  md::extents<int> ext0d{};
-  md::layout_right::mapping m0d{ext0d};
+  Kokkos::extents<int> ext0d{};
+  Kokkos::layout_right::mapping m0d{ext0d};
   ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
 }
 #endif

@@ -25,9 +25,9 @@ using index_type = int;
 //================================================================================
 
 template <class T, size_t... Es>
-using lmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_left>;
+using lmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_right>;
+using rmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_right>;
 
 //================================================================================
 

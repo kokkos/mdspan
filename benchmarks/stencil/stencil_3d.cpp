@@ -33,9 +33,9 @@ static constexpr int global_delta = 1;
 using index_type = int;
 
 template <class T, size_t... Es>
-using lmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_left>;
+using lmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = md::mdspan<T, md::extents<index_type, Es...>, md::layout_right>;
+using rmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_right>;
 
 //================================================================================
 
@@ -87,7 +87,7 @@ MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Stencil_3D, left_, lmdspan, 400, 400, 400);
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = md::mdspan<T, md::dextents<index_type, 3>>;
+  using MDSpan = Kokkos::mdspan<T, Kokkos::dextents<index_type, 3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
 

@@ -21,7 +21,7 @@
 
 using index_type = int;
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 template <class MDSpan, class... DynSizes>
 void BM_MDSpan_Copy_2D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
@@ -48,13 +48,13 @@ void BM_MDSpan_Copy_2D_right(benchmark::State& state, MDSpan, DynSizes... dyn) {
 }
 
 BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_right, size_100_100, md::mdspan<int, md::extents<index_type, 100, 100>>(nullptr)
+  BM_MDSpan_Copy_2D_right, size_100_100, Kokkos::mdspan<int, Kokkos::extents<index_type, 100, 100>>(nullptr)
 );
 BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_right, size_100_dyn, md::mdspan<int, md::extents<index_type, 100, dyn>>(), 100
+  BM_MDSpan_Copy_2D_right, size_100_dyn, Kokkos::mdspan<int, Kokkos::extents<index_type, 100, dyn>>(), 100
 );
 BENCHMARK_CAPTURE(
-  BM_MDSpan_Copy_2D_right, size_dyn_dyn, md::mdspan<int, md::dextents<index_type, 2>>(), 100, 100
+  BM_MDSpan_Copy_2D_right, size_dyn_dyn, Kokkos::mdspan<int, Kokkos::dextents<index_type, 2>>(), 100, 100
 );
 
 //================================================================================
@@ -86,37 +86,37 @@ void BM_MDSpan_Copy_2D_stride(benchmark::State& state, MDSpan, LayoutMapping map
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100_100,
-  md::mdspan<int, md::extents<index_type, 100, 100>, md::layout_stride>(nullptr,
-          md::layout_stride::mapping<md::extents<index_type, 100, 100>>()),
-  md::layout_stride::template mapping<md::extents<index_type, 100, 100>>(
-    md::extents<index_type, 100, 100>{},
+  Kokkos::mdspan<int, Kokkos::extents<index_type, 100, 100>, Kokkos::layout_stride>(nullptr,
+          Kokkos::layout_stride::mapping<Kokkos::extents<index_type, 100, 100>>()),
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, 100, 100>>(
+    Kokkos::extents<index_type, 100, 100>{},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100_100d,
-  md::mdspan<int, md::extents<index_type, 100, dyn>, md::layout_stride>(),
-  md::layout_stride::template mapping<md::extents<index_type, 100, dyn>>(
-    md::extents<index_type, 100, dyn>{100},
+  Kokkos::mdspan<int, Kokkos::extents<index_type, 100, dyn>, Kokkos::layout_stride>(),
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, 100, dyn>>(
+    Kokkos::extents<index_type, 100, dyn>{100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100d_100,
-  md::mdspan<int, md::extents<index_type, dyn, 100>, md::layout_stride>(),
-  md::layout_stride::template mapping<md::extents<index_type, dyn, 100>>(
-    md::extents<index_type, dyn, 100>{100},
+  Kokkos::mdspan<int, Kokkos::extents<index_type, dyn, 100>, Kokkos::layout_stride>(),
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, dyn, 100>>(
+    Kokkos::extents<index_type, dyn, 100>{100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
 );
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride, size_100d_100d,
-  md::mdspan<int, md::extents<index_type, dyn, dyn>, md::layout_stride>(),
-  md::layout_stride::template mapping<md::extents<index_type, dyn, dyn>>(
-    md::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::mdspan<int, Kokkos::extents<index_type, dyn, dyn>, Kokkos::layout_stride>(),
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, dyn, dyn>>(
+    Kokkos::extents<index_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
@@ -135,8 +135,8 @@ void BM_MDSpan_Copy_2D_stride_diff_map(benchmark::State& state,
   auto buff_dest = std::make_unique<value_type[]>(
     map_dest.required_span_size()
   );
-  using map_stride_dyn = md::layout_stride;
-  using mdspan_type = md::mdspan<T, Extents, map_stride_dyn>;
+  using map_stride_dyn = Kokkos::layout_stride;
+  using mdspan_type = Kokkos::mdspan<T, Extents, map_stride_dyn>;
   auto src = mdspan_type{buff_src.get(), map_src};
   mdspan_benchmark::fill_random(src);
   auto dest = mdspan_type{buff_dest.get(), map_dest};
@@ -154,14 +154,14 @@ void BM_MDSpan_Copy_2D_stride_diff_map(benchmark::State& state,
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride_diff_map, size_100d_100d_bcast_0, int(),
-  md::extents<index_type, dyn, dyn>{100, 100},
-  md::layout_stride::template mapping<md::extents<index_type, dyn, dyn>>(
-    md::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, dyn, dyn>>(
+    Kokkos::extents<index_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{0, 1}
   ),
-  md::layout_stride::template mapping<md::extents<index_type, dyn, dyn>>(
-    md::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, dyn, dyn>>(
+    Kokkos::extents<index_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
@@ -169,14 +169,14 @@ BENCHMARK_CAPTURE(
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride_diff_map, size_100d_100d_bcast_1, int(),
-  md::extents<index_type, dyn, dyn>{100, 100},
-  md::layout_stride::template mapping<md::extents<index_type, dyn, dyn>>(
-    md::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, dyn, dyn>>(
+    Kokkos::extents<index_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{1, 0}
   ),
-  md::layout_stride::template mapping<md::extents<index_type, dyn, dyn>>(
-    md::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, dyn, dyn>>(
+    Kokkos::extents<index_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
@@ -184,14 +184,14 @@ BENCHMARK_CAPTURE(
 
 BENCHMARK_CAPTURE(
   BM_MDSpan_Copy_2D_stride_diff_map, size_100d_100d_bcast_both, int(),
-  md::extents<index_type, dyn, dyn>{100, 100},
-  md::layout_stride::template mapping<md::extents<index_type, dyn, dyn>>(
-    md::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, dyn, dyn>>(
+    Kokkos::extents<index_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{0, 0}
   ),
-  md::layout_stride::template mapping<md::extents<index_type, dyn, dyn>>(
-    md::extents<index_type, dyn, dyn>{100, 100},
+  Kokkos::layout_stride::template mapping<Kokkos::extents<index_type, dyn, dyn>>(
+    Kokkos::extents<index_type, dyn, dyn>{100, 100},
     // layout right
     std::array<size_t, 2>{100, 1}
   )
@@ -207,7 +207,7 @@ void BM_Raw_Copy_1D(benchmark::State& state, T, size_t size) {
   auto buffer = std::make_unique<value_type[]>(size);
   {
     // just for setup...
-    auto wrapped = md::mdspan<T, md::dextents<index_type, 1>>{buffer.get(), size};
+    auto wrapped = Kokkos::mdspan<T, Kokkos::dextents<index_type, 1>>{buffer.get(), size};
     mdspan_benchmark::fill_random(wrapped);
   }
   value_type* src = buffer.get();
@@ -235,7 +235,7 @@ void BM_Raw_Copy_2D(benchmark::State& state, T, size_t x, size_t y) {
   auto buffer = std::make_unique<value_type[]>(x * y);
   {
     // just for setup...
-    auto wrapped = md::mdspan<T, md::dextents<index_type, 1>>{buffer.get(), x * y};
+    auto wrapped = Kokkos::mdspan<T, Kokkos::dextents<index_type, 1>>{buffer.get(), x * y};
     mdspan_benchmark::fill_random(wrapped);
   }
   value_type* src = buffer.get();

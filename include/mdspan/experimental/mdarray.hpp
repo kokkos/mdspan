@@ -17,11 +17,11 @@
 #pragma once
 
 #ifndef MDSPAN_IMPL_STANDARD_NAMESPACE
-  #define MDSPAN_IMPL_STANDARD_NAMESPACE md
+  #define MDSPAN_IMPL_STANDARD_NAMESPACE Kokkos
 #endif
 
 #ifndef MDSPAN_IMPL_PROPOSED_NAMESPACE
-  #define MDSPAN_IMPL_PROPOSED_NAMESPACE experimental
+  #define MDSPAN_IMPL_PROPOSED_NAMESPACE Experimental
 #endif
 
 #include "../mdspan.hpp"

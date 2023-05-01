@@ -30,7 +30,7 @@ simple_static_sum_test_1(int add_to_row) {
     4, 5, 6,
     7, 8, 9
   };
-  auto s = md::mdspan<int, md::extents<size_t,3, 3>>(data);
+  auto s = Kokkos::mdspan<int, Kokkos::extents<size_t,3, 3>>(data);
   int result = 0;
   for(int col = 0; col < 3; ++col) {
     for(int row = 0; row < 3; ++row) {
@@ -53,7 +53,7 @@ MDSPAN_STATIC_TEST(
 #if !defined(__INTEL_COMPILER) || (__INTEL_COMPILER>=1800)
 MDSPAN_STATIC_TEST(
   // -1 - 2 - 3 + 7 + 8 + 9 = 18
-  md::mdspan<double, md::extents<size_t,simple_static_sum_test_1(-1)>>{nullptr}.extent(0) == 18
+  Kokkos::mdspan<double, Kokkos::extents<size_t,simple_static_sum_test_1(-1)>>{nullptr}.extent(0) == 18
 );
 #endif
 
@@ -65,7 +65,7 @@ simple_test_1d_constexpr_in_type() {
     1, 2, 3, 4, 5, 6, 7, 8, 9,
     10, 11, 12, 13, 14, 15, 16, 17, 18
   };
-  auto s = md::mdspan<int, md::extents<size_t,simple_static_sum_test_1(-1)>>(data);
+  auto s = Kokkos::mdspan<int, Kokkos::extents<size_t,simple_static_sum_test_1(-1)>>(data);
   // 4 + 14 + 18 + 1 = 37
   return s[3] + s[13] + s[17] + s[0];
 }
@@ -83,7 +83,7 @@ simple_dynamic_sum_test_2(int add_to_row) {
     4, 5, 6, 0,
     7, 8, 9, 0
   };
-  auto s = md::mdspan<int, md::dextents<size_t,2>>(data, 3, 4);
+  auto s = Kokkos::mdspan<int, Kokkos::dextents<size_t,2>>(data, 3, 4);
   int result = 0;
   for(int col = 0; col < 3; ++col) {
     for(int row = 0; row < 3; ++row) {
@@ -113,9 +113,9 @@ simple_mixed_layout_left_sum_test_3(int add_to_row) {
     3, 6, 9,
     0, 0, 0
   };
-  auto s = md::mdspan<
-    int, md::extents<size_t,md::dynamic_extent, md::dynamic_extent>,
-    md::layout_left
+  auto s = Kokkos::mdspan<
+    int, Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>,
+    Kokkos::layout_left
   >(data, 3, 4);
   int result = 0;
   for(int col = 0; col < 3; ++col) {
@@ -143,10 +143,10 @@ constexpr bool
 multidimensional_single_element_stress_test_impl_2(
   std::integer_sequence<size_t, Idxs...>
 ) {
-  using mdspan_t = md::mdspan<
-    int, md::extents<size_t,_repeated_ptrdiff_t<1, Idxs>...>, Layout>;
-  using dyn_mdspan_t = md::mdspan<
-    int, md::extents<size_t,_repeated_ptrdiff_t<md::dynamic_extent, Idxs>...>, Layout>;
+  using mdspan_t = Kokkos::mdspan<
+    int, Kokkos::extents<size_t,_repeated_ptrdiff_t<1, Idxs>...>, Layout>;
+  using dyn_mdspan_t = Kokkos::mdspan<
+    int, Kokkos::extents<size_t,_repeated_ptrdiff_t<Kokkos::dynamic_extent, Idxs>...>, Layout>;
   int data[] = { 42 };
   auto s = mdspan_t(data);
   auto s_dyn = dyn_mdspan_t(data, _repeated_ptrdiff_t<1, Idxs>...);
@@ -178,10 +178,10 @@ multidimensional_single_element_stress_test() {
 }
 
 MDSPAN_STATIC_TEST(
-  multidimensional_single_element_stress_test<md::layout_left, 20>()
+  multidimensional_single_element_stress_test<Kokkos::layout_left, 20>()
 );
 MDSPAN_STATIC_TEST(
-  multidimensional_single_element_stress_test<md::layout_right, 20>()
+  multidimensional_single_element_stress_test<Kokkos::layout_right, 20>()
 );
 
 template <class Layout, size_t Idx1, size_t Idx2>
@@ -190,14 +190,14 @@ stress_test_2d_single_element_stress_test_impl_2(
   std::integral_constant<size_t, Idx1>,
   std::integral_constant<size_t, Idx2>
 ) {
-  using mdspan_t = md::mdspan<
-    int, md::extents<size_t,Idx1, Idx2>, Layout>;
-  using dyn_mdspan_1_t = md::mdspan<
-    int, md::extents<size_t,md::dynamic_extent, Idx2>, Layout>;
-  using dyn_mdspan_2_t = md::mdspan<
-    int, md::extents<size_t,Idx1, md::dynamic_extent>, Layout>;
-  using dyn_mdspan_t = md::mdspan<
-    int, md::extents<size_t,md::dynamic_extent, md::dynamic_extent>, Layout>;
+  using mdspan_t = Kokkos::mdspan<
+    int, Kokkos::extents<size_t,Idx1, Idx2>, Layout>;
+  using dyn_mdspan_1_t = Kokkos::mdspan<
+    int, Kokkos::extents<size_t,Kokkos::dynamic_extent, Idx2>, Layout>;
+  using dyn_mdspan_2_t = Kokkos::mdspan<
+    int, Kokkos::extents<size_t,Idx1, Kokkos::dynamic_extent>, Layout>;
+  using dyn_mdspan_t = Kokkos::mdspan<
+    int, Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>, Layout>;
   int data[Idx1*Idx2] = { };
   auto s = mdspan_t(data);
   auto s1 = dyn_mdspan_1_t(data, Idx1);
@@ -257,15 +257,15 @@ stress_test_2d_single_element_stress_test() {
 }
 
 MDSPAN_STATIC_TEST(
-  stress_test_2d_single_element_stress_test<md::layout_left, 8, 8>()
+  stress_test_2d_single_element_stress_test<Kokkos::layout_left, 8, 8>()
 );
 MDSPAN_STATIC_TEST(
-  stress_test_2d_single_element_stress_test<md::layout_right, 8, 8>()
+  stress_test_2d_single_element_stress_test<Kokkos::layout_right, 8, 8>()
 );
 // Not evaluated at constexpr time to get around limits, but still compiled
 static bool _stress_2d_result =
-  stress_test_2d_single_element_stress_test<md::layout_left, 6, 15>()
-  && stress_test_2d_single_element_stress_test<md::layout_right, 15, 6>();
+  stress_test_2d_single_element_stress_test<Kokkos::layout_left, 6, 15>()
+  && stress_test_2d_single_element_stress_test<Kokkos::layout_right, 15, 6>();
 
 #endif // MDSPAN_DISABLE_EXPENSIVE_COMPILATION_TESTS
 

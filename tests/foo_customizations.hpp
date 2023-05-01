@@ -20,7 +20,7 @@
 #include <mdspan/mdspan.hpp>
 
 #if MDSPAN_HAS_CXX_17
-namespace mdex = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
+namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 #endif
 
 namespace Foo {
@@ -43,7 +43,7 @@ namespace Foo {
 
     template<class OtherElementType>
     MDSPAN_INLINE_FUNCTION
-    constexpr foo_accessor(md::default_accessor<OtherElementType>) noexcept { flag = nullptr; }
+    constexpr foo_accessor(Kokkos::default_accessor<OtherElementType>) noexcept { flag = nullptr; }
 
     template<class OtherElementType>
     MDSPAN_INLINE_FUNCTION
@@ -84,8 +84,8 @@ class layout_foo::mapping {
     using layout_type = layout_foo;
   private:
 
-    static_assert(md::detail::__is_extents_v<extents_type>,
-                  "layout_foo::mapping must be instantiated with a specialization of md::extents.");
+    static_assert(Kokkos::detail::__is_extents_v<extents_type>,
+                  "layout_foo::mapping must be instantiated with a specialization of Kokkos::extents.");
     static_assert(extents_type::rank() < 3, "layout_foo only supports 0D, 1D and 2D");
 
     template <class>
@@ -127,7 +127,7 @@ class layout_foo::mapping {
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping(md::layout_right::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
+    mapping(Kokkos::layout_right::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {}
 
@@ -140,7 +140,7 @@ class layout_foo::mapping {
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping(md::layout_left::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
+    mapping(Kokkos::layout_left::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {}
 
@@ -152,7 +152,7 @@ class layout_foo::mapping {
     )
     MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
-    mapping(md::layout_stride::mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
+    mapping(Kokkos::layout_stride::mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {
        /*
@@ -242,13 +242,13 @@ submdspan_mapping(const layout_foo::mapping<Extents> &src_mapping,
 		                  SliceSpecifiers... slices) {
    // use the fact that layout_foo is layout_right with rank 1 or rank 2
    // i.e. we don't need to implement everything here, we just reuse submdspan_mapping for layout_right
-   md::layout_right::mapping<Extents> compatible_mapping(src_mapping.extents());
+   Kokkos::layout_right::mapping<Extents> compatible_mapping(src_mapping.extents());
    auto sub_right = submdspan_mapping(compatible_mapping, slices...);
-   if constexpr (std::is_same_v<typename decltype(sub_right.mapping)::layout_type, md::layout_right>) {
+   if constexpr (std::is_same_v<typename decltype(sub_right.mapping)::layout_type, Kokkos::layout_right>) {
      // NVCC does not like deduction here, so get the extents type explicitly
      using sub_ext_t = std::remove_const_t<std::remove_reference_t<decltype(sub_right.mapping.extents())>>;
      auto sub_mapping = layout_foo::mapping<sub_ext_t>(sub_right.mapping.extents());
-     return mdex::mapping_offset<decltype(sub_mapping)>{sub_mapping, sub_right.offset};
+     return KokkosEx::mapping_offset<decltype(sub_mapping)>{sub_mapping, sub_right.offset};
    } else {
      return sub_right;
    }

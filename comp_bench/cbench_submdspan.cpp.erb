@@ -3,22 +3,22 @@
 
 int test(int* data) {
   #if defined(METABENCH)
-  auto sub0 = md::mdspan<int,
-    md::extents<
+  auto sub0 = Kokkos::mdspan<int,
+    Kokkos::extents<
       <%= (["2"] * n).join(", ") %>
     >
   >(data);
   <% (32/n).times do |k| %>
-  auto <%= "sub0_#{k}" %> = md::mdspan<int,
-    md::extents<
+  auto <%= "sub0_#{k}" %> = Kokkos::mdspan<int,
+    Kokkos::extents<
       <%= (["#{k+2}"] * n).join(", ") %>
     >
   >(data);
   <% n.times do |i| %>
-    auto <%= "sub#{i+1}_#{k}" %> = mdex::submdspan(
+    auto <%= "sub#{i+1}_#{k}" %> = KokkosEx::submdspan(
        <%= "sub#{i}_#{k}" %>,
        1
-       <%= ", md::full_extent" * (n - i - 1) %>
+       <%= ", Kokkos::full_extent" * (n - i - 1) %>
     );
   <% end %>
   <% end %>

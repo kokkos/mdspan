@@ -29,12 +29,12 @@ void test_mdspan_std_swap_static_extents() {
   dispatch([=] _MDSPAN_HOST_DEVICE () {
     int data1[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
     int data2[12] = {21,22,23,24,25,26,27,28,29,30,31,32};
-    md::mdspan<int, md::extents<size_t,3,4>> m1(data1);
-    md::mdspan<int, md::extents<size_t,3,4>> m2(data2);
-    md::extents<size_t,3,4> exts1;
-    md::layout_right::mapping<md::extents<size_t, 3, 4>> map1(exts1);
-    md::extents<size_t,3,4> exts2;
-    md::layout_right::mapping<md::extents<size_t, 3, 4>> map2(exts2);
+    Kokkos::mdspan<int, Kokkos::extents<size_t,3,4>> m1(data1);
+    Kokkos::mdspan<int, Kokkos::extents<size_t,3,4>> m2(data2);
+    Kokkos::extents<size_t,3,4> exts1;
+    Kokkos::layout_right::mapping<Kokkos::extents<size_t, 3, 4>> map1(exts1);
+    Kokkos::extents<size_t,3,4> exts2;
+    Kokkos::layout_right::mapping<Kokkos::extents<size_t, 3, 4>> map2(exts2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.data_handle(), data1);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.mapping(), map1);
     auto val1 = __MDSPAN_OP(m1,0,0);
@@ -69,12 +69,12 @@ void test_mdspan_std_swap_dynamic_extents() {
   dispatch([=] _MDSPAN_HOST_DEVICE () {
     int data1[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
     int data2[12] = {21,22,23,24,25,26,27,28,29,30,31,32};
-    md::mdspan<int, md::dextents<size_t,2>> m1(data1,3,4);
-    md::mdspan<int, md::dextents<size_t,2>> m2(data2,4,3);
-    md::dextents<size_t,2> exts1(3,4);
-    md::layout_right::mapping<md::dextents<size_t,2>> map1(exts1);
-    md::dextents<size_t,2> exts2(4,3);
-    md::layout_right::mapping<md::dextents<size_t,2>> map2(exts2);
+    Kokkos::mdspan<int, Kokkos::dextents<size_t,2>> m1(data1,3,4);
+    Kokkos::mdspan<int, Kokkos::dextents<size_t,2>> m2(data2,4,3);
+    Kokkos::dextents<size_t,2> exts1(3,4);
+    Kokkos::layout_right::mapping<Kokkos::dextents<size_t,2>> map1(exts1);
+    Kokkos::dextents<size_t,2> exts2(4,3);
+    Kokkos::layout_right::mapping<Kokkos::dextents<size_t,2>> map2(exts2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.data_handle(), data1);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.mapping(), map1);
     auto val1 = __MDSPAN_OP(m1,0,0);
@@ -109,7 +109,7 @@ void test_mdspan_foo_swap_dynamic_extents() {
   errors[0] = 0;
 
   dispatch([=] _MDSPAN_HOST_DEVICE () {
-    using map_t = Foo::layout_foo::template mapping<md::dextents<size_t ,2>>;
+    using map_t = Foo::layout_foo::template mapping<Kokkos::dextents<size_t ,2>>;
     using acc_t = Foo::foo_accessor<int>;
 
     int data1[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
@@ -117,15 +117,15 @@ void test_mdspan_foo_swap_dynamic_extents() {
     int flag1 = 9;
     int flag2 = 7;
 
-    md::dextents<size_t, 2> exts1(3,4);
+    Kokkos::dextents<size_t, 2> exts1(3,4);
     map_t map1(exts1);
     acc_t acc1(&flag1);
-    md::mdspan<int, md::dextents<size_t,2>,
+    Kokkos::mdspan<int, Kokkos::dextents<size_t,2>,
                   Foo::layout_foo, acc_t> m1(Foo::foo_ptr<int>{data1}, map1, acc1);
-    md::dextents<size_t, 2> exts2(4,3);
+    Kokkos::dextents<size_t, 2> exts2(4,3);
     map_t map2(exts2);
     acc_t acc2(&flag2);
-    md::mdspan<int, md::dextents<size_t,2>,
+    Kokkos::mdspan<int, Kokkos::dextents<size_t,2>,
                   Foo::layout_foo, acc_t> m2(Foo::foo_ptr<int>{data2}, map2, acc2);
     __MDSPAN_DEVICE_ASSERT_EQ((map1==map2), false);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.data_handle().data, data1);

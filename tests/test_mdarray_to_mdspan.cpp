@@ -19,14 +19,14 @@
 #include <gtest/gtest.h>
 
 
-namespace mdex = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
+namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = md::dynamic_extent;
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 template<class MDSpan, class MDArray>
 struct MDArrayToMDSpanOperatorTest {
   using mdspan_t = MDSpan;
-  using c_mdspan_t = md::mdspan<const typename mdspan_t::element_type,
+  using c_mdspan_t = Kokkos::mdspan<const typename mdspan_t::element_type,
                                    typename mdspan_t::extents_type,
                                    typename mdspan_t::layout_type>;
   static void test_check(mdspan_t mds, MDArray& mda) {
@@ -51,12 +51,12 @@ struct MDArrayToMDSpanOperatorTest {
 };
 
 TEST(TestMDArray,mdarray_to_mdspan) {
-  MDArrayToMDSpanOperatorTest<md::mdspan <int, md::extents<int, dyn>>,
-                              mdex::mdarray<int, md::extents<int, dyn>>>::test(
+  MDArrayToMDSpanOperatorTest<Kokkos::mdspan <int, Kokkos::extents<int, dyn>>,
+                              KokkosEx::mdarray<int, Kokkos::extents<int, dyn>>>::test(
                               100
                               );
-  MDArrayToMDSpanOperatorTest<md::mdspan <int, md::extents<int, dyn>>,
-                              mdex::mdarray<int, md::extents<int, 100>>>::test(
+  MDArrayToMDSpanOperatorTest<Kokkos::mdspan <int, Kokkos::extents<int, dyn>>,
+                              KokkosEx::mdarray<int, Kokkos::extents<int, 100>>>::test(
                               100
                               );
 }

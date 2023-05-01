@@ -25,15 +25,15 @@
 
 MDSPAN_STATIC_TEST(
   std::is_convertible<
-    md::mdspan<double, md::dextents<size_t,1>>,
-    md::mdspan<double const, md::dextents<size_t,1>>
+    Kokkos::mdspan<double, Kokkos::dextents<size_t,1>>,
+    Kokkos::mdspan<double const, Kokkos::dextents<size_t,1>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   !std::is_convertible<
-    md::mdspan<double const, md::dextents<size_t,1>>,
-    md::mdspan<double, md::dextents<size_t,1>>
+    Kokkos::mdspan<double const, Kokkos::dextents<size_t,1>>,
+    Kokkos::mdspan<double, Kokkos::dextents<size_t,1>>
   >::value
 );
 

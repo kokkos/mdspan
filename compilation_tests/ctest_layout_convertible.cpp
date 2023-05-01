@@ -70,10 +70,10 @@ struct AStridedLayout {
   };
 };
 
-using E1 = md::extents<int32_t, 2,2>;
-using E2 = md::extents<int64_t, 2,2>;
-using LS1 = md::layout_stride::mapping<E1>;
-using LS2 = md::layout_stride::mapping<E2>;
+using E1 = Kokkos::extents<int32_t, 2,2>;
+using E2 = Kokkos::extents<int64_t, 2,2>;
+using LS1 = Kokkos::layout_stride::mapping<E1>;
+using LS2 = Kokkos::layout_stride::mapping<E2>;
 
 MDSPAN_STATIC_TEST(
   !std::is_constructible<LS1, AStridedLayout<false>::mapping<E2>>::value &&

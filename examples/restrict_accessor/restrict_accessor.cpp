@@ -66,7 +66,7 @@ namespace {
 // look at the assembler output, and do performance experiments.
 template<class ElementType>
 struct restrict_accessor {
-  using offset_policy = md::default_accessor<ElementType>;
+  using offset_policy = Kokkos::default_accessor<ElementType>;
   using element_type = ElementType;
   using reference = ElementType&;
   using data_handle_type = _MDSPAN_RESTRICT_POINTER( ElementType );
@@ -94,11 +94,11 @@ using index_type = int;
 
 template<class ElementType>
 using restrict_mdspan_1d =
-  md::mdspan<ElementType, md::dextents<index_type, 1>, md::layout_right, restrict_accessor<ElementType>>;
+  Kokkos::mdspan<ElementType, Kokkos::dextents<index_type, 1>, Kokkos::layout_right, restrict_accessor<ElementType>>;
 
 template<class ElementType>
 using mdspan_1d =
-  md::mdspan<ElementType, md::dextents<index_type, 1>, md::layout_right, md::default_accessor<ElementType>>;
+  Kokkos::mdspan<ElementType, Kokkos::dextents<index_type, 1>, Kokkos::layout_right, Kokkos::default_accessor<ElementType>>;
 
 #define TICK() const auto tick = std::chrono::steady_clock::now()
 

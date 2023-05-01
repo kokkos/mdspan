@@ -23,10 +23,10 @@
 
 constexpr std::ptrdiff_t
 layout_stride_simple(int i) {
-  using map_t = md::layout_stride::template mapping<
-    md::extents<size_t,3>
+  using map_t = Kokkos::layout_stride::template mapping<
+    Kokkos::extents<size_t,3>
   >;
-  return map_t(md::extents<size_t,3>{}, std::array<size_t,1>{1})(i);
+  return map_t(Kokkos::extents<size_t,3>{}, std::array<size_t,1>{1})(i);
 }
 
 MDSPAN_STATIC_TEST(

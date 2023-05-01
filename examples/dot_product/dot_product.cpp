@@ -51,8 +51,8 @@ template <
   class ExtsB, class LayB, class AccB
 >
 T dot_product(
-  md::mdspan<T, ExtsA, LayA, AccA> a,
-  md::mdspan<T, ExtsB, LayB, AccB> b
+  Kokkos::mdspan<T, ExtsA, LayA, AccA> a,
+  Kokkos::mdspan<T, ExtsB, LayB, AccB> b
 ) //requires ExtsA::rank() == ExtsB::rank() && ExtsA::rank() == 2
 {
   T result = 0;
@@ -75,7 +75,7 @@ template <
   class ExtsA, class LayA, class AccA
 >
 void fill_in_order(
-  md::mdspan<T, ExtsA, LayA, AccA> a
+  Kokkos::mdspan<T, ExtsA, LayA, AccA> a
 ) // requires ExtsA::rank() == 2
 {
   T count = 0;
@@ -99,8 +99,8 @@ constexpr int cols = 3;
 
 int main() {
   {
-    using span_2d_dynamic = md::mdspan<int, md::dextents<size_t, 2>, md::layout_right>;
-    using span_2d_dynamic_left = md::mdspan<int, md::dextents<size_t, 2>, md::layout_left>;
+    using span_2d_dynamic = Kokkos::mdspan<int, Kokkos::dextents<size_t, 2>, Kokkos::layout_right>;
+    using span_2d_dynamic_left = Kokkos::mdspan<int, Kokkos::dextents<size_t, 2>, Kokkos::layout_left>;
 
     auto data_a = std::make_unique<int[]>(rows * cols);
     auto data_b = std::make_unique<int[]>(rows * cols);
@@ -114,8 +114,8 @@ int main() {
   }
 
   {
-    using span_2d_10_10 = md::mdspan<int, md::extents<size_t, rows, cols>, md::layout_right>;
-    using span_2d_10_10_left = md::mdspan<int, md::extents<size_t, rows, cols>, md::layout_right>;
+    using span_2d_10_10 = Kokkos::mdspan<int, Kokkos::extents<size_t, rows, cols>, Kokkos::layout_right>;
+    using span_2d_10_10_left = Kokkos::mdspan<int, Kokkos::extents<size_t, rows, cols>, Kokkos::layout_right>;
 
     auto data_a = std::make_unique<int[]>(100);
     auto data_b = std::make_unique<int[]>(100);
