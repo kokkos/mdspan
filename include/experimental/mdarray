@@ -16,6 +16,12 @@
 
 #pragma once
 
-#include "mdspan"
-#include "__p1684_bits/mdarray.hpp"
+#ifndef MDSPAN_IMPL_STANDARD_NAMESPACE
+  #define MDSPAN_IMPL_STANDARD_NAMESPACE std
+#endif
 
+#ifndef MDSPAN_IMPL_PROPOSED_NAMESPACE
+  #define MDSPAN_IMPL_PROPOSED_NAMESPACE experimental
+#endif
+
+#include "../mdspan/mdarray.hpp"

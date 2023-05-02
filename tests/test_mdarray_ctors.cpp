@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdarray>
+#include <mdspan/mdarray.hpp>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -52,8 +52,9 @@ struct ChatterResource : std::pmr::memory_resource{
 };
 #endif
 
-namespace stdex = std::experimental;
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
+namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
+
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 template<int Rank>
 struct mdarray_values;
@@ -172,7 +173,7 @@ void test_mdarray_ctor_data_carray() {
   errors[0] = 0;
 
   dispatch([=] _MDSPAN_HOST_DEVICE () {
-    stdex::mdarray<int, stdex::extents<size_t,1>, stdex::layout_right, std::array<int, 1>> m(stdex::extents<int,1>{});
+    KokkosEx::mdarray<int, Kokkos::extents<size_t,1>, Kokkos::layout_right, std::array<int, 1>> m(Kokkos::extents<int,1>{});
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
     __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 1);
@@ -193,7 +194,7 @@ TEST(TestMdarrayCtorDataCArray, test_mdarray_ctor_data_carray) {
 
 // Construct from extents only
 TEST(TestMdarrayCtorFromExtents, 0d_static) {
-  stdex::mdarray<int, stdex::extents<int>, stdex::layout_right, std::array<int,1>> m(stdex::extents<int>{});
+  KokkosEx::mdarray<int, Kokkos::extents<int>, Kokkos::layout_right, std::array<int,1>> m(Kokkos::extents<int>{});
   // ptr to fill, extents, is_layout_right
   mdarray_values<0>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -202,7 +203,7 @@ TEST(TestMdarrayCtorFromExtents, 0d_static) {
 
 // Construct from sizes only
 TEST(TestMdarrayCtorFromSizes, 1d_static) {
-  stdex::mdarray<int, stdex::extents<int,1>, stdex::layout_right, std::array<int,1>> m(1);
+  KokkosEx::mdarray<int, Kokkos::extents<int,1>, Kokkos::layout_right, std::array<int,1>> m(1);
   // ptr to fill, extents, is_layout_right
   mdarray_values<1>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -210,7 +211,7 @@ TEST(TestMdarrayCtorFromSizes, 1d_static) {
 }
 
 TEST(TestMdarrayCtorFromSizes, 2d_static) {
-  stdex::mdarray<int, stdex::extents<int,2,3>, stdex::layout_right, std::array<int,6>> m(2,3);
+  KokkosEx::mdarray<int, Kokkos::extents<int,2,3>, Kokkos::layout_right, std::array<int,6>> m(2,3);
   // ptr to fill, extents, is_layout_right
   mdarray_values<2>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -218,7 +219,7 @@ TEST(TestMdarrayCtorFromSizes, 2d_static) {
 }
 
 TEST(TestMdarrayCtorFromSizes, 1d_dynamic) {
-  stdex::mdarray<int, stdex::dextents<int,1>, stdex::layout_right, std::array<int,1>> m(1);
+  KokkosEx::mdarray<int, Kokkos::dextents<int,1>, Kokkos::layout_right, std::array<int,1>> m(1);
   // ptr to fill, extents, is_layout_right
   mdarray_values<1>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -226,7 +227,7 @@ TEST(TestMdarrayCtorFromSizes, 1d_dynamic) {
 }
 
 TEST(TestMdarrayCtorFromSizes, 2d_dynamic) {
-  stdex::mdarray<int, stdex::dextents<size_t,2>> m(2,3);
+  KokkosEx::mdarray<int, Kokkos::dextents<size_t,2>> m(2,3);
   // ptr to fill, extents, is_layout_right
   mdarray_values<2>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -234,7 +235,7 @@ TEST(TestMdarrayCtorFromSizes, 2d_dynamic) {
 }
 
 TEST(TestMdarrayCtorFromSizes, 2d_mixed) {
-  stdex::mdarray<int, stdex::extents<unsigned,2,stdex::dynamic_extent>> m(3);
+  KokkosEx::mdarray<int, Kokkos::extents<unsigned,2,Kokkos::dynamic_extent>> m(3);
   // ptr to fill, extents, is_layout_right
   mdarray_values<2>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -244,9 +245,9 @@ TEST(TestMdarrayCtorFromSizes, 2d_mixed) {
 // Construct from container + sizes
 TEST(TestMdarrayCtorFromContainerSizes, 1d_static) {
   std::array<int, 1> d{42};
-  using mda_t = stdex::mdarray<int, stdex::extents<unsigned,1>, stdex::layout_right, std::array<int,1>>;
+  using mda_t = KokkosEx::mdarray<int, Kokkos::extents<unsigned,1>, Kokkos::layout_right, std::array<int,1>>;
   // ptr to fill, extents, is_layout_right
-  mdarray_values<1>::fill(d.data(),stdex::extents<unsigned,1>(),true);
+  mdarray_values<1>::fill(d.data(),Kokkos::extents<unsigned,1>(),true);
   mda_t m(d,1);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 1, 0, 1, 0, 0, 1, 0, 0, d.data(), false, true);
@@ -255,8 +256,8 @@ TEST(TestMdarrayCtorFromContainerSizes, 1d_static) {
 TEST(TestMdarrayCtorFromContainerSizes, 2d_static) {
   std::array<int, 6> d{42,43,44,3,4,41};
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(d.data(),stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::extents<int, 2,3>, stdex::layout_right, std::array<int,6>> m(d,2,3);
+  mdarray_values<2>::fill(d.data(),Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 2,3>, Kokkos::layout_right, std::array<int,6>> m(d,2,3);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 0, 2, 3, 0, 3, 1, 0, d.data(), false, true);
 }
@@ -264,8 +265,8 @@ TEST(TestMdarrayCtorFromContainerSizes, 2d_static) {
 TEST(TestMdarrayCtorFromContainerSizes, 1d_dynamic) {
   std::vector<int> d{42};
   // ptr to fill, extents, is_layout_right
-  mdarray_values<1>::fill(d.data(),stdex::extents<int, 1>(),true);
-  stdex::mdarray<int, stdex::dextents<int, 1>> m(d,1);
+  mdarray_values<1>::fill(d.data(),Kokkos::extents<int, 1>(),true);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 1>> m(d,1);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 1, 1, 1, 0, 0, 1, 0, 0, d.data(), false, true);
 }
@@ -273,8 +274,8 @@ TEST(TestMdarrayCtorFromContainerSizes, 1d_dynamic) {
 TEST(TestMdarrayCtorFromContainerSizes, 2d_dynamic) {
   std::vector<int> d{42,1,2,3,4,41};
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(d.data(),stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::dextents<int, 2>> m(d,2,3);
+  mdarray_values<2>::fill(d.data(),Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 2>> m(d,2,3);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 2, 2, 3, 0, 3, 1, 0, d.data(), false, true);
 }
@@ -282,8 +283,8 @@ TEST(TestMdarrayCtorFromContainerSizes, 2d_dynamic) {
 TEST(TestMdarrayCtorFromContainerSizes, 2d_mixed) {
   std::vector<int> d{42,1,2,3,4,41};
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(d.data(),stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::extents<int, 2,stdex::dynamic_extent>> m(d,3);
+  mdarray_values<2>::fill(d.data(),Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 2,Kokkos::dynamic_extent>> m(d,3);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 1, 2, 3, 0, 3, 1, 0, d.data(), false, true);
 }
@@ -292,8 +293,8 @@ TEST(TestMdarrayCtorFromContainerSizes, 2d_mixed) {
 TEST(TestMdarrayCtorFromMoveContainerSizes, 1d_static) {
   std::array<int, 1> d{42};
   // ptr to fill, extents, is_layout_right
-  mdarray_values<1>::fill(d.data(),stdex::extents<int, 1>(),true);
-  stdex::mdarray<int, stdex::extents<int, 1>, stdex::layout_right, std::array<int,1>> m(std::move(d),1);
+  mdarray_values<1>::fill(d.data(),Kokkos::extents<int, 1>(),true);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 1>, Kokkos::layout_right, std::array<int,1>> m(std::move(d),1);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 1, 0, 1, 0, 0, 1, 0, 0, nullptr, false, true);
 }
@@ -301,8 +302,8 @@ TEST(TestMdarrayCtorFromMoveContainerSizes, 1d_static) {
 TEST(TestMdarrayCtorFromMoveContainerSizes, 2d_static) {
   std::array<int, 6> d{42,1,2,3,4,41};
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(d.data(),stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::extents<int, 2,3>, stdex::layout_right, std::array<int,6>> m(std::move(d),2,3);
+  mdarray_values<2>::fill(d.data(),Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 2,3>, Kokkos::layout_right, std::array<int,6>> m(std::move(d),2,3);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 0, 2, 3, 0, 3, 1, 0, nullptr, false, true);
 }
@@ -311,8 +312,8 @@ TEST(TestMdarrayCtorFromMoveContainerSizes, 1d_dynamic) {
   std::vector<int> d{42};
   auto ptr = d.data();
   // ptr to fill, extents, is_layout_right
-  mdarray_values<1>::fill(ptr,stdex::extents<int, 1>(),true);
-  stdex::mdarray<int, stdex::dextents<int, 1>> m(std::move(d),1);
+  mdarray_values<1>::fill(ptr,Kokkos::extents<int, 1>(),true);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 1>> m(std::move(d),1);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 1, 1, 1, 0, 0, 1, 0, 0, ptr, true, true);
 }
@@ -321,8 +322,8 @@ TEST(TestMdarrayCtorFromMoveContainerSizes, 2d_dynamic) {
   std::vector<int> d{42,1,2,3,4,41};
   auto ptr = d.data();
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(ptr,stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::dextents<int, 2>> m(std::move(d),2,3);
+  mdarray_values<2>::fill(ptr,Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 2>> m(std::move(d),2,3);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 2, 2, 3, 0, 3, 1, 0, ptr, true, true);
 }
@@ -331,8 +332,8 @@ TEST(TestMdarrayCtorFromMoveContainerSizes, 2d_mixed) {
   std::vector<int> d{42,1,2,3,4,41};
   auto ptr = d.data();
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(ptr,stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::extents<int, 2,stdex::dynamic_extent>> m(std::move(d),3);
+  mdarray_values<2>::fill(ptr,Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 2,Kokkos::dynamic_extent>> m(std::move(d),3);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 1, 2, 3, 0, 3, 1, 0, ptr, true, true);
 }
@@ -340,7 +341,7 @@ TEST(TestMdarrayCtorFromMoveContainerSizes, 2d_mixed) {
 // Construct from extents only
 TEST(TestMdarrayCtorFromExtentsAlloc, 0d_static) {
   std::allocator<int> alloc;
-  stdex::mdarray<int, stdex::extents<unsigned>> m(stdex::extents<unsigned>{},alloc);
+  KokkosEx::mdarray<int, Kokkos::extents<unsigned>> m(Kokkos::extents<unsigned>{},alloc);
   // ptr to fill, extents, is_layout_right
   mdarray_values<0>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -350,7 +351,7 @@ TEST(TestMdarrayCtorFromExtentsAlloc, 0d_static) {
 // Construct from sizes only
 TEST(TestMdarrayCtorFromSizesAlloc, 1d_static) {
   std::allocator<int> alloc;
-  stdex::mdarray<int, stdex::extents<int, 1>> m(stdex::extents<int, 1>(), alloc);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 1>> m(Kokkos::extents<int, 1>(), alloc);
   // ptr to fill, extents, is_layout_right
   mdarray_values<1>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -359,7 +360,7 @@ TEST(TestMdarrayCtorFromSizesAlloc, 1d_static) {
 
 TEST(TestMdarrayCtorFromSizesAlloc, 2d_static) {
   std::allocator<int> alloc;
-  stdex::mdarray<int, stdex::extents<int, 2,3>> m(stdex::extents<int, 2,3>(), alloc);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 2,3>> m(Kokkos::extents<int, 2,3>(), alloc);
   // ptr to fill, extents, is_layout_right
   mdarray_values<2>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -368,7 +369,7 @@ TEST(TestMdarrayCtorFromSizesAlloc, 2d_static) {
 
 TEST(TestMdarrayCtorFromSizesAlloc, 1d_dynamic) {
   std::allocator<int> alloc;
-  stdex::mdarray<int, stdex::dextents<int, 1>> m(stdex::extents<int, 1>(), alloc);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 1>> m(Kokkos::extents<int, 1>(), alloc);
   // ptr to fill, extents, is_layout_right
   mdarray_values<1>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -377,7 +378,7 @@ TEST(TestMdarrayCtorFromSizesAlloc, 1d_dynamic) {
 
 TEST(TestMdarrayCtorFromSizesAlloc, 2d_dynamic) {
   std::allocator<int> alloc;
-  stdex::mdarray<int, stdex::dextents<int, 2>> m(stdex::extents<int, 2,3>(), alloc);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 2>> m(Kokkos::extents<int, 2,3>(), alloc);
   // ptr to fill, extents, is_layout_right
   mdarray_values<2>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -386,7 +387,7 @@ TEST(TestMdarrayCtorFromSizesAlloc, 2d_dynamic) {
 
 TEST(TestMdarrayCtorFromSizesAlloc, 2d_mixed) {
   std::allocator<int> alloc;
-  stdex::mdarray<int, stdex::extents<int, 2,stdex::dynamic_extent>> m(stdex::extents<int, 2,stdex::dynamic_extent>{3}, alloc);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 2,Kokkos::dynamic_extent>> m(Kokkos::extents<int, 2,Kokkos::dynamic_extent>{3}, alloc);
   // ptr to fill, extents, is_layout_right
   mdarray_values<2>::fill(m.data(),m.extents(),true);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
@@ -397,8 +398,8 @@ TEST(TestMdarrayCtorFromContainerSizesAlloc, 1d_dynamic) {
   std::allocator<int> alloc;
   std::vector<int> d{42};
   // ptr to fill, extents, is_layout_right
-  mdarray_values<1>::fill(d.data(),stdex::extents<int, 1>(),true);
-  stdex::mdarray<int, stdex::dextents<int, 1>> m(d,stdex::dextents<int, 1>{1}, alloc);
+  mdarray_values<1>::fill(d.data(),Kokkos::extents<int, 1>(),true);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 1>> m(d,Kokkos::dextents<int, 1>{1}, alloc);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 1, 1, 1, 0, 0, 1, 0, 0, d.data(), false, true);
 }
@@ -407,8 +408,8 @@ TEST(TestMdarrayCtorFromContainerSizesAlloc, 2d_dynamic) {
   std::allocator<int> alloc;
   std::vector<int> d{42,1,2,3,4,41};
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(d.data(),stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::dextents<int, 2>> m(d,stdex::dextents<int, 2>{2,3}, alloc);
+  mdarray_values<2>::fill(d.data(),Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 2>> m(d,Kokkos::dextents<int, 2>{2,3}, alloc);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 2, 2, 3, 0, 3, 1, 0, d.data(), false, true);
 }
@@ -417,8 +418,8 @@ TEST(TestMdarrayCtorFromContainerSizesAlloc, 2d_mixed) {
   std::allocator<int> alloc;
   std::vector<int> d{42,1,2,3,4,41};
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(d.data(),stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::extents<int, 2,stdex::dynamic_extent>> m(d,stdex::extents<int, 2,stdex::dynamic_extent>{3}, alloc);
+  mdarray_values<2>::fill(d.data(),Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 2,Kokkos::dynamic_extent>> m(d,Kokkos::extents<int, 2,Kokkos::dynamic_extent>{3}, alloc);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 1, 2, 3, 0, 3, 1, 0, d.data(), false, true);
 }
@@ -428,8 +429,8 @@ TEST(TestMdarrayCtorFromMoveContainerSizesAlloc, 1d_dynamic) {
   std::vector<int> d{42};
   auto ptr = d.data();
   // ptr to fill, extents, is_layout_right
-  mdarray_values<1>::fill(ptr,stdex::extents<int, 1>(),true);
-  stdex::mdarray<int, stdex::dextents<int, 1>> m(std::move(d),stdex::extents<int, 1>(), alloc);
+  mdarray_values<1>::fill(ptr,Kokkos::extents<int, 1>(),true);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 1>> m(std::move(d),Kokkos::extents<int, 1>(), alloc);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 1, 1, 1, 0, 0, 1, 0, 0, ptr, true, true);
 }
@@ -439,8 +440,8 @@ TEST(TestMdarrayCtorFromMoveContainerSizesAlloc, 2d_dynamic) {
   std::vector<int> d{42,1,2,3,4,41};
   auto ptr = d.data();
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(ptr,stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::dextents<int, 2>> m(std::move(d),stdex::extents<int, 2,3>(), alloc);
+  mdarray_values<2>::fill(ptr,Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 2>> m(std::move(d),Kokkos::extents<int, 2,3>(), alloc);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 2, 2, 3, 0, 3, 1, 0, ptr, true, true);
 }
@@ -450,8 +451,8 @@ TEST(TestMdarrayCtorFromMoveContainerSizesAlloc, 2d_mixed) {
   std::vector<int> d{42,1,2,3,4,41};
   auto ptr = d.data();
   // ptr to fill, extents, is_layout_right
-  mdarray_values<2>::fill(ptr,stdex::extents<int, 2,3>(),true);
-  stdex::mdarray<int, stdex::extents<int, 2,stdex::dynamic_extent>> m(std::move(d),stdex::extents<int, 2,stdex::dynamic_extent>(3), alloc);
+  mdarray_values<2>::fill(ptr,Kokkos::extents<int, 2,3>(),true);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 2,Kokkos::dynamic_extent>> m(std::move(d),Kokkos::extents<int, 2,Kokkos::dynamic_extent>(3), alloc);
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 1, 2, 3, 0, 3, 1, 0, ptr, true, true);
 }
@@ -460,13 +461,13 @@ TEST(TestMdarrayCtorFromMoveContainerSizesAlloc, 2d_mixed) {
 
 #ifdef __cpp_lib_memory_resource
 TEST(TestMdarrayCtorWithPMR, 2d_mixed) {
-    using array_2d_pmr_dynamic = stdex::mdarray<int, stdex::dextents<int, 2>, stdex::layout_right, std::vector<int, std::pmr::polymorphic_allocator<int>>>;
+    using array_2d_pmr_dynamic = KokkosEx::mdarray<int, Kokkos::dextents<int, 2>, Kokkos::layout_right, std::vector<int, std::pmr::polymorphic_allocator<int>>>;
 
     ChatterResource allocation_logger;
     constexpr bool test = std::uses_allocator_v<array_2d_pmr_dynamic, std::pmr::polymorphic_allocator<int>>;
     (void) test;
 
-    array_2d_pmr_dynamic a{stdex::dextents<int, 2>{3,3}, &allocation_logger};
+    array_2d_pmr_dynamic a{Kokkos::dextents<int, 2>{3,3}, &allocation_logger};
     array_2d_pmr_dynamic b{3,3};
 
     std::pmr::vector<array_2d_pmr_dynamic> top_container{&allocation_logger};
@@ -482,7 +483,7 @@ TEST(TestMdarrayCtorWithPMR, 2d_mixed) {
 // Construct from container only
 TEST(TestMdarrayCtorDataStdArray, test_mdarray_ctor_data_carray) {
   std::array<int, 1> d = {42};
-  stdex::mdarray<int, stdex::extents<int, 1>, stdex::layout_right, std::array<int, 1>> m(d);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 1>, Kokkos::layout_right, std::array<int, 1>> m(d);
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
@@ -493,7 +494,7 @@ TEST(TestMdarrayCtorDataStdArray, test_mdarray_ctor_data_carray) {
 
 TEST(TestMdarrayCtorDataVector, test_mdarray_ctor_data_carray) {
   std::vector<int> d = {42};
-  stdex::mdarray<int, stdex::extents<int, 1>, stdex::layout_right, std::vector<int>> m(d);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 1>, Kokkos::layout_right, std::vector<int>> m(d);
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
@@ -505,7 +506,7 @@ TEST(TestMdarrayCtorDataVector, test_mdarray_ctor_data_carray) {
 TEST(TestMdarrayCtorExtentsStdArrayConvertibleToSizeT, test_mdarray_ctor_extents_std_array_convertible_to_size_t) {
   std::vector<int> d{42, 17, 71, 24};
   std::array<int, 2> e{2, 2};
-  stdex::mdarray<int, stdex::dextents<int, 2>> m(d, e);
+  KokkosEx::mdarray<int, Kokkos::dextents<int, 2>> m(d, e);
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
   ASSERT_EQ(m.extent(0), 2);
@@ -519,7 +520,7 @@ TEST(TestMdarrayCtorExtentsStdArrayConvertibleToSizeT, test_mdarray_ctor_extents
 TEST(TestMdarrayListInitializationLayoutLeft, test_mdarray_list_initialization_layout_left) {
   std::vector<int> d(16*32);
   auto ptr = d.data();
-  stdex::mdarray<int, stdex::extents<int, dyn, dyn>, stdex::layout_left> m{std::move(d), 16, 32};
+  KokkosEx::mdarray<int, Kokkos::extents<int, dyn, dyn>, Kokkos::layout_left> m{std::move(d), 16, 32};
   ASSERT_EQ(m.data(), ptr);
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -534,7 +535,7 @@ TEST(TestMdarrayListInitializationLayoutLeft, test_mdarray_list_initialization_l
 TEST(TestMdarrayListInitializationLayoutRight, test_mdarray_list_initialization_layout_right) {
   std::vector<int> d(16*32);
   auto ptr = d.data();
-  stdex::mdarray<int, stdex::extents<int, dyn, dyn>, stdex::layout_right> m{std::move(d), 16, 32};
+  KokkosEx::mdarray<int, Kokkos::extents<int, dyn, dyn>, Kokkos::layout_right> m{std::move(d), 16, 32};
   ASSERT_EQ(m.data(), ptr);
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -548,7 +549,7 @@ TEST(TestMdarrayListInitializationLayoutRight, test_mdarray_list_initialization_
 TEST(TestMdarrayListInitializationLayoutStride, test_mdarray_list_initialization_layout_stride) {
   std::vector<int> d(32*128);
   auto ptr = d.data();
-  stdex::mdarray<int, stdex::extents<int, dyn, dyn>, stdex::layout_stride> m{std::move(d), {stdex::dextents<int, 2>{16, 32}, std::array<std::size_t, 2>{1, 128}}};
+  KokkosEx::mdarray<int, Kokkos::extents<int, dyn, dyn>, Kokkos::layout_stride> m{std::move(d), {Kokkos::dextents<int, 2>{16, 32}, std::array<std::size_t, 2>{1, 128}}};
   ASSERT_EQ(m.data(), ptr);
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -564,7 +565,7 @@ TEST(TestMdarrayListInitializationLayoutStride, test_mdarray_list_initialization
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestMdarrayCTAD, extents_pack) {
   std::array<int, 1> d{42};
-  stdex::mdarray m(d.data(), 64, 128);
+  KokkosEx::mdarray m(d.data(), 64, 128);
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -575,7 +576,7 @@ TEST(TestMdarrayCTAD, extents_pack) {
 
 TEST(TestMdarrayCTAD, ctad_pointer) {
   std::array<int,5> d = {1,2,3,4,5};
-  stdex::mdarray m(d.data());
+  KokkosEx::mdarray m(d.data());
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 0);
@@ -585,7 +586,7 @@ TEST(TestMdarrayCTAD, ctad_pointer) {
 
 TEST(TestMdarrayCTAD, ctad_carray) {
   int data[5] = {1,2,3,4,5};
-  stdex::mdarray m(data);
+  KokkosEx::mdarray m(data);
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
   ASSERT_EQ(m.data(), &data[0]);
   #ifdef  _MDSPAN_USE_P2554
@@ -601,7 +602,7 @@ TEST(TestMdarrayCTAD, ctad_carray) {
   ASSERT_TRUE(m.is_exhaustive());
 
 
-  stdex::mdarray m2(data, 3);
+  KokkosEx::mdarray m2(data, 3);
   static_assert(std::is_same<decltype(m2)::element_type,int>::value);
   ASSERT_EQ(m2.data(), &data[0]);
   ASSERT_EQ(m2.rank(), 1);
@@ -613,7 +614,7 @@ TEST(TestMdarrayCTAD, ctad_carray) {
 
 TEST(TestMdarrayCTAD, ctad_const_carray) {
   const int data[5] = {1,2,3,4,5};
-  stdex::mdarray m(data);
+  KokkosEx::mdarray m(data);
   static_assert(std::is_same<decltype(m)::element_type,const int>::value);
   ASSERT_EQ(m.data(), &data[0]);
   #ifdef  _MDSPAN_USE_P2554
@@ -631,7 +632,7 @@ TEST(TestMdarrayCTAD, ctad_const_carray) {
 
 TEST(TestMdarrayCTAD, extents_object) {
   std::array<int, 1> d{42};
-  stdex::mdarray m{d.data(), stdex::extents{64, 128}};
+  KokkosEx::mdarray m{d.data(), Kokkos::extents{64, 128}};
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -642,7 +643,7 @@ TEST(TestMdarrayCTAD, extents_object) {
 
 TEST(TestMdarrayCTAD, extents_std_array) {
   std::array<int, 1> d{42};
-  stdex::mdarray m{d.data(), std::array{64, 128}};
+  KokkosEx::mdarray m{d.data(), std::array{64, 128}};
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -654,7 +655,7 @@ TEST(TestMdarrayCTAD, extents_std_array) {
 TEST(TestMdarrayCTAD, layout_left) {
   std::array<int, 1> d{42};
 
-  stdex::mdarray m0{d.data(), stdex::layout_left::mapping{stdex::extents{16, 32}}};
+  KokkosEx::mdarray m0{d.data(), Kokkos::layout_left::mapping{Kokkos::extents{16, 32}}};
   ASSERT_EQ(m0.data(), d.data());
   ASSERT_EQ(m0.rank(), 2);
   ASSERT_EQ(m0.rank_dynamic(), 2);
@@ -666,7 +667,7 @@ TEST(TestMdarrayCTAD, layout_left) {
 
 // TODO: Perhaps one day I'll get this to work.
 /*
-  stdex::mdarray m1{d.data(), stdex::layout_left::mapping{{16, 32}}};
+  KokkosEx::mdarray m1{d.data(), Kokkos::layout_left::mapping{{16, 32}}};
   ASSERT_EQ(m1.data(), d.data());
   ASSERT_EQ(m1.rank(), 2);
   ASSERT_EQ(m1.rank_dynamic(), 2);
@@ -681,7 +682,7 @@ TEST(TestMdarrayCTAD, layout_left) {
 TEST(TestMdarrayCTAD, layout_right) {
   std::array<int, 1> d{42};
 
-  stdex::mdarray m0{d.data(), stdex::layout_right::mapping{stdex::extents{16, 32}}};
+  KokkosEx::mdarray m0{d.data(), Kokkos::layout_right::mapping{Kokkos::extents{16, 32}}};
   ASSERT_EQ(m0.data(), d.data());
   ASSERT_EQ(m0.rank(), 2);
   ASSERT_EQ(m0.rank_dynamic(), 2);
@@ -693,7 +694,7 @@ TEST(TestMdarrayCTAD, layout_right) {
 
 // TODO: Perhaps one day I'll get this to work.
 /*
-  stdex::mdarray m1{d.data(), stdex::layout_right::mapping{{16, 32}}};
+  KokkosEx::mdarray m1{d.data(), Kokkos::layout_right::mapping{{16, 32}}};
   ASSERT_EQ(m1.data(), d.data());
   ASSERT_EQ(m1.rank(), 2);
   ASSERT_EQ(m1.rank_dynamic(), 2);
@@ -708,7 +709,7 @@ TEST(TestMdarrayCTAD, layout_right) {
 TEST(TestMdarrayCTAD, layout_stride) {
   std::array<int, 1> d{42};
 
-  stdex::mdarray m0{d.data(), stdex::layout_stride::mapping{stdex::extents{16, 32}, std::array{1, 128}}};
+  KokkosEx::mdarray m0{d.data(), Kokkos::layout_stride::mapping{Kokkos::extents{16, 32}, std::array{1, 128}}};
   ASSERT_EQ(m0.data(), d.data());
   ASSERT_EQ(m0.rank(), 2);
   ASSERT_EQ(m0.rank_dynamic(), 2);
@@ -718,8 +719,8 @@ TEST(TestMdarrayCTAD, layout_stride) {
   ASSERT_EQ(m0.stride(1), 128);
   ASSERT_FALSE(m0.is_exhaustive());
 
-  /* 
-  stdex::mdarray m1{d.data(), stdex::layout_stride::mapping{stdex::extents{16, 32}, stdex::extents{1, 128}}};
+  /*
+  KokkosEx::mdarray m1{d.data(), Kokkos::layout_stride::mapping{Kokkos::extents{16, 32}, Kokkos::extents{1, 128}}};
   ASSERT_EQ(m1.data(), d.data());
   ASSERT_EQ(m1.rank(), 2);
   ASSERT_EQ(m1.rank_dynamic(), 2);
@@ -732,7 +733,7 @@ TEST(TestMdarrayCTAD, layout_stride) {
 
 // TODO: Perhaps one day I'll get this to work.
 /*
-  stdex::mdarray m2{d.data(), stdex::layout_stride::mapping{{16, 32}, {1, 128}}};
+  KokkosEx::mdarray m2{d.data(), Kokkos::layout_stride::mapping{{16, 32}, {1, 128}}};
   ASSERT_EQ(m2.data(), d.data());
   ASSERT_EQ(m2.rank(), 2);
   ASSERT_EQ(m2.rank_dynamic(), 2);

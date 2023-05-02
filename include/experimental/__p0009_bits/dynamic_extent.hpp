@@ -17,15 +17,19 @@
 
 #include "macros.hpp"
 
+#if defined(__cpp_lib_span)
+#include <span>
+#endif
+
 #include <cstddef>  // size_t
 #include <limits>   // numeric_limits
 
-namespace std {
-namespace experimental {
-
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+#if defined(__cpp_lib_span)
+using std::dynamic_extent;
+#else
 _MDSPAN_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<size_t>::max();
-
-} // end namespace experimental
-} // namespace std
+#endif
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
 //==============================================================================================================

@@ -28,7 +28,7 @@
 #ifdef _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
 
 #if _MDSPAN_USE_VARIABLE_TEMPLATES
-namespace std {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 #define _MDSPAN_BACKPORT_TRAIT(TRAIT) \
   template <class... Args> _MDSPAN_INLINE_VARIABLE constexpr auto TRAIT##_v = TRAIT<Args...>::value;
@@ -44,7 +44,7 @@ _MDSPAN_BACKPORT_TRAIT(is_void)
 
 #undef _MDSPAN_BACKPORT_TRAIT
 
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
 #endif // _MDSPAN_USE_VARIABLE_TEMPLATES
 
@@ -58,7 +58,7 @@ _MDSPAN_BACKPORT_TRAIT(is_void)
 
 #if !defined(_MDSPAN_USE_INTEGER_SEQUENCE) || !_MDSPAN_USE_INTEGER_SEQUENCE
 
-namespace std {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 template <class T, T... Vals>
 struct integer_sequence {
@@ -97,7 +97,7 @@ using make_index_sequence = typename __detail::__make_int_seq_impl<size_t, N, 0,
 template <class... T>
 using index_sequence_for = make_index_sequence<sizeof...(T)>;
 
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
 #endif
 
@@ -109,7 +109,7 @@ using index_sequence_for = make_index_sequence<sizeof...(T)>;
 
 #if !defined(_MDSPAN_USE_STANDARD_TRAIT_ALIASES) || !_MDSPAN_USE_STANDARD_TRAIT_ALIASES
 
-namespace std {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 #define _MDSPAN_BACKPORT_TRAIT_ALIAS(TRAIT) \
   template <class... Args> using TRAIT##_t = typename TRAIT<Args...>::type;
@@ -122,7 +122,7 @@ using enable_if_t = typename enable_if<_B, _T>::type;
 
 #undef _MDSPAN_BACKPORT_TRAIT_ALIAS
 
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
 #endif
 

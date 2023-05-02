@@ -24,8 +24,7 @@
 
 #include <cinttypes>
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
 // Function used to check compatibility of extents in converting constructor
@@ -355,11 +354,9 @@ public:
 };
 
 } // namespace detail
-} // namespace experimental
-} // namespace std
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 // ------------------------------------------------------------------
 // ------------ extents ---------------------------------------------
@@ -377,7 +374,7 @@ public:
   using rank_type = size_t;
 
   static_assert(std::is_integral<index_type>::value && !std::is_same<index_type, bool>::value,
-                "extents::index_type must be a signed or unsigned integer type");
+                MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents::index_type must be a signed or unsigned integer type");
 private:
   constexpr static rank_type m_rank = sizeof...(Extents);
   constexpr static rank_type m_rank_dynamic =
@@ -540,23 +537,25 @@ public:
 namespace detail {
 
 template <class IndexType, size_t Rank,
-          class Extents = ::std::experimental::extents<IndexType>>
+          class Extents = ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType>>
 struct __make_dextents;
 
 template <class IndexType, size_t Rank, size_t... ExtentsPack>
 struct __make_dextents<
-    IndexType, Rank, ::std::experimental::extents<IndexType, ExtentsPack...>> {
+    IndexType, Rank, ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
+{
   using type = typename __make_dextents<
       IndexType, Rank - 1,
-      ::std::experimental::extents<IndexType,
-                                   ::std::experimental::dynamic_extent,
-                                   ExtentsPack...>>::type;
+      ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType,
+                                                ::MDSPAN_IMPL_STANDARD_NAMESPACE::dynamic_extent,
+                                                ExtentsPack...>>::type;
 };
 
 template <class IndexType, size_t... ExtentsPack>
 struct __make_dextents<
-    IndexType, 0, ::std::experimental::extents<IndexType, ExtentsPack...>> {
-  using type = ::std::experimental::extents<IndexType, ExtentsPack...>;
+    IndexType, 0, ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
+{
+  using type = ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>;
 };
 
 } // end namespace detail
@@ -570,7 +569,7 @@ using dextents = typename detail::__make_dextents<IndexType, Rank>::type;
 template <class... IndexTypes>
 extents(IndexTypes...)
     -> extents<size_t,
-               size_t((IndexTypes(), ::std::experimental::dynamic_extent))...>;
+               size_t((IndexTypes(), ::MDSPAN_IMPL_STANDARD_NAMESPACE::dynamic_extent))...>;
 #endif
 
 // Helper type traits for identifying a class as extents.
@@ -579,7 +578,7 @@ namespace detail {
 template <class T> struct __is_extents : ::std::false_type {};
 
 template <class IndexType, size_t... ExtentsPack>
-struct __is_extents<::std::experimental::extents<IndexType, ExtentsPack...>>
+struct __is_extents<::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
     : ::std::true_type {};
 
 template <class T>
@@ -591,5 +590,4 @@ static
 constexpr bool __is_extents_v = __is_extents<T>::value;
 
 } // namespace detail
-} // namespace experimental
-} // namespace std
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE

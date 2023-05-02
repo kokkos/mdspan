@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
 #include <memory>
 #include <random>
@@ -32,9 +32,9 @@ static constexpr int global_repeat = 1;
 using index_type = int;
 
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_left>;
+using lmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_right>;
+using rmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_right>;
 
 void throw_runtime_exception(const std::string &msg) {
   std::ostringstream o;
@@ -164,7 +164,7 @@ MDSPAN_BENCHMARK_ALL_3D_REAL_TIME(BM_MDSpan_OpenMP_TinyMatrixSum, left_, lmdspan
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_Static_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::dextents<index_type, 3>>;
+  using MDSpan = Kokkos::mdspan<T, Kokkos::dextents<index_type, 3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
 
@@ -215,7 +215,7 @@ BENCHMARK_CAPTURE(BM_Raw_Static_OpenMP_TinyMatrixSum_right, size_1000000_3_3, in
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::dextents<index_type, 3>>;
+  using MDSpan = Kokkos::mdspan<T, Kokkos::dextents<index_type, 3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x,y,z}.mapping().required_span_size();
 
@@ -268,7 +268,7 @@ BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_right, size_1000000_3_3, int(), 10
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_Static_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::extents<index_type, stdex::dynamic_extent, 3, 3>>;
+  using MDSpan = Kokkos::mdspan<T, Kokkos::extents<index_type, Kokkos::dynamic_extent, 3, 3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x}.mapping().required_span_size();
 
@@ -321,7 +321,7 @@ BENCHMARK_CAPTURE(BM_Raw_Static_OpenMP_TinyMatrixSum_left, size_1000000_3_3, int
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_Raw_OpenMP_TinyMatrixSum_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::extents<index_type, stdex::dynamic_extent, 3, 3>>;
+  using MDSpan = Kokkos::mdspan<T, Kokkos::extents<index_type, Kokkos::dynamic_extent, 3, 3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x}.mapping().required_span_size();
 
@@ -371,7 +371,7 @@ BENCHMARK_CAPTURE(BM_Raw_OpenMP_TinyMatrixSum_left, size_1000000_3_3, int(), 100
 
 template <class MDSpan>
 typename MDSpan::value_type*** make_3d_ptr_array(MDSpan s) {
-  static_assert(std::is_same<typename MDSpan::layout_type,std::experimental::layout_right>::value,"Creating MD Ptr only works from mdspan with layout_right");
+  static_assert(std::is_same<typename MDSpan::layout_type,Kokkos::layout_right>::value,"Creating MD Ptr only works from mdspan with layout_right");
   using value_type = typename MDSpan::value_type;
   using index_type = typename MDSpan::index_type;
 
@@ -394,7 +394,7 @@ void free_3d_ptr_array(T*** ptr, size_t extent_0) {
 template <class T, class SizeX, class SizeY, class SizeZ>
 void BM_RawMDPtr_OpenMP_TinyMatrixSum_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z) {
 
-  using MDSpan = stdex::mdspan<T, stdex::extents<index_type, stdex::dynamic_extent, 3, 3>>;
+  using MDSpan = Kokkos::mdspan<T, Kokkos::extents<index_type, Kokkos::dynamic_extent, 3, 3>>;
   using value_type = typename MDSpan::value_type;
   auto buffer_size = MDSpan{nullptr, x}.mapping().required_span_size();
 

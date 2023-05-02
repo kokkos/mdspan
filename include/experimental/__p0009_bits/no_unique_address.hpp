@@ -18,8 +18,7 @@
 #include "macros.hpp"
 #include "trait_backports.hpp"
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
 //==============================================================================
@@ -95,5 +94,4 @@ struct __no_unique_address_emulation<
 //==============================================================================
 
 } // end namespace detail
-} // end namespace experimental
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE

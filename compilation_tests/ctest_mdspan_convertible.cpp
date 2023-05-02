@@ -15,26 +15,25 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
 #include <type_traits>
 
-namespace stdex = std::experimental;
 
 //==============================================================================
 // <editor-fold desc="mdspan"> {{{1
 
 MDSPAN_STATIC_TEST(
   std::is_convertible<
-    stdex::mdspan<double, stdex::dextents<size_t,1>>,
-    stdex::mdspan<double const, stdex::dextents<size_t,1>>
+    Kokkos::mdspan<double, Kokkos::dextents<size_t,1>>,
+    Kokkos::mdspan<double const, Kokkos::dextents<size_t,1>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   !std::is_convertible<
-    stdex::mdspan<double const, stdex::dextents<size_t,1>>,
-    stdex::mdspan<double, stdex::dextents<size_t,1>>
+    Kokkos::mdspan<double const, Kokkos::dextents<size_t,1>>,
+    Kokkos::mdspan<double, Kokkos::dextents<size_t,1>>
   >::value
 );
 

@@ -21,8 +21,7 @@
 #include <stdexcept>
 #include "layout_stride.hpp"
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 //==============================================================================
 template <class Extents>
@@ -35,7 +34,8 @@ class layout_right::mapping {
     using layout_type = layout_right;
   private:
 
-    static_assert(detail::__is_extents_v<extents_type>, "std::experimental::layout_right::mapping must be instantiated with a specialization of std::experimental::extents.");
+    static_assert(detail::__is_extents_v<extents_type>,
+                  MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::layout_right::mapping must be instantiated with a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
     template <class>
     friend class mapping;
@@ -206,7 +206,7 @@ class layout_right::mapping {
 
     // Not really public, but currently needed to implement fully constexpr useable submdspan:
     template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
-    constexpr index_type __get_stride(std::experimental::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
+    constexpr index_type __get_stride(MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT((Idx>N? __extents.template __extent<Idx>():1),1);
     }
     template<size_t N>
@@ -219,6 +219,5 @@ private:
 
 };
 
-} // end namespace experimental
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 

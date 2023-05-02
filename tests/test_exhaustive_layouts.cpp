@@ -13,19 +13,18 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
 #include <gtest/gtest.h>
 
 #include <tuple>
 #include <utility>
 
-namespace stdex = std::experimental;
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
+_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 template <class Extents>
 size_t get_expected_mapping(
-  typename stdex::layout_left::template mapping<Extents> const& map,
+  typename Kokkos::layout_left::template mapping<Extents> const& map,
   size_t i, size_t j, size_t k
 )
 {
@@ -35,7 +34,7 @@ size_t get_expected_mapping(
 
 template <class Extents>
 size_t get_expected_mapping(
-  typename stdex::layout_right::template mapping<Extents> const& map,
+  typename Kokkos::layout_right::template mapping<Extents> const& map,
   size_t i, size_t j, size_t k
 )
 {
@@ -70,50 +69,50 @@ struct TestLayout<std::tuple<
 
 template <class Extents, size_t... DynamicSizes>
 using test_3d_left_types = std::tuple<
-  typename stdex::layout_left::template mapping<Extents>,
+  typename Kokkos::layout_left::template mapping<Extents>,
   std::integer_sequence<size_t, DynamicSizes...>
 >;
 
 template <class Extents, size_t... DynamicSizes>
 using test_3d_right_types = std::tuple<
-  typename stdex::layout_right::template mapping<Extents>,
+  typename Kokkos::layout_right::template mapping<Extents>,
   std::integer_sequence<size_t, DynamicSizes...>
 >;
 
 using layout_test_types_3d =
   ::testing::Types<
-    test_3d_left_types<stdex::extents<size_t,3, 4, 5>>,
-    test_3d_left_types<stdex::extents<size_t,5, 4, 3>>,
-    test_3d_left_types<stdex::extents<size_t,3, 4, dyn>, 5>,
-    test_3d_left_types<stdex::extents<size_t,5, 4, dyn>, 3>,
-    test_3d_left_types<stdex::extents<size_t,3, dyn, 5>, 4>,
-    test_3d_left_types<stdex::extents<size_t,5, dyn, 3>, 4>,
-    test_3d_left_types<stdex::extents<size_t,dyn, 4, 5>, 3>,
-    test_3d_left_types<stdex::extents<size_t,dyn, 4, 3>, 5>,
-    test_3d_left_types<stdex::extents<size_t,dyn, dyn, 5>, 3, 4>,
-    test_3d_left_types<stdex::extents<size_t,dyn, dyn, 3>, 5, 4>,
-    test_3d_left_types<stdex::extents<size_t,dyn, 4, dyn>, 3, 5>,
-    test_3d_left_types<stdex::extents<size_t,dyn, 4, dyn>, 5, 3>,
-    test_3d_left_types<stdex::extents<size_t,3, dyn, dyn>, 4, 5>,
-    test_3d_left_types<stdex::extents<size_t,5, dyn, dyn>, 4, 3>,
-    test_3d_left_types<stdex::extents<size_t,dyn, dyn, dyn>, 3, 4, 5>,
-    test_3d_left_types<stdex::extents<size_t,dyn, dyn, dyn>, 5, 4, 3>,
-    test_3d_right_types<stdex::extents<size_t,3, 4, 5>>,
-    test_3d_right_types<stdex::extents<size_t,5, 4, 3>>,
-    test_3d_right_types<stdex::extents<size_t,3, 4, dyn>, 5>,
-    test_3d_right_types<stdex::extents<size_t,5, 4, dyn>, 3>,
-    test_3d_right_types<stdex::extents<size_t,3, dyn, 5>, 4>,
-    test_3d_right_types<stdex::extents<size_t,5, dyn, 3>, 4>,
-    test_3d_right_types<stdex::extents<size_t,dyn, 4, 5>, 3>,
-    test_3d_right_types<stdex::extents<size_t,dyn, 4, 3>, 5>,
-    test_3d_right_types<stdex::extents<size_t,dyn, dyn, 5>, 3, 4>,
-    test_3d_right_types<stdex::extents<size_t,dyn, dyn, 3>, 5, 4>,
-    test_3d_right_types<stdex::extents<size_t,dyn, 4, dyn>, 3, 5>,
-    test_3d_right_types<stdex::extents<size_t,dyn, 4, dyn>, 5, 3>,
-    test_3d_right_types<stdex::extents<size_t,3, dyn, dyn>, 4, 5>,
-    test_3d_right_types<stdex::extents<size_t,5, dyn, dyn>, 4, 3>,
-    test_3d_right_types<stdex::extents<size_t,dyn, dyn, dyn>, 3, 4, 5>,
-    test_3d_right_types<stdex::extents<size_t,dyn, dyn, dyn>, 5, 4, 3>
+    test_3d_left_types<Kokkos::extents<size_t,3, 4, 5>>,
+    test_3d_left_types<Kokkos::extents<size_t,5, 4, 3>>,
+    test_3d_left_types<Kokkos::extents<size_t,3, 4, dyn>, 5>,
+    test_3d_left_types<Kokkos::extents<size_t,5, 4, dyn>, 3>,
+    test_3d_left_types<Kokkos::extents<size_t,3, dyn, 5>, 4>,
+    test_3d_left_types<Kokkos::extents<size_t,5, dyn, 3>, 4>,
+    test_3d_left_types<Kokkos::extents<size_t,dyn, 4, 5>, 3>,
+    test_3d_left_types<Kokkos::extents<size_t,dyn, 4, 3>, 5>,
+    test_3d_left_types<Kokkos::extents<size_t,dyn, dyn, 5>, 3, 4>,
+    test_3d_left_types<Kokkos::extents<size_t,dyn, dyn, 3>, 5, 4>,
+    test_3d_left_types<Kokkos::extents<size_t,dyn, 4, dyn>, 3, 5>,
+    test_3d_left_types<Kokkos::extents<size_t,dyn, 4, dyn>, 5, 3>,
+    test_3d_left_types<Kokkos::extents<size_t,3, dyn, dyn>, 4, 5>,
+    test_3d_left_types<Kokkos::extents<size_t,5, dyn, dyn>, 4, 3>,
+    test_3d_left_types<Kokkos::extents<size_t,dyn, dyn, dyn>, 3, 4, 5>,
+    test_3d_left_types<Kokkos::extents<size_t,dyn, dyn, dyn>, 5, 4, 3>,
+    test_3d_right_types<Kokkos::extents<size_t,3, 4, 5>>,
+    test_3d_right_types<Kokkos::extents<size_t,5, 4, 3>>,
+    test_3d_right_types<Kokkos::extents<size_t,3, 4, dyn>, 5>,
+    test_3d_right_types<Kokkos::extents<size_t,5, 4, dyn>, 3>,
+    test_3d_right_types<Kokkos::extents<size_t,3, dyn, 5>, 4>,
+    test_3d_right_types<Kokkos::extents<size_t,5, dyn, 3>, 4>,
+    test_3d_right_types<Kokkos::extents<size_t,dyn, 4, 5>, 3>,
+    test_3d_right_types<Kokkos::extents<size_t,dyn, 4, 3>, 5>,
+    test_3d_right_types<Kokkos::extents<size_t,dyn, dyn, 5>, 3, 4>,
+    test_3d_right_types<Kokkos::extents<size_t,dyn, dyn, 3>, 5, 4>,
+    test_3d_right_types<Kokkos::extents<size_t,dyn, 4, dyn>, 3, 5>,
+    test_3d_right_types<Kokkos::extents<size_t,dyn, 4, dyn>, 5, 3>,
+    test_3d_right_types<Kokkos::extents<size_t,3, dyn, dyn>, 4, 5>,
+    test_3d_right_types<Kokkos::extents<size_t,5, dyn, dyn>, 4, 3>,
+    test_3d_right_types<Kokkos::extents<size_t,dyn, dyn, dyn>, 3, 4, 5>,
+    test_3d_right_types<Kokkos::extents<size_t,dyn, dyn, dyn>, 5, 4, 3>
   >;
 
 template <class T> struct TestLayout3D : TestLayout<T> { };
@@ -151,131 +150,131 @@ using test_layout_conversion =
 // Left <=> Left conversion
 using layout_conversion_test_types_left_to_left =
   ::testing::Types<
-     test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
-    ,test_layout_conversion<stdex::layout_left,  stdex::layout_left , stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,dyn>,           true, 5,0> // intentional 0 here to test degenerated
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,dyn,10>,              stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,dyn>,           true, 5,10>
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,dyn,10,15,dyn,25>,    stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_left , stdex::layout_left , stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+     test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,dyn>,                 Kokkos::extents<size_t,5>,               true, 5>
+    ,test_layout_conversion<Kokkos::layout_left,  Kokkos::layout_left , Kokkos::extents<size_t>,                    Kokkos::extents<size_t>,                true>
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,5>,                   Kokkos::extents<size_t,dyn>,             false, 5>
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,dyn>,           true, 5,0> // intentional 0 here to test degenerated
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,dyn,10>,              Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,dyn>,           true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,dyn,10,15,dyn,25>,    Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,dyn,dyn,dyn,dyn,dyn>, Kokkos::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_left , Kokkos::layout_left , Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
   >;
 
 // Right <=> Right conversion
 using layout_conversion_test_types_right_to_right =
   ::testing::Types<
-    test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,dyn>,           true, 5,0> //intentional 0 to test degenerate
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn,10>,              stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,dyn>,           true, 5,10>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn,10,15,dyn,25>,    stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_right, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+    test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,dyn>,                 Kokkos::extents<size_t,5>,               true, 5>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t>,                    Kokkos::extents<size_t>,                true>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,5>,                   Kokkos::extents<size_t,dyn>,             false, 5>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,dyn>,           true, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,dyn,10>,              Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,dyn>,           true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,dyn,10,15,dyn,25>,    Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,dyn,dyn,dyn,dyn,dyn>, Kokkos::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
   >;
 
 // Stride <=> Stride conversion
 using layout_conversion_test_types_stride_to_stride =
   ::testing::Types<
-    test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,dyn>,           true, 5,0> //intentional 0 to test degenerate
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn,10>,              stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,dyn>,           true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn,10,15,dyn,25>,    stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+    test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,dyn>,                 Kokkos::extents<size_t,5>,               true, 5>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t>,                    Kokkos::extents<size_t>,                true>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,5>,                   Kokkos::extents<size_t,dyn>,             false, 5>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,dyn>,           true, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,dyn,10>,              Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,dyn>,           true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,dyn,10,15,dyn,25>,    Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,dyn,dyn,dyn,dyn,dyn>, Kokkos::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_stride, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
   >;
 
 // Right => Stride conversion
 using layout_conversion_test_types_right_to_stride =
   ::testing::Types<
-    test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,dyn>,           true, 5,0> //intentional 0 to test degenerate
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn,10>,              stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,dyn>,           true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn,10,15,dyn,25>,    stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_right, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+    test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,dyn>,                 Kokkos::extents<size_t,5>,               true, 5>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t>,                    Kokkos::extents<size_t>,                true>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,5>,                   Kokkos::extents<size_t,dyn>,             false, 5>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,dyn>,           true, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,dyn,10>,              Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,dyn>,           true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,dyn,10,15,dyn,25>,    Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,dyn,dyn,dyn,dyn,dyn>, Kokkos::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_right, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
   >;
 
 // Left => Stride conversion
 using layout_conversion_test_types_left_to_stride =
   ::testing::Types<
-    test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,dyn>,           true, 5,0> //intentional 0 to test degenerate
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn,10>,              stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,10>,            true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,dyn>,           true, 5,10>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn,10,15,dyn,25>,    stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_stride, stdex::layout_left , stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
+    test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,dyn>,                 Kokkos::extents<size_t,5>,               true, 5>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t>,                    Kokkos::extents<size_t>,                true>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,5>,                   Kokkos::extents<size_t,dyn>,             false, 5>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,dyn>,           true, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,dyn,10>,              Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,10>,            true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,dyn>,           true, 5,10>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,dyn,10,15,dyn,25>,    Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,dyn,dyn,dyn,dyn,dyn>, Kokkos::extents<size_t,5,10,dyn,20,dyn>, true, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_stride, Kokkos::layout_left , Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,15,20,25>,   true, 5, 10, 15, 20, 25>
   >;
 
 // Stride => Left conversion
 using layout_conversion_test_types_stride_to_left =
   ::testing::Types<
-    test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               false, 5>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            false, 5,10>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,dyn>,           false, 5,0> //intentional 0 to test degenerate
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn,10>,              stdex::extents<size_t,5,10>,            false, 5,10>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,10>,            false, 5,10>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,dyn>,           false, 5,10>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn,10,15,dyn,25>,    stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_left  , stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   false, 5, 10, 15, 20, 25>
+    test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,dyn>,                 Kokkos::extents<size_t,5>,               false, 5>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t>,                    Kokkos::extents<size_t>,                true>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,5>,                   Kokkos::extents<size_t,dyn>,             false, 5>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,10>,            false, 5,10>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,dyn>,           false, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,10>,              Kokkos::extents<size_t,5,10>,            false, 5,10>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,10>,            false, 5,10>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,dyn>,           false, 5,10>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,10,15,dyn,25>,    Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,dyn,dyn,dyn,dyn>, Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_left  , Kokkos::layout_stride, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,15,20,25>,   false, 5, 10, 15, 20, 25>
   >;
 
 // Stride => Right conversion
 using layout_conversion_test_types_stride_to_right =
   ::testing::Types<
-    test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               false, 5>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,10>,            false, 5,10>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn,dyn>,             stdex::extents<size_t,5,dyn>,           false, 5,0> //intentional 0 to test degenerate
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn,10>,              stdex::extents<size_t,5,10>,            false, 5,10>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,10>,            false, 5,10>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,5,dyn>,               stdex::extents<size_t,5,dyn>,           false, 5,10>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn,10,15,dyn,25>,    stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,dyn,dyn,dyn,dyn,dyn>, stdex::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
-    ,test_layout_conversion<stdex::layout_right , stdex::layout_stride, stdex::extents<size_t,5,10,15,20,25>,       stdex::extents<size_t,5,10,15,20,25>,   false, 5, 10, 15, 20, 25>
+    test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,dyn>,                 Kokkos::extents<size_t,5>,               false, 5>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t>,                    Kokkos::extents<size_t>,                true>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,5>,                   Kokkos::extents<size_t,dyn>,             false, 5>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,10>,            false, 5,10>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,dyn>,             Kokkos::extents<size_t,5,dyn>,           false, 5,0> //intentional 0 to test degenerate
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,10>,              Kokkos::extents<size_t,5,10>,            false, 5,10>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,10>,            false, 5,10>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,5,dyn>,               Kokkos::extents<size_t,5,dyn>,           false, 5,10>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,10,15,dyn,25>,    Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,dyn,dyn,dyn,dyn,dyn>, Kokkos::extents<size_t,5,10,dyn,20,dyn>, false, 5, 10, 15, 20, 25>
+    ,test_layout_conversion<Kokkos::layout_right , Kokkos::layout_stride, Kokkos::extents<size_t,5,10,15,20,25>,       Kokkos::extents<size_t,5,10,15,20,25>,   false, 5, 10, 15, 20, 25>
   >;
 
 // Left <=> Right conversion
 using layout_conversion_test_types_left_to_right =
   ::testing::Types<
-    test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<size_t,dyn>,                 stdex::extents<size_t,5>,               true, 5>
-    ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<size_t,5>,                   stdex::extents<size_t,dyn>,             false, 5>
-    ,test_layout_conversion<stdex::layout_right, stdex::layout_left , stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
-    ,test_layout_conversion<stdex::layout_left,  stdex::layout_right, stdex::extents<size_t>,                    stdex::extents<size_t>,                true>
+    test_layout_conversion<Kokkos::layout_right, Kokkos::layout_left , Kokkos::extents<size_t,dyn>,                 Kokkos::extents<size_t,5>,               true, 5>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_left , Kokkos::extents<size_t,5>,                   Kokkos::extents<size_t,dyn>,             false, 5>
+    ,test_layout_conversion<Kokkos::layout_left,  Kokkos::layout_right, Kokkos::extents<size_t,dyn>,                 Kokkos::extents<size_t,5>,               true, 5>
+    ,test_layout_conversion<Kokkos::layout_left,  Kokkos::layout_right, Kokkos::extents<size_t,5>,                   Kokkos::extents<size_t,dyn>,             false, 5>
+    ,test_layout_conversion<Kokkos::layout_right, Kokkos::layout_left , Kokkos::extents<size_t>,                    Kokkos::extents<size_t>,                true>
+    ,test_layout_conversion<Kokkos::layout_left,  Kokkos::layout_right, Kokkos::extents<size_t>,                    Kokkos::extents<size_t>,                true>
   >;
 
 template<class T> struct TestLayoutConversion;
@@ -305,8 +304,8 @@ struct TestLayoutConversion<
   template<class Extents>
   static constexpr std::enable_if_t<
     std::is_same<Extents, Extents2>::value &&
-   !std::is_same<Layout1, stdex::layout_stride>::value &&
-    std::is_same<Layout2, stdex::layout_stride>::value,
+   !std::is_same<Layout1, Kokkos::layout_stride>::value &&
+    std::is_same<Layout2, Kokkos::layout_stride>::value,
     map_2_t> create_map2(Extents exts) {
       return map_2_t(map_1_t(Extents1(exts)));
   }
@@ -314,16 +313,16 @@ struct TestLayoutConversion<
   template<class Extents>
   static constexpr std::enable_if_t<
     std::is_same<Extents, Extents2>::value &&
-    std::is_same<Layout1, stdex::layout_stride>::value &&
-    std::is_same<Layout2, stdex::layout_stride>::value,
+    std::is_same<Layout1, Kokkos::layout_stride>::value &&
+    std::is_same<Layout2, Kokkos::layout_stride>::value,
     map_2_t> create_map2(Extents exts) {
-      return map_2_t(typename stdex::layout_left::template mapping<Extents>(exts));
+      return map_2_t(typename Kokkos::layout_left::template mapping<Extents>(exts));
   }
 
   template<class Extents>
   static constexpr std::enable_if_t<
      std::is_same<Extents,Extents2>::value &&
-    !std::is_same<Layout2,stdex::layout_stride>::value,
+    !std::is_same<Layout2,Kokkos::layout_stride>::value,
     map_2_t> create_map2(Extents exts) {
       return map_2_t(exts);
   }
@@ -370,15 +369,15 @@ TYPED_TEST(TestLayoutConversion, implicit_conversion) {
   static_assert(TestFixture::implicit ==
    (
     (
-     !std::is_same<typename TestFixture::layout_2_t, stdex::layout_stride>::value &&
+     !std::is_same<typename TestFixture::layout_2_t, Kokkos::layout_stride>::value &&
      std::is_convertible<typename TestFixture::exts_2_t, typename TestFixture::exts_1_t>::value
     ) || (
-     std::is_same<typename TestFixture::layout_2_t, stdex::layout_stride>::value &&
-     std::is_same<typename TestFixture::layout_1_t, stdex::layout_stride>::value &&
+     std::is_same<typename TestFixture::layout_2_t, Kokkos::layout_stride>::value &&
+     std::is_same<typename TestFixture::layout_1_t, Kokkos::layout_stride>::value &&
      std::is_convertible<typename TestFixture::exts_2_t, typename TestFixture::exts_1_t>::value
     )|| (
-     std::is_same<typename TestFixture::layout_2_t, stdex::layout_stride>::value &&
-     !std::is_same<typename TestFixture::layout_1_t, stdex::layout_stride>::value &&
+     std::is_same<typename TestFixture::layout_2_t, Kokkos::layout_stride>::value &&
+     !std::is_same<typename TestFixture::layout_1_t, Kokkos::layout_stride>::value &&
      TestFixture::exts_2_t::rank()==0
     )
    )

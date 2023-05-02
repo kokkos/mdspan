@@ -34,8 +34,7 @@
 #include<concepts>
 #endif
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 struct layout_left {
   template<class Extents>
@@ -85,7 +84,8 @@ struct layout_stride {
     using layout_type = layout_stride;
 
     // This could be a `requires`, but I think it's better and clearer as a `static_assert`.
-    static_assert(detail::__is_extents_v<Extents>, "std::experimental::layout_stride::mapping must be instantiated with a specialization of std::experimental::extents.");
+    static_assert(detail::__is_extents_v<Extents>,
+                  MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::layout_stride::mapping must be instantiated with a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
 
   private:
@@ -120,7 +120,7 @@ struct layout_stride {
 
     template<class SizeType, size_t ... Ep, size_t ... Idx>
     _MDSPAN_HOST_DEVICE
-    constexpr index_type __get_size(::std::experimental::extents<SizeType, Ep...>,std::integer_sequence<size_t, Idx...>) const {
+    constexpr index_type __get_size(::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, Ep...>,std::integer_sequence<size_t, Idx...>) const {
       return _MDSPAN_FOLD_TIMES_RIGHT( static_cast<index_type>(extents().extent(Idx)), 1 );
     }
 
@@ -223,7 +223,7 @@ struct layout_stride {
       class IntegralTypes,
       /* requires */ (
         // MSVC 19.32 does not like using index_type here, requires the typename Extents::index_type
-        // error C2641: cannot deduce template arguments for 'std::experimental::layout_stride::mapping'
+        // error C2641: cannot deduce template arguments for 'MDSPAN_IMPL_STANDARD_NAMESPACE::layout_stride::mapping'
         _MDSPAN_TRAIT(std::is_convertible, const std::remove_const_t<IntegralTypes>&, typename Extents::index_type) &&
         _MDSPAN_TRAIT(std::is_nothrow_constructible, typename Extents::index_type, const std::remove_const_t<IntegralTypes>&)
       )
@@ -261,7 +261,7 @@ struct layout_stride {
       class IntegralTypes,
       /* requires */ (
         // MSVC 19.32 does not like using index_type here, requires the typename Extents::index_type
-        // error C2641: cannot deduce template arguments for 'std::experimental::layout_stride::mapping'
+        // error C2641: cannot deduce template arguments for 'MDSPAN_IMPL_STANDARD_NAMESPACE::layout_stride::mapping'
         _MDSPAN_TRAIT(std::is_convertible, const std::remove_const_t<IntegralTypes>&, typename Extents::index_type) &&
         _MDSPAN_TRAIT(std::is_nothrow_constructible, typename Extents::index_type, const std::remove_const_t<IntegralTypes>&)
       )
@@ -475,5 +475,4 @@ struct layout_stride {
   };
 };
 
-} // end namespace experimental
-} // end namespace std
+} // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE

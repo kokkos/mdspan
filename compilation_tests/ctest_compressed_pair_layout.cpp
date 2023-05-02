@@ -15,11 +15,10 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
 #include <type_traits>
 
-namespace stdex = std::experimental;
 
 enum emptyness {
   non_empty = false,
@@ -51,7 +50,7 @@ void test() {
 }
 
 template <class T, class U>
-using CP = stdex::detail::__compressed_pair<T, U>;
+using CP = Kokkos::detail::__compressed_pair<T, U>;
 
 struct E0 {};
 struct E1 {};

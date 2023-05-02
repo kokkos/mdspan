@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
 #include "sum_3d_common.hpp"
 #include "fill.hpp"
@@ -27,9 +27,9 @@
 using index_type = int;
 
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_left>;
+using lmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<index_type, Es...>, stdex::layout_right>;
+using rmdspan = Kokkos::mdspan<T, Kokkos::extents<index_type, Es...>, Kokkos::layout_right>;
 
 //================================================================================
 
@@ -107,7 +107,7 @@ void BM_Raw_Sum_3D_OpenMP(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z)
   auto buffer = std::make_unique<T[]>(x * y * z);
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<index_type, 1>>{buffer.get(), x*y*z};
+    auto wrapped = Kokkos::mdspan<T, Kokkos::dextents<index_type, 1>>{buffer.get(), x*y*z};
     mdspan_benchmark::fill_random(wrapped);
   }
 

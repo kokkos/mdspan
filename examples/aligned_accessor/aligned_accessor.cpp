@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
 // Just checking __cpp_lib_int_pow2 isn't enough for some GCC versions.
 // The <bit> header exists, but std::has_single_bit does not.
@@ -42,7 +42,6 @@ constexpr std::size_t min_byte_alignment = min_overalignment_factor * sizeof(flo
 // Some compilers have trouble optimizing loops with unsigned or 64-bit index types.
 using index_type = int;
 
-namespace stdex = std::experimental;
 
 // Prefer std::assume_aligned if available, as it is in the C++ Standard.
 // Otherwise, use a compiler-specific equivalent if available.
@@ -140,7 +139,7 @@ bless(ElementType* ptr, std::integral_constant<std::size_t, byte_alignment> /* b
 
 template<class ElementType, std::size_t byte_alignment>
 struct aligned_accessor {
-  using offset_policy = stdex::default_accessor<ElementType>;
+  using offset_policy = Kokkos::default_accessor<ElementType>;
   using element_type = ElementType;
   using reference = ElementType&;
   using data_handle_type = aligned_pointer_t<ElementType, byte_alignment>;
@@ -308,17 +307,17 @@ private:
 
 template<class ElementType, std::size_t byte_alignment>
 using aligned_mdspan_1d =
-  stdex::mdspan<ElementType,
-		stdex::dextents<index_type, 1>,
-		stdex::layout_right,
+  Kokkos::mdspan<ElementType,
+		Kokkos::dextents<index_type, 1>,
+		Kokkos::layout_right,
 		aligned_accessor<ElementType, byte_alignment>>;
 
 template<class ElementType>
 using mdspan_1d =
-  stdex::mdspan<ElementType,
-		stdex::dextents<index_type, 1>,
-		stdex::layout_right,
-		stdex::default_accessor<ElementType>>;
+  Kokkos::mdspan<ElementType,
+		Kokkos::dextents<index_type, 1>,
+		Kokkos::layout_right,
+		Kokkos::default_accessor<ElementType>>;
 
 #define TICK() const auto tick = std::chrono::steady_clock::now()
 

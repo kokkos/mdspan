@@ -15,11 +15,10 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
 #include <type_traits>
 
-namespace stdex = std::experimental;
 
 
 //==============================================================================
@@ -27,43 +26,43 @@ namespace stdex = std::experimental;
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,1, 2, stdex::dynamic_extent>
+    Kokkos::extents<size_t,1, 2, Kokkos::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,stdex::dynamic_extent>
+    Kokkos::extents<size_t,Kokkos::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>
+    Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,stdex::dynamic_extent, 1, 2, 45>
+    Kokkos::extents<size_t,Kokkos::dynamic_extent, 1, 2, 45>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,45, stdex::dynamic_extent, 1>
+    Kokkos::extents<size_t,45, Kokkos::dynamic_extent, 1>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,1, 2, 3>
+    Kokkos::extents<size_t,1, 2, 3>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::extents<size_t,42>
+    Kokkos::extents<size_t,42>
   >::value
 );
 
@@ -75,55 +74,55 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_left::template mapping<
-      stdex::extents<size_t,42, stdex::dynamic_extent, 73>
+    Kokkos::layout_left::template mapping<
+      Kokkos::extents<size_t,42, Kokkos::dynamic_extent, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_right::template mapping<
-      stdex::extents<size_t,42, stdex::dynamic_extent, 73>
+    Kokkos::layout_right::template mapping<
+      Kokkos::extents<size_t,42, Kokkos::dynamic_extent, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_right::template mapping<
-      stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>
+    Kokkos::layout_right::template mapping<
+      Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_stride::template mapping<
-      stdex::extents<size_t,42, stdex::dynamic_extent, 73>
+    Kokkos::layout_stride::template mapping<
+      Kokkos::extents<size_t,42, Kokkos::dynamic_extent, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_stride::template mapping<
-      stdex::extents<size_t,42, 27, 73>
+    Kokkos::layout_stride::template mapping<
+      Kokkos::extents<size_t,42, 27, 73>
     >
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::layout_stride::template mapping<
-      stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>
+    Kokkos::layout_stride::template mapping<
+      Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>
     >
   >::value
 );
 
 struct layout_stride_as_member_should_be_standard_layout :
-  stdex::layout_stride::template mapping<
-    stdex::extents<size_t,1, 2, 3>
+  Kokkos::layout_stride::template mapping<
+    Kokkos::extents<size_t,1, 2, 3>
   >
 {
   int foo;
@@ -144,21 +143,21 @@ MDSPAN_STATIC_TEST(
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::mdspan<double, stdex::extents<size_t,1, 2, 3>>
+    Kokkos::mdspan<double, Kokkos::extents<size_t,1, 2, 3>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::mdspan<int, stdex::dextents<size_t,2>>
+    Kokkos::mdspan<int, Kokkos::dextents<size_t,2>>
   >::value
 );
 
 MDSPAN_STATIC_TEST(
   std::is_trivially_copyable<
-    stdex::mdspan<
-      double, stdex::extents<size_t,stdex::dynamic_extent, stdex::dynamic_extent>,
-      stdex::layout_left, stdex::default_accessor<double>
+    Kokkos::mdspan<
+      double, Kokkos::extents<size_t,Kokkos::dynamic_extent, Kokkos::dynamic_extent>,
+      Kokkos::layout_left, Kokkos::default_accessor<double>
     >
   >::value
 );

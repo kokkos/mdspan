@@ -57,7 +57,7 @@
 using idx_t = size_t;
 
 #include "fill.hpp"
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 //================================================================================
 
 static constexpr int global_delta = 1;
@@ -66,9 +66,9 @@ static constexpr int global_repeat = 16;
 //================================================================================
 
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<int, Es...>, stdex::layout_left>;
+using lmdspan = Kokkos::mdspan<T, Kokkos::extents<int, Es...>, Kokkos::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<int, Es...>, stdex::layout_right>;
+using rmdspan = Kokkos::mdspan<T, Kokkos::extents<int, Es...>, Kokkos::layout_right>;
 
 
 void throw_runtime_exception(const std::string &msg) {
@@ -221,7 +221,7 @@ void BM_Raw_Cuda_Stencil_3D_right(benchmark::State& state, T, SizeX x_, SizeY y_
   value_type* data_o = nullptr;
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<int, 1>>{};
+    auto wrapped = Kokkos::mdspan<T, Kokkos::dextents<int, 1>>{};
     auto s = fill_device_mdspan(wrapped, x*y*z);
     data = s.data_handle();
     auto o = fill_device_mdspan(wrapped, x*y*z);
@@ -283,7 +283,7 @@ void BM_Raw_Cuda_Stencil_3D_left(benchmark::State& state, T, SizeX x_, SizeY y_,
   value_type* data_o = nullptr;
   {
     // just for setup...
-    auto wrapped = stdex::mdspan<T, stdex::dextents<int,1>>{};
+    auto wrapped = Kokkos::mdspan<T, Kokkos::dextents<int,1>>{};
     auto s = fill_device_mdspan(wrapped, x*y*z);
     data = s.data_handle();
     auto o = fill_device_mdspan(wrapped, x*y*z);

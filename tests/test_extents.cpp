@@ -14,11 +14,10 @@
 //
 //@HEADER
 
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 #include "offload_utils.hpp"
 #include <gtest/gtest.h>
 
-namespace stdex = std::experimental;
 
 // Making actual test implementations part of the class,
 // can't create CUDA lambdas in the primary test functions, since they are private
@@ -28,18 +27,18 @@ template <class> struct TestExtents;
 template <size_t... Extents, size_t... DynamicSizes>
 struct TestExtents<
   std::tuple<
-    stdex::extents<size_t, Extents...>,
+    Kokkos::extents<size_t, Extents...>,
     std::integer_sequence<size_t, DynamicSizes...>
   >
 > : public ::testing::Test {
-  using extents_type = stdex::extents<size_t,Extents...>;
+  using extents_type = Kokkos::extents<size_t,Extents...>;
   // Double Braces here to make it work with GCC 5
   // Otherwise: "error: array must be initialized with a brace-enclosed initializer"
   const std::array<size_t, sizeof...(Extents)> static_sizes {{ Extents... }};
   const std::array<size_t, sizeof...(DynamicSizes)> dyn_sizes {{ DynamicSizes... }};
   extents_type exts { DynamicSizes... };
   using Fixture = TestExtents< std::tuple<
-                    stdex::extents<size_t,Extents...>,
+                    Kokkos::extents<size_t,Extents...>,
                     std::integer_sequence<size_t, DynamicSizes...>
                   >>;
 
@@ -93,7 +92,7 @@ struct TestExtents<
     });
     int dyn_count = 0;
     for(size_t r=0; r<extents_type::rank(); r++) {
-      bool is_dynamic = static_sizes[r] == stdex::dynamic_extent;
+      bool is_dynamic = static_sizes[r] == Kokkos::dynamic_extent;
       auto expected = is_dynamic ? dyn_sizes[dyn_count++] : static_sizes[r];
       EXPECT_EQ(result[r], expected);
     }
@@ -105,16 +104,16 @@ struct TestExtents<
 template <size_t... Ds>
 using _sizes = std::integer_sequence<size_t, Ds...>;
 template <size_t... Ds>
-using _exts = stdex::extents<size_t,Ds...>;
+using _exts = Kokkos::extents<size_t,Ds...>;
 
 using extents_test_types =
   ::testing::Types<
     std::tuple<_exts<10>, _sizes<>>,
-    std::tuple<_exts<stdex::dynamic_extent>, _sizes<10>>,
+    std::tuple<_exts<Kokkos::dynamic_extent>, _sizes<10>>,
     std::tuple<_exts<10, 3>, _sizes<>>,
-    std::tuple<_exts<stdex::dynamic_extent, 3>, _sizes<10>>,
-    std::tuple<_exts<10, stdex::dynamic_extent>, _sizes<3>>,
-    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<10, 3>>
+    std::tuple<_exts<Kokkos::dynamic_extent, 3>, _sizes<10>>,
+    std::tuple<_exts<10, Kokkos::dynamic_extent>, _sizes<3>>,
+    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<10, 3>>
   >;
 
 TYPED_TEST_SUITE(TestExtents, extents_test_types);
@@ -136,7 +135,7 @@ TYPED_TEST(TestExtents, default_ctor) {
   auto e2 = typename TestFixture::extents_type{};
   EXPECT_EQ(e, e2);
   for (size_t r = 0; r < e.rank(); ++r) {
-    bool is_dynamic = (e.static_extent(r) == stdex::dynamic_extent);
+    bool is_dynamic = (e.static_extent(r) == Kokkos::dynamic_extent);
     EXPECT_EQ(e.extent(r), is_dynamic ? 0 : e.static_extent(r));
   }
 }
@@ -169,14 +168,14 @@ struct _BoolPairDeducer {
 template <class> struct TestExtentsCompatCtors;
 template <size_t... Extents, size_t... DynamicSizes, size_t... Extents2, size_t... DynamicSizes2, bool ImplicitExts1ToExts2, bool ImplicitExts2ToExts1>
 struct TestExtentsCompatCtors<std::tuple<
-  stdex::extents<size_t,Extents...>,
+  Kokkos::extents<size_t,Extents...>,
   std::integer_sequence<size_t, DynamicSizes...>,
-  stdex::extents<size_t,Extents2...>,
+  Kokkos::extents<size_t,Extents2...>,
   std::integer_sequence<size_t, DynamicSizes2...>,
   _BoolPairDeducer<ImplicitExts1ToExts2,ImplicitExts2ToExts1>
 >> : public ::testing::Test {
-  using extents_type1 = stdex::extents<size_t,Extents...>;
-  using extents_type2 = stdex::extents<size_t,Extents2...>;
+  using extents_type1 = Kokkos::extents<size_t,Extents...>;
+  using extents_type2 = Kokkos::extents<size_t,Extents2...>;
   extents_type1 exts1 { DynamicSizes... };
   extents_type2 exts2 { DynamicSizes2... };
   static constexpr bool implicit_exts1_to_exts2 = ImplicitExts1ToExts2;
@@ -202,7 +201,7 @@ struct TestExtentsCompatCtors<std::tuple<
   {
     template<class ... SizeTypes>
     static Exts construct(SizeTypes...sizes) {
-      return make_extents<Exts, Idx-1,false,(Idx>1?Exts::static_extent(Idx-2)!=stdex::dynamic_extent:true)>::construct(Idx*5, sizes...);
+      return make_extents<Exts, Idx-1,false,(Idx>1?Exts::static_extent(Idx-2)!=Kokkos::dynamic_extent:true)>::construct(Idx*5, sizes...);
     }
   };
   template<class Exts, size_t Idx>
@@ -210,7 +209,7 @@ struct TestExtentsCompatCtors<std::tuple<
   {
     template<class ... SizeTypes>
     static Exts construct(SizeTypes...sizes) {
-      return make_extents<Exts, Idx-1,false,(Idx>1?Exts::static_extent(Idx-2)!=stdex::dynamic_extent:true)>::construct(sizes...);
+      return make_extents<Exts, Idx-1,false,(Idx>1?Exts::static_extent(Idx-2)!=Kokkos::dynamic_extent:true)>::construct(sizes...);
     }
   };
 
@@ -233,19 +232,19 @@ struct TestExtentsCompatCtors<std::tuple<
 
 using compatible_extents_test_types =
   ::testing::Types<
-    std::tuple<_exts<stdex::dynamic_extent>, _sizes<5>, _exts<5>, _sizes<>, _BoolPairDeducer<false,true>>,
-    std::tuple<_exts<5>, _sizes<>, _exts<stdex::dynamic_extent>, _sizes<5>, _BoolPairDeducer<true,false>>,
+    std::tuple<_exts<Kokkos::dynamic_extent>, _sizes<5>, _exts<5>, _sizes<>, _BoolPairDeducer<false,true>>,
+    std::tuple<_exts<5>, _sizes<>, _exts<Kokkos::dynamic_extent>, _sizes<5>, _BoolPairDeducer<true,false>>,
     //--------------------
-    std::tuple<_exts<stdex::dynamic_extent, 10>, _sizes<5>, _exts<5, stdex::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, false>>,
-    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, true>>,
-    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<stdex::dynamic_extent, 10>, _sizes<5>,  _BoolPairDeducer<false, true>>,
-    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10>, _exts<5, 10>, _sizes<>,  _BoolPairDeducer<false, true>>,
-    std::tuple<_exts<5, 10>, _sizes<>, _exts<5, stdex::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<true, false>>,
-    std::tuple<_exts<5, 10>, _sizes<>, _exts<stdex::dynamic_extent, 10>, _sizes<5>,  _BoolPairDeducer<true, false>>,
+    std::tuple<_exts<Kokkos::dynamic_extent, 10>, _sizes<5>, _exts<5, Kokkos::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, false>>,
+    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<5, 10>, _exts<5, Kokkos::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, true>>,
+    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<5, 10>, _exts<Kokkos::dynamic_extent, 10>, _sizes<5>,  _BoolPairDeducer<false, true>>,
+    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<5, 10>, _exts<5, 10>, _sizes<>,  _BoolPairDeducer<false, true>>,
+    std::tuple<_exts<5, 10>, _sizes<>, _exts<5, Kokkos::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<true, false>>,
+    std::tuple<_exts<5, 10>, _sizes<>, _exts<Kokkos::dynamic_extent, 10>, _sizes<5>,  _BoolPairDeducer<true, false>>,
     //--------------------
-    std::tuple<_exts<stdex::dynamic_extent, stdex::dynamic_extent, 15>, _sizes<5, 10>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>,  _BoolPairDeducer<false, true>>,
-    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<5, stdex::dynamic_extent, 15>, _sizes<10>,  _BoolPairDeducer<true, false>>,
-    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<stdex::dynamic_extent, stdex::dynamic_extent, stdex::dynamic_extent>, _sizes<5, 10, 15>,  _BoolPairDeducer<true, false>>
+    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent, 15>, _sizes<5, 10>, _exts<5, Kokkos::dynamic_extent, 15>, _sizes<10>,  _BoolPairDeducer<false, true>>,
+    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<5, Kokkos::dynamic_extent, 15>, _sizes<10>,  _BoolPairDeducer<true, false>>,
+    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<5, 10, 15>,  _BoolPairDeducer<true, false>>
   >;
 
 TYPED_TEST_SUITE(TestExtentsCompatCtors, compatible_extents_test_types);
@@ -333,7 +332,7 @@ TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
 
 TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_convertible_to_size_t) {
   std::array<int, 2> i{2, 2};
-  stdex::dextents<size_t,2> e{i};
+  Kokkos::dextents<size_t,2> e{i};
   ASSERT_EQ(e.rank(), 2);
   ASSERT_EQ(e.rank_dynamic(), 2);
   ASSERT_EQ(e.extent(0), 2);
@@ -344,7 +343,7 @@ TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_array_conv
 TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_span_convertible_to_size_t) {
   std::array<int, 2> i{2, 2};
   std::span<int ,2> s(i.data(),2);
-  stdex::dextents<size_t,2> e{s};
+  Kokkos::dextents<size_t,2> e{s};
   ASSERT_EQ(e.rank(), 2);
   ASSERT_EQ(e.rank_dynamic(), 2);
   ASSERT_EQ(e.extent(0), 2);
@@ -354,13 +353,13 @@ TEST(TestExtentsCtorStdArrayConvertibleToSizeT, test_extents_ctor_std_span_conve
 
 TYPED_TEST(TestExtentsCompatCtors, construct_from_dynamic_sizes) {
   using e1_t = typename TestFixture::extents_type1;
-  constexpr bool e1_last_ext_static = e1_t::rank()>0?e1_t::static_extent(e1_t::rank()-1)!=stdex::dynamic_extent:true;
+  constexpr bool e1_last_ext_static = e1_t::rank()>0?e1_t::static_extent(e1_t::rank()-1)!=Kokkos::dynamic_extent:true;
   e1_t e1 = TestFixture::template make_extents<e1_t,e1_t::rank(),false,e1_last_ext_static>::construct();
   for(size_t r=0; r<e1.rank(); r++)
     ASSERT_EQ(e1.extent(r), (r+1)*5);
 
   using e2_t = typename TestFixture::extents_type2;
-  constexpr bool e2_last_ext_static = e2_t::rank()>0?e2_t::static_extent(e2_t::rank()-1)!=stdex::dynamic_extent:true;
+  constexpr bool e2_last_ext_static = e2_t::rank()>0?e2_t::static_extent(e2_t::rank()-1)!=Kokkos::dynamic_extent:true;
   e2_t e2 = TestFixture::template make_extents<e2_t,e2_t::rank(),false,e2_last_ext_static>::construct();
   for(size_t r=0; r<e2.rank(); r++)
     ASSERT_EQ(e2.extent(r), (r+1)*5);
@@ -384,7 +383,7 @@ TYPED_TEST(TestExtentsCompatCtors, construct_from_dynamic_array) {
 
   int dyn_idx = 0;
   for(size_t r=0; r<e1_t::rank(); r++) {
-    if(e1_t::static_extent(r)==stdex::dynamic_extent) {
+    if(e1_t::static_extent(r)==Kokkos::dynamic_extent) {
       ext1_array_dynamic[dyn_idx] = static_cast<int>((r+1)*5);
       dyn_idx++;
     }
@@ -398,7 +397,7 @@ TYPED_TEST(TestExtentsCompatCtors, construct_from_dynamic_array) {
 
   dyn_idx = 0;
   for(size_t r=0; r<e2_t::rank(); r++) {
-    if(e2_t::static_extent(r)==stdex::dynamic_extent) {
+    if(e2_t::static_extent(r)==Kokkos::dynamic_extent) {
       ext2_array_dynamic[dyn_idx] = static_cast<int>((r+1)*5);
       dyn_idx++;
     }
@@ -428,22 +427,22 @@ TYPED_TEST(TestExtentsCompatCtors, construct_from_all_array) {
 
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestExtentsCTADPack, test_extents_ctad_pack) {
-  stdex::extents m0;
+  Kokkos::extents m0;
   ASSERT_EQ(m0.rank(), 0);
   ASSERT_EQ(m0.rank_dynamic(), 0);
 
-  stdex::extents m1(64);
+  Kokkos::extents m1(64);
   ASSERT_EQ(m1.rank(), 1);
   ASSERT_EQ(m1.rank_dynamic(), 1);
   ASSERT_EQ(m1.extent(0), 64);
 
-  stdex::extents m2(64, 128);
+  Kokkos::extents m2(64, 128);
   ASSERT_EQ(m2.rank(), 2);
   ASSERT_EQ(m2.rank_dynamic(), 2);
   ASSERT_EQ(m2.extent(0), 64);
   ASSERT_EQ(m2.extent(1), 128);
 
-  stdex::extents m3(64, 128, 256);
+  Kokkos::extents m3(64, 128, 256);
   ASSERT_EQ(m3.rank(), 3);
   ASSERT_EQ(m3.rank_dynamic(), 3);
   ASSERT_EQ(m3.extent(0), 64);
@@ -455,25 +454,25 @@ TEST(TestExtentsCTADPack, test_extents_ctad_pack) {
 // makes this work.
 /*
 TEST(TestExtentsCTADStdArray, test_extents_ctad_std_array) {
-  stdex::extents m0{std::array<size_t, 0>{}};
+  Kokkos::extents m0{std::array<size_t, 0>{}};
   ASSERT_EQ(m0.rank(), 0);
   ASSERT_EQ(m0.rank_dynamic(), 0);
 
   // TODO: `extents` should accept an array of any type convertible to `size_t`.
-  stdex::extents m1{std::array{64UL}};
+  Kokkos::extents m1{std::array{64UL}};
   ASSERT_EQ(m1.rank(), 1);
   ASSERT_EQ(m1.rank_dynamic(), 1);
   ASSERT_EQ(m1.extent(0), 64);
 
   // TODO: `extents` should accept an array of any type convertible to `size_t`.
-  stdex::extents m2{std::array{64UL, 128UL}};
+  Kokkos::extents m2{std::array{64UL, 128UL}};
   ASSERT_EQ(m2.rank(), 2);
   ASSERT_EQ(m2.rank_dynamic(), 2);
   ASSERT_EQ(m2.extent(0), 64);
   ASSERT_EQ(m2.extent(1), 128);
 
   // TODO: `extents` should accept an array of any type convertible to `size_t`.
-  stdex::extents m3{std::array{64UL, 128UL, 256UL}};
+  Kokkos::extents m3{std::array{64UL, 128UL, 256UL}};
   ASSERT_EQ(m3.rank(), 3);
   ASSERT_EQ(m3.rank_dynamic(), 3);
   ASSERT_EQ(m3.extent(0), 64);

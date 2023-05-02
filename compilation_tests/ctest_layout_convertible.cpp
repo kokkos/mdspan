@@ -15,9 +15,8 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
-namespace stdex = std::experimental;
 
 struct NotARealLayout {
   template<class Extents>
@@ -71,10 +70,10 @@ struct AStridedLayout {
   };
 };
 
-using E1 = stdex::extents<int32_t, 2,2>;
-using E2 = stdex::extents<int64_t, 2,2>;
-using LS1 = stdex::layout_stride::mapping<E1>;
-using LS2 = stdex::layout_stride::mapping<E2>;
+using E1 = Kokkos::extents<int32_t, 2,2>;
+using E2 = Kokkos::extents<int64_t, 2,2>;
+using LS1 = Kokkos::layout_stride::mapping<E1>;
+using LS2 = Kokkos::layout_stride::mapping<E2>;
 
 MDSPAN_STATIC_TEST(
   !std::is_constructible<LS1, AStridedLayout<false>::mapping<E2>>::value &&

@@ -15,19 +15,18 @@
 //@HEADER
 #include "ctest_common.hpp"
 
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
-namespace stdex = std::experimental;
 
 // Only works with newer constexpr
 #if defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
 
 constexpr std::ptrdiff_t
 layout_stride_simple(int i) {
-  using map_t = stdex::layout_stride::template mapping<
-    stdex::extents<size_t,3>
+  using map_t = Kokkos::layout_stride::template mapping<
+    Kokkos::extents<size_t,3>
   >;
-  return map_t(stdex::extents<size_t,3>{}, std::array<size_t,1>{1})(i);
+  return map_t(Kokkos::extents<size_t,3>{}, std::array<size_t,1>{1})(i);
 }
 
 MDSPAN_STATIC_TEST(

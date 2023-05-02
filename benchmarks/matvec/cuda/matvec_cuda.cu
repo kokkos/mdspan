@@ -43,7 +43,7 @@
 
 #include "fill.hpp"
 
-#include <experimental/mdspan>
+#include <mdspan/mdspan.hpp>
 
 #include <memory>
 #include <random>
@@ -61,9 +61,9 @@ static constexpr int global_repeat = 16;
 using size_type = int;
 
 template <class T, size_t... Es>
-using lmdspan = stdex::mdspan<T, stdex::extents<size_type, Es...>, stdex::layout_left>;
+using lmdspan = Kokkos::mdspan<T, Kokkos::extents<size_type, Es...>, Kokkos::layout_left>;
 template <class T, size_t... Es>
-using rmdspan = stdex::mdspan<T, stdex::extents<size_type, Es...>, stdex::layout_right>;
+using rmdspan = Kokkos::mdspan<T, Kokkos::extents<size_type, Es...>, Kokkos::layout_right>;
 
 void throw_runtime_exception(const std::string &msg) {
   std::ostringstream o;
@@ -144,7 +144,7 @@ template <class MDSpanMatrix, class... DynSizes>
 void BM_MDSpan_CUDA_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... dyn) {
 
   using value_type = typename MDSpanMatrix::value_type;
-  using MDSpanVector = lmdspan<value_type,stdex::dynamic_extent>;
+  using MDSpanVector = lmdspan<value_type,Kokkos::dynamic_extent>;
 
   auto A = fill_device_mdspan(MDSpanMatrix{}, dyn...);
   auto x = fill_device_mdspan(MDSpanVector{}, A.extent(1));
@@ -176,15 +176,15 @@ void BM_MDSpan_CUDA_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... dy
   CUDA_SAFE_CALL(cudaFree(y.data_handle()));
 }
 
-BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec, left, lmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
-BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec, right, rmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
+BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec, left, lmdspan<double,Kokkos::dynamic_extent,Kokkos::dynamic_extent>(), 100000, 5000);
+BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec, right, rmdspan<double,Kokkos::dynamic_extent,Kokkos::dynamic_extent>(), 100000, 5000);
 
 
 template <class MDSpanMatrix, class... DynSizes>
 void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynSizes... dyn) {
 
   using value_type = typename MDSpanMatrix::value_type;
-  using MDSpanVector = lmdspan<value_type,stdex::dynamic_extent>;
+  using MDSpanVector = lmdspan<value_type,Kokkos::dynamic_extent>;
 
   auto A = fill_device_mdspan(MDSpanMatrix{}, dyn...);
   auto x = fill_device_mdspan(MDSpanVector{}, A.extent(1));
@@ -224,14 +224,14 @@ void BM_MDSpan_CUDA_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, DynS
   CUDA_SAFE_CALL(cudaFree(y.data_handle()));
 }
 
-BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec_Raw_Right, right, rmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
+BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec_Raw_Right, right, rmdspan<double,Kokkos::dynamic_extent,Kokkos::dynamic_extent>(), 100000, 5000);
 
 
 template <class MDSpanMatrix, class... DynSizes>
 void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSizes... dyn) {
 
   using value_type = typename MDSpanMatrix::value_type;
-  using MDSpanVector = lmdspan<value_type,stdex::dynamic_extent>;
+  using MDSpanVector = lmdspan<value_type,Kokkos::dynamic_extent>;
 
   auto A = fill_device_mdspan(MDSpanMatrix{}, dyn...);
   auto x = fill_device_mdspan(MDSpanVector{}, A.extent(1));
@@ -271,5 +271,5 @@ void BM_MDSpan_CUDA_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, DynSi
   CUDA_SAFE_CALL(cudaFree(y.data_handle()));
 }
 
-BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec_Raw_Left, left, lmdspan<double,stdex::dynamic_extent,stdex::dynamic_extent>(), 100000, 5000);
+BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec_Raw_Left, left, lmdspan<double,Kokkos::dynamic_extent,Kokkos::dynamic_extent>(), 100000, 5000);
 BENCHMARK_MAIN();
