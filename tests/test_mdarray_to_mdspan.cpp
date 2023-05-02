@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <mdspan/experimental/mdarray.hpp>
+#include <mdspan/mdarray.hpp>
 #include <vector>
 
 #include <gtest/gtest.h>
