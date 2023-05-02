@@ -22,6 +22,7 @@ option(MDSPAN_ENABLE_SYCL "Enable SYCL tests/benchmarks/examples if tests/benchm
 option(MDSPAN_ENABLE_HIP "Enable HIP tests/benchmarks/examples if tests/benchmarks/examples are enabled." Off)
 option(MDSPAN_ENABLE_OPENMP "Enable OpenMP benchmarks if benchmarks are enabled." On)
 option(MDSPAN_USE_SYSTEM_GTEST "Use system-installed GoogleTest library for tests." Off)
+option(MDSPAN_INSTALL_STDMODE_HEADERS "Whether to install headers to emulate standard library headers and namespaces" Off)
 
 # Option to override which C++ standard to use
 set(MDSPAN_CXX_STANDARD DETECT CACHE STRING "Override the default CXX_STANDARD to compile with.")
@@ -165,7 +166,13 @@ export(TARGETS mdspan
     FILE mdspanTargets.cmake
 )
 
-install(DIRECTORY include/experimental include/mdspan DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/mdspan DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+if (MDSPAN_INSTALL_STDMODE_HEADERS)
+  install(DIRECTORY include/experimental DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+else()
+  install(DIRECTORY include/experimental DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+          REGEX "/mdspan$|/mdarray$" EXCLUDE)
+endif()
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/mdspanConfig.cmake.in
