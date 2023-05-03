@@ -14,7 +14,8 @@
 //
 //@HEADER
 
-#pragma once
+#ifndef MDARRAY_HPP_
+#define MDARRAY_HPP_
 
 #ifndef MDSPAN_IMPL_STANDARD_NAMESPACE
   #define MDSPAN_IMPL_STANDARD_NAMESPACE Kokkos
@@ -27,3 +28,4 @@
 #include "mdspan.hpp"
 #include "../experimental/__p1684_bits/mdarray.hpp"
 
+#endif // MDARRAY_HPP_

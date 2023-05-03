@@ -14,7 +14,8 @@
 //
 //@HEADER
 
-#pragma once
+#ifndef MDSPAN_HPP_
+#define MDSPAN_HPP_
 
 #ifndef MDSPAN_IMPL_STANDARD_NAMESPACE
   #define MDSPAN_IMPL_STANDARD_NAMESPACE Kokkos
@@ -36,3 +37,5 @@
 #if MDSPAN_HAS_CXX_17
 #include "../experimental/__p2630_bits/submdspan.hpp"
 #endif
+
+#endif // MDSPAN_HPP_

@@ -5,6 +5,8 @@ import sys
 import os
 from os.path import dirname, join as path_join, abspath, exists
 
+from pathlib import Path
+
 extra_paths = [path_join(dirname(abspath(__file__)), "include")]
 
 
@@ -31,19 +33,20 @@ def process_file(
             if m_inc:
                 inc_name = m_inc.group(1)
                 inc_path = find_file(inc_name, file_path)
-                if inc_path not in processed_files:
-                    if inc_path is not None:
-                        processed_files += [inc_path]
+                if inc_path is not None:
+                  inc_path_res = str(Path(inc_path).resolve())
+                  if inc_path_res not in processed_files:
+                        processed_files += [inc_path_res]
                         process_file(
-                            inc_path,
+                            inc_path_res,
                             out_lines,
                             front_matter_lines,
                             back_matter_lines,
                             processed_files,
                         )
-                    else:
-                        # assume it's a system header
-                        out_lines += [line]
+                else:
+                  # assume it's a system header
+                  out_lines += [line]
                 continue
             m_once = re.match(r"#pragma once\s*", line)
             # ignore pragma once; we're handling it here
@@ -65,7 +68,7 @@ def process_file(
 if __name__ == "__main__":
     print(
         process_file(
-            abspath(sys.argv[1]),
+            str(Path(sys.argv[1]).resolve()),
             [],
             # We use an include guard instead of `#pragma once` because Godbolt will
             # cause complaints about `#pragma once` when they are used in URL includes.
@@ -74,6 +77,6 @@ if __name__ == "__main__":
                 "#define _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_\n",
             ],
             ["#endif // _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_\n"],
-            [abspath(sys.argv[1])],
+            [str(Path(sys.argv[1]).resolve())],
         )
     )
