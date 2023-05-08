@@ -165,7 +165,7 @@ export(TARGETS mdspan
     FILE mdspanTargets.cmake
 )
 
-install(DIRECTORY include/experimental DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/experimental include/mdspan DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/mdspanConfig.cmake.in
