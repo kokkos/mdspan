@@ -18,6 +18,8 @@
 
 #include <mdspan/mdspan.hpp>
 
+namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
+
 #include <benchmark/benchmark.h>
 
 #include <memory>
