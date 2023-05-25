@@ -127,14 +127,14 @@ class layout_right::mapping {
     MDSPAN_TEMPLATE_REQUIRES(
         class _Mapping,
         /* requires */ (
-            detail::__is_layout_right_padded_mapping<_Mapping>::value
-                && is_constructible_v<extents_type, typename _Mapping::extents_type>))
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::__is_layout_right_padded_mapping<_Mapping>::value
+        && std::is_constructible_v<extents_type, typename _Mapping::extents_type>))
     MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<typename _Mapping::extents_type, extents_type>))
     mapping(const _Mapping &__other) noexcept
         : __extents(__other.extents())
     {
-      detail::__check_layout_padded_layout_mandates<extents_type, _Mapping>();
-      detail::__check_layout_padded_layout_preconditions<extents_type>(__other);
+      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::__check_layout_padded_layout_mandates<extents_type, _Mapping>();
+      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::__check_layout_padded_layout_preconditions<extents_type>(__other);
     }
 #endif
 

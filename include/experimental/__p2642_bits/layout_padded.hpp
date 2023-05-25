@@ -24,8 +24,8 @@
 #include "../__p0009_bits/layout_right.hpp"
 #include "../__p0009_bits/layout_stride.hpp"
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 
 namespace detail {
 template<class _T>
@@ -62,7 +62,7 @@ template <size_t _ExtentToSubIdx, class _Extents, size_t _NewExtent, class _Indi
 struct __substitute_extents_impl;
 
 template<size_t _ExtentToSubIdx, class _IndexType, size_t... _OrigExtents, size_t _NewExtent, size_t... _Indices>
-struct __substitute_extents_impl<_ExtentToSubIdx, extents<_IndexType, _OrigExtents...>, _NewExtent, index_sequence<_Indices...>>
+struct __substitute_extents_impl<_ExtentToSubIdx, extents<_IndexType, _OrigExtents...>, _NewExtent, std::index_sequence<_Indices...>>
 {
   using __orig_extents_type = extents<_IndexType, _OrigExtents...>;
   using __type = extents<_IndexType, ((_Indices == _ExtentToSubIdx) ? _NewExtent : _OrigExtents)...>;
@@ -90,7 +90,7 @@ struct __substitute_extents_impl<_ExtentToSubIdx, extents<_IndexType, _OrigExten
 };
 
 template<size_t _ExtentToSubIdx, class _Extents, size_t _NewExtent>
-using __substitute_extents = __substitute_extents_impl<_ExtentToSubIdx, _Extents, _NewExtent, make_index_sequence<_Extents::rank()>>;
+using __substitute_extents = __substitute_extents_impl<_ExtentToSubIdx, _Extents, _NewExtent, std::make_index_sequence<_Extents::rank()>>;
 
 template<size_t _ExtentToPadIdx, class _Extents, size_t _ActualPaddingStride, class _Enabled = void>
 struct __inner_extents_type
@@ -138,7 +138,7 @@ struct __inner_extents_type
 };
 
 template<size_t _ExtentToPadIdx, class _Extents, size_t _ActualPaddingStride>
-struct __inner_extents_type<_ExtentToPadIdx, _Extents, _ActualPaddingStride, enable_if_t<_Extents::rank() <= size_t(1)>>
+struct __inner_extents_type<_ExtentToPadIdx, _Extents, _ActualPaddingStride, std::enable_if_t<_Extents::rank() <= size_t(1)>>
 {
   using __type = _Extents;
 
@@ -168,7 +168,7 @@ struct __inner_extents_type<_ExtentToPadIdx, _Extents, _ActualPaddingStride, ena
 template <size_t _ExtentToPadIdx, class _IndexType>
 MDSPAN_INLINE_FUNCTION
 static constexpr auto
-__construct_unpadded_extent_type(const extents<_IndexType>&, integral_constant<size_t, _ExtentToPadIdx>)
+__construct_unpadded_extent_type(const extents<_IndexType>&, std::integral_constant<size_t, _ExtentToPadIdx>)
 {
   return extents<_IndexType>{};
 }
@@ -176,7 +176,7 @@ __construct_unpadded_extent_type(const extents<_IndexType>&, integral_constant<s
 template <size_t _ExtentToPadIdx, class _IndexType, size_t _FirstIndex, size_t... _Indices>
 MDSPAN_INLINE_FUNCTION
 static constexpr auto
-__construct_unpadded_extent_type(const extents<_IndexType, _FirstIndex, _Indices...>& __extents, integral_constant<size_t, _ExtentToPadIdx>)
+__construct_unpadded_extent_type(const extents<_IndexType, _FirstIndex, _Indices...>& __extents, std::integral_constant<size_t, _ExtentToPadIdx>)
 {
   using __input_type = extents<_IndexType, _FirstIndex, _Indices...>;
   using __return_type = extents<_IndexType, __input_type::static_extent(_ExtentToPadIdx)>;
@@ -210,7 +210,7 @@ private:
   static constexpr size_t __actual_padding_stride = detail::__get_actual_static_padding_stride<extents_type, padding_stride, __extent_to_pad_idx>();
 
   using __inner_extents_type = typename detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::__type;
-  using __unpadded_extent_type = decltype(detail::__construct_unpadded_extent_type(declval<Extents>(), integral_constant<rank_type, __extent_to_pad_idx>{}));
+  using __unpadded_extent_type = decltype(detail::__construct_unpadded_extent_type(std::declval<Extents>(), std::integral_constant<rank_type, __extent_to_pad_idx>{}));
   using __inner_mapping_type = layout_left::template mapping<__inner_extents_type>;
 
   __inner_mapping_type __inner_mapping;
@@ -245,7 +245,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type& __ext)
     : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext)),
-      __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, integral_constant<rank_type, __extent_to_pad_idx>{}))
+      __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   /**
@@ -260,14 +260,14 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class _Size,
     /* requires */ (
-      is_convertible_v<_Size, index_type>
-      && is_nothrow_constructible_v<index_type, _Size>
+      std::is_convertible_v<_Size, index_type>
+      && std::is_nothrow_constructible_v<index_type, _Size>
     )
   )
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type &__ext, _Size __padding_value)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext, static_cast<index_type>(__padding_value))),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     assert((padding_stride == dynamic_extent) || (padding_stride == static_cast<index_type>(__padding_value)));
   }
@@ -282,13 +282,13 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class _OtherExtents,
     /* requires */ (
-      is_constructible_v<extents_type, _OtherExtents>
+      std::is_constructible_v<extents_type, _OtherExtents>
     )
   )
-  MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
+  MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<_OtherExtents, extents_type>))
   constexpr mapping(const layout_left::mapping<_OtherExtents> &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     static_assert(!((_OtherExtents::rank() > 1) && (__actual_padding_stride != dynamic_extent) && (_OtherExtents::static_extent(__extent_to_pad_idx) != dynamic_extent))
                   || (__actual_padding_stride == _OtherExtents::static_extent(__extent_to_pad_idx)));
@@ -302,13 +302,13 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class _OtherExtents,
     /* requires */ (
-      is_constructible_v<extents_type, _OtherExtents>
+      std::is_constructible_v<extents_type, _OtherExtents>
     )
   )
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
   constexpr mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
   }
 
@@ -322,14 +322,14 @@ public:
     class _Mapping,
     /* requires */ (
       detail::__is_layout_left_padded_mapping<_Mapping>::value
-      && is_constructible_v<extents_type, typename _Mapping::extents_type>
+      && std::is_constructible_v<extents_type, typename _Mapping::extents_type>
     )
   )
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent)))
   constexpr
   mapping(const _Mapping &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     static_assert(padding_stride == dynamic_extent
                   || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent
@@ -346,14 +346,14 @@ public:
     /* requires */ (
       detail::__is_layout_right_padded_mapping<_Mapping>::value
       && extents_type::rank() <= 1
-      && is_constructible_v<extents_type, typename _Mapping::extents_type>
+      && std::is_constructible_v<extents_type, typename _Mapping::extents_type>
     )
   )
-  MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<typename _Mapping::extents_type, extents_type>))
+  MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
   constexpr
   mapping(const _Mapping &__other_mapping) noexcept
       : __inner_mapping(__other_mapping.extents()),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   constexpr extents_type extents() const noexcept
@@ -374,7 +374,7 @@ public:
     if constexpr ( extents_type::rank() == 0 ) {
       return {};
     } else {
-      array<index_type, extents_type::rank()> __s{};
+      std::array<index_type, extents_type::rank()> __s{};
       for (rank_type __r = 0; __r < extents_type::rank(); ++__r)
       {
         __s[__r] = __inner_mapping.stride(__r);
@@ -401,8 +401,8 @@ public:
     class... _Indices,
     /* requires */ (
       sizeof...(_Indices) == extents_type::rank()
-      && (is_convertible_v<_Indices, index_type> && ...)
-      && (is_nothrow_constructible_v<index_type, _Indices> && ...)
+      && (std::is_convertible_v<_Indices, index_type> && ...)
+      && (std::is_nothrow_constructible_v<index_type, _Indices> && ...)
     )
   )
   constexpr size_t operator()(_Indices... __idxs) const noexcept
@@ -504,7 +504,7 @@ class layout_right_padded<padding_stride>::mapping {
   static constexpr size_t __actual_padding_stride = detail::__get_actual_static_padding_stride<extents_type, padding_stride, __extent_to_pad_idx>();
 
   using __inner_extents_type = typename detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::__type;
-  using __unpadded_extent_type = decltype(detail::__construct_unpadded_extent_type(declval<Extents>(), integral_constant<rank_type, __extent_to_pad_idx>{}));
+  using __unpadded_extent_type = decltype(detail::__construct_unpadded_extent_type(std::declval<Extents>(), std::integral_constant<rank_type, __extent_to_pad_idx>{}));
   using __inner_mapping_type = layout_right::template mapping<__inner_extents_type>;
 
   __inner_mapping_type __inner_mapping;
@@ -539,7 +539,7 @@ class layout_right_padded<padding_stride>::mapping {
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type &__ext)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext)),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   /**
@@ -554,14 +554,14 @@ class layout_right_padded<padding_stride>::mapping {
   MDSPAN_TEMPLATE_REQUIRES(
       class _Size,
       /* requires */ (
-          is_convertible_v<_Size, index_type>
-              && is_nothrow_constructible_v<index_type, _Size>
+          std::is_convertible_v<_Size, index_type>
+              && std::is_nothrow_constructible_v<index_type, _Size>
           )
       )
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type &__ext, _Size __padding_value)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct<padding_stride>(__ext, static_cast<index_type>(__padding_value))),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__ext, std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     assert((padding_stride == dynamic_extent) || (padding_stride == static_cast<index_type>(__padding_value)));
   }
@@ -576,13 +576,13 @@ class layout_right_padded<padding_stride>::mapping {
   MDSPAN_TEMPLATE_REQUIRES(
       class _OtherExtents,
       /* requires */ (
-          is_constructible_v<extents_type, _OtherExtents>
+          std::is_constructible_v<extents_type, _OtherExtents>
           )
       )
-  MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<_OtherExtents, extents_type>))
+  MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<_OtherExtents, extents_type>))
   constexpr mapping(const layout_right::mapping<_OtherExtents> &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     static_assert(!((_OtherExtents::rank() > 1) && (__actual_padding_stride != dynamic_extent) && (_OtherExtents::static_extent(__extent_to_pad_idx) != dynamic_extent))
                   || (__actual_padding_stride == _OtherExtents::static_extent(__extent_to_pad_idx)));
@@ -596,13 +596,13 @@ class layout_right_padded<padding_stride>::mapping {
   MDSPAN_TEMPLATE_REQUIRES(
       class _OtherExtents,
       /* requires */ (
-          is_constructible_v<extents_type, _OtherExtents>
+          std::is_constructible_v<extents_type, _OtherExtents>
           )
       )
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
   constexpr mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   /**
@@ -615,13 +615,13 @@ class layout_right_padded<padding_stride>::mapping {
       class _Mapping,
       /* requires */ (
           detail::__is_layout_right_padded_mapping<_Mapping>::value
-              && is_constructible_v<extents_type, typename _Mapping::extents_type>
+              && std::is_constructible_v<extents_type, typename _Mapping::extents_type>
           )
       )
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent)))
   constexpr mapping(const _Mapping &__other_mapping)
       : __inner_mapping(detail::__inner_extents_type<__extent_to_pad_idx, extents_type, __actual_padding_stride>::template __construct_other<padding_stride>(__other_mapping.extents(), __padding_stride_idx, __other_mapping)),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {
     static_assert(padding_stride == dynamic_extent
                   || detail::__padded_layout_padding_stride<typename _Mapping::layout_type>::value == dynamic_extent
@@ -638,13 +638,13 @@ class layout_right_padded<padding_stride>::mapping {
       /* requires */ (
           detail::__is_layout_left_padded_mapping<_Mapping>::value
                   && extents_type::rank() <= 1
-          && is_constructible_v<extents_type, typename _Mapping::extents_type>
+          && std::is_constructible_v<extents_type, typename _Mapping::extents_type>
           )
       )
-  MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<typename _Mapping::extents_type, extents_type>))
+  MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
   constexpr mapping(const _Mapping &__other_mapping) noexcept
       : __inner_mapping(__other_mapping.extents()),
-        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), integral_constant<rank_type, __extent_to_pad_idx>{}))
+        __unpadded_extent(detail::__construct_unpadded_extent_type(__other_mapping.extents(), std::integral_constant<rank_type, __extent_to_pad_idx>{}))
   {}
 
   constexpr extents_type extents() const noexcept
@@ -665,7 +665,7 @@ class layout_right_padded<padding_stride>::mapping {
     if constexpr ( extents_type::rank() == 0 ) {
       return {};
     } else {
-      array<index_type, extents_type::rank()> __s{};
+      std::array<index_type, extents_type::rank()> __s{};
       for (rank_type __r = 0; __r < extents_type::rank(); ++__r)
       {
         __s[__r] = __inner_mapping.stride(__r);
@@ -692,8 +692,8 @@ class layout_right_padded<padding_stride>::mapping {
       class... _Indices,
       /* requires */ (
           sizeof...(_Indices) == extents_type::rank()
-          && (is_convertible_v<_Indices, index_type> && ...)
-          && (is_nothrow_constructible_v<index_type, _Indices> && ...)
+          && (std::is_convertible_v<_Indices, index_type> && ...)
+          && (std::is_nothrow_constructible_v<index_type, _Indices> && ...)
           )
       )
   constexpr size_t operator()(_Indices... __idxs) const noexcept

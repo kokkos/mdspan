@@ -18,8 +18,8 @@
 #include <cassert>
 #include "../__p0009_bits/dynamic_extent.hpp"
 
-namespace std {
-namespace experimental {
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 
 template <size_t padding_stride = dynamic_extent>
 struct layout_left_padded {
@@ -55,39 +55,39 @@ struct __layout_padded_constants<layout_right_padded<_PaddingStride>, _ExtentsTy
 };
 
 template <class _Layout>
-struct __is_layout_left_padded : false_type {};
+struct __is_layout_left_padded : std::false_type {};
 
 template <size_t _PaddingStride>
-struct __is_layout_left_padded<layout_left_padded<_PaddingStride>> : true_type {};
+struct __is_layout_left_padded<layout_left_padded<_PaddingStride>> : std::true_type {};
 
 template <class _Mapping, class _Enabled = void>
-struct __is_layout_left_padded_mapping : false_type {};
+struct __is_layout_left_padded_mapping : std::false_type {};
 
 template <class _Mapping>
-struct __is_layout_left_padded_mapping<_Mapping, enable_if_t<__is_layout_left_padded<typename _Mapping::layout_type>::value>>
-    : true_type {};
+struct __is_layout_left_padded_mapping<_Mapping, std::enable_if_t<__is_layout_left_padded<typename _Mapping::layout_type>::value>>
+    : std::true_type {};
 
 template <class _Layout>
-struct __is_layout_right_padded : false_type {};
+struct __is_layout_right_padded : std::false_type {};
 
 template <size_t _PaddingStride>
-struct __is_layout_right_padded<layout_right_padded<_PaddingStride>> : true_type {};
+struct __is_layout_right_padded<layout_right_padded<_PaddingStride>> : std::true_type {};
 
 template <class _Mapping, class _Enabled = void>
-struct __is_layout_right_padded_mapping : false_type {};
+struct __is_layout_right_padded_mapping : std::false_type {};
 
 template <class _Mapping>
-struct __is_layout_right_padded_mapping<_Mapping, enable_if_t<__is_layout_right_padded<typename _Mapping::layout_type>::value>>
-    : true_type {};
+struct __is_layout_right_padded_mapping<_Mapping, std::enable_if_t<__is_layout_right_padded<typename _Mapping::layout_type>::value>>
+    : std::true_type {};
 
 template <class _Layout>
 struct __padded_layout_padding_stride;
 
 template <size_t _PaddingStride>
-struct __padded_layout_padding_stride<layout_left_padded<_PaddingStride>> : integral_constant<size_t, _PaddingStride> {};
+struct __padded_layout_padding_stride<layout_left_padded<_PaddingStride>> : std::integral_constant<size_t, _PaddingStride> {};
 
 template <size_t _PaddingStride>
-struct __padded_layout_padding_stride<layout_right_padded<_PaddingStride>> : integral_constant<size_t, _PaddingStride> {};
+struct __padded_layout_padding_stride<layout_right_padded<_PaddingStride>> : std::integral_constant<size_t, _PaddingStride> {};
 
 template <class _LayoutExtentsType, class _PaddedLayoutMappingType>
 constexpr void __check_layout_padded_layout_mandates()
