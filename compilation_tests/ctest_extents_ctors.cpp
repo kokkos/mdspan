@@ -283,3 +283,13 @@ MDSPAN_STATIC_TEST(
   >::value
 );
 
+MDSPAN_STATIC_TEST(
+  std::is_constructible<
+    Kokkos::extents<size_t, Kokkos::dynamic_extent, 4>,
+    int, int
+  >::value
+);
+
+MDSPAN_STATIC_TEST(
+  Kokkos::extents<size_t, Kokkos::dynamic_extent, 4>{ 7, 4 }.extent( 0 ) == 7
+);
