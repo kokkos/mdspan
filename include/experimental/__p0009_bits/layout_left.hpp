@@ -126,7 +126,7 @@ class layout_left::mapping {
         && std::is_constructible_v<extents_type, typename _Mapping::extents_type>
       )
     )
-    MDSPAN_CONDITIONAL_EXPLICIT((!is_convertible_v<typename _Mapping::extents_type, extents_type>))
+    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
     mapping(const _Mapping& __other) noexcept
       : __extents(__other.extents())
     {
