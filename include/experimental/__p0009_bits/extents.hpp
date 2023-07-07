@@ -167,7 +167,7 @@ template <> struct index_sequence_scan_impl<0> {
 // all static values.
 
 template <class T, size_t N> struct possibly_empty_array {
-  T vals[N];
+  T vals[N]{};
   MDSPAN_INLINE_FUNCTION
   constexpr T &operator[](size_t r) { return vals[r]; }
   MDSPAN_INLINE_FUNCTION

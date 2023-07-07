@@ -293,3 +293,7 @@ MDSPAN_STATIC_TEST(
 MDSPAN_STATIC_TEST(
   Kokkos::extents<size_t, Kokkos::dynamic_extent, 4>{ 7, 4 }.extent( 0 ) == 7
 );
+
+MDSPAN_STATIC_TEST(
+  Kokkos::dextents<size_t, 1>{std::array<std::size_t, 1>{1}}.extent(0) == 1
+);
