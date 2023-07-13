@@ -1726,6 +1726,7 @@ private:
       size_t DynCount, size_t R, class OtherExtents, class... DynamicValues,
       /* requires */ ((R < m_rank) && (static_extent(R) == dynamic_extent)))
   MDSPAN_INLINE_FUNCTION
+  constexpr
   vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &exts,
@@ -1740,6 +1741,7 @@ private:
       size_t DynCount, size_t R, class OtherExtents, class... DynamicValues,
       /* requires */ ((R < m_rank) && (static_extent(R) != dynamic_extent)))
   MDSPAN_INLINE_FUNCTION
+  constexpr
   vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &exts,
@@ -1753,6 +1755,7 @@ private:
       size_t DynCount, size_t R, class OtherExtents, class... DynamicValues,
       /* requires */ ((R == m_rank) && (DynCount == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
+  constexpr
   vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &,
