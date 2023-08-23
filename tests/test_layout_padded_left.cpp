@@ -7,6 +7,17 @@ namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESP
 
 // Compile time tests
 
+// For internal traits
+struct fake_mapping {
+  using layout_type = Kokkos::Experimental::layout_left_padded<5>;
+};
+
+static_assert(!Kokkos::Experimental::detail::__is_layout_left_padded_mapping<fake_mapping>::value);
+
+static_assert(Kokkos::Experimental::detail::__is_layout_left_padded_mapping<
+              Kokkos::Experimental::layout_left_padded<4>::mapping<
+                  Kokkos::extents<size_t, 4, 7>>>::value);
+
 // layout_left_padded must be trivial
 static_assert(std::is_trivial_v<KokkosEx::layout_left_padded<0>>);
 static_assert(std::is_trivial_v<KokkosEx::layout_left_padded<4>>);

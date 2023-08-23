@@ -64,7 +64,8 @@ template <class _Mapping, class _Enabled = void>
 struct __is_layout_left_padded_mapping : std::false_type {};
 
 template <class _Mapping>
-struct __is_layout_left_padded_mapping<_Mapping, std::enable_if_t<__is_layout_left_padded<typename _Mapping::layout_type>::value>>
+struct __is_layout_left_padded_mapping<_Mapping,
+  std::enable_if_t<std::is_same_v<_Mapping, typename layout_left_padded<_Mapping::padding_stride>::template mapping<typename _Mapping::extents_type>>>>
     : std::true_type {};
 
 template <class _Layout>
@@ -77,7 +78,8 @@ template <class _Mapping, class _Enabled = void>
 struct __is_layout_right_padded_mapping : std::false_type {};
 
 template <class _Mapping>
-struct __is_layout_right_padded_mapping<_Mapping, std::enable_if_t<__is_layout_right_padded<typename _Mapping::layout_type>::value>>
+struct __is_layout_right_padded_mapping<_Mapping,
+  std::enable_if_t<std::is_same_v<_Mapping, typename layout_right_padded<_Mapping::padding_stride>::template mapping<typename _Mapping::extents_type>>>>
     : std::true_type {};
 
 template <class _Layout>

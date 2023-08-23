@@ -185,11 +185,13 @@ __construct_unpadded_extent_type(const extents<_IndexType, _FirstIndex, _Indices
 }
 }
 
-template <size_t padding_stride>
+template <size_t PaddingStride>
 template <class Extents>
-class layout_left_padded<padding_stride>::mapping {
+class layout_left_padded<PaddingStride>::mapping {
 public:
   using extents_type = Extents;
+  static constexpr size_t padding_stride = PaddingStride;
+
   using index_type = typename extents_type::index_type;
   using size_type = typename extents_type::size_type;
   using rank_type = typename extents_type::rank_type;
@@ -481,11 +483,13 @@ public:
 #endif
 };
 
-template <size_t padding_stride>
+template <size_t PaddingStride>
 template <class Extents>
-class layout_right_padded<padding_stride>::mapping {
-  public:
+class layout_right_padded<PaddingStride>::mapping {
+public:
   using extents_type = Extents;
+  static constexpr size_t padding_stride = PaddingStride;
+
   using index_type = typename extents_type::index_type;
   using size_type = typename extents_type::size_type;
   using rank_type = typename extents_type::rank_type;
