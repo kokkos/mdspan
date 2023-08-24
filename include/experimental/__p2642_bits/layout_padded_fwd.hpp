@@ -82,37 +82,27 @@ struct __is_layout_right_padded_mapping<_Mapping,
   std::enable_if_t<std::is_same_v<_Mapping, typename layout_right_padded<_Mapping::padding_stride>::template mapping<typename _Mapping::extents_type>>>>
     : std::true_type {};
 
-template <class _Layout>
-struct __padded_layout_padding_stride;
-
-template <size_t _PaddingStride>
-struct __padded_layout_padding_stride<layout_left_padded<_PaddingStride>> : std::integral_constant<size_t, _PaddingStride> {};
-
-template <size_t _PaddingStride>
-struct __padded_layout_padding_stride<layout_right_padded<_PaddingStride>> : std::integral_constant<size_t, _PaddingStride> {};
-
 template <class _LayoutExtentsType, class _PaddedLayoutMappingType>
-constexpr void __check_layout_padded_layout_mandates()
+constexpr void __check_padded_layout_converting_constructor_mandates()
 {
-  using __padded_layout_extents_type = typename _PaddedLayoutMappingType::extents_type;
-  constexpr auto __padded_layout_padding = __padded_layout_padding_stride<typename _PaddedLayoutMappingType::layout_type>::value;
-  constexpr auto __check_extent_to_pad_idx = __layout_padded_constants<typename _PaddedLayoutMappingType::layout_type, _LayoutExtentsType >::__extent_to_pad_idx;
-  if constexpr ((_LayoutExtentsType::rank() > 1)
-                && (_LayoutExtentsType::static_extent(__check_extent_to_pad_idx) != dynamic_extent)
-                && (__padded_layout_extents_type::static_extent(__check_extent_to_pad_idx) != dynamic_extent)
-                && (__padded_layout_padding != dynamic_extent))
-  {
-    if constexpr (__padded_layout_padding == 0) {
-      static_assert(_LayoutExtentsType::static_extent(__check_extent_to_pad_idx) == 0);
+  using __extents_type = typename _PaddedLayoutMappingType::extents_type;
+  constexpr auto __padding_stride = _PaddedLayoutMappingType::padding_stride;
+  constexpr auto __idx = __layout_padded_constants<typename _PaddedLayoutMappingType::layout_type, _LayoutExtentsType >::__extent_to_pad_idx;
+  if constexpr ((_LayoutExtentsType::rank() > 1) &&
+                (_LayoutExtentsType::static_extent(__idx) != dynamic_extent) &&
+                (__extents_type::static_extent(__idx) != dynamic_extent) &&
+                (__padding_stride != dynamic_extent)) {
+    if constexpr (__padding_stride == 0) {
+      static_assert(_LayoutExtentsType::static_extent(__idx) == 0);
     } else {
-      static_assert(_LayoutExtentsType::static_extent(__check_extent_to_pad_idx) % __padded_layout_padding == 0);
+      static_assert(
+          _LayoutExtentsType::static_extent(__idx) % __padding_stride == 0);
     }
   }
 }
 
-template< typename _ExtentsType, typename _OtherMapping >
-constexpr void __check_layout_padded_layout_preconditions(const _OtherMapping &__other_mapping)
-{
+template <typename _ExtentsType, typename _OtherMapping>
+constexpr void __check_padded_layout_converting_constructor_preconditions(const _OtherMapping &__other_mapping) {
   constexpr auto __padding_stride_idx = __layout_padded_constants<typename _OtherMapping::layout_type, _ExtentsType>::__padding_stride_idx;
   constexpr auto __extent_to_pad_idx = __layout_padded_constants<typename _OtherMapping::layout_type, _ExtentsType>::__extent_to_pad_idx;
   if constexpr (_ExtentsType::rank() > 1) {

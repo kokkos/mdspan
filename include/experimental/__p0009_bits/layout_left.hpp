@@ -130,8 +130,12 @@ class layout_left::mapping {
     mapping(const _Mapping& __other) noexcept
       : __extents(__other.extents())
     {
-      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::__check_layout_padded_layout_mandates<extents_type, _Mapping>();
-      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::__check_layout_padded_layout_preconditions<extents_type>(__other);
+      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
+          __check_padded_layout_converting_constructor_mandates<extents_type,
+                                                                _Mapping>();
+      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
+          __check_padded_layout_converting_constructor_preconditions<
+              extents_type>(__other);
     }
 #endif
 
