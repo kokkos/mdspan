@@ -1,4 +1,6 @@
 #define MDSPAN_INTERNAL_TEST
+#define _MDSPAN_DEBUG
+#include <cassert>
 
 #include <mdspan/mdspan.hpp>
 #include <gtest/gtest.h>
@@ -12,7 +14,8 @@ struct fake_mapping {
   using layout_type = Kokkos::Experimental::layout_left_padded<5>;
 };
 
-static_assert(!Kokkos::Experimental::detail::__is_layout_left_padded_mapping<fake_mapping>::value);
+static_assert(!Kokkos::Experimental::detail::__is_layout_left_padded_mapping<
+              fake_mapping>::value);
 
 static_assert(Kokkos::Experimental::detail::__is_layout_left_padded_mapping<
               Kokkos::Experimental::layout_left_padded<4>::mapping<
@@ -45,59 +48,19 @@ static_assert(KokkosEx::layout_left_padded<2>::mapping<Kokkos::extents<std::size
 static_assert(KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>::__actual_padding_stride == Kokkos::dynamic_extent);
 static_assert(KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3, 7>>::__actual_padding_stride == Kokkos::dynamic_extent);
 
-// inner extents type
-// If extents_type::rank() equals zero or one, then inner-extents-type names the type extents_type.
 namespace
 {
-template<class LayoutLeftPadded, class Extents, class DesiredExtents>
-inline constexpr bool has_inner_extents_type = std::is_same_v<
-    typename LayoutLeftPadded::template mapping<Extents>::__inner_extents_type,
-    DesiredExtents >;
-template<class LayoutLeftPadded, class Extents>
-inline constexpr bool is_0_or_1_rank_inner_extents_type = has_inner_extents_type<LayoutLeftPadded, Extents, typename LayoutLeftPadded::template mapping<Extents>::extents_type>;
-}
-static_assert(is_0_or_1_rank_inner_extents_type<KokkosEx::layout_left_padded<0>, Kokkos::extents<std::size_t, 0>>);
-static_assert(is_0_or_1_rank_inner_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t>>);
-static_assert(is_0_or_1_rank_inner_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t, 3>>);
-static_assert(is_0_or_1_rank_inner_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t, Kokkos::dynamic_extent>>);
-static_assert(is_0_or_1_rank_inner_extents_type<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>, Kokkos::extents<std::size_t, 3>>);
-static_assert(is_0_or_1_rank_inner_extents_type<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>, Kokkos::extents<std::size_t, Kokkos::dynamic_extent>>);
-
-// Otherwise, inner-extents-type names the type extents<index_type,actual-padding-stride, extents_type::static_extent(P_left)...>.
-static_assert(has_inner_extents_type<KokkosEx::layout_left_padded<0>, Kokkos::extents<std::size_t, 0, 5>, Kokkos::extents<std::size_t, 0, 5>>);
-static_assert(has_inner_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t, 3, 5>, Kokkos::extents<std::size_t, 4, 5>>);
-static_assert(has_inner_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 5>, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 5>>);
-static_assert(has_inner_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t, 3, Kokkos::dynamic_extent>, Kokkos::extents<std::size_t, 4, Kokkos::dynamic_extent>>);
-static_assert(has_inner_extents_type<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>, Kokkos::extents<std::size_t, 3, 5>, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 5>>);
-
-// unpadded extent type
-namespace
+template <class LayoutLeftPadded, class Extents, class TestExtents>
+void test_padding_stride(const Extents &extents, const TestExtents &test_extents)
 {
-template<class LayoutLeftPadded, class Extents, class DesiredExtents>
-inline constexpr bool has_unpadded_extents_type = std::is_same_v<
-    typename LayoutLeftPadded::template mapping<Extents>::__unpadded_extent_type,
-    DesiredExtents >;
-}
-// If extents_type::rank() equals zero, then unpadded-extent-type names the type extents<index_type>.
-static_assert(has_unpadded_extents_type<KokkosEx::layout_left_padded<0>, Kokkos::extents<std::size_t>, Kokkos::extents<std::size_t>>);
-static_assert(has_unpadded_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t>, Kokkos::extents<std::size_t>>);
-static_assert(has_unpadded_extents_type<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>, Kokkos::extents<std::size_t>, Kokkos::extents<std::size_t>>);
-
-// Otherwise, unpadded-extent-type names the type extents<index_type, extents_type::static_extent(0)>.
-static_assert(has_unpadded_extents_type<KokkosEx::layout_left_padded<0>, Kokkos::extents<std::size_t, 0>, Kokkos::extents<std::size_t, 0>>);
-static_assert(has_unpadded_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t, 3>, Kokkos::extents<std::size_t, 3>>);
-static_assert(has_unpadded_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t, Kokkos::dynamic_extent>, Kokkos::extents<std::size_t, Kokkos::dynamic_extent>>);
-static_assert(has_unpadded_extents_type<KokkosEx::layout_left_padded<0>, Kokkos::extents<std::size_t, 0, 7>, Kokkos::extents<std::size_t, 0>>);
-static_assert(has_unpadded_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t, 3, 5>, Kokkos::extents<std::size_t, 3>>);
-static_assert(has_unpadded_extents_type<KokkosEx::layout_left_padded<2>, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>, Kokkos::extents<std::size_t, Kokkos::dynamic_extent>>);
-
-namespace
-{
-template<class LayoutLeftPadded, class InnerExtents, class TestExtents>
-void test_inner_mapping_extent(const InnerExtents &inner_extents, const TestExtents &test_extents)
-{
-  auto mapping = typename LayoutLeftPadded::template mapping<InnerExtents>(inner_extents);
-  ASSERT_EQ(mapping.__inner_mapping.extents(), test_extents);
+  auto mapping = typename LayoutLeftPadded::template mapping<Extents>(extents);
+  if constexpr (TestExtents::rank() > 1) {
+    ASSERT_EQ(mapping.__padded_stride.value(), test_extents.extent(decltype(mapping)::__extent_to_pad_idx));
+  } else if constexpr (TestExtents::rank() == 1) {
+    ASSERT_EQ(mapping.__padded_stride.value(), extents.extent(decltype(mapping)::__extent_to_pad_idx));
+  } else {
+    ASSERT_EQ(mapping.__padded_stride.value(), 1);
+  }
 
   auto strs = mapping.strides();
   size_t prod = 1;
@@ -110,11 +73,17 @@ void test_inner_mapping_extent(const InnerExtents &inner_extents, const TestExte
   ASSERT_EQ(prod, mapping.required_span_size());
 }
 
-template <class LayoutLeftPadded, class InnerExtents, class TestExtents, class Size>
-void test_inner_mapping_extent(const InnerExtents &inner_extents, const TestExtents &test_extents, Size padding_value)
+template <class LayoutLeftPadded, class Extents, class TestExtents, class Size>
+void test_padding_stride(const Extents &extents, const TestExtents &test_extents, Size padding_value)
 {
-  auto mapping = typename LayoutLeftPadded::template mapping<InnerExtents>(inner_extents, padding_value);
-  ASSERT_EQ(mapping.__inner_mapping.extents(), test_extents);
+  auto mapping = typename LayoutLeftPadded::template mapping<Extents>(extents, padding_value);
+  if constexpr (TestExtents::rank() > 1) {
+    ASSERT_EQ(mapping.__padded_stride.value(), test_extents.extent(decltype(mapping)::__extent_to_pad_idx));
+  } else if constexpr (TestExtents::rank() == 1) {
+    ASSERT_EQ(mapping.__padded_stride.value(), extents.extent(decltype(mapping)::__extent_to_pad_idx));
+  } else {
+    ASSERT_EQ(mapping.__padded_stride.value(), 1);
+  }
 
   auto strs = mapping.strides();
   size_t prod = 1;
@@ -128,15 +97,15 @@ void test_inner_mapping_extent(const InnerExtents &inner_extents, const TestExte
 }
 
 template<class LayoutLeftPadded, class Extents>
-void test_0_or_1_rank_inner_mapping_extents(const Extents &extents)
+void test_0_or_1_rank_padding_stride(const Extents &extents)
 {
-  test_inner_mapping_extent<LayoutLeftPadded>(extents, extents);
+  test_padding_stride<LayoutLeftPadded>(extents, extents);
 }
 
 template <class LayoutLeftPadded, class Extents, class Size>
-void test_0_or_1_rank_inner_mapping_extents(const Extents &extents, Size padding_value)
+void test_0_or_1_rank_padding_stride(const Extents &extents, Size padding_value)
 {
-  test_inner_mapping_extent<LayoutLeftPadded>(extents, extents, padding_value);
+  test_padding_stride<LayoutLeftPadded>(extents, extents, padding_value);
 }
 
 template <class LayoutLeftPadded, class Extents>
@@ -238,116 +207,116 @@ TEST(LayoutLeftTests, construction)
   // Constructor only taking an extent
   // Direct-non-list-initializes inner-mapping with:
   // - ext, if extents_type::rank() is zero or one; else,
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t>{});
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<0>>(Kokkos::extents<std::size_t, 0>{});
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, 5>{});
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent>{7});
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t>{});
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 0>{});
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 5>{});
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent>{7});
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t>{});
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<0>>(Kokkos::extents<std::size_t, 0>{});
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, 5>{});
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent>{7});
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t>{});
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 0>{});
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 5>{});
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent>{7});
 
   // - ext.extent(0), ext.extent(P_left)..., if padding_stride is dynamic_extent
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 0, 7>{}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{0});
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 5, 7>{}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{5});
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7});
+  test_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 0, 7>{}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{0});
+  test_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 5, 7>{}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{5});
+  test_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7});
 
   // - S_left, ext.extent(P_left)..., where S_left is the least multiple of padding_stride greater than or equal to ext.extent(0)
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<0>>(Kokkos::extents<std::size_t, 0, 7>{}, Kokkos::extents<std::size_t, 0, 7>{});
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, 5, 7>{}, Kokkos::extents<std::size_t, 8, 7>{});
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{8});
+  test_padding_stride<KokkosEx::layout_left_padded<0>>(Kokkos::extents<std::size_t, 0, 7>{}, Kokkos::extents<std::size_t, 0, 7>{});
+  test_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, 5, 7>{}, Kokkos::extents<std::size_t, 8, 7>{});
+  test_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{8});
 
   // Constructor taking an extent and a dynamic value
   // Direct-non-list-initializes inner-mapping with:
   // - ext, if extents_type::rank() is zero or one; else,
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t>{}, 4);
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<0>>(Kokkos::extents<std::size_t, 0>{}, 0);
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, 5>{}, 4);
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent>{7}, 4);
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t>{}, 3);
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 0>{}, 3255);
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 5>{}, 1337);
-  test_0_or_1_rank_inner_mapping_extents<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent>{7}, 6323);
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t>{}, 4);
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<0>>(Kokkos::extents<std::size_t, 0>{}, 0);
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, 5>{}, 4);
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent>{7}, 4);
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t>{}, 3);
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 0>{}, 3255);
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 5>{}, 1337);
+  test_0_or_1_rank_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent>{7}, 6323);
 
   // - S_left, ext.extent(P_left)..., where S_left is the least multiple of padding_value greater than or equal to ext.extent(0)
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<0>>(Kokkos::extents<std::size_t, 0, 7>{}, Kokkos::extents<std::size_t, 0, 7>{}, 0);
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, 5, 7>{}, Kokkos::extents<std::size_t, 8, 7>{}, 4);
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{8}, 4);
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 0, 7>{}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{0}, 2);
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 5, 7>{}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{8}, 4);
-  test_inner_mapping_extent<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{8}, 4);
+  test_padding_stride<KokkosEx::layout_left_padded<0>>(Kokkos::extents<std::size_t, 0, 7>{}, Kokkos::extents<std::size_t, 0, 7>{}, 0);
+  test_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, 5, 7>{}, Kokkos::extents<std::size_t, 8, 7>{}, 4);
+  test_padding_stride<KokkosEx::layout_left_padded<4>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{8}, 4);
+  test_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 0, 7>{}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{0}, 2);
+  test_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 5, 7>{}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{8}, 4);
+  test_padding_stride<KokkosEx::layout_left_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{7}, Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 13>{8}, 4);
 
   // Construct layout_left_padded mapping from layout_left mapping
   ASSERT_EQ(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 3>>()).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 3>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 3>>()).__padded_stride.value()), 3);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 4, 7>>()).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__padded_stride.value()), 4);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 4, 7>>()).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__padded_stride.value()), 4);
 
   ASSERT_EQ(KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 3>>()).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 3>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 3>>()).__padded_stride.value()), 3);
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 4, 7>>()).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__padded_stride.value()), 4);
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{4})).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{4})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{4})).__padded_stride.value()), 4);
 
   // Construct layout_left_padded mapping from layout stride
   ASSERT_EQ(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 3>>({}, std::array<std::size_t, 1>{1})).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 3>>({}, std::array<std::size_t, 1>{1})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 3>>({}, std::array<std::size_t, 1>{1})).__padded_stride.value()), 3);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).__padded_stride.value()), 4);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).__padded_stride.value()), 4);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).extents()), (Kokkos::extents<std::size_t, 5, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 8, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).__padded_stride.value()), 8);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).extents()), (Kokkos::extents<std::size_t, 5, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 8, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).__padded_stride.value()), 8);
 
   ASSERT_EQ(KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 3>>({}, std::array<std::size_t, 1>{1})).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 3>>({}, std::array<std::size_t, 1>{1})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 3>>({}, std::array<std::size_t, 1>{1})).__padded_stride.value()), 3);
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 4, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).__padded_stride.value()), 4);
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 4, 7>>({}, std::array<std::size_t, 2>{1, 4})).__padded_stride.value()), 4);
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 5, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).extents()), (Kokkos::extents<std::size_t, 5, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 5, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 8, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 5, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).__padded_stride.value()), 8);
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).extents()), (Kokkos::extents<std::size_t, 5, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 8, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(Kokkos::layout_stride::mapping<Kokkos::extents<std::size_t, 5, 7>>({}, std::array<std::size_t, 2>{1, 8})).__padded_stride.value()), 8);
 
   // Construct layout_left_padded mapping from another layout_left_padded mapping
   ASSERT_EQ(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).__padded_stride.value()), 3);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>()).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__padded_stride.value()), 4);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>()).extents()), (Kokkos::extents<std::size_t, 4, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 4, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 4, 7>>()).__padded_stride.value()), 4);
 
   ASSERT_EQ(KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).__padded_stride.value()), 3);
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 5, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>()).extents()), (Kokkos::extents<std::size_t, 5, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 5, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 8, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 5, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>()).__padded_stride.value()), 8);
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>()).extents()), (Kokkos::extents<std::size_t, 5, 7>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 8, 7>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>()).__padded_stride.value()), 8);
 
   // Construct layout_left_padded mapping from layout_right_padded mapping
   ASSERT_EQ(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t>>(KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).__padded_stride.value()), 3);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>({}, 4)).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>({}, 4)).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>({}, 4)).__padded_stride.value()), 3);
 
   ASSERT_EQ(KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t>>(KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>()).__padded_stride.value()), 3);
   ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>({}, 4)).extents()), (Kokkos::extents<std::size_t, 3>()));
-  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>({}, 4)).__inner_mapping.extents()), (Kokkos::extents<std::size_t, 3>()));
+  ASSERT_EQ((KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>({}, 4)).__padded_stride.value()), 3);
 
   // Construct layout_left mapping from layout_left_padded mapping
   ASSERT_EQ(Kokkos::layout_left::mapping<Kokkos::extents<std::size_t>>(KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());

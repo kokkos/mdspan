@@ -222,7 +222,7 @@ TEST(LayoutrightTests, construction)
   test_padding_stride<KokkosEx::layout_right_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 7, 0>{}, Kokkos::extents<std::size_t, 7, Kokkos::dynamic_extent>{ 0 });
   test_padding_stride<KokkosEx::layout_right_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 7, 5>{}, Kokkos::extents<std::size_t, 7, Kokkos::dynamic_extent>{ 5 });
   test_padding_stride<KokkosEx::layout_right_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 13, Kokkos::dynamic_extent>{7}, Kokkos::extents<std::size_t, 13, Kokkos::dynamic_extent>{7});
-#if 1
+
   // - S_right, ext.extent(P_right)..., where S_right is the least multiple of padding_stride greater than or equal to ext.extent(0)
   test_padding_stride<KokkosEx::layout_right_padded<0>>(Kokkos::extents<std::size_t, 7, 0>{}, Kokkos::extents<std::size_t, 7, 0>{});
   test_padding_stride<KokkosEx::layout_right_padded<4>>(Kokkos::extents<std::size_t, 7, 5>{}, Kokkos::extents<std::size_t, 7, 8>{});
@@ -247,7 +247,7 @@ TEST(LayoutrightTests, construction)
   test_padding_stride<KokkosEx::layout_right_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 7, 0>{}, Kokkos::extents<std::size_t, 7, Kokkos::dynamic_extent>{0}, 2);
   test_padding_stride<KokkosEx::layout_right_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 7, 5>{}, Kokkos::extents<std::size_t, 7, Kokkos::dynamic_extent>{8}, 4);
   test_padding_stride<KokkosEx::layout_right_padded<Kokkos::dynamic_extent>>(Kokkos::extents<std::size_t, 13, Kokkos::dynamic_extent>{7}, Kokkos::extents<std::size_t, 13, Kokkos::dynamic_extent>{8}, 4);
-#endif
+
   // Construct layout_right_padded mapping from layout_right mapping
   ASSERT_EQ(KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t>>(Kokkos::layout_right::mapping<Kokkos::extents<std::size_t>>()).extents(), Kokkos::extents<std::size_t>());
   ASSERT_EQ((KokkosEx::layout_right_padded<4>::mapping<Kokkos::extents<std::size_t, 3>>(Kokkos::layout_right::mapping<Kokkos::extents<std::size_t, 3>>()).extents()), (Kokkos::extents<std::size_t, 3>()));
