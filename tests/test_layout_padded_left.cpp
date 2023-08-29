@@ -420,3 +420,47 @@ TEST(LayoutLeftTests, stride)
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>().stride(0)), 1);
   ASSERT_EQ((KokkosEx::layout_left_padded<4>::mapping<Kokkos::extents<std::size_t, 5, 7>>().stride(1)), 8);
 }
+
+TEST(LayoutRightTests, access) {
+  auto mapping1 = KokkosEx::layout_left_padded<4>::mapping<
+      Kokkos::extents<std::size_t, 5, 7>>();
+  ASSERT_EQ(mapping1(0, 0), 0);
+  ASSERT_EQ(mapping1(1, 0), 1);
+  ASSERT_EQ(mapping1(4, 0), 4);
+  ASSERT_EQ(mapping1(0, 1), 8);
+  ASSERT_EQ(mapping1(4, 1), 12);
+  ASSERT_EQ(mapping1(0, 6), 48);
+  ASSERT_EQ(mapping1(4, 6), 52);
+
+  auto mapping2 = KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<
+      Kokkos::extents<std::size_t, 5, 7>>({}, 6);
+  ASSERT_EQ(mapping2(0, 0), 0);
+  ASSERT_EQ(mapping2(1, 0), 1);
+  ASSERT_EQ(mapping2(4, 0), 4);
+  ASSERT_EQ(mapping2(0, 1), 6);
+  ASSERT_EQ(mapping2(4, 1), 10);
+  ASSERT_EQ(mapping2(0, 6), 36);
+  ASSERT_EQ(mapping2(4, 6), 40);
+
+  auto mapping3 = KokkosEx::layout_left_padded<2>::mapping<
+      Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(
+      Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{3});
+  ASSERT_EQ(mapping3(0, 0), 0);
+  ASSERT_EQ(mapping3(1, 0), 1);
+  ASSERT_EQ(mapping3(2, 0), 2);
+  ASSERT_EQ(mapping3(0, 1), 4);
+  ASSERT_EQ(mapping3(2, 1), 6);
+  ASSERT_EQ(mapping3(0, 6), 24);
+  ASSERT_EQ(mapping3(2, 6), 26);
+
+  auto mapping4 = KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<
+      Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>>(
+      Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 7>{7}, 10);
+  ASSERT_EQ(mapping4(0, 0), 0);
+  ASSERT_EQ(mapping4(1, 0), 1);
+  ASSERT_EQ(mapping4(6, 0), 6);
+  ASSERT_EQ(mapping4(0, 1), 10);
+  ASSERT_EQ(mapping4(6, 1), 16);
+  ASSERT_EQ(mapping4(0, 6), 60);
+  ASSERT_EQ(mapping4(6, 6), 66);
+}

@@ -203,6 +203,12 @@ private:
   __padded_stride_type __padded_stride = {};
   extents_type __extents = {};
 
+  template <size_t... Ranks, class... IndexOffsets>
+  constexpr index_type __compute_offset(std::index_sequence<Ranks...>,
+                                        IndexOffsets... __index_offsets) const {
+    return ((static_cast<index_type>(__index_offsets) * stride(Ranks)) + ... + 0);
+  }
+
 public:
 #if !MDSPAN_HAS_CXX_20
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -411,7 +417,7 @@ public:
   )
   constexpr size_t operator()(_Indices... __idxs) const noexcept
   {
-    return __inner_mapping(std::forward<_Indices>(__idxs)...);
+    return __compute_offset(std::index_sequence_for<_Indices...>{}, __idxs...);
   }
 
   static constexpr bool is_always_unique() noexcept { return true; }
@@ -525,7 +531,13 @@ public:
   __padded_stride_type __padded_stride = {};
   extents_type __extents = {};
 
-  public:
+  template <size_t... Ranks, class... IndexOffsets>
+  constexpr index_type __compute_offset(std::index_sequence<Ranks...>,
+                                        IndexOffsets... __index_offsets) const {
+    return ((static_cast<index_type>(__index_offsets) * stride(Ranks)) + ... + 0);
+  }
+
+public:
 #if !MDSPAN_HAS_CXX_20
   MDSPAN_INLINE_FUNCTION_DEFAULTED
       constexpr mapping()
@@ -732,7 +744,7 @@ public:
       )
   constexpr size_t operator()(_Indices... __idxs) const noexcept
   {
-    return __inner_mapping(std::forward<_Indices>(__idxs)...);
+    return __compute_offset(std::index_sequence_for<_Indices...>{}, __idxs...);
   }
 
   static constexpr bool is_always_unique() noexcept { return true; }
