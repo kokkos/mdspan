@@ -121,7 +121,7 @@ class layout_right::mapping {
      * extents_type is constructible from _Mapping::extents_type.
      *
      * \note There is currently a difference from p2642r2, where this function is specified as taking
-     * `layout_right_padded< padding_stride >::mapping< Extents>`. However, this makes `padding_stride` non-deducible.
+     * `layout_right_padded< padding_value >::mapping< Extents>`. However, this makes `padding_value` non-deducible.
      */
 #if MDSPAN_HAS_CXX_17
     MDSPAN_TEMPLATE_REQUIRES(
