@@ -242,8 +242,8 @@ public:
    * Converting constructor from `layout_left::mapping`.
    *
    * This overload participates in overload resolution only if `is_constructible_v<extents_type, OtherExtents>` is true.
-   * If `OtherExtents::rank() > 1` then one of `padding_stride`, `static_extent(0)`, or `OtherExtents::static_extent(0)` must be `dynamic_extent`;
-   * otherwise, `OtherExtents::static_extent(0)` must be equal to the least multiple of `padding_stride` greater than or equal to `extents_type::static_extent(0)`
+   * If `OtherExtents::rank() > 1` then one of `padding_value`, `static_extent(0)`, or `OtherExtents::static_extent(0)` must be `dynamic_extent`;
+   * otherwise, `OtherExtents::static_extent(0)` must be equal to the least multiple of `padding_value` greater than or equal to `extents_type::static_extent(0)`
    */
   MDSPAN_TEMPLATE_REQUIRES(
     class _OtherExtents,
@@ -282,7 +282,7 @@ public:
    * Converting constructor from `layout_left_padded::mapping`.
    *
    * This overload participates in overload resolution only if `is_constructible_v<extents_type, OtherExtents>` is true.
-   * Either `padding_stride` or `OtherPaddingStride` must be `std::dynamic_extent`, or `padding_stride == OtherPaddingStride`.
+   * Either `padding_value` or `OtherPaddingStride` must be `std::dynamic_extent`, or `padding_value == OtherPaddingStride`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
     class _Mapping,
@@ -291,7 +291,7 @@ public:
       && std::is_constructible_v<extents_type, typename _Mapping::extents_type>
     )
   )
-  MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_stride == dynamic_extent || _Mapping::padding_stride == dynamic_extent)))
+  MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_value == dynamic_extent || _Mapping::padding_value == dynamic_extent)))
   constexpr
   mapping(const _Mapping &__other_mapping)
       : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
@@ -426,7 +426,7 @@ public:
    * This overload only participates in overload resolution if `OtherExtents::rank() == extents_type::rank()`.
    *
    * \note There is currently a difference from p2642r2, where this function is specified as taking
-   * `layout_left_padded< padding_stride >::mapping< Extents>`. However, this makes `padding_stride` non-deducible.
+   * `layout_left_padded< padding_value >::mapping< Extents>`. However, this makes `padding_value` non-deducible.
    */
   MDSPAN_TEMPLATE_REQUIRES(
     class _Mapping,
@@ -580,8 +580,8 @@ public:
    * Converting constructor from `layout_right::mapping`.
    *
    * This overload participates in overload resolution only if `is_constructible_v<extents_type, OtherExtents>` is true.
-   * If `OtherExtents::rank() > 1` then one of `padding_stride`, `static_extent(0)`, or `OtherExtents::static_extent(0)` must be `dynamic_extent`;
-   * otherwise, `OtherExtents::static_extent(0)` must be equal to the least multiple of `padding_stride` greater than or equal to `extents_type::static_extent(0)`
+   * If `OtherExtents::rank() > 1` then one of `padding_value`, `static_extent(0)`, or `OtherExtents::static_extent(0)` must be `dynamic_extent`;
+   * otherwise, `OtherExtents::static_extent(0)` must be equal to the least multiple of `padding_value` greater than or equal to `extents_type::static_extent(0)`
    */
   MDSPAN_TEMPLATE_REQUIRES(
       class _OtherExtents,
@@ -619,7 +619,7 @@ public:
    * Converting constructor from `layout_right_padded::mapping`.
    *
    * This overload participates in overload resolution only if `is_constructible_v<extents_type, OtherExtents>` is true.
-   * Either `padding_stride` or `OtherPaddingStride` must be `std::dynamic_extent`, or `padding_stride == OtherPaddingStride`.
+   * Either `padding_value` or `OtherPaddingStride` must be `std::dynamic_extent`, or `padding_value == OtherPaddingStride`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
       class _Mapping,
@@ -629,8 +629,8 @@ public:
           )
       )
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 &&
-                               (padding_stride == dynamic_extent ||
-                                _Mapping::padding_stride == dynamic_extent)))
+                               (padding_value == dynamic_extent ||
+                                _Mapping::padding_value == dynamic_extent)))
   constexpr mapping(const _Mapping &__other_mapping)
       : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
         __extents(__other_mapping.extents())
@@ -764,7 +764,7 @@ public:
    * This overload only participates in overload resolution if `OtherExtents::rank() == extents_type::rank()`.
    *
    * \note There is currently a difference from p2642r2, where this function is specified as taking
-   * `layout_right_padded< padding_stride >::mapping< Extents>`. However, this makes `padding_stride` non-deducible.
+   * `layout_right_padded< padding_value >::mapping< Extents>`. However, this makes `padding_value` non-deducible.
    */
   MDSPAN_TEMPLATE_REQUIRES(
       class _Mapping,
