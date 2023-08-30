@@ -34,7 +34,7 @@ struct layout_right_padded {
 };
 
 namespace detail {
-
+// The __layout_padded_constants structs are only useful if rank > 1, otherwise they may wrap
 template <class _Layout, class _ExtentsType>
 struct __layout_padded_constants;
 
@@ -85,29 +85,30 @@ struct __is_layout_right_padded_mapping<_Mapping,
 template <class _LayoutExtentsType, class _PaddedLayoutMappingType>
 constexpr void __check_padded_layout_converting_constructor_mandates()
 {
-  using __extents_type = typename _PaddedLayoutMappingType::extents_type;
-  constexpr auto __padding_value = _PaddedLayoutMappingType::padding_value;
-  constexpr auto __idx = __layout_padded_constants<typename _PaddedLayoutMappingType::layout_type, _LayoutExtentsType >::__extent_to_pad_idx;
-  if constexpr ((_LayoutExtentsType::rank() > 1) &&
-                (_LayoutExtentsType::static_extent(__idx) != dynamic_extent) &&
-                (__extents_type::static_extent(__idx) != dynamic_extent) &&
-                (__padding_value != dynamic_extent)) {
-    if constexpr (__padding_value == 0) {
-      static_assert(_LayoutExtentsType::static_extent(__idx) == 0);
-    } else {
-      static_assert(
-          _LayoutExtentsType::static_extent(__idx) % __padding_value == 0);
+  if constexpr (_LayoutExtentsType::rank() > 1) {
+    using __extents_type = typename _PaddedLayoutMappingType::extents_type;
+    constexpr auto __padding_value = _PaddedLayoutMappingType::padding_value;
+    constexpr auto __idx = __layout_padded_constants<typename _PaddedLayoutMappingType::layout_type, _LayoutExtentsType >::__extent_to_pad_idx;
+    if constexpr ((_LayoutExtentsType::static_extent(__idx) != dynamic_extent) &&
+                  (__extents_type::static_extent(__idx) != dynamic_extent) &&
+                  (__padding_value != dynamic_extent)) {
+      if constexpr (__padding_value == 0) {
+        static_assert(_LayoutExtentsType::static_extent(__idx) == 0);
+      } else {
+        static_assert(
+            _LayoutExtentsType::static_extent(__idx) % __padding_value == 0);
+      }
     }
   }
 }
 
 template <typename _ExtentsType, typename _OtherMapping>
 constexpr void __check_padded_layout_converting_constructor_preconditions(const _OtherMapping &__other_mapping) {
-  constexpr auto __padded_stride_idx =
-      __layout_padded_constants<typename _OtherMapping::layout_type,
-                                _ExtentsType>::__padded_stride_idx;
-  constexpr auto __extent_to_pad_idx = __layout_padded_constants<typename _OtherMapping::layout_type, _ExtentsType>::__extent_to_pad_idx;
   if constexpr (_ExtentsType::rank() > 1) {
+    constexpr auto __padded_stride_idx =
+        __layout_padded_constants<typename _OtherMapping::layout_type,
+                                  _ExtentsType>::__padded_stride_idx;
+    constexpr auto __extent_to_pad_idx = __layout_padded_constants<typename _OtherMapping::layout_type, _ExtentsType>::__extent_to_pad_idx;
     assert(__other_mapping.stride(__padded_stride_idx) == __other_mapping.extents().extent(__extent_to_pad_idx));
   }
 }
