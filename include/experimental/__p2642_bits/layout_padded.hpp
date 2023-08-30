@@ -158,10 +158,30 @@ private:
   typename __padded_stride_type::__static_array_type __padded_stride = {};
   extents_type __extents = {};
 
+  constexpr index_type __compute_offset(std::index_sequence<>) const {
+    return 0;
+  }
+
+  template <size_t Rank, class IndexOffset>
+  constexpr index_type __compute_offset(std::index_sequence<Rank>,
+                                        IndexOffset __index_offset) const {
+    return __index_offset;
+  }
+
   template <size_t... Ranks, class... IndexOffsets>
   constexpr index_type __compute_offset(std::index_sequence<Ranks...>,
                                         IndexOffsets... __index_offsets) const {
-    return ((static_cast<index_type>(__index_offsets) * stride(Ranks)) + ... + 0);
+    index_type __indices[] = {static_cast<index_type>(__index_offsets)...};
+    // self-recursive fold trick from
+    // https://github.com/llvm/llvm-project/blob/96e1914aa2e6d8966acbfbe2f4d184201f1aa318/libcxx/include/__mdspan/layout_left.h#L144
+    index_type res = 0;
+    ((res = __indices[extents_type::rank() - 1 - Ranks] +
+            ((extents_type::rank() - 1 - Ranks) == __extent_to_pad_idx
+                 ? __padded_stride.value(0)
+                 : __extents.extent(extents_type::rank() - 1 - Ranks)) *
+                res),
+     ...);
+    return res;
   }
 
 public:
@@ -478,10 +498,28 @@ public:
   typename __padded_stride_type::__static_array_type __padded_stride = {};
   extents_type __extents = {};
 
+  constexpr index_type __compute_offset(std::index_sequence<>) const {
+    return 0;
+  }
+
+  template <size_t Rank, class IndexOffset>
+  constexpr index_type __compute_offset(std::index_sequence<Rank>,
+                                        IndexOffset __index_offset) const {
+    return __index_offset;
+  }
+
   template <size_t... Ranks, class... IndexOffsets>
   constexpr index_type __compute_offset(std::index_sequence<Ranks...>,
                                         IndexOffsets... __index_offsets) const {
-    return ((static_cast<index_type>(__index_offsets) * stride(Ranks)) + ... + 0);
+    // self-recursive fold trick from
+    // https://github.com/llvm/llvm-project/blob/4d9771741d40cc9cfcccb6b033f43689d36b705a/libcxx/include/__mdspan/layout_right.h#L141
+    index_type res = 0;
+    ((res = static_cast<index_type>(__index_offsets) +
+            (Ranks == __extent_to_pad_idx ? __padded_stride.value(0)
+                                          : __extents.extent(Ranks)) *
+                res),
+     ...);
+    return res;
   }
 
 public:

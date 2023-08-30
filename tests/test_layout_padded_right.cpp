@@ -463,4 +463,20 @@ TEST(LayoutRightTests, access)
   ASSERT_EQ(mapping4(1, 6), 16);
   ASSERT_EQ(mapping4(6, 0), 60);
   ASSERT_EQ(mapping4(6, 6), 66);
+
+  auto mapping5 =
+      KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<
+          Kokkos::extents<std::size_t, 7>>({}, 4);
+  ASSERT_EQ(mapping5(0), 0);
+  ASSERT_EQ(mapping5(1), 1);
+  ASSERT_EQ(mapping5(2), 2);
+  ASSERT_EQ(mapping5(3), 3);
+  ASSERT_EQ(mapping5(4), 4);
+  ASSERT_EQ(mapping5(5), 5);
+  ASSERT_EQ(mapping5(6), 6);
+
+  auto mapping6 =
+      KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<
+          Kokkos::extents<std::size_t>>({}, 4);
+  ASSERT_EQ(mapping6(), 0);
 }
