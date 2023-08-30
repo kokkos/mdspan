@@ -312,24 +312,19 @@ public:
   {
     if constexpr ( extents_type::rank() == 0 ) {
       return {};
+    } else if constexpr ( extents_type::rank() == 1 ) {
+      return {1};
     } else {
       index_type value = 1;
       std::array<index_type, extents_type::rank()> __s{};
-      for (rank_type __r = 0; __r < __extent_to_pad_idx; ++__r)
+      __s[__extent_to_pad_idx] = value;
+      value *= __padded_stride.value(0);
+      for (rank_type __r = __extent_to_pad_idx + 1; __r < extents_type::rank() - 1; ++__r)
       {
         __s[__r] = value;
         value *= __extents.extent(__r);
       }
-      __s[__extent_to_pad_idx] = value;
-      value *= __padded_stride.value(0);
-      if constexpr (__extent_to_pad_idx < extents_type::rank() - 1) {
-        for (rank_type __r = __extent_to_pad_idx + 1; __r < extents_type::rank() - 1; ++__r)
-        {
-          __s[__r] = value;
-          value *= __extents.extent(__r);
-        }
-        __s[extents_type::rank() - 1] = value;
-      }
+      __s[extents_type::rank() - 1] = value;
       return __s;
     }
   }
@@ -390,11 +385,12 @@ public:
 
   constexpr index_type stride(rank_type __r) const noexcept
   {
-    index_type value = 1;
-    for (rank_type __i = 0; (__i < __extent_to_pad_idx) && (__i < __r); ++__i)
-    {
-      value *= __extents.extent(__i);
+    if constexpr ( extents_type::rank() == 0 ) {
+      return 1;
+    } else if constexpr ( extents_type::rank() == 1 ) {
+      return __extents.extent(0);
     }
+    index_type value = 1;
     if (__extent_to_pad_idx < __r)
       value *= __padded_stride.value(0);
     for (rank_type __i = __extent_to_pad_idx + 1; __i < __r; ++__i)
@@ -635,24 +631,19 @@ public:
   {
     if constexpr ( extents_type::rank() == 0 ) {
       return {};
+    } else if constexpr ( extents_type::rank() == 1 ) {
+      return {1};
     } else {
       index_type value = 1;
       std::array<index_type, extents_type::rank()> __s{};
-      for (rank_type __r = extents_type::rank() - 1; __r > __extent_to_pad_idx; --__r)
+      __s[__extent_to_pad_idx] = value;
+      value *= __padded_stride.value(0);
+      for (rank_type __r = __extent_to_pad_idx - 1; __r > 0; --__r)
       {
         __s[__r] = value;
         value *= __extents.extent(__r);
       }
-      __s[__extent_to_pad_idx] = value;
-      value *= __padded_stride.value(0);
-      if constexpr ( __extent_to_pad_idx > 0) {
-        for (rank_type __r = __extent_to_pad_idx - 1; __r > 0; --__r)
-        {
-          __s[__r] = value;
-          value *= __extents.extent(__r);
-        }
-        __s[0] = value;
-      }
+      __s[0] = value;
       return __s;
     }
   }
@@ -714,11 +705,12 @@ public:
 
   constexpr index_type stride(rank_type __r) const noexcept
   {
-    index_type value = 1;
-    for (rank_type __i = extents_type::rank() - 1; (__i > __extent_to_pad_idx) && (__i > __r); --__i)
-    {
-      value *= __extents.extent(__i);
+    if constexpr ( extents_type::rank() == 0 ) {
+      return 1;
+    } else if constexpr ( extents_type::rank() == 1 ) {
+      return __extents.extent(0);
     }
+    index_type value = 1;
     if (__extent_to_pad_idx > __r)
       value *= __padded_stride.value(0);
     for (rank_type __i = __extent_to_pad_idx - 1; __i > __r; --__i)
