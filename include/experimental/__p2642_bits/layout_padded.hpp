@@ -44,7 +44,7 @@ template <class _ExtentsType, size_t _PaddingValue, size_t _ExtentToPadIdx>
 MDSPAN_INLINE_FUNCTION constexpr size_t __get_actual_static_padding_value() {
   constexpr auto __rank = _ExtentsType::rank();
 
-  if constexpr (__rank <= size_t(1)) {
+  if constexpr (__rank <= typename _ExtentsType::rank_type(1)) {
     return 0;
   } else if constexpr (_PaddingValue != dynamic_extent &&
                        _ExtentsType::static_extent(_ExtentToPadIdx) !=
@@ -125,7 +125,7 @@ struct __padded_extent {
     }
   }
 };
-}
+} // namespace detail
 
 template <size_t PaddingValue>
 template <class Extents>
