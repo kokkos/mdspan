@@ -19,7 +19,7 @@
 #include <cassert>
 
 #include "../ConvertibleToIntegral.h"
-#include "test_macros.h"
+#include "../llvm_test_macros.h"
 
 struct NoDefaultCtorIndex {
   size_t value;

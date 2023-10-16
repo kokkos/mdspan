@@ -34,7 +34,7 @@
 #include <cassert>
 #include <limits>
 
-#include "test_macros.h"
+#include "../llvm_test_macros.h"
 
 template <class To, class From>
 constexpr void test_implicit_conversion(To dest, From src) {

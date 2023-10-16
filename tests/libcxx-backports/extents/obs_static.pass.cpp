@@ -30,7 +30,7 @@
 #include <cassert>
 #include <utility>
 
-#include "test_macros.h"
+#include "../llvm_test_macros.h"
 
 template <class E, size_t rank, size_t rank_dynamic, size_t... StaticExts, size_t... Indices>
 void test_static_observers(std::index_sequence<StaticExts...>, std::index_sequence<Indices...>) {

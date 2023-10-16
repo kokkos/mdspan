@@ -22,7 +22,7 @@
 #include <concepts>
 #include <cassert>
 
-#include "test_macros.h"
+#include "../llvm_test_macros.h"
 
 template <class To, class From>
 constexpr void test_comparison(bool equal, To dest, From src) {

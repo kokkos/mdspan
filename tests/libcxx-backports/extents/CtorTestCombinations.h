@@ -15,7 +15,7 @@
 #include <span>
 
 #include "../ConvertibleToIntegral.h"
-#include "test_macros.h"
+#include "../llvm_test_macros.h"
 
 // Helper file to implement combinatorical testing of extents constructor
 //

@@ -27,7 +27,7 @@
 #include <concepts>
 #include <cassert>
 
-#include "test_macros.h"
+#include "../llvm_test_macros.h"
 
 template <class E, class IndexType, size_t... Extents>
 void testExtents() {

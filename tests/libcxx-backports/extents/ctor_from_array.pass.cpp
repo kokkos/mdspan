@@ -35,7 +35,7 @@
 
 #include "../ConvertibleToIntegral.h"
 #include "CtorTestCombinations.h"
-#include "test_macros.h"
+#include "../llvm_test_macros.h"
 
 struct ArrayCtorTest {
   template <class E, class T, size_t N, class Extents, size_t... Indices>

@@ -19,7 +19,7 @@
 #include <mdspan/mdspan.hpp>
 #include <cstddef>
 
-#include "test_macros.h"
+#include "../llvm_test_macros.h"
 
 template <class IndexType>
 void test_alias_template_dextents() {

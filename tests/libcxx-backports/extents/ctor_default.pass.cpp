@@ -22,7 +22,7 @@
 
 #include "../ConvertibleToIntegral.h"
 #include "CtorTestCombinations.h"
-#include "test_macros.h"
+#include "../llvm_test_macros.h"
 
 struct DefaultCtorTest {
   template <class E, class AllExtents, class Extents, size_t... Indices>
