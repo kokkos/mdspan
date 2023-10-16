@@ -28,25 +28,25 @@ static_assert(std::is_trivial_v<KokkosEx::layout_right_padded<Kokkos::dynamic_ex
 
 // actual padding stride
 // If extents_type::rank() equals zero or one, then padding_stride.
-static_assert(KokkosEx::layout_right_padded<0>::mapping<Kokkos::extents<std::size_t, 0>>::__actual_padding_value == 0);
-static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, 0>>::__actual_padding_value == 0);
-static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent>>::__actual_padding_value == 0);
-static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t>>::__actual_padding_value == 0);
-static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>::__actual_padding_value == 0);
-static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 0>>::__actual_padding_value == 0);
-static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t>>::__actual_padding_value == 0);
+static_assert(KokkosEx::layout_right_padded<0>::mapping<Kokkos::extents<std::size_t, 0>>::static_padding_stride == 0);
+static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, 0>>::static_padding_stride == 0);
+static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent>>::static_padding_stride == 0);
+static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t>>::static_padding_stride == 0);
+static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 3>>::static_padding_stride == 0);
+static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 0>>::static_padding_stride == 0);
+static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t>>::static_padding_stride == 0);
 
 // Else, if
 // - padding_stride does not equal dynamic_extent and
 // - extents_type::static_extent(0) does not equal dynamic_extent,
 // then the size_t value which is the least multiple of padding_stride that is greater than or equal to extents_type::static_extent(0).
-static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, 7, 3>>::__actual_padding_value == 4);
-static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 3>>::__actual_padding_value == 4);
+static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, 7, 3>>::static_padding_stride == 4);
+static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, Kokkos::dynamic_extent, 3>>::static_padding_stride == 4);
 
 // Otherwise, dynamic_extent.
-static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, 7, Kokkos::dynamic_extent>>::__actual_padding_value == Kokkos::dynamic_extent);
-static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 7, Kokkos::dynamic_extent>>::__actual_padding_value == Kokkos::dynamic_extent);
-static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 7, 3>>::__actual_padding_value == Kokkos::dynamic_extent);
+static_assert(KokkosEx::layout_right_padded<2>::mapping<Kokkos::extents<std::size_t, 7, Kokkos::dynamic_extent>>::static_padding_stride == Kokkos::dynamic_extent);
+static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 7, Kokkos::dynamic_extent>>::static_padding_stride == Kokkos::dynamic_extent);
+static_assert(KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<Kokkos::extents<std::size_t, 7, 3>>::static_padding_stride == Kokkos::dynamic_extent);
 
 namespace
 {
