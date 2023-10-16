@@ -95,16 +95,16 @@ struct __padded_extent {
 
   MDSPAN_INLINE_FUNCTION
   static constexpr __static_array_type
-  __impl_init_padding(const _Extents &__extents) {
+  init_padding(const _Extents &__extents) {
     if constexpr ((_Extents::rank() > 1) && (__padding_value == dynamic_extent)) {
       return {__extents.extent(_ExtentToPadIdx)};
     } else {
-      return __impl_init_padding(__extents, __padding_value);
+      return init_padding(__extents, __padding_value);
     }
   }
 
   MDSPAN_INLINE_FUNCTION static constexpr __static_array_type
-      __impl_init_padding(const _Extents &__extents,
+      init_padding(const _Extents &__extents,
                           __index_type __padding_value) {
     if constexpr (_Extents::rank() > 1) {
       return {__find_next_multiple(__padding_value,
@@ -116,7 +116,7 @@ struct __padded_extent {
 
   template <typename _Mapping, size_t _PaddingStrideIdx>
   MDSPAN_INLINE_FUNCTION static constexpr __static_array_type
-  __impl_init_padding(const _Mapping &__other_mapping,
+  init_padding(const _Mapping &__other_mapping,
                       std::integral_constant<size_t, _PaddingStrideIdx>) {
     if constexpr (_Extents::rank() > 1) {
       return {__other_mapping.stride(_PaddingStrideIdx)};
@@ -212,7 +212,7 @@ public:
    */
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type& __ext)
-    : __padded_stride(__padded_stride_type::__impl_init_padding(__ext)), __extents(__ext)
+    : __padded_stride(__padded_stride_type::init_padding(__ext)), __extents(__ext)
   {}
 
   /**
@@ -233,9 +233,9 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type &__ext, _Size __dynamic_padding_value)
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__ext, __dynamic_padding_value)), __extents(__ext)
+      : __padded_stride(__padded_stride_type::init_padding(__ext, __dynamic_padding_value)), __extents(__ext)
   {
-    assert((padding_value == dynamic_extent) || (padding_value == static_cast<index_type>(__dynamic_padding_value)));
+    assert((padding_value == dynamic_extent) || (static_cast<index_type>(padding_value) == static_cast<index_type>(__dynamic_padding_value)));
   }
 
   /**
@@ -253,7 +253,7 @@ public:
   )
   MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<_OtherExtents, extents_type>))
   constexpr mapping(const layout_left::mapping<_OtherExtents> &__other_mapping)
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
+      : __padded_stride(__padded_stride_type::init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
         __extents(__other_mapping.extents())
   {
     static_assert((_OtherExtents::rank() > 1) || (__actual_padding_value != dynamic_extent) || (_OtherExtents::static_extent(__extent_to_pad_idx) != dynamic_extent)
@@ -273,7 +273,7 @@ public:
   )
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
   constexpr mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
+      : __padded_stride(__padded_stride_type::init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
         __extents(__other_mapping.extents())
   {
   }
@@ -294,7 +294,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 && (padding_value == dynamic_extent || _Mapping::padding_value == dynamic_extent)))
   constexpr
   mapping(const _Mapping &__other_mapping)
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
+      : __padded_stride(__padded_stride_type::init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
         __extents(__other_mapping.extents())
   {
     static_assert(padding_value == dynamic_extent ||
@@ -318,7 +318,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
   constexpr
   mapping(const _Mapping &__other_mapping) noexcept
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping.extents(), __other_mapping.extents().extent(__extent_to_pad_idx))),
+      : __padded_stride(__padded_stride_type::init_padding(__other_mapping.extents(), __other_mapping.extents().extent(__extent_to_pad_idx))),
         __extents(__other_mapping.extents())
   {}
 
@@ -550,7 +550,7 @@ public:
    */
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type &__ext)
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__ext)), __extents(__ext) {}
+      : __padded_stride(__padded_stride_type::init_padding(__ext)), __extents(__ext) {}
 
   /**
    * Initializes the mapping with the given extents and the specified padding value.
@@ -570,10 +570,10 @@ public:
       )
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type &__ext, _Size __dynamic_padding_value)
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__ext, static_cast<index_type>(__dynamic_padding_value))),
+      : __padded_stride(__padded_stride_type::init_padding(__ext, static_cast<index_type>(__dynamic_padding_value))),
         __extents(__ext) {
     assert((padding_value == dynamic_extent) ||
-           (padding_value == static_cast<index_type>(__dynamic_padding_value)));
+           (static_cast<index_type>(padding_value) == static_cast<index_type>(__dynamic_padding_value)));
   }
 
   /**
@@ -591,7 +591,7 @@ public:
       )
   MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<_OtherExtents, extents_type>))
   constexpr mapping(const layout_right::mapping<_OtherExtents> &__other_mapping)
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
+      : __padded_stride(__padded_stride_type::init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
         __extents(__other_mapping.extents())
   {
     static_assert((_OtherExtents::rank() > 1) || (__padded_stride_type::static_value() != dynamic_extent) || (_OtherExtents::static_extent(__extent_to_pad_idx) != dynamic_extent)
@@ -611,7 +611,7 @@ public:
       )
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
   constexpr mapping(const layout_stride::mapping<_OtherExtents> &__other_mapping)
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
+      : __padded_stride(__padded_stride_type::init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
         __extents(__other_mapping.extents())
   {}
 
@@ -632,7 +632,7 @@ public:
                                (padding_value == dynamic_extent ||
                                 _Mapping::padding_value == dynamic_extent)))
   constexpr mapping(const _Mapping &__other_mapping)
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
+      : __padded_stride(__padded_stride_type::init_padding(__other_mapping, std::integral_constant<size_t, __padded_stride_idx>{})),
         __extents(__other_mapping.extents())
   {
     static_assert(padding_value == dynamic_extent ||
@@ -655,7 +655,7 @@ public:
       )
   MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
   constexpr mapping(const _Mapping &__other_mapping) noexcept
-      : __padded_stride(__padded_stride_type::__impl_init_padding(__other_mapping.extents(), __other_mapping.extents().extent(__extent_to_pad_idx))),
+      : __padded_stride(__padded_stride_type::init_padding(__other_mapping.extents(), __other_mapping.extents().extent(__extent_to_pad_idx))),
         __extents(__other_mapping.extents())
   {}
 
