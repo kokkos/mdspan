@@ -215,6 +215,16 @@ class layout_left::mapping {
 private:
    _MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents{};
 
+   // [mdspan.submdspan.mapping], submdspan mapping specialization
+   template<class... SliceSpecifiers>
+     constexpr auto submdspan_mapping_impl(                    // exposition only
+       SliceSpecifiers... slices) const;
+
+   template<class... SliceSpecifiers>
+     friend constexpr auto submdspan_mapping(
+       const mapping& src, SliceSpecifiers... slices) {
+         return src.submdspan_mapping_impl(slices...);
+     }
 };
 
 
