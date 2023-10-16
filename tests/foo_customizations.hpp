@@ -19,10 +19,6 @@
 
 #include <mdspan/mdspan.hpp>
 
-#if MDSPAN_HAS_CXX_17
-namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
-#endif
-
 namespace Foo {
   template<class T>
   struct foo_ptr {
@@ -248,7 +244,7 @@ submdspan_mapping(const layout_foo::mapping<Extents> &src_mapping,
      // NVCC does not like deduction here, so get the extents type explicitly
      using sub_ext_t = std::remove_const_t<std::remove_reference_t<decltype(sub_right.mapping.extents())>>;
      auto sub_mapping = layout_foo::mapping<sub_ext_t>(sub_right.mapping.extents());
-     return KokkosEx::mapping_offset<decltype(sub_mapping)>{sub_mapping, sub_right.offset};
+     return Kokkos::submdspan_mapping_result<decltype(sub_mapping)>{sub_mapping, sub_right.offset};
    } else {
      return sub_right;
    }

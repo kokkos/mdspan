@@ -22,20 +22,18 @@
 #include <utility> // index_sequence
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
-namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 //******************************************
 // Return type of submdspan_mapping overloads
 //******************************************
-template <class Mapping> struct mapping_offset {
-  Mapping mapping;
+template <class LayoutMapping> struct submdspan_mapping_result {
+  _MDSPAN_NO_UNIQUE_ADDRESS LayoutMapping mapping = LayoutMapping();
   size_t offset;
 };
-} // namespace MDSPAN_IMPL_PROPOSED_NAMESPACE
 
 namespace detail {
-using MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::first_of;
-using MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::stride_of;
-using MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::inv_map_rank;
+using detail::first_of;
+using detail::stride_of;
+using detail::inv_map_rank;
 
 // constructs sub strides
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
@@ -103,8 +101,6 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {
-  using MDSPAN_IMPL_PROPOSED_NAMESPACE::submdspan_extents;
-  using MDSPAN_IMPL_PROPOSED_NAMESPACE::mapping_offset;
 
   // compute sub extents
   using src_ext_t = Extents;
@@ -121,7 +117,7 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
 
   if constexpr (std::is_same_v<dst_layout_t, layout_left>) {
     // layout_left case
-    return mapping_offset<dst_mapping_t>{
+    return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
@@ -130,7 +126,7 @@ submdspan_mapping(const layout_left::mapping<Extents> &src_mapping,
       std::integral_constant<size_t,0>(),
       std::index_sequence<>(),
       slices...);
-    return mapping_offset<dst_mapping_t>{
+    return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                    src_mapping, inv_map,
     // HIP needs deduction guides to have markups so we need to be explicit
@@ -212,9 +208,6 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {
-  using MDSPAN_IMPL_PROPOSED_NAMESPACE::submdspan_extents;
-  using MDSPAN_IMPL_PROPOSED_NAMESPACE::mapping_offset;
-
   // get sub extents
   using src_ext_t = Extents;
   auto dst_ext = submdspan_extents(src_mapping.extents(), slices...);
@@ -230,7 +223,7 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
 
   if constexpr (std::is_same_v<dst_layout_t, layout_right>) {
     // layout_right case
-    return mapping_offset<dst_mapping_t>{
+    return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext),
         static_cast<size_t>(src_mapping(detail::first_of(slices)...))};
   } else {
@@ -239,7 +232,7 @@ submdspan_mapping(const layout_right::mapping<Extents> &src_mapping,
       std::integral_constant<size_t,0>(),
       std::index_sequence<>(),
       slices...);
-    return mapping_offset<dst_mapping_t>{
+    return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                    src_mapping, inv_map,
     // HIP needs deduction guides to have markups so we need to be explicit
@@ -275,8 +268,6 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
                   SliceSpecifiers... slices) {
-  using MDSPAN_IMPL_PROPOSED_NAMESPACE::submdspan_extents;
-  using MDSPAN_IMPL_PROPOSED_NAMESPACE::mapping_offset;
   auto dst_ext = submdspan_extents(src_mapping.extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
   auto inv_map = detail::inv_map_rank(
@@ -284,7 +275,7 @@ submdspan_mapping(const layout_stride::mapping<Extents> &src_mapping,
       std::index_sequence<>(),
       slices...);
   using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
-  return mapping_offset<dst_mapping_t>{
+  return submdspan_mapping_result<dst_mapping_t>{
       dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                  src_mapping, inv_map,
     // HIP needs deduction guides to have markups so we need to be explicit
