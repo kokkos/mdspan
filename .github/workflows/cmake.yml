@@ -16,7 +16,7 @@ jobs:
           compiler_prefix: /usr/bin
         - compiler_driver: g++-10
           compiler_prefix: /usr/bin
-        - compiler_driver: clang++-12
+        - compiler_driver: clang++
           compiler_prefix: /usr/bin
         - compiler_driver: icpx
           compiler_prefix: /opt/intel/oneapi/compiler/latest/linux/bin
