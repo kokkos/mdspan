@@ -131,9 +131,9 @@ template <size_t PaddingValue>
 template <class Extents>
 class layout_left_padded<PaddingValue>::mapping {
 public:
-  using extents_type = Extents;
   static constexpr size_t padding_value = PaddingValue;
 
+  using extents_type = Extents;
   using index_type = typename extents_type::index_type;
   using size_type = typename extents_type::size_type;
   using rank_type = typename extents_type::rank_type;
@@ -465,9 +465,9 @@ template <size_t PaddingValue>
 template <class Extents>
 class layout_right_padded<PaddingValue>::mapping {
 public:
-  using extents_type = Extents;
   static constexpr size_t padding_value = PaddingValue;
 
+  using extents_type = Extents;
   using index_type = typename extents_type::index_type;
   using size_type = typename extents_type::size_type;
   using rank_type = typename extents_type::rank_type;

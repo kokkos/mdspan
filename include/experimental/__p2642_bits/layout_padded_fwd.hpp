@@ -103,7 +103,7 @@ constexpr void __check_padded_layout_converting_constructor_mandates()
 }
 
 template <typename _ExtentsType, typename _OtherMapping>
-constexpr void __check_padded_layout_converting_constructor_preconditions(const _OtherMapping &__other_mapping) {
+constexpr void __check_padded_layout_converting_constructor_preconditions([[maybe_unused]] const _OtherMapping &__other_mapping) {
   if constexpr (_ExtentsType::rank() > 1) {
     constexpr auto __padded_stride_idx =
         __layout_padded_constants<typename _OtherMapping::layout_type,
