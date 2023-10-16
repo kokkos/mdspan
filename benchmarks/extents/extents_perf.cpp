@@ -26,7 +26,7 @@ _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
 template <class Extents, class ... Args>
 void extents_construction(benchmark::State& state, Extents, int R, Args ... args) {
-  for (auto _ : state) {
+  for ([[maybe_unused]] auto _ : state) {
     double val =0;
     for(int r=0; r<R; r++) {
        Extents ext(args...);
