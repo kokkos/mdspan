@@ -18,6 +18,7 @@ jobs:
           compiler_prefix: /usr/bin
         - compiler_driver: clang++
           compiler_prefix: /usr/bin
+          cxx_flags_extra: "-stdlib=libc++"
         - compiler_driver: icpx
           compiler_prefix: /opt/intel/oneapi/compiler/latest/linux/bin
           # To get new URL, look here:
@@ -52,7 +53,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
-      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON
+      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DCMAKE_CXX_FLAGS=${{matrix.cxx_flags_extra}}
       
     - name: Build
       shell: bash
