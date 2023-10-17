@@ -68,5 +68,7 @@ mdspan_add_test(test_mdarray_to_mdspan)
 endif()
 
 if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR ((CMAKE_CXX_COMPILER_ID STREQUAL GNU) AND (CMAKE_CXX_COMPILER_VERSION GREATER_EQUAL 12.0.0)))
   add_subdirectory(libcxx-backports)
+endif()
 endif()

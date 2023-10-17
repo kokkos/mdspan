@@ -25,20 +25,22 @@ struct MinimalElementType {
 template<class T, size_t N>
 struct ElementPool {
   constexpr ElementPool() {
-    ptr_ = std::allocator<T>().allocate(N);
+    nc_ptr_ = std::allocator<std::remove_const_t<T>>().allocate(N);
+    ptr_ = nc_ptr_;
     for (int i = 0; i != N; ++i)
-      std::construct_at(ptr_ + i, 42);
+      std::construct_at(nc_ptr_ + i, 42);
   }
 
   constexpr T* get_ptr() { return ptr_; }
 
   constexpr ~ElementPool() {
     for (int i = 0; i != N; ++i)
-      std::destroy_at(ptr_ + i);
-    std::allocator<T>().deallocate(ptr_, N);
+      std::destroy_at(nc_ptr_ + i);
+    std::allocator<std::remove_const_t<T>>().deallocate(nc_ptr_, N);
   }
 
 private:
+  std::remove_const_t<T>* nc_ptr_;
   T* ptr_;
 };
 
