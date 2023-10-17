@@ -67,4 +67,6 @@ mdspan_add_test(test_mdarray_ctors)
 mdspan_add_test(test_mdarray_to_mdspan)
 endif()
 
-add_subdirectory(libcxx-backports)
+if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+  add_subdirectory(libcxx-backports)
+endif()
