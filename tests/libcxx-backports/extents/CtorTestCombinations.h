@@ -45,15 +45,20 @@ constexpr void test_construction(AllExtents all_ext) {
 
   // test construction from just dynamic extents
   // create an array of just the extents corresponding to dynamic values
-  std::array<typename AllExtents::value_type, E::rank_dynamic()> dyn_ext{0};
-  size_t dynamic_idx = 0;
-  for (size_t r = 0; r < E::rank(); r++) {
-    if (E::static_extent(r) == std::dynamic_extent) {
-      dyn_ext[dynamic_idx] = all_ext[r];
-      dynamic_idx++;
+  if constexpr (E::rank_dynamic() > 0) {
+    std::array<typename AllExtents::value_type, E::rank_dynamic()> dyn_ext{0};
+    size_t dynamic_idx = 0;
+    for (size_t r = 0; r < E::rank(); r++) {
+      if (E::static_extent(r) == std::dynamic_extent) {
+        dyn_ext[dynamic_idx] = all_ext[r];
+        dynamic_idx++;
+      }
     }
+    Test::template test_construction<E>(all_ext, dyn_ext, std::make_index_sequence<E::rank_dynamic()>());
+  } else {
+    std::array<typename AllExtents::value_type, E::rank_dynamic()> dyn_ext{};
+    Test::template test_construction<E>(all_ext, dyn_ext, std::make_index_sequence<E::rank_dynamic()>());
   }
-  Test::template test_construction<E>(all_ext, dyn_ext, std::make_index_sequence<E::rank_dynamic()>());
 }
 
 template <class T, class TArg, class Test>
