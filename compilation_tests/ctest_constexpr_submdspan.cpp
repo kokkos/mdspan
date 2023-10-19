@@ -17,8 +17,6 @@
 
 #include <mdspan/mdspan.hpp>
 
-namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
-
 // Only works with newer constexpr
 #if defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
 
@@ -32,7 +30,7 @@ dynamic_extent_1d() {
   auto s = Kokkos::mdspan<int, Kokkos::dextents<size_t,1>, Layout>(data, 5);
   int result = 0;
   for (size_t i = 0; i < s.extent(0); ++i) {
-    auto ss = KokkosEx::submdspan(s, i);
+    auto ss = Kokkos::submdspan(s, i);
     result += __MDSPAN_OP0(ss);
   }
   // 1 + 2 + 3 + 4 + 5
@@ -57,7 +55,7 @@ dynamic_extent_1d_all_slice() {
   auto s = Kokkos::mdspan<
     int, Kokkos::extents<size_t,Kokkos::dynamic_extent>, Layout>(data, 5);
   int result = 0;
-  auto ss = KokkosEx::submdspan(s, Kokkos::full_extent);
+  auto ss = Kokkos::submdspan(s, Kokkos::full_extent);
   for (size_t i = 0; i < s.extent(0); ++i) {
     result += __MDSPAN_OP(ss, i);
   }
@@ -82,7 +80,7 @@ dynamic_extent_1d_pair_full() {
   auto s = Kokkos::mdspan<
     int, Kokkos::extents<size_t,Kokkos::dynamic_extent>, Layout>(data, 5);
   int result = 0;
-  auto ss = KokkosEx::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
+  auto ss = Kokkos::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
   for (size_t i = 0; i < s.extent(0); ++i) {
     result += __MDSPAN_OP(ss, i);
   }
@@ -101,7 +99,7 @@ dynamic_extent_1d_pair_each() {
     int, Kokkos::extents<size_t,Kokkos::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   for (size_t i = 0; i < s.extent(0); ++i) {
-    auto ss = KokkosEx::submdspan(s,
+    auto ss = Kokkos::submdspan(s,
       std::pair<std::ptrdiff_t, std::ptrdiff_t>{i, i+1});
     result += __MDSPAN_OP(ss, 0);
   }
@@ -127,11 +125,11 @@ dynamic_extent_1d_all_three() {
   int data[] = {1, 2, 3, 4, 5};
   auto s = Kokkos::mdspan<
     int, Kokkos::extents<size_t,Kokkos::dynamic_extent>, Layout>(data, 5);
-  auto s1 = KokkosEx::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
-  auto s2 = KokkosEx::submdspan(s1, Kokkos::full_extent);
+  auto s1 = Kokkos::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
+  auto s2 = Kokkos::submdspan(s1, Kokkos::full_extent);
   int result = 0;
   for (size_t i = 0; i < s.extent(0); ++i) {
-    auto ss = KokkosEx::submdspan(s2, i);
+    auto ss = Kokkos::submdspan(s2, i);
     result += __MDSPAN_OP0(ss);
   }
   constexpr_assert_equal(15, result);
@@ -157,7 +155,7 @@ dynamic_extent_2d_idx_idx() {
   int result = 0;
   for(size_t row = 0; row < s.extent(0); ++row) {
     for(size_t col = 0; col < s.extent(1); ++col) {
-      auto ss = KokkosEx::submdspan(s, row, col);
+      auto ss = Kokkos::submdspan(s, row, col);
       result += __MDSPAN_OP0(ss);
     }
   }
@@ -176,9 +174,9 @@ dynamic_extent_2d_idx_all_idx() {
       data, 2, 3);
   int result = 0;
   for(size_t row = 0; row < s.extent(0); ++row) {
-    auto srow = KokkosEx::submdspan(s, row, Kokkos::full_extent);
+    auto srow = Kokkos::submdspan(s, row, Kokkos::full_extent);
     for(size_t col = 0; col < s.extent(1); ++col) {
-      auto scol = KokkosEx::submdspan(srow, col);
+      auto scol = Kokkos::submdspan(srow, col);
       constexpr_assert_equal(__MDSPAN_OP0(scol), __MDSPAN_OP(srow, col));
       result += __MDSPAN_OP0(scol);
     }
@@ -205,9 +203,9 @@ simple_static_submdspan_test_1(int add_to_row) {
   auto s = Kokkos::mdspan<int, Kokkos::extents<size_t,3, 3>>(data);
   int result = 0;
   for(int col = 0; col < 3; ++col) {
-    auto scol = KokkosEx::submdspan(s, Kokkos::full_extent, col);
+    auto scol = Kokkos::submdspan(s, Kokkos::full_extent, col);
     for(int row = 0; row < 3; ++row) {
-      auto srow = KokkosEx::submdspan(scol, row);
+      auto srow = Kokkos::submdspan(scol, row);
       result += __MDSPAN_OP0(srow) * (row + add_to_row);
     }
   }
@@ -247,18 +245,18 @@ mixed_submdspan_left_test_2() {
     Kokkos::extents<size_t,3, Kokkos::dynamic_extent>, Kokkos::layout_left>(data, 5);
   int result = 0;
   for(int col = 0; col < 5; ++col) {
-    auto scol = KokkosEx::submdspan(s, Kokkos::full_extent, col);
+    auto scol = Kokkos::submdspan(s, Kokkos::full_extent, col);
     for(int row = 0; row < 3; ++row) {
-      auto srow = KokkosEx::submdspan(scol, row);
+      auto srow = Kokkos::submdspan(scol, row);
       result += __MDSPAN_OP0(srow) * (row + 1);
     }
   }
   // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)= 108
   constexpr_assert_equal(108, result);
   for(int row = 0; row < 3; ++row) {
-    auto srow = KokkosEx::submdspan(s, row, Kokkos::full_extent);
+    auto srow = Kokkos::submdspan(s, row, Kokkos::full_extent);
     for(int col = 0; col < 5; ++col) {
-      auto scol = KokkosEx::submdspan(srow, col);
+      auto scol = Kokkos::submdspan(srow, col);
       result += __MDSPAN_OP0(scol) * (row + 1);
     }
   }
@@ -290,17 +288,17 @@ mixed_submdspan_test_3() {
     int, Kokkos::extents<size_t,3, Kokkos::dynamic_extent>, Layout>(data, 5);
   int result = 0;
   for(int col = 0; col < 5; ++col) {
-    auto scol = KokkosEx::submdspan(s, Kokkos::full_extent, col);
+    auto scol = Kokkos::submdspan(s, Kokkos::full_extent, col);
     for(int row = 0; row < 3; ++row) {
-      auto srow = KokkosEx::submdspan(scol, row);
+      auto srow = Kokkos::submdspan(scol, row);
       result += __MDSPAN_OP0(srow) * (row + 1);
     }
   }
   constexpr_assert_equal(71, result);
   for(int row = 0; row < 3; ++row) {
-    auto srow = KokkosEx::submdspan(s, row, Kokkos::full_extent);
+    auto srow = Kokkos::submdspan(s, row, Kokkos::full_extent);
     for(int col = 0; col < 5; ++col) {
-      auto scol = KokkosEx::submdspan(srow, col);
+      auto scol = Kokkos::submdspan(srow, col);
       result += __MDSPAN_OP0(scol) * (row + 1);
     }
   }
@@ -338,14 +336,14 @@ submdspan_single_element_stress_test_impl_2(
   int data[] = { 42 };
   auto s = mdspan_t(data);
   auto s_dyn = dyn_mdspan_t(data, _repeated_ptrdiff_t<1, Idxs>...);
-  auto ss = KokkosEx::submdspan(s, _repeated_ptrdiff_t<0, Idxs>...);
-  auto ss_dyn = KokkosEx::submdspan(s_dyn, _repeated_ptrdiff_t<0, Idxs>...);
-  auto ss_all = KokkosEx::submdspan(s, _repeated_with_idxs_t<Kokkos::full_extent_t, Idxs>{}...);
-  auto ss_all_dyn = KokkosEx::submdspan(s_dyn, _repeated_with_idxs_t<Kokkos::full_extent_t, Idxs>{}...);
+  auto ss = Kokkos::submdspan(s, _repeated_ptrdiff_t<0, Idxs>...);
+  auto ss_dyn = Kokkos::submdspan(s_dyn, _repeated_ptrdiff_t<0, Idxs>...);
+  auto ss_all = Kokkos::submdspan(s, _repeated_with_idxs_t<Kokkos::full_extent_t, Idxs>{}...);
+  auto ss_all_dyn = Kokkos::submdspan(s_dyn, _repeated_with_idxs_t<Kokkos::full_extent_t, Idxs>{}...);
   auto val = __MDSPAN_OP(ss_all, (_repeated_ptrdiff_t<0, Idxs>...));
   auto val_dyn = __MDSPAN_OP(ss_all_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
-  auto ss_pair = KokkosEx::submdspan(s, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
-  auto ss_pair_dyn = KokkosEx::submdspan(s_dyn, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
+  auto ss_pair = Kokkos::submdspan(s, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
+  auto ss_pair_dyn = Kokkos::submdspan(s_dyn, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
   auto val_pair = __MDSPAN_OP(ss_pair, (_repeated_ptrdiff_t<0, Idxs>...));
   auto val_pair_dyn = __MDSPAN_OP(ss_pair_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
   constexpr_assert_equal(42, ss());

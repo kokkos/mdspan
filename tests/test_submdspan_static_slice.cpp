@@ -22,8 +22,6 @@
 
 namespace {
 
-namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
-
 template<class Integral, Integral Value>
 using IC = std::integral_constant<Integral, Value>;
 
@@ -36,7 +34,7 @@ void test_submdspan_static_slice(
   std::vector<typename InputMdspan::value_type> storage(input_mapping.required_span_size());
 
   input_type input(storage.data(), input_mapping);
-  auto output = KokkosEx::submdspan(input, std::forward<Slices>(slices)...);
+  auto output = Kokkos::submdspan(input, std::forward<Slices>(slices)...);
   using output_mdspan_type = decltype(output);
   static_assert(std::is_same<typename output_mdspan_type::extents_type, typename ExpectedOutputMdspan::extents_type>::value, "Extents don't match.");
   static_assert(std::is_same<typename output_mdspan_type::layout_type, typename ExpectedOutputMdspan::layout_type>::value, "Layouts don't match.");
