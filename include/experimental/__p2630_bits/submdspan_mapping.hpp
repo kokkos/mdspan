@@ -26,7 +26,7 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 // Return type of submdspan_mapping overloads
 //******************************************
 template <class LayoutMapping> struct submdspan_mapping_result {
-  _MDSPAN_NO_UNIQUE_ADDRESS LayoutMapping mapping = LayoutMapping();
+  _MDSPAN_NO_UNIQUE_ADDRESS LayoutMapping mapping{};
   size_t offset;
 };
 

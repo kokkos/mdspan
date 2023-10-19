@@ -491,7 +491,7 @@ struct layout_stride {
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
-     constexpr auto submdspan_mapping_impl(                    // exposition only
+     constexpr auto submdspan_mapping_impl(
        SliceSpecifiers... slices) const;
 
    template<class... SliceSpecifiers>
