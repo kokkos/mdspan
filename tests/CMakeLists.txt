@@ -60,6 +60,8 @@ mdspan_add_test(test_layout_stride)
 if(NOT CMAKE_CXX_STANDARD STREQUAL "14")
 mdspan_add_test(test_submdspan)
 mdspan_add_test(test_submdspan_static_slice)
+mdspan_add_test(test_layout_padded_left)
+mdspan_add_test(test_layout_padded_right)
 endif()
 # both of those don't work yet since its using vector
 if(NOT MDSPAN_ENABLE_CUDA AND NOT MDSPAN_ENABLE_HIP)

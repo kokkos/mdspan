@@ -20,6 +20,7 @@
 #include "extents.hpp"
 #include <stdexcept>
 #include "layout_stride.hpp"
+#include "../__p2642_bits/layout_padded_fwd.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
@@ -112,6 +113,34 @@ class layout_right::mapping {
         * other.required_span_size() is a representable value of type index_type
         */
     }
+
+    /**
+     * Converting constructor from `layout_right_padded::mapping`.
+     *
+     * This overload participates in overload resolution only if _Mapping is a layout_right_padded mapping and
+     * extents_type is constructible from _Mapping::extents_type.
+     *
+     * \note There is currently a difference from p2642r2, where this function is specified as taking
+     * `layout_right_padded< padding_value >::mapping< Extents>`. However, this makes `padding_value` non-deducible.
+     */
+#if MDSPAN_HAS_CXX_17
+    MDSPAN_TEMPLATE_REQUIRES(
+        class _Mapping,
+        /* requires */ (
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_right_padded_mapping<_Mapping>::value
+        && std::is_constructible_v<extents_type, typename _Mapping::extents_type>))
+    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
+    mapping(const _Mapping &__other) noexcept
+        : __extents(__other.extents())
+    {
+      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
+          check_padded_layout_converting_constructor_mandates<extents_type,
+                                                                _Mapping>();
+      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
+          check_padded_layout_converting_constructor_preconditions<
+              extents_type>(__other);
+    }
+#endif
 
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
