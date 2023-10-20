@@ -122,7 +122,7 @@ class layout_left::mapping {
     MDSPAN_TEMPLATE_REQUIRES(
       class _Mapping,
       /* requires */ (
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::__is_layout_left_padded_mapping<_Mapping>::value
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<_Mapping>::value
         && std::is_constructible_v<extents_type, typename _Mapping::extents_type>
       )
     )
@@ -131,10 +131,10 @@ class layout_left::mapping {
       : __extents(__other.extents())
     {
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
-          __check_padded_layout_converting_constructor_mandates<extents_type,
+          check_padded_layout_converting_constructor_mandates<extents_type,
                                                                 _Mapping>();
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
-          __check_padded_layout_converting_constructor_preconditions<
+          check_padded_layout_converting_constructor_preconditions<
               extents_type>(__other);
     }
 #endif
