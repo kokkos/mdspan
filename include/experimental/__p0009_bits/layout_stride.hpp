@@ -462,11 +462,7 @@ struct layout_stride {
 
 
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type stride(rank_type r) const noexcept
-#if MDSPAN_HAS_CXX_20
-      requires ( Extents::rank() > 0 )
-#endif
-    {
+    constexpr index_type stride(rank_type r) const noexcept {
       return __strides_storage()[r];
     }
 
