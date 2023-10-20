@@ -256,7 +256,9 @@ struct layout_stride {
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
-          e, __strides_storage_t(__impl::fill_strides(s))
+          e, __strides_storage_t([&]<size_t ... Pos>(std::index_sequence<Pos...>) {
+            return __strides_storage_t{static_cast<index_type>(s[Pos])...};
+          }(std::make_index_sequence<extents_type::rank()>()))
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else

@@ -158,13 +158,15 @@ class layout_right::mapping {
         * other.required_span_size() is a representable value of type index_type
         */
        #if !defined(_MDSPAN_HAS_CUDA) && !defined(_MDSPAN_HAS_HIP) && !defined(NDEBUG)
-       index_type stride = 1;
-       for(rank_type r=__extents.rank(); r>0; r--) {
-         if(stride != static_cast<index_type>(other.stride(r-1))) {
-           // Note this throw will lead to a terminate if triggered since this function is marked noexcept
-           throw std::runtime_error("Assigning layout_stride to layout_right with invalid strides.");
+       if constexpr (extents_type::rank() > 0) {
+         index_type stride = 1;
+         for(rank_type r=__extents.rank(); r>0; r--) {
+           if(stride != static_cast<index_type>(other.stride(r-1))) {
+             // Note this throw will lead to a terminate if triggered since this function is marked noexcept
+             throw std::runtime_error("Assigning layout_stride to layout_right with invalid strides.");
+           }
+           stride *= __extents.extent(r-1);
          }
-         stride *= __extents.extent(r-1);
        }
        #endif
     }
