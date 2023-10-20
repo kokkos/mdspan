@@ -96,7 +96,7 @@ constexpr void test_comparison_same_rank() {
 template <class T1, class T2>
 constexpr void test_comparison() {
   test_comparison_same_rank<T1, T2>();
-  //test_comparison_different_rank<T1, T2>(); //FIXME
+  test_comparison_different_rank<T1, T2>();
 }
 
 constexpr bool test() {

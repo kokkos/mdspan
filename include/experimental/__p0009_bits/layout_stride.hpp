@@ -444,8 +444,9 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator==(const mapping& x, const StridedLayoutMapping& y) noexcept {
       bool strides_match = true;
-      for(rank_type r = 0; r < extents_type::rank(); r++)
-        strides_match = strides_match && (x.stride(r) == y.stride(r));
+      if constexpr (extents_type::rank() > 0)
+        for(rank_type r = 0; r < extents_type::rank(); r++)
+          strides_match = strides_match && (x.stride(r) == y.stride(r));
       return (x.extents() == y.extents()) &&
              (__impl::__OFFSET(y)== static_cast<typename StridedLayoutMapping::index_type>(0)) &&
              strides_match;
