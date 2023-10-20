@@ -581,7 +581,7 @@ using dextents = typename detail::__make_dextents<IndexType, Rank>::type;
 template <class... IndexTypes>
 extents(IndexTypes...)
     -> extents<size_t,
-               size_t((IndexTypes(), ::MDSPAN_IMPL_STANDARD_NAMESPACE::dynamic_extent))...>;
+               ((void) sizeof(IndexTypes), ::MDSPAN_IMPL_STANDARD_NAMESPACE::dynamic_extent)...>;
 #endif
 
 // Helper type traits for identifying a class as extents.
