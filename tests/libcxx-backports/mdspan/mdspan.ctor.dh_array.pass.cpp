@@ -179,7 +179,7 @@ constexpr bool test() {
   static_assert(std::is_convertible_v<IntTypeNC, int>);
   static_assert(!std::is_convertible_v<const IntTypeNC&, int>);
   static_assert(std::is_nothrow_constructible_v<int, IntTypeNC>);
-  //static_assert(!std::is_constructible_v<mds_int_t, float*, std::array<IntTypeNC, 2>>); //FIXME
+  static_assert(!std::is_constructible_v<mds_int_t, float*, std::array<IntTypeNC, 2>>);
 
   // can't test a combo where std::is_nothrow_constructible_v<int, const IntTypeNC&> is true,
   // but std::is_convertible_v<const IntType&, int> is false

@@ -125,8 +125,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_convertible, SizeType, index_type) &&
-      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, SizeType) &&
+      _MDSPAN_TRAIT(std::is_convertible, const SizeType&, index_type) &&
+      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const SizeType&) &&
       ((N == rank()) || (N == rank_dynamic())) &&
       _MDSPAN_TRAIT(std::is_constructible, mapping_type, extents_type) &&
       _MDSPAN_TRAIT(std::is_default_constructible, accessor_type)
@@ -142,8 +142,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType, size_t N,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_convertible, SizeType, index_type) &&
-      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, SizeType) &&
+      _MDSPAN_TRAIT(std::is_convertible, const SizeType&, index_type) &&
+      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const SizeType&) &&
       ((N == rank()) || (N == rank_dynamic())) &&
       _MDSPAN_TRAIT(std::is_constructible, mapping_type, extents_type) &&
       _MDSPAN_TRAIT(std::is_default_constructible, accessor_type)
@@ -160,7 +160,7 @@ public:
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdspan, (data_handle_type p, const extents_type& exts), ,
     /* requires */ (_MDSPAN_TRAIT(std::is_default_constructible, accessor_type) &&
-                    _MDSPAN_TRAIT(std::is_constructible, mapping_type, extents_type))
+                    _MDSPAN_TRAIT(std::is_constructible, mapping_type, const extents_type&))
   ) : __members(std::move(p), __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
@@ -179,8 +179,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_constructible, mapping_type, typename OtherLayoutPolicy::template mapping<OtherExtents>) &&
-      _MDSPAN_TRAIT(std::is_constructible, accessor_type, OtherAccessor)
+      _MDSPAN_TRAIT(std::is_constructible, mapping_type, const typename OtherLayoutPolicy::template mapping<OtherExtents>&) &&
+      _MDSPAN_TRAIT(std::is_constructible, accessor_type, const OtherAccessor&)
     )
   )
   MDSPAN_INLINE_FUNCTION
