@@ -251,12 +251,17 @@ public:
 
 #ifdef __cpp_lib_span
   MDSPAN_TEMPLATE_REQUIRES(class T, size_t N,
-                           /* requires */ (N == m_size_dynamic))
+                           /* requires */ (N == m_size_dynamic && N > 0))
   MDSPAN_INLINE_FUNCTION
   constexpr maybe_static_array(const std::span<T, N> &vals) {
     for (size_t r = 0; r < N; r++)
       m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
   }
+
+  MDSPAN_TEMPLATE_REQUIRES(class T, size_t N,
+                           /* requires */ (N == m_size_dynamic && N == 0))
+  MDSPAN_INLINE_FUNCTION
+  constexpr maybe_static_array(const std::span<T, N> &) : m_dyn_vals{} {}
 #endif
 
   // constructors from all values
