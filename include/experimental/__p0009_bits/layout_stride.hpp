@@ -436,7 +436,27 @@ struct layout_stride {
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_unique() noexcept { return true; }
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_exhaustive() const noexcept {
-      return required_span_size() == __get_size(extents(), std::make_index_sequence<extents_type::rank()>());
+      if constexpr (extents_type::rank() == 0)
+        return true;
+      else {
+        index_type span_size = required_span_size();
+        if (span_size == static_cast<index_type>(0)) {
+          if constexpr (extents_type::rank() == 1)
+            return stride(0) == 1;
+          else {
+            rank_type r_largest = 0;
+            for (rank_type r = 1; r < extents_type::rank(); r++)
+              if (stride(r) > stride(r_largest))
+                r_largest = r;
+            for (rank_type r = 0; r < extents_type::rank(); r++)
+              if (extents().extent(r) == 0 && r != r_largest)
+                return false;
+            return true;
+          }
+        } else {
+          return required_span_size() == __get_size(extents(), std::make_index_sequence<extents_type::rank()>());
+        }
+      }
     }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_strided() noexcept { return true; }
 
