@@ -389,7 +389,7 @@ public:
   static constexpr bool is_always_unique() noexcept { return true; }
   static constexpr bool is_always_exhaustive() noexcept
   {
-    return (extents_type::rank() <= size_t(1))
+    return (extents_type::rank() <= rank_type(1))
       || (extents_type::static_extent(__extent_to_pad_idx) != dynamic_extent
           && extents_type::static_extent(__extent_to_pad_idx) == __padded_stride_type::static_value());
   }
@@ -434,7 +434,7 @@ public:
     // Workaround for some compilers not short-circuiting properly with compile-time checks
     // i.e. we can't access stride(_padding_stride_idx) of a rank 0 mapping
     bool strides_equal = true;
-    if constexpr (extents_type::rank() > size_t(1))
+    if constexpr (extents_type::rank() > rank_type(1))
     {
       strides_equal = __left.stride(__padded_stride_idx) == __right.stride(__padded_stride_idx);
     }
@@ -720,7 +720,7 @@ public:
   static constexpr bool is_always_unique() noexcept { return true; }
   static constexpr bool is_always_exhaustive() noexcept
   {
-    return (extents_type::rank() <= size_t(1))
+    return (extents_type::rank() <= rank_type(1))
            || (extents_type::static_extent(__extent_to_pad_idx) != dynamic_extent
                && extents_type::static_extent(__extent_to_pad_idx) == __padded_stride_type::static_value());
   }
@@ -765,7 +765,7 @@ public:
     // Workaround for some compilers not short-circuiting properly with compile-time checks
     // i.e. we can't access stride(_padding_stride_idx) of a rank 0 mapping
     bool strides_equal = true;
-    if constexpr (extents_type::rank() > size_t(1))
+    if constexpr (extents_type::rank() > rank_type(1))
     {
       strides_equal = __left.stride(__padded_stride_idx) == __right.stride(__padded_stride_idx);
     }
