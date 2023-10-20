@@ -94,7 +94,7 @@ constexpr void test_conversion() {
 
   // clang-format off
   // adding extents convertibility expectation
-  //test_conversion<idx_l_convertible && true,  FromL, std::extents<T1>>(std::extents<T2>()); //FIXME
+  test_conversion<idx_l_convertible && true,  FromL, std::extents<T1>>(std::extents<T2>());
   test_conversion<idx_l_convertible && true,  FromL, std::extents<T1, D>>(std::extents<T2, D>(0));
   test_conversion<idx_l_convertible && true,  FromL, std::extents<T1, D>>(std::extents<T2, D>(5));
   test_conversion<idx_l_convertible && false, FromL, std::extents<T1, 5>>(std::extents<T2, D>(5));
@@ -174,7 +174,7 @@ constexpr void test_layout() {
   // the implicit convertibility test doesn't apply to non std::layouts
   if constexpr (!std::is_same_v<FromL, always_convertible_layout>)
     test_no_implicit_conversion<FromL>();
-  //test_rank_mismatch<FromL>(); //FIXME
+  test_rank_mismatch<FromL>();
   test_static_extent_mismatch<FromL>();
 }
 
