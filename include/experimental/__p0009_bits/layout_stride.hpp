@@ -233,7 +233,31 @@ struct layout_stride {
 
     //--------------------------------------------------------------------------------
 
-    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping() noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping() noexcept
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+      : __members{
+#else
+      : __base_t(__base_t{__member_pair_t(
+#endif
+          extents_type(), __strides_storage_t([]() {
+            __strides_storage_t s{};
+            if constexpr (extents_type::rank() > 0) {
+              extents_type e;
+              index_type stride = 1;
+              for(int r = static_cast<int>(extents_type::rank() - 1); r >= 0; r--) {
+                s[r] = stride;
+                stride *= e.extent(r);
+              }
+            }
+            return s;
+          }())
+#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+        }
+#else
+        )})
+#endif
+    {}
+
     MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping const&) noexcept = default;
 
     MDSPAN_TEMPLATE_REQUIRES(
