@@ -406,7 +406,7 @@ public:
   constexpr index_type stride(rank_type r) const noexcept
   {
     assert(r < extents_type::rank());
-    if(r == 0) return 1;
+    if(r == 0) return index_type(1);
 
     index_type value = __padded_stride.value(0);
     for (rank_type k = 1; k < r; k++) value *= __extents.extent(k);
@@ -737,7 +737,7 @@ public:
   constexpr index_type stride(rank_type r) const noexcept
   {
     assert(r < extents_type::rank());
-    if(r == extents_type::rank() - 1) return 1;
+    if(r == extents_type::rank() - 1) return index_type(1);
 
     index_type value = __padded_stride.value(0);
     for (rank_type k = extents_type::rank() - 2; k > r; k--) value *= __extents.extent(k);
