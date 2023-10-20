@@ -428,9 +428,9 @@ public:
       class OtherIndexType, size_t N,
       /* requires */
       (
-          _MDSPAN_TRAIT(std::is_convertible, OtherIndexType, index_type) &&
+          _MDSPAN_TRAIT(std::is_convertible, const OtherIndexType&, index_type) &&
           _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type,
-              OtherIndexType) &&
+              const OtherIndexType&) &&
           (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
@@ -441,8 +441,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
       class OtherIndexType, size_t N,
       /* requires */
-      (_MDSPAN_TRAIT(std::is_convertible, OtherIndexType, index_type) &&
-       _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, OtherIndexType) &&
+      (_MDSPAN_TRAIT(std::is_convertible, const OtherIndexType&, index_type) &&
+       _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const OtherIndexType&) &&
        (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
