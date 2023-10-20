@@ -526,10 +526,13 @@ public:
   MDSPAN_INLINE_FUNCTION friend constexpr bool
   operator==(const extents &lhs,
              const extents<OtherIndexType, OtherExtents...> &rhs) noexcept {
-    bool value = true;
-    for (size_type r = 0; r < m_rank; r++)
-      value &= rhs.extent(r) == lhs.extent(r);
-    return value;
+    if constexpr (rank() != extents<OtherIndexType, OtherExtents...>::rank()) {
+      return false;
+    } else {
+      for (size_type r = 0; r < m_rank; r++)
+        if(rhs.extent(r) != lhs.extent(r)) return false;
+    }
+    return true;
   }
 
 #if !(MDSPAN_HAS_CXX_20)
