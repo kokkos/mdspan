@@ -501,7 +501,7 @@ struct layout_stride {
           strides_match = strides_match && (static_cast<common_t>(x.stride(r)) == static_cast<common_t>(y.stride(r)));
       }
       return (x.extents() == y.extents()) &&
-             (__impl::__OFFSET(y)== static_cast<typename StridedLayoutMapping::index_type>(0)) &&
+             (__impl::__OFFSET(y) == static_cast<typename StridedLayoutMapping::index_type>(0)) &&
              strides_match;
     }
 
