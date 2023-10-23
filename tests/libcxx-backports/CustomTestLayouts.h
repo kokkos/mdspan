@@ -175,6 +175,7 @@ public:
     return lhs.extents() == rhs.extents();
   }
 
+#if MDSPAN_HAS_CXX_23
   friend constexpr void swap(mapping& x, mapping& y) noexcept {
     swap(x.extents_, y.extents_);
     if !consteval {
@@ -186,6 +187,7 @@ public:
     static int value = 0;
     return value;
   }
+#endif
 
 private:
   extents_type extents_{};
@@ -316,6 +318,7 @@ public:
     return lhs.extents() == rhs.extents() && lhs.offset_ == rhs.offset && lhs.scaling_ == rhs.scaling_;
   }
 
+#if MDSPAN_HAS_CXX_23
   friend constexpr void swap(mapping& x, mapping& y) noexcept {
     swap(x.extents_, y.extents_);
     if !consteval {
@@ -327,6 +330,7 @@ public:
     static int value = 0;
     return value;
   }
+#endif
 
 private:
   template <class>

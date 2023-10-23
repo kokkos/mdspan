@@ -55,15 +55,19 @@ template <class H, class M, class A, size_t N>
 constexpr void
 test_mdspan_ctor_array(const H& handle, const M& map, const A&, std::array<typename M::index_type, N> exts) {
   using MDS = std::mdspan<typename A::element_type, typename M::extents_type, typename M::layout_type, A>;
+#if MDSPAN_HAS_CXX_23
   if !consteval {
     move_counted_handle<typename MDS::element_type>::move_counter() = 0;
   }
+#endif
   MDS m(handle, exts);
+#if MDSPAN_HAS_CXX_23
   if !consteval {
     if constexpr (std::is_same_v<H, move_counted_handle<typename MDS::element_type>>) {
       assert((H::move_counter() == 1));
     }
   }
+#endif
 
   static_assert(!noexcept(MDS(handle, exts)));
 

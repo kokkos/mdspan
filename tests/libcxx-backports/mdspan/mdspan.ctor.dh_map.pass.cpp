@@ -38,16 +38,20 @@ constexpr void test_mdspan_types(const H& handle, const M& map, const A&) {
 
   static_assert(ac == std::is_default_constructible_v<A>);
   if constexpr (ac) {
+#if MDSPAN_HAS_CXX_23
     if !consteval {
       move_counted_handle<typename MDS::element_type>::move_counter() = 0;
     }
+#endif
     // use formulation of constructor which tests that it is not explicit
     MDS m = {handle, map};
+#if MDSPAN_HAS_CXX_23
     if !consteval {
       if constexpr (std::is_same_v<H, move_counted_handle<typename MDS::element_type>>) {
         assert((H::move_counter() == 1));
       }
     }
+#endif
     static_assert(!noexcept(MDS(handle, map)));
     assert(m.extents() == map.extents());
     if constexpr (std::equality_comparable<H>)
