@@ -363,10 +363,10 @@ struct layout_stride {
     )
 #endif
     MDSPAN_CONDITIONAL_EXPLICIT(
-      (!std::is_convertible<typename StridedLayoutMapping::extents_type, extents_type>::value) &&
-      (detail::__is_mapping_of<layout_left, StridedLayoutMapping> ||
-       detail::__is_mapping_of<layout_right, StridedLayoutMapping> ||
-       detail::__is_mapping_of<layout_stride, StridedLayoutMapping>)
+      !(std::is_convertible<typename StridedLayoutMapping::extents_type, extents_type>::value &&
+       (detail::__is_mapping_of<layout_left, StridedLayoutMapping> ||
+        detail::__is_mapping_of<layout_right, StridedLayoutMapping> ||
+        detail::__is_mapping_of<layout_stride, StridedLayoutMapping>))
     ) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(StridedLayoutMapping const& other) noexcept // NOLINT(google-explicit-constructor)

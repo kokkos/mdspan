@@ -182,7 +182,7 @@ constexpr bool test() {
   test_layout<std::layout_right>();
   test_layout<std::layout_left>();
   test_layout<std::layout_stride>();
-  //test_layout<always_convertible_layout>(); //FIXME
+  test_layout<always_convertible_layout>();
   return true;
 }
 
