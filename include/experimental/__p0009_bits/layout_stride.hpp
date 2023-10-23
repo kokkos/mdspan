@@ -446,16 +446,20 @@ struct layout_stride {
       else {
         index_type span_size = required_span_size();
         if (span_size == static_cast<index_type>(0)) {
-          if constexpr (extents_type::rank() == 1)
+          if constexpr (extents_type::rank() == 1) {
             return stride(0) == 1;
-          else {
+          } else {
             rank_type r_largest = 0;
-            for (rank_type r = 1; r < extents_type::rank(); r++)
-              if (stride(r) > stride(r_largest))
+            for (rank_type r = 1; r < extents_type::rank(); r++) {
+              if (stride(r) > stride(r_largest)) {
                 r_largest = r;
-            for (rank_type r = 0; r < extents_type::rank(); r++)
-              if (extents().extent(r) == 0 && r != r_largest)
+              }
+            }
+            for (rank_type r = 0; r < extents_type::rank(); r++) {
+              if (extents().extent(r) == 0 && r != r_largest) {
                 return false;
+              }
+            }
             return true;
           }
         } else {
