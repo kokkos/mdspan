@@ -233,7 +233,7 @@ class layout_right::mapping {
 #if !(MDSPAN_HAS_CXX_20)
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
-      /* requires */ ( Extents::rank() == OtherExtents::rank())
+      /* requires */ (Extents::rank() == OtherExtents::rank())
     )
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
