@@ -529,8 +529,9 @@ public:
     if constexpr (rank() != extents<OtherIndexType, OtherExtents...>::rank()) {
       return false;
     } else {
+      using common_t = std::common_type_t<index_type, OtherIndexType>;
       for (size_type r = 0; r < m_rank; r++)
-        if(rhs.extent(r) != lhs.extent(r)) return false;
+        if(static_cast<common_t>(rhs.extent(r)) != static_cast<common_t>(lhs.extent(r))) return false;
     }
     return true;
   }

@@ -109,7 +109,7 @@ struct layout_stride {
 
     //----------------------------------------------------------------------------
 
-    using __strides_storage_t = std::array<index_type, extents_type::rank()>;
+    using __strides_storage_t = detail::possibly_empty_array<index_type, extents_type::rank()>;
     using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
 
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -158,14 +158,16 @@ struct layout_stride {
       template <class OtherExtents>
       MDSPAN_INLINE_FUNCTION
       static constexpr bool _eq_impl(mapping const& self, mapping<OtherExtents> const& other) noexcept {
-        return    _MDSPAN_FOLD_AND((self.stride(Idxs) == other.stride(Idxs)) /* && ... */)
-               && _MDSPAN_FOLD_AND((self.extents().extent(Idxs) == other.extents().extent(Idxs)) /* || ... */);
+        using common_t = std::common_type_t<index_type, typename OtherExtents::index_type>;
+        return    _MDSPAN_FOLD_AND((static_cast<common_t>(self.stride(Idxs)) == static_cast<common_t>(other.stride(Idxs))) /* && ... */)
+               && _MDSPAN_FOLD_AND((static_cast<common_t>(self.extents().extent(Idxs)) == static_cast<common_t>(other.extents().extent(Idxs))) /* || ... */);
       }
       template <class OtherExtents>
       MDSPAN_INLINE_FUNCTION
       static constexpr bool _not_eq_impl(mapping const& self, mapping<OtherExtents> const& other) noexcept {
-        return    _MDSPAN_FOLD_OR((self.stride(Idxs) != other.stride(Idxs)) /* || ... */)
-               || _MDSPAN_FOLD_OR((self.extents().extent(Idxs) != other.extents().extent(Idxs)) /* || ... */);
+        using common_t = std::common_type_t<index_type, typename OtherExtents::index_type>;
+        return    _MDSPAN_FOLD_OR((static_cast<common_t>(self.stride(Idxs)) != static_cast<common_t>(other.stride(Idxs))) /* || ... */)
+               || _MDSPAN_FOLD_OR((static_cast<common_t>(self.extents().extent(Idxs)) != static_cast<common_t>(other.extents().extent(Idxs))) /* || ... */);
       }
 
       template <class... Integral>
@@ -204,6 +206,11 @@ struct layout_stride {
         return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
       }
 #endif
+
+      MDSPAN_INLINE_FUNCTION
+      static constexpr std::array<index_type, extents_type::rank()> return_strides(const __strides_storage_t& s) {
+        return std::array<index_type, extents_type::rank()>{s[Idxs]...};
+      }
 
       template<size_t K>
       MDSPAN_INLINE_FUNCTION
@@ -280,9 +287,7 @@ struct layout_stride {
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
-          e, __strides_storage_t([&]<size_t ... Pos>(std::index_sequence<Pos...>) {
-            return __strides_storage_t{static_cast<index_type>(s[Pos])...};
-          }(std::make_index_sequence<extents_type::rank()>()))
+          e, __strides_storage_t(__impl::fill_strides(s))
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
@@ -400,7 +405,7 @@ struct layout_stride {
 
     MDSPAN_INLINE_FUNCTION
     constexpr std::array< index_type, extents_type::rank() > strides() const noexcept {
-      return __strides_storage();
+      return __impl::return_strides(__strides_storage());
     }
 
     MDSPAN_INLINE_FUNCTION
@@ -486,9 +491,11 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator==(const mapping& x, const StridedLayoutMapping& y) noexcept {
       bool strides_match = true;
-      if constexpr (extents_type::rank() > 0)
+      if constexpr (extents_type::rank() > 0) {
+        using common_t = std::common_type_t<index_type, typename StridedLayoutMapping::index_type>;
         for(rank_type r = 0; r < extents_type::rank(); r++)
-          strides_match = strides_match && (x.stride(r) == y.stride(r));
+          strides_match = strides_match && (static_cast<common_t>(x.stride(r)) == static_cast<common_t>(y.stride(r)));
+      }
       return (x.extents() == y.extents()) &&
              (__impl::__OFFSET(y)== static_cast<typename StridedLayoutMapping::index_type>(0)) &&
              strides_match;

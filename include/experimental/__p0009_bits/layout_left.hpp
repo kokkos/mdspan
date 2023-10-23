@@ -19,6 +19,8 @@
 #include "trait_backports.hpp"
 #include "extents.hpp"
 #include "../__p2642_bits/layout_padded_fwd.hpp"
+#include <cassert>
+#include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
@@ -157,11 +159,10 @@ class layout_left::mapping {
        #if !defined(_MDSPAN_HAS_CUDA) && !defined(_MDSPAN_HAS_HIP) && !defined(NDEBUG)
        if constexpr (extents_type::rank() > 0) {
          index_type stride = 1;
+         using common_t = std::common_type_t<index_type, typename OtherExtents::index_type>;
          for(rank_type r=0; r<__extents.rank(); r++) {
-           if(stride != static_cast<index_type>(other.stride(r))) {
-             // Note this throw will lead to a terminate if triggered since this function is marked noexcept
-             throw std::runtime_error("Assigning layout_stride to layout_left with invalid strides.");
-           }
+           if(static_cast<common_t>(stride) != static_cast<common_t>(other.stride(r)))
+             std::abort(); // ("Assigning layout_stride to layout_left with invalid strides.");
            stride *= __extents.extent(r);
          }
        }

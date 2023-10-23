@@ -39,7 +39,7 @@ template <bool implicit, class ToE, class FromE>
 constexpr void test_conversion(FromE src_exts) {
   using To   = std::layout_left::mapping<ToE>;
   using From = std::layout_stride::mapping<FromE>;
-  std::array<typename FromE::index_type, FromE::rank()> strides;
+  std::array<typename FromE::index_type, FromE::rank()> strides{};
   if constexpr (FromE::rank() > 0) {
     strides[0] = 1;
     for (size_t r = 1; r < FromE::rank(); r++)
