@@ -41,7 +41,7 @@ constexpr void test_construction() {
   typename E::index_type expected_size = 1;
   for (typename E::rank_type r = 0; r < E::rank(); r++)
     expected_size *= e.extent(r);
-  // assert(m.required_span_size() == expected_size); //FIXME
+  assert(m.required_span_size() == expected_size);
 
   // check strides: node stride function is constrained on rank>0, e.extent(r) is not
   auto strides = m.strides();
@@ -49,7 +49,7 @@ constexpr void test_construction() {
   if constexpr (E::rank() > 0) {
     std::layout_right::mapping<E> m_right;
     for (typename E::rank_type r = 0; r < E::rank(); r++) {
-      //assert(m.stride(r) == m_right.stride(r)); //FIXME
+      assert(m.stride(r) == m_right.stride(r));
       assert(strides[r] == m.stride(r));
     }
   }
@@ -68,6 +68,6 @@ constexpr bool test() {
 
 int main(int, char**) {
   test();
-  //static_assert(test()); //FIXME
+  static_assert(test());
   return 0;
 }

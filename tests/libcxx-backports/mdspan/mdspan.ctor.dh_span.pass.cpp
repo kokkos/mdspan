@@ -55,15 +55,19 @@ template <class H, class M, class A, size_t N>
 constexpr void
 test_mdspan_ctor_span(const H& handle, const M& map, const A&, std::span<typename M::index_type, N> exts) {
   using MDS = std::mdspan<typename A::element_type, typename M::extents_type, typename M::layout_type, A>;
+#if MDSPAN_HAS_CXX_23
   if !consteval {
     move_counted_handle<typename MDS::element_type>::move_counter() = 0;
   }
+#endif
   MDS m(handle, exts);
+#if MDSPAN_HAS_CXX_23
   if !consteval {
     if constexpr (std::is_same_v<H, move_counted_handle<typename MDS::element_type>>) {
       assert((H::move_counter() == 1));
     }
   }
+#endif
 
   static_assert(!noexcept(MDS(handle, exts)));
 
@@ -179,7 +183,7 @@ constexpr bool test() {
   static_assert(std::is_convertible_v<IntTypeNC, int>);
   static_assert(!std::is_convertible_v<const IntTypeNC&, int>);
   static_assert(std::is_nothrow_constructible_v<int, IntTypeNC>);
-  //static_assert(!std::is_constructible_v<mds_int_t, float*, std::span<IntTypeNC, 2>>); //FIXME
+  static_assert(!std::is_constructible_v<mds_int_t, float*, std::span<IntTypeNC, 2>>);
 
   // can't test a combo where std::is_nothrow_constructible_v<int, const IntTypeNC&> is true,
   // but std::is_convertible_v<const IntType&, int> is false

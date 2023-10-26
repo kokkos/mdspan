@@ -93,6 +93,6 @@ int main(int, char**) {
   static_assert(std::is_convertible_v<IntTypeNC, int>);
   static_assert(!std::is_convertible_v<const IntTypeNC&, int>);
   static_assert(std::is_nothrow_constructible_v<int, IntTypeNC>);
-  //static_assert(!std::is_constructible_v<std::dextents<int, 2>, std::array<IntTypeNC, 2>>); //FIXME
+  static_assert(!std::is_constructible_v<std::dextents<int, 2>, std::array<IntTypeNC, 2>>);
   return 0;
 }

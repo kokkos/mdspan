@@ -224,6 +224,7 @@ TEST(TestLayoutStrideStrideConstraint, test_layout_stride_stride_constraint) {
 
   Kokkos::extents<int> ext0d{};
   Kokkos::layout_stride::mapping m0d{ext0d, std::array<int,0>{}};
-  ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
+  // This is weird, but its what the standard says
+  ASSERT_TRUE((is_stride_avail< decltype(m0d), int >::value));
 }
 #endif

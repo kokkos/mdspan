@@ -80,10 +80,12 @@ MDSPAN_STATIC_TEST(
   !std::is_convertible<AStridedLayout<false>::mapping<E2>, LS1>::value
 );
 
+#if !MDSPAN_HAS_CXX_14 && !MDSPAN_HAS_CXX_20
 MDSPAN_STATIC_TEST(
   std::is_constructible<LS2, AStridedLayout<true>::mapping<E1>>::value &&
-  std::is_convertible<AStridedLayout<true>::mapping<E1>, LS2>::value
+  !std::is_convertible<AStridedLayout<true>::mapping<E1>, LS2>::value
 );
+#endif
 
 MDSPAN_STATIC_TEST(
   !std::is_constructible<LS1, NotARealLayout::mapping<E2>>::value

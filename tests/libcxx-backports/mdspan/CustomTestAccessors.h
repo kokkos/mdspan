@@ -54,9 +54,11 @@ struct move_counted_handle {
   constexpr move_counted_handle(const move_counted_handle<OtherT>& other) : ptr(other.ptr){};
   constexpr move_counted_handle(move_counted_handle&& other) {
     ptr = other.ptr;
+#if MDSPAN_HAS_CXX_23
     if !consteval {
       move_counter()++;
     }
+#endif
   }
   constexpr move_counted_handle(T* ptr_) : ptr(ptr_) {}
 

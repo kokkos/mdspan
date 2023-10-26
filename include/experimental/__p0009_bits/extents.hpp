@@ -251,12 +251,17 @@ public:
 
 #ifdef __cpp_lib_span
   MDSPAN_TEMPLATE_REQUIRES(class T, size_t N,
-                           /* requires */ (N == m_size_dynamic))
+                           /* requires */ (N == m_size_dynamic && N > 0))
   MDSPAN_INLINE_FUNCTION
   constexpr maybe_static_array(const std::span<T, N> &vals) {
     for (size_t r = 0; r < N; r++)
       m_dyn_vals[r] = static_cast<TDynamic>(vals[r]);
   }
+
+  MDSPAN_TEMPLATE_REQUIRES(class T, size_t N,
+                           /* requires */ (N == m_size_dynamic && N == 0))
+  MDSPAN_INLINE_FUNCTION
+  constexpr maybe_static_array(const std::span<T, N> &) : m_dyn_vals{} {}
 #endif
 
   // constructors from all values
@@ -423,9 +428,9 @@ public:
       class OtherIndexType, size_t N,
       /* requires */
       (
-          _MDSPAN_TRAIT(std::is_convertible, OtherIndexType, index_type) &&
+          _MDSPAN_TRAIT(std::is_convertible, const OtherIndexType&, index_type) &&
           _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type,
-              OtherIndexType) &&
+              const OtherIndexType&) &&
           (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
@@ -436,8 +441,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
       class OtherIndexType, size_t N,
       /* requires */
-      (_MDSPAN_TRAIT(std::is_convertible, OtherIndexType, index_type) &&
-       _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, OtherIndexType) &&
+      (_MDSPAN_TRAIT(std::is_convertible, const OtherIndexType&, index_type) &&
+       _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const OtherIndexType&) &&
        (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
@@ -521,10 +526,14 @@ public:
   MDSPAN_INLINE_FUNCTION friend constexpr bool
   operator==(const extents &lhs,
              const extents<OtherIndexType, OtherExtents...> &rhs) noexcept {
-    bool value = true;
-    for (size_type r = 0; r < m_rank; r++)
-      value &= rhs.extent(r) == lhs.extent(r);
-    return value;
+    if constexpr (rank() != extents<OtherIndexType, OtherExtents...>::rank()) {
+      return false;
+    } else {
+      using common_t = std::common_type_t<index_type, OtherIndexType>;
+      for (size_type r = 0; r < m_rank; r++)
+        if(static_cast<common_t>(rhs.extent(r)) != static_cast<common_t>(lhs.extent(r))) return false;
+    }
+    return true;
   }
 
 #if !(MDSPAN_HAS_CXX_20)
@@ -573,7 +582,7 @@ using dextents = typename detail::__make_dextents<IndexType, Rank>::type;
 template <class... IndexTypes>
 extents(IndexTypes...)
     -> extents<size_t,
-               size_t((IndexTypes(), ::MDSPAN_IMPL_STANDARD_NAMESPACE::dynamic_extent))...>;
+               ((void) sizeof(IndexTypes), ::MDSPAN_IMPL_STANDARD_NAMESPACE::dynamic_extent)...>;
 #endif
 
 // Helper type traits for identifying a class as extents.

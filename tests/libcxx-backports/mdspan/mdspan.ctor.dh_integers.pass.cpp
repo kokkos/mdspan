@@ -52,15 +52,19 @@ constexpr void test_mdspan_types(const H& handle, const M& map, const A&, Idxs..
   static_assert(ac == std::is_default_constructible_v<A>);
 
   if constexpr (mec && ac) {
+#if MDSPAN_HAS_CXX_23
     if !consteval {
       move_counted_handle<typename MDS::element_type>::move_counter() = 0;
     }
+#endif
     MDS m(handle, idxs...);
+#if MDSPAN_HAS_CXX_23
     if !consteval {
       if constexpr (std::is_same_v<H, move_counted_handle<typename MDS::element_type>>) {
         assert((H::move_counter() == 1));
       }
     }
+#endif
 
     // sanity check that concept works
     static_assert(check_mdspan_ctor_implicit<MDS, H, std::array<typename MDS::index_type, MDS::rank_dynamic()>>);
