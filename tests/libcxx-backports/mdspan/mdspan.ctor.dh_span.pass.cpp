@@ -108,9 +108,9 @@ constexpr void test_mdspan_ctor(const H& handle, const M& map, const A& acc) {
 template <bool mec, bool ac, class H, class L, class A>
 constexpr void mixin_extents(const H& handle, const L& layout, const A& acc) {
   constexpr size_t D = std::dynamic_extent;
-  //test_mdspan_ctor<mec, ac>(handle, construct_mapping(layout, std::extents<int>()), acc); //FIXME
+  test_mdspan_ctor<mec, ac>(handle, construct_mapping(layout, std::extents<int>()), acc);
   test_mdspan_ctor<mec, ac>(handle, construct_mapping(layout, std::extents<char, D>(7)), acc);
-  //test_mdspan_ctor<mec, ac>(handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc); //FIXME
+  test_mdspan_ctor<mec, ac>(handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc);
   test_mdspan_ctor<mec, ac>(handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)), acc);
   test_mdspan_ctor<mec, ac>(handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)), acc);
   test_mdspan_ctor<mec, ac>(

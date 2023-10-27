@@ -118,7 +118,7 @@ constexpr void test_mdspan_types(const H& handle, const M& map, const A& acc) {
   } else {
     assert(m.size() == 1);
   }
-  //ASSERT_SAME_TYPE(decltype(m.size()), typename MDS::size_type); //FIXME
+  ASSERT_SAME_TYPE(decltype(m.size()), typename MDS::size_type);
   ASSERT_NOEXCEPT(m.size());
 
   // empty()
@@ -141,12 +141,12 @@ constexpr void test_mdspan_types(const H& handle, const M& map, const A& acc) {
   ASSERT_SAME_TYPE(decltype(m.is_unique()), bool);
   ASSERT_SAME_TYPE(decltype(m.is_exhaustive()), bool);
   ASSERT_SAME_TYPE(decltype(m.is_strided()), bool);
-  //assert(!noexcept(MDS::is_always_unique())); //FIXME
-  //assert(!noexcept(MDS::is_always_exhaustive())); //FIXME
-  //assert(!noexcept(MDS::is_always_strided())); //FIXME
-  //assert(!noexcept(m.is_unique())); //FIXME
-  //assert(!noexcept(m.is_exhaustive())); //FIXME
-  //assert(!noexcept(m.is_strided())); //FIXME
+  assert(!noexcept(MDS::is_always_unique()));
+  assert(!noexcept(MDS::is_always_exhaustive()));
+  assert(!noexcept(MDS::is_always_strided()));
+  assert(!noexcept(m.is_unique()));
+  assert(!noexcept(m.is_exhaustive()));
+  assert(!noexcept(m.is_strided()));
   assert(MDS::is_always_unique() == M::is_always_unique());
   assert(MDS::is_always_exhaustive() == M::is_always_exhaustive());
   assert(MDS::is_always_strided() == M::is_always_strided());
@@ -209,6 +209,6 @@ constexpr bool test() {
 }
 int main(int, char**) {
   test();
-  //static_assert(test()); //FIXME
+  static_assert(test());
   return 0;
 }

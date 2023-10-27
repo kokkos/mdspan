@@ -23,6 +23,7 @@
 // Preconditions:
 //   * extents_type::index-cast(i) is a multidimensional index in extents_.
 
+
 // GCC warns about comma operator changing its meaning inside [] in C++23
 #if defined(__GNUC__) && !defined(__clang_major__)
 #  pragma GCC diagnostic push
@@ -37,6 +38,9 @@
 
 #include "../ConvertibleToIntegral.h"
 #include "../CustomTestLayouts.h"
+
+// This test uses the bracket operator, but its not something we have at configure time
+#if MDSPAN_USE_BRACKET_OPERATOR
 
 // Clang 16 does not support argument packs as input to operator []
 #if defined(__clang_major__) && __clang_major__ < 17
@@ -254,6 +258,9 @@ int main(int, char**) {
   test_large();
   return 0;
 }
+
+#endif // MDSPAN_USE_BRACKET_OPERATOR
+
 #if defined(__GNUC__) && !defined(__clang_major__)
 #  pragma GCC diagnostic pop
 #endif

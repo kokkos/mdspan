@@ -44,12 +44,12 @@ void test_mdspan_size(std::vector<char>& storage, Extents&& e)
   using extents_type = std::remove_cv_t<std::remove_reference_t<Extents>>;
   Kokkos::mdspan<char, extents_type> m(storage.data(), std::forward<Extents>(e));
 
-  static_assert(std::is_same<decltype(m.size()), std::size_t>::value,
-		"The return type of mdspan::size() must be size_t.");
+  static_assert(std::is_same<decltype(m.size()), typename decltype(m)::size_type>::value,
+		"The return type of mdspan::size() must be size_type.");
 
   // m.size() must not overflow, as long as the product of extents
-  // is representable as a value of type size_t.
-  ASSERT_EQ( min_storage_size, m.size() );
+  // is representable as a value of type size_type.
+  ASSERT_EQ( min_storage_size, size_t(m.size()) );
 }
 
 TEST(TestMdspan, MdspanSizeReturnTypeAndPrecondition)
@@ -58,9 +58,6 @@ TEST(TestMdspan, MdspanSizeReturnTypeAndPrecondition)
 
   static_assert(std::numeric_limits<std::int8_t>::max() == 127, "max int8_t != 127");
   test_mdspan_size(storage, Kokkos::extents<std::int8_t, 12, 11>{}); // 12 * 11 == 132
-
-  static_assert(std::numeric_limits<std::uint8_t>::max() == 255, "max uint8_t != 255");
-  test_mdspan_size(storage, Kokkos::extents<std::uint8_t, 16, 17>{}); // 16 * 17 == 272
 }
 
 } // namespace (anonymous)

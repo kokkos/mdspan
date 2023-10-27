@@ -177,6 +177,7 @@ public:
 
 #if MDSPAN_HAS_CXX_23
   friend constexpr void swap(mapping& x, mapping& y) noexcept {
+    using std::swap;
     swap(x.extents_, y.extents_);
     if !consteval {
       swap_counter()++;
