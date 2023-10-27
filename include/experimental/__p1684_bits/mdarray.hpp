@@ -433,8 +433,9 @@ public:
     class OtherElementType, class OtherExtents,
     class OtherLayoutType, class OtherAccessorType,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_assignable, mdspan_type,
-                       mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>)
+      _MDSPAN_TRAIT(std::is_assignable,
+                      mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>,
+                      mdspan_type)
     )
   )
   constexpr operator mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType> () {
@@ -445,8 +446,9 @@ public:
     class OtherElementType, class OtherExtents,
     class OtherLayoutType, class OtherAccessorType,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_assignable, const_mdspan_type,
-                      mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>)
+      _MDSPAN_TRAIT(std::is_assignable,
+                      mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>,
+                      const_mdspan_type)
     )
   )
   constexpr operator mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType> () const {
