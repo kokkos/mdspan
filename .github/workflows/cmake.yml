@@ -23,7 +23,7 @@ jobs:
           compiler_prefix: /opt/intel/oneapi/compiler/latest/linux/bin
           # To get new URL, look here:
           # https://www.intel.com/content/www/us/en/developer/articles/tool/oneapi-standalone-components.html#inpage-nav-6-undefined
-          compiler_url: https://registrationcenter-download.intel.com/akdlm/irc_nas/18849/l_dpcpp-cpp-compiler_p_2022.2.0.8772_offline.sh
+          compiler_url: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/ebf5d9aa-17a7-46a4-b5df-ace004227c0e/l_dpcpp-cpp-compiler_p_2023.2.1.8_offline.sh
     name: ${{ matrix.compiler_driver }}
     steps:
 
