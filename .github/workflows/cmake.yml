@@ -1,6 +1,12 @@
 name: CMake
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - stable
+  pull_request:
+    branches:
+      - stable
 
 env:
   BUILD_TYPE: RelWithDebInfo
