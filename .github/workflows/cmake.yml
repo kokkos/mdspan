@@ -71,7 +71,7 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/mdspan-build
       shell: bash
-      run: ctest
+      run: ctest --output-on-failure
 
     - name: Install
       shell: bash
