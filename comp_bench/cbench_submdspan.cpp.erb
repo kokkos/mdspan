@@ -15,7 +15,7 @@ int test(int* data) {
     >
   >(data);
   <% n.times do |i| %>
-    auto <%= "sub#{i+1}_#{k}" %> = KokkosEx::submdspan(
+    auto <%= "sub#{i+1}_#{k}" %> = Kokkos::submdspan(
        <%= "sub#{i}_#{k}" %>,
        1
        <%= ", Kokkos::full_extent" * (n - i - 1) %>

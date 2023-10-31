@@ -77,7 +77,7 @@ void _do_fill_random(
 )
 {
   for(SizeT i = 0; i < s.extent(0); ++i) {
-    _do_fill_random(KokkosEx::submdspan(s, i, _repeated_with<decltype(Es)>(Kokkos::full_extent)...), gen, dist);
+    _do_fill_random(Kokkos::submdspan(s, i, _repeated_with<decltype(Es)>(Kokkos::full_extent)...), gen, dist);
   }
 }
 
