@@ -23,7 +23,6 @@
 // Preconditions:
 //   * extents_type::index-cast(i) is a multidimensional index in extents_.
 
-
 // GCC warns about comma operator changing its meaning inside [] in C++23
 #if defined(__GNUC__) && !defined(__clang_major__)
 #  pragma GCC diagnostic push

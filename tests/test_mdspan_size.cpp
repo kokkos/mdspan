@@ -37,19 +37,20 @@ std::size_t product_of_extents(const Extents& e)
 template<class Extents>
 void test_mdspan_size(std::vector<char>& storage, Extents&& e)
 {
-  const std::size_t min_storage_size = product_of_extents(e);
+  using extents_type = std::remove_cv_t<std::remove_reference_t<Extents>>;
+  using mdspan_t = Kokkos::mdspan<char, extents_type>;
+  const typename mdspan_t::size_type min_storage_size = product_of_extents(e);
   if(storage.size() < min_storage_size) {
     storage.resize(min_storage_size);
   }
-  using extents_type = std::remove_cv_t<std::remove_reference_t<Extents>>;
-  Kokkos::mdspan<char, extents_type> m(storage.data(), std::forward<Extents>(e));
+  mdspan_t m(storage.data(), std::forward<Extents>(e));
 
-  static_assert(std::is_same<decltype(m.size()), typename decltype(m)::size_type>::value,
+  static_assert(std::is_same<decltype(m.size()), typename mdspan_t::size_type>::value,
 		"The return type of mdspan::size() must be size_type.");
 
   // m.size() must not overflow, as long as the product of extents
   // is representable as a value of type size_type.
-  ASSERT_EQ( min_storage_size, size_t(m.size()) );
+  ASSERT_EQ( min_storage_size, m.size());
 }
 
 TEST(TestMdspan, MdspanSizeReturnTypeAndPrecondition)

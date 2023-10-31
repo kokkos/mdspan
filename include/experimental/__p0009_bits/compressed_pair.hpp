@@ -79,7 +79,7 @@ struct __compressed_pair<
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() noexcept(noexcept(_T2())) = default;
+  constexpr __compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -116,7 +116,7 @@ struct __compressed_pair<
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() noexcept(noexcept(_T1())) = default;
+  constexpr __compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
