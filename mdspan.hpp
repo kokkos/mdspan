@@ -2025,8 +2025,8 @@ namespace detail {
 // For no unique address emulation, this is the case taken when neither are empty.
 // For real `[[no_unique_address]]`, this case is always taken.
 template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
-  _MDSPAN_NO_UNIQUE_ADDRESS _T1 __t1_val;
-  _MDSPAN_NO_UNIQUE_ADDRESS _T2 __t2_val;
+  _MDSPAN_NO_UNIQUE_ADDRESS _T1 __t1_val{};
+  _MDSPAN_NO_UNIQUE_ADDRESS _T2 __t2_val{};
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
     return __t1_val;
@@ -2037,19 +2037,19 @@ template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() noexcept = default;
+  constexpr __compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
+  constexpr __compressed_pair(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair &&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair const &) noexcept = default;
+  constexpr __compressed_pair(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair &&) noexcept = default;
+  operator=(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~__compressed_pair() noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair &&) = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  ~__compressed_pair() = default;
   template <class _T1Like, class _T2Like>
   MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2)
       : __t1_val((_T1Like &&) __t1), __t2_val((_T2Like &&) __t2) {}
@@ -2063,7 +2063,7 @@ struct __compressed_pair<
     _T1, _T2,
     std::enable_if_t<_MDSPAN_TRAIT(std::is_empty, _T1) && !_MDSPAN_TRAIT(std::is_empty, _T2)>>
     : private _T1 {
-  _T2 __t2_val;
+  _T2 __t2_val{};
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T1 &__first() noexcept {
     return *static_cast<_T1 *>(this);
   }
@@ -2076,19 +2076,19 @@ struct __compressed_pair<
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() noexcept = default;
+  constexpr __compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
+  constexpr __compressed_pair(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair &&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair const &) noexcept = default;
+  constexpr __compressed_pair(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair &&) noexcept = default;
+  operator=(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~__compressed_pair() noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair &&) = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  ~__compressed_pair() = default;
   template <class _T1Like, class _T2Like>
   MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2)
       : _T1((_T1Like &&) __t1), __t2_val((_T2Like &&) __t2) {}
@@ -2100,7 +2100,7 @@ struct __compressed_pair<
     _T1, _T2,
     std::enable_if_t<!_MDSPAN_TRAIT(std::is_empty, _T1) && _MDSPAN_TRAIT(std::is_empty, _T2)>>
     : private _T2 {
-  _T1 __t1_val;
+  _T1 __t1_val{};
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
     return __t1_val;
@@ -2113,19 +2113,19 @@ struct __compressed_pair<
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() noexcept = default;
+  constexpr __compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
+  constexpr __compressed_pair(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair &&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair const &) noexcept = default;
+  constexpr __compressed_pair(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair &&) noexcept = default;
+  operator=(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~__compressed_pair() noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair &&) = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  ~__compressed_pair() = default;
 
   template <class _T1Like, class _T2Like>
   MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2)
@@ -2166,19 +2166,19 @@ struct __compressed_pair<
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() noexcept = default;
+  constexpr __compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair const &) noexcept = default;
+  constexpr __compressed_pair(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair &&) noexcept = default;
-  MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair const &) noexcept = default;
+  constexpr __compressed_pair(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair &&) noexcept = default;
+  operator=(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~__compressed_pair() noexcept = default;
+  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  operator=(__compressed_pair &&) = default;
+  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  ~__compressed_pair() = default;
   template <class _T1Like, class _T2Like>
   MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2) noexcept
     : __first_base_t(_T1((_T1Like &&) __t1)),
@@ -3128,6 +3128,13 @@ private:
     ReferenceType __callop(mdspan const& __self, const std::array<SizeType, N>& indices) noexcept {
       return __self.__accessor_ref().access(__self.__ptr_ref(), __self.__mapping_ref()(indices[Idxs]...));
     }
+#ifdef __cpp_lib_span
+    template <class ReferenceType, class SizeType, size_t N>
+    MDSPAN_FORCE_INLINE_FUNCTION static constexpr
+    ReferenceType __callop(mdspan const& __self, const std::span<SizeType, N>& indices) noexcept {
+      return __self.__accessor_ref().access(__self.__ptr_ref(), __self.__mapping_ref()(indices[Idxs]...));
+    }
+#endif
   };
 
 public:
@@ -3256,6 +3263,10 @@ public:
       _MDSPAN_TRAIT(std::is_constructible, accessor_type, const OtherAccessor&)
     )
   )
+  MDSPAN_CONDITIONAL_EXPLICIT(
+    !_MDSPAN_TRAIT(std::is_convertible, const typename OtherLayoutPolicy::template mapping<OtherExtents>&, mapping_type) ||
+    !_MDSPAN_TRAIT(std::is_convertible, const OtherAccessor&, accessor_type)
+  )
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(const mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other)
     : __members(other.__ptr_ref(), __map_acc_pair_t(other.__mapping_ref(), other.__accessor_ref()))
@@ -3299,8 +3310,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_convertible, SizeType, index_type) &&
-      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, SizeType)
+      _MDSPAN_TRAIT(std::is_convertible, const SizeType&, index_type) &&
+      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const SizeType&)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -3313,8 +3324,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_convertible, SizeType, index_type) &&
-      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, SizeType)
+      _MDSPAN_TRAIT(std::is_convertible, const SizeType&, index_type) &&
+      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const SizeType&)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -3358,8 +3369,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_convertible, SizeType, index_type) &&
-      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, SizeType)
+      _MDSPAN_TRAIT(std::is_convertible, const SizeType&, index_type) &&
+      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const SizeType&)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -3372,8 +3383,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class SizeType,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_convertible, SizeType, index_type) &&
-      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, SizeType)
+      _MDSPAN_TRAIT(std::is_convertible, const SizeType&, index_type) &&
+      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const SizeType&)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -3384,7 +3395,7 @@ public:
   #endif // __cpp_lib_span
   #endif // MDSPAN_USE_PAREN_OPERATOR
 
-  MDSPAN_INLINE_FUNCTION constexpr size_t size() const noexcept {
+  MDSPAN_INLINE_FUNCTION constexpr size_type size() const noexcept {
     return __impl::__size(*this);
   };
 
@@ -3419,13 +3430,13 @@ public:
   //--------------------------------------------------------------------------------
   // [mdspan.basic.obs], mdspan observers of the mapping
 
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return mapping_type::is_always_unique(); };
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() noexcept { return mapping_type::is_always_exhaustive(); };
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return mapping_type::is_always_strided(); };
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() { return mapping_type::is_always_unique(); };
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() { return mapping_type::is_always_exhaustive(); };
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() { return mapping_type::is_always_strided(); };
 
-  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return __mapping_ref().is_unique(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const noexcept { return __mapping_ref().is_exhaustive(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return __mapping_ref().is_strided(); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const { return __mapping_ref().is_unique(); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const { return __mapping_ref().is_exhaustive(); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const { return __mapping_ref().is_strided(); };
   MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return __mapping_ref().stride(r); };
 
 private:
@@ -3447,7 +3458,7 @@ private:
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 MDSPAN_TEMPLATE_REQUIRES(
   class ElementType, class... SizeTypes,
-  /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_integral, SizeTypes) /* && ... */) &&
+  /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_convertible, SizeTypes, size_t) /* && ... */) &&
   (sizeof...(SizeTypes) > 0)
 )
 MDSPAN_DEDUCTION_GUIDE explicit mdspan(ElementType*, SizeTypes...)
@@ -5734,8 +5745,9 @@ public:
     class OtherElementType, class OtherExtents,
     class OtherLayoutType, class OtherAccessorType,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_assignable, mdspan_type,
-                       mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>)
+      _MDSPAN_TRAIT(std::is_assignable,
+                      mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>,
+                      mdspan_type)
     )
   )
   constexpr operator mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType> () {
@@ -5746,8 +5758,9 @@ public:
     class OtherElementType, class OtherExtents,
     class OtherLayoutType, class OtherAccessorType,
     /* requires */ (
-      _MDSPAN_TRAIT(std::is_assignable, const_mdspan_type,
-                      mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>)
+      _MDSPAN_TRAIT(std::is_assignable,
+                      mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType>,
+                      const_mdspan_type)
     )
   )
   constexpr operator mdspan<OtherElementType, OtherExtents, OtherLayoutType, OtherAccessorType> () const {
