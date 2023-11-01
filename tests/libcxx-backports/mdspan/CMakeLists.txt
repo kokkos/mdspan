@@ -1,5 +1,5 @@
 mdspan_add_test(mdspan.assign.pass)
-#mdspan_add_test(mdspan.conversion.pass) //FIXME
+mdspan_add_test(mdspan.conversion.pass)
 #mdspan_add_test(mdspan.conversion.verify)
 mdspan_add_test(mdspan.ctor.copy.pass)
 mdspan_add_test(mdspan.ctor.default.pass)
@@ -13,9 +13,9 @@ mdspan_add_test(mdspan.ctor.move.pass)
 mdspan_add_test(mdspan.deduction.pass)
 #mdspan_add_test(mdspan.element_type.verify)
 #mdspan_add_test(mdspan.extents.verify)
-#mdspan_add_test(mdspan.index_operator.pass) //FIXME
+mdspan_add_test(mdspan.index_operator.pass)
 #mdspan_add_test(mdspan.mapping.verify)
 mdspan_add_test(mdspan.move.pass)
 mdspan_add_test(mdspan.properties.pass)
-#mdspan_add_test(mdspan.swap.pass) //FIXME
+mdspan_add_test(mdspan.swap.pass)
 mdspan_add_test(mdspan.types.pass)

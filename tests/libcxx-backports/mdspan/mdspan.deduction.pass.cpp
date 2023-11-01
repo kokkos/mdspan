@@ -100,7 +100,7 @@ constexpr bool test_no_layout_deduction_guides(const H& handle, const A&) {
   // deduction from pointer alone
   ASSERT_SAME_TYPE(decltype(std::mdspan(handle)), std::mdspan<T, std::extents<size_t>>);
   // deduction from pointer and integral like
-  //ASSERT_SAME_TYPE(decltype(std::mdspan(handle, 5, SizeTIntType(6))), std::mdspan<T, std::dextents<size_t, 2>>); //FIXME
+  ASSERT_SAME_TYPE(decltype(std::mdspan(handle, 5, SizeTIntType(6))), std::mdspan<T, std::dextents<size_t, 2>>);
 
   std::array<char, 3> exts;
   // deduction from pointer and array
