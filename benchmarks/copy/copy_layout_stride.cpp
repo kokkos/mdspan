@@ -13,6 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
+#define MDSPAN_USE_PAREN_OPERATOR
 #include <mdspan/mdspan.hpp>
 
 #include <benchmark/benchmark.h>

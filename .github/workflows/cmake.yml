@@ -1,12 +1,6 @@
 name: CMake
 
-on:
-  push:
-    branches:
-      - stable
-  pull_request:
-    branches:
-      - stable
+on: [push, pull_request]
 
 env:
   BUILD_TYPE: RelWithDebInfo
@@ -61,7 +55,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
-      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DMDSPAN_ENABLE_COMP_BENCH=ON -DCMAKE_CXX_FLAGS=${{matrix.cxx_flags_extra}}
+      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DMDSPAN_ENABLE_COMP_BENCH=ON -DCMAKE_CXX_FLAGS=${{matrix.cxx_flags_extra}}
 
     - name: Build
       shell: bash
