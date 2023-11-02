@@ -5,6 +5,8 @@ function(mdspan_add_benchmark EXENAME)
   target_include_directories(${EXENAME} PUBLIC
       $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/benchmarks>
   )
+  # Set flag to build with parenthesis enabled
+  target_compile_definitions(${EXENAME} PRIVATE MDSPAN_USE_PAREN_OPERATOR=1)
 endfunction()
 
 find_package(benchmark REQUIRED)
