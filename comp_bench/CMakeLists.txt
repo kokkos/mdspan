@@ -25,6 +25,7 @@ function(add_cxx_comparison name template range)
           MEDIAN_OF 3
       )
       target_link_libraries(${name}_${std} mdspan)
+      target_compile_definitions(${name}_${std} PRIVATE MDSPAN_USE_PAREN_OPERATOR=1)
       set_property(TARGET ${name}_${std} PROPERTY CXX_STANDARD ${std})
       set(all_datasets ${all_datasets} ${name}_${std})
     endforeach()
