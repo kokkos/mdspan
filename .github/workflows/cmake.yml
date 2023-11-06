@@ -11,6 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        compiler_driver: [g++-9, g++-10, clang++, icpx]
+        stdcxx: [17, 20, 23]
         include:
         - compiler_driver: g++-9
           compiler_prefix: /usr/bin
@@ -24,6 +26,11 @@ jobs:
           # To get new URL, look here:
           # https://www.intel.com/content/www/us/en/developer/articles/tool/oneapi-standalone-components.html#inpage-nav-6-undefined
           compiler_url: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/ebf5d9aa-17a7-46a4-b5df-ace004227c0e/l_dpcpp-cpp-compiler_p_2023.2.1.8_offline.sh
+        exclude:
+        - compiler_driver: g++-9
+          stdcxx: 23
+        - compiler_driver: g++-10
+          stdcxx: 23
     name: ${{ matrix.compiler_driver }}
     steps:
 
@@ -55,7 +62,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
-      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DMDSPAN_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DMDSPAN_ENABLE_COMP_BENCH=ON -DCMAKE_CXX_FLAGS=${{matrix.cxx_flags_extra}}
+      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DMDSPAN_CXX_STANDARD=${{ matrix.stdcxx }} -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DMDSPAN_ENABLE_COMP_BENCH=ON -DCMAKE_CXX_FLAGS=${{matrix.cxx_flags_extra}}
 
     - name: Build
       shell: bash
