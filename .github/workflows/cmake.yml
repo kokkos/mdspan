@@ -34,7 +34,7 @@ jobs:
           stdcxx: 23
         - compiler_driver: g++-10
           stdcxx: 23
-    name: ${{ matrix.compiler_driver }}
+    name: ${{ matrix.compiler_driver }} C++${{ matrix.stdcxx }}
     steps:
 
     - name: Cache icpx install
