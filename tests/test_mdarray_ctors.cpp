@@ -294,7 +294,7 @@ TEST(TestMdarrayCtorFromMoveContainerSizes, 1d_static) {
   std::array<int, 1> d{42};
   // ptr to fill, extents, is_layout_right
   mdarray_values<1>::fill(d.data(),Kokkos::extents<int, 1>(),true);
-  KokkosEx::mdarray<int, Kokkos::extents<int, 1>, Kokkos::layout_right, std::array<int,1>> m({},std::move(d));
+  KokkosEx::mdarray<int, Kokkos::extents<int, 1>, Kokkos::layout_right, std::array<int,1>> m(Kokkos::extents<int, 1>{},std::move(d));
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 1, 0, 1, 0, 0, 1, 0, 0, nullptr, false, true);
 }
@@ -303,7 +303,7 @@ TEST(TestMdarrayCtorFromMoveContainerSizes, 2d_static) {
   std::array<int, 6> d{42,1,2,3,4,41};
   // ptr to fill, extents, is_layout_right
   mdarray_values<2>::fill(d.data(),Kokkos::extents<int, 2,3>(),true);
-  KokkosEx::mdarray<int, Kokkos::extents<int, 2,3>, Kokkos::layout_right, std::array<int,6>> m({},std::move(d));
+  KokkosEx::mdarray<int, Kokkos::extents<int, 2,3>, Kokkos::layout_right, std::array<int,6>> m(Kokkos::extents<int, 2,3>{},std::move(d));
   // mdarray, rank, rank_dynamic, ext0, ext1, ext2, stride0, stride1, stride2, ptr, ptr_matches, exhaustive
   check_correctness(m, 2, 0, 2, 3, 0, 3, 1, 0, nullptr, false, true);
 }
