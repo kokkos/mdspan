@@ -483,7 +483,7 @@ TEST(TestMdarrayCtorWithPMR, 2d_mixed) {
 // Construct from container only
 TEST(TestMdarrayCtorDataStdArray, test_mdarray_ctor_data_carray) {
   std::array<int, 1> d = {42};
-  KokkosEx::mdarray<int, Kokkos::extents<int, 1>, Kokkos::layout_right, std::array<int, 1>> m({}, d);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 1>, Kokkos::layout_right, std::array<int, 1>> m(Kokkos::extents<int, 1>{}, d);
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
@@ -494,7 +494,7 @@ TEST(TestMdarrayCtorDataStdArray, test_mdarray_ctor_data_carray) {
 
 TEST(TestMdarrayCtorDataVector, test_mdarray_ctor_data_carray) {
   std::vector<int> d = {42};
-  KokkosEx::mdarray<int, Kokkos::extents<int, 1>, Kokkos::layout_right, std::vector<int>> m({}, d);
+  KokkosEx::mdarray<int, Kokkos::extents<int, 1>, Kokkos::layout_right, std::vector<int>> m(Kokkos::extents<int, 1>{}, d);
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
