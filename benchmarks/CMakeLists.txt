@@ -5,6 +5,8 @@ function(mdspan_add_benchmark EXENAME)
   target_include_directories(${EXENAME} PUBLIC
       $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/benchmarks>
   )
+  # Set flag to build with parenthesis enabled
+  target_compile_definitions(${EXENAME} PRIVATE MDSPAN_USE_PAREN_OPERATOR=1)
 endfunction()
 
 find_package(benchmark REQUIRED)
@@ -42,6 +44,7 @@ function(mdspan_add_cuda_benchmark EXENAME)
   string(REPLACE "-pthread" "" _benchmark_libs "${_benchmark_libs_old}")
   target_include_directories(${EXENAME} PUBLIC "${_benchmark_include}")
   target_link_libraries(${EXENAME} PUBLIC "${_benchmark_libs};${_benchmark_libs_imported}")
+  target_compile_definitions(${EXENAME} PRIVATE MDSPAN_USE_PAREN_OPERATOR=1)
   if(_benchmark_libs_old MATCHES "-pthread")
     target_compile_options(${EXENAME} PUBLIC "-Xcompiler=-pthread")
   endif()
@@ -59,6 +62,7 @@ function(mdspan_add_openmp_benchmark EXENAME)
       target_include_directories(${EXENAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/benchmarks>
       )
+      target_compile_definitions(${EXENAME} PRIVATE MDSPAN_USE_PAREN_OPERATOR=1)
     else()
       message(WARNING "Not adding target ${EXENAME} because OpenMP was not found")
     endif()

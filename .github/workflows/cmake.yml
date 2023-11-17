@@ -40,31 +40,33 @@ jobs:
         curl  --url ${{ matrix.compiler_url }} --output download.sh
         sudo sh -x download.sh -s -a -s --action install --eula accept
     - name: Install gtest manually
-      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+      run: |
+        sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+        sudo apt install libbenchmark1 libbenchmark-dev
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/mdspan-build
-      
+
     - name: Check Out
       uses: actions/checkout@v2
       with:
         path: ${{github.workspace}}/mdspan-src
-      
+
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
-      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DCMAKE_CXX_FLAGS=${{matrix.cxx_flags_extra}}
-      
+      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DMDSPAN_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DMDSPAN_ENABLE_BENCHMARKS=ON -DMDSPAN_ENABLE_COMP_BENCH=ON -DCMAKE_CXX_FLAGS=${{matrix.cxx_flags_extra}}
+
     - name: Build
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
       run: make -j
-      
+
     - name: Test
       working-directory: ${{github.workspace}}/mdspan-build
       shell: bash
-      run: ctest
-            
+      run: ctest --output-on-failure
+
     - name: Install
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
