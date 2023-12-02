@@ -49,6 +49,7 @@ else()
 endif()
 
 mdspan_add_test(test_extents)
+mdspan_add_test(test_mdspan_at)
 mdspan_add_test(test_mdspan_ctors)
 mdspan_add_test(test_mdspan_swap)
 mdspan_add_test(test_mdspan_conversion)

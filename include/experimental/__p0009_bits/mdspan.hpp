@@ -22,6 +22,9 @@
 #include "trait_backports.hpp"
 #include "compressed_pair.hpp"
 
+#include <stdexcept>
+#include <string>
+
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 template <
   class ElementType,
@@ -217,6 +220,68 @@ public:
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.mapping], mdspan mapping domain multidimensional index to access codomain element
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class... SizeTypes,
+    /* requires */ (
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_convertible, SizeTypes, index_type) /* && ... */) &&
+      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, SizeTypes) /* && ... */) &&
+      (rank() == sizeof...(SizeTypes))
+    )
+  )
+  constexpr reference at(SizeTypes... indices) const
+  {
+    size_t r = 0;
+    for (const auto& index : {indices...}) {
+      if (index >= __mapping_ref().extents().extent(r)) {
+        throw std::out_of_range(
+          "mdspan::at(...," + std::to_string(index) + ",...) out-of-range at rank index " + std::to_string(r) +
+          " for mdspan with extent {...," + std::to_string(__mapping_ref().extents().extent(r)) + ",...}");
+      }
+      ++r;
+    }
+    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(static_cast<index_type>(std::move(indices))...));
+  }
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType,
+    /* requires */ (
+      _MDSPAN_TRAIT(std::is_convertible, const SizeType&, index_type) &&
+      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const SizeType&)
+    )
+  )
+  constexpr reference at(const std::array< SizeType, rank()>& indices) const
+  {
+    for (size_t r = 0; r < indices.size(); ++r) {
+      if (indices[r] >= __mapping_ref().extents().extent(r)) {
+        throw std::out_of_range(
+          "mdspan::at({...," + std::to_string(indices[r]) + ",...}) out-of-range at rank index " + std::to_string(r) +
+          " for mdspan with extent {...," + std::to_string(__mapping_ref().extents().extent(r)) + ",...}");
+      }
+    }
+    return __impl::template __callop<reference>(*this, indices);
+  }
+
+  #ifdef __cpp_lib_span
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType,
+    /* requires */ (
+      _MDSPAN_TRAIT(std::is_convertible, const SizeType&, index_type) &&
+      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const SizeType&)
+    )
+  )
+  constexpr reference at(std::span<SizeType, rank()> indices) const
+  {
+    for (size_t r = 0; r < indices.size(); ++r) {
+      if (indices[r] >= __mapping_ref().extents().extent(r)) {
+        throw std::out_of_range(
+          "mdspan::at({...," + std::to_string(indices[r]) + ",...}) out-of-range at rank index " + std::to_string(r) +
+          " for mdspan with extent {...," + std::to_string(__mapping_ref().extents().extent(r)) + ",...}");
+      }
+    }
+    return __impl::template __callop<reference>(*this, indices);
+  }
+  #endif // __cpp_lib_span
 
   #if MDSPAN_USE_BRACKET_OPERATOR
   MDSPAN_TEMPLATE_REQUIRES(
