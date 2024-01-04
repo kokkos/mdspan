@@ -103,8 +103,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT( std::is_convertible, SizeTypes, index_type) /* && ... */) &&
-      _MDSPAN_TRAIT( std::is_constructible, extents_type, SizeTypes...) &&
+      (::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::are_valid_indices<index_type, SizeTypes...>()) &&
+        _MDSPAN_TRAIT( std::is_constructible, extents_type, SizeTypes...) &&
       _MDSPAN_TRAIT( std::is_constructible, mapping_type, extents_type) &&
       (_MDSPAN_TRAIT( std::is_constructible, container_type, size_t) ||
        container_is_array<container_type>::value) &&
@@ -312,8 +312,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT( std::is_convertible, SizeTypes, index_type) /* && ... */) &&
-      extents_type::rank() == sizeof...(SizeTypes)
+        (::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::are_valid_indices<index_type, SizeTypes...>()) &&
+        extents_type::rank() == sizeof...(SizeTypes)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
@@ -324,8 +324,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
-      _MDSPAN_FOLD_AND(_MDSPAN_TRAIT( std::is_convertible, SizeTypes, index_type) /* && ... */) &&
-      extents_type::rank() == sizeof...(SizeTypes)
+        (::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::are_valid_indices<index_type, SizeTypes...>()) &&
+        extents_type::rank() == sizeof...(SizeTypes)
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
