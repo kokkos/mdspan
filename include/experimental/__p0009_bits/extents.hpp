@@ -55,6 +55,14 @@ __check_compatible_extents(
   return {};
 }
 
+template<class IndexType, class ... Arguments>
+MDSPAN_INLINE_FUNCTION
+static constexpr bool are_valid_indices() {
+    return 
+      (std::is_convertible_v<Arguments, IndexType> && ... && true) &&
+      (std::is_nothrow_constructible_v<IndexType, Arguments> && ... && true);
+}
+
 // ------------------------------------------------------------------
 // ------------ static_array ----------------------------------------
 // ------------------------------------------------------------------
@@ -499,17 +507,20 @@ private:
 public:
 
   // Converting constructor from other extents specializations
-  MDSPAN_TEMPLATE_REQUIRES(
-      class OtherIndexType, size_t... OtherExtents,
-      /* requires */
-      (
-          /* multi-stage check to protect from invalid pack expansion when sizes
-             don't match? */
-          decltype(detail::__check_compatible_extents(
-              std::integral_constant<bool, sizeof...(Extents) ==
-                                               sizeof...(OtherExtents)>{},
+    MDSPAN_TEMPLATE_REQUIRES(
+        class OtherIndexType, size_t... OtherExtents,
+        /* requires */
+        (
+            /* multi-stage check to protect from invalid pack expansion when sizes
+            don't match? */
+            decltype(detail::__check_compatible_extents(
+              // using: sizeof...(Extents) == sizeof...(OtherExtents) as the second argument fails with MSVC+NVCC with some obscure expansion error
+              // MSVC: 19.38.33133 NVCC: 12.0
+              std::integral_constant<bool, extents<int, Extents...>::rank() == extents<int, OtherExtents...>::rank()>{},
               std::integer_sequence<size_t, Extents...>{},
-              std::integer_sequence<size_t, OtherExtents...>{}))::value))
+              std::integer_sequence<size_t, OtherExtents...>{}))::value
+      )
+  )
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT((((Extents != dynamic_extent) &&
                                 (OtherExtents == dynamic_extent)) ||

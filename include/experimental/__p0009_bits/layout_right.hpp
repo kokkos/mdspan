@@ -188,13 +188,10 @@ class layout_right::mapping {
     //--------------------------------------------------------------------------------
 
     MDSPAN_TEMPLATE_REQUIRES(
-      class... Indices,
+      class ... Indices,
       /* requires */ (
-        (sizeof...(Indices) == extents_type::rank()) &&
-        _MDSPAN_FOLD_AND(
-           (_MDSPAN_TRAIT(std::is_convertible, Indices, index_type) &&
-            _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, Indices))
-        )
+      (sizeof...(Indices) == extents_type::rank()) &&
+      (detail::are_valid_indices<index_type, Indices...>())
       )
     )
     _MDSPAN_HOST_DEVICE

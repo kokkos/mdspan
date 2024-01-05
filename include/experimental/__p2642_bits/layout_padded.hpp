@@ -374,11 +374,10 @@ public:
    * - (is_nothrow_constructible_v<index_type, Indices> && ...) is true.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-    class... _Indices,
-    /* requires */ (
-      sizeof...(_Indices) == extents_type::rank()
-      && (std::is_convertible_v<_Indices, index_type> && ...)
-      && (std::is_nothrow_constructible_v<index_type, _Indices> && ...)
+      class... _Indices,
+      /* requires */ (
+          sizeof...(_Indices) == extents_type::rank() &&
+          (::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::are_valid_indices<index_type, _Indices...>())
     )
   )
   constexpr size_t operator()(_Indices... idxs) const noexcept
@@ -707,9 +706,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
       class... _Indices,
       /* requires */ (
-          sizeof...(_Indices) == extents_type::rank()
-          && (std::is_convertible_v<_Indices, index_type> && ...)
-          && (std::is_nothrow_constructible_v<index_type, _Indices> && ...)
+          sizeof...(_Indices) == extents_type::rank() &&
+          (::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::are_valid_indices<index_type, _Indices...>())
           )
       )
   constexpr size_t operator()(_Indices... idxs) const noexcept
