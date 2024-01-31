@@ -65,7 +65,7 @@ struct is_layout_left_padded_mapping : std::false_type {};
 
 template <class _Mapping>
 struct is_layout_left_padded_mapping<_Mapping,
-  std::enable_if_t<std::is_same_v<_Mapping, typename layout_left_padded<_Mapping::padding_value>::template mapping<typename _Mapping::extents_type>>>>
+  std::enable_if_t<std::is_same<_Mapping, typename layout_left_padded<_Mapping::padding_value>::template mapping<typename _Mapping::extents_type>>::value>>
     : std::true_type {};
 
 template <class _Layout>
@@ -79,7 +79,7 @@ struct is_layout_right_padded_mapping : std::false_type {};
 
 template <class _Mapping>
 struct is_layout_right_padded_mapping<_Mapping,
-  std::enable_if_t<std::is_same_v<_Mapping, typename layout_right_padded<_Mapping::padding_value>::template mapping<typename _Mapping::extents_type>>>>
+  std::enable_if_t<std::is_same<_Mapping, typename layout_right_padded<_Mapping::padding_value>::template mapping<typename _Mapping::extents_type>>::value>>
     : std::true_type {};
 
 template <class _LayoutExtentsType, class _PaddedLayoutMappingType>
