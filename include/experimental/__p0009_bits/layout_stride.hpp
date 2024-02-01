@@ -225,6 +225,21 @@ struct layout_stride {
     // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
     using __impl = __deduction_workaround<std::make_index_sequence<Extents::rank()>>;
 
+    static constexpr __strides_storage_t strides_storage(std::true_type) {
+      __strides_storage_t s{};
+
+      extents_type e;
+      index_type stride = 1;
+      for(int r = static_cast<int>(extents_type::rank() - 1); r >= 0; r--) {
+        s[r] = stride;
+        stride *= e.extent(r);
+      }
+
+      return s;
+    }
+    static constexpr __strides_storage_t strides_storage(std::false_type) {
+      return {};
+    }
 
     //----------------------------------------------------------------------------
 
@@ -246,18 +261,8 @@ struct layout_stride {
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
-          extents_type(), __strides_storage_t([]() {
-            __strides_storage_t s{};
-            if constexpr (extents_type::rank() > 0) {
-              extents_type e;
-              index_type stride = 1;
-              for(int r = static_cast<int>(extents_type::rank() - 1); r >= 0; r--) {
-                s[r] = stride;
-                stride *= e.extent(r);
-              }
-            }
-            return s;
-          }())
+          extents_type(),
+          __strides_storage_t(strides_storage(std::integral_constant<bool, (extents_type::rank() > 0)>{}))
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
