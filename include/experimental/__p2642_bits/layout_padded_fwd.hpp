@@ -93,10 +93,9 @@ constexpr void check_padded_layout_converting_constructor_mandates()
                   (extents_type::static_extent(idx) != dynamic_extent) &&
                   (padding_value != dynamic_extent)) {
       if constexpr (padding_value == 0) {
-        static_assert(_LayoutExtentsType::static_extent(idx) == 0);
+        static_assert(_LayoutExtentsType::static_extent(idx) == 0, "");
       } else {
-        static_assert(
-            _LayoutExtentsType::static_extent(idx) % padding_value == 0);
+        static_assert(_LayoutExtentsType::static_extent(idx) % padding_value == 0, "");
       }
     }
   }
