@@ -19,14 +19,17 @@
 #include "extents.hpp"
 #include "trait_backports.hpp"
 #include "compressed_pair.hpp"
+#include "utility.hpp"
 
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #  include "no_unique_address.hpp"
 #endif
 
 #include <algorithm>
-#include <numeric>
 #include <array>
+#include <cstdlib>
+#include <numeric>
+
 #ifdef __cpp_lib_span
 #include <span>
 #endif
@@ -38,11 +41,11 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 struct layout_left {
   template<class Extents>
-    class mapping;
+  class mapping;
 };
 struct layout_right {
   template<class Extents>
-    class mapping;
+  class mapping;
 };
 
 namespace detail {
@@ -79,6 +82,7 @@ namespace detail {
     std::bool_constant<M::is_always_unique()>::value;
   };
 #endif
+
 } // namespace detail
 
 struct layout_stride {
@@ -225,7 +229,11 @@ struct layout_stride {
     // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
     using __impl = __deduction_workaround<std::make_index_sequence<Extents::rank()>>;
 
-    static constexpr __strides_storage_t strides_storage(std::true_type) {
+    static constexpr __strides_storage_t strides_storage(detail::with_rank<0>) {
+      return {};
+    }
+    template <std::size_t N>
+    static constexpr __strides_storage_t strides_storage(detail::with_rank<N>) {
       __strides_storage_t s{};
 
       extents_type e;
@@ -236,9 +244,6 @@ struct layout_stride {
       }
 
       return s;
-    }
-    static constexpr __strides_storage_t strides_storage(std::false_type) {
-      return {};
     }
 
     //----------------------------------------------------------------------------
@@ -262,7 +267,7 @@ struct layout_stride {
       : __base_t(__base_t{__member_pair_t(
 #endif
           extents_type(),
-          __strides_storage_t(strides_storage(std::integral_constant<bool, (extents_type::rank() > 0)>{}))
+          __strides_storage_t(strides_storage(detail::with_rank<extents_type::rank()>{}))
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
@@ -444,32 +449,48 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return true; }
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_unique() noexcept { return true; }
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_exhaustive() const noexcept {
-      if constexpr (extents_type::rank() == 0)
-        return true;
-      else {
-        index_type span_size = required_span_size();
-        if (span_size == static_cast<index_type>(0)) {
-          if constexpr (extents_type::rank() == 1) {
-            return stride(0) == 1;
-          } else {
-            rank_type r_largest = 0;
-            for (rank_type r = 1; r < extents_type::rank(); r++) {
-              if (stride(r) > stride(r_largest)) {
-                r_largest = r;
-              }
-            }
-            for (rank_type r = 0; r < extents_type::rank(); r++) {
-              if (extents().extent(r) == 0 && r != r_largest) {
-                return false;
-              }
-            }
-            return true;
-          }
-        } else {
-          return required_span_size() == __get_size(extents(), std::make_index_sequence<extents_type::rank()>());
+
+  private:
+    constexpr bool exhaustive_for_nonzero_span_size() const
+    {
+      return required_span_size() == __get_size(extents(), std::make_index_sequence<extents_type::rank()>());
+    }
+
+    constexpr bool is_exhaustive_impl(detail::with_rank<0>) const
+    {
+      return true;
+    }
+    constexpr bool is_exhaustive_impl(detail::with_rank<1>) const
+    {
+      if (required_span_size() != static_cast<index_type>(0)) {
+        return exhaustive_for_nonzero_span_size();
+      }
+      return stride(0) == 1;
+    }
+    template <std::size_t N>
+    constexpr bool is_exhaustive_impl(detail::with_rank<N>) const
+    {
+      if (required_span_size() != static_cast<index_type>(0)) {
+        return exhaustive_for_nonzero_span_size();
+      }
+
+      rank_type r_largest = 0;
+      for (rank_type r = 1; r < extents_type::rank(); r++) {
+        if (stride(r) > stride(r_largest)) {
+          r_largest = r;
         }
       }
+      for (rank_type r = 0; r < extents_type::rank(); r++) {
+        if (extents().extent(r) == 0 && r != r_largest) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+  public:
+    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 bool is_exhaustive() const noexcept {
+      return is_exhaustive_impl(detail::with_rank<extents_type::rank()>{});
     }
     MDSPAN_INLINE_FUNCTION static constexpr bool is_strided() noexcept { return true; }
 
@@ -498,15 +519,9 @@ struct layout_stride {
 #endif
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator==(const mapping& x, const StridedLayoutMapping& y) noexcept {
-      bool strides_match = true;
-      if constexpr (extents_type::rank() > 0) {
-        using common_t = std::common_type_t<index_type, typename StridedLayoutMapping::index_type>;
-        for(rank_type r = 0; r < extents_type::rank(); r++)
-          strides_match = strides_match && (static_cast<common_t>(x.stride(r)) == static_cast<common_t>(y.stride(r)));
-      }
       return (x.extents() == y.extents()) &&
              (__impl::__OFFSET(y) == static_cast<typename StridedLayoutMapping::index_type>(0)) &&
-             strides_match;
+             detail::rankwise_equal(detail::with_rank<extents_type::rank()>{}, x, y, detail::stride);
     }
 
     // This one is not technically part of the proposal. Just here to make implementation a bit more optimal hopefully
@@ -560,4 +575,35 @@ struct layout_stride {
   };
 };
 
+namespace detail {
+
+template <class Layout, class Extents, class Mapping>
+constexpr void terminate_if_invalid_strides(with_rank<0>, Layout, const Extents&, const Mapping&)
+{}
+
+template <std::size_t N, class Layout, class Extents, class Mapping>
+constexpr void terminate_if_invalid_strides(with_rank<N>, Layout, const Extents& ext, const Mapping& other)
+{
+  static_assert(std::is_same<typename Mapping::layout_type, layout_stride>::value and
+                (std::is_same<Layout, layout_left>::value or
+                 std::is_same<Layout, layout_right>::value)
+                , "This function is only intended to validate construction of "
+                  "a layout_left or layout_right mapping from a layout_stride mapping.");
+
+  constexpr auto is_left = std::is_same<Layout, layout_left>::value;
+
+  typename Extents::index_type stride = 1;
+
+  for (std::size_t r = 0; r < N; r++) {
+    const std::size_t s = is_left ? r : N - 1 - r;
+
+    if (not common_integral_compare(stride, other.stride(s))) {
+      // assigning to layout_{left,right} with invalid strides
+      std::abort();
+    }
+    stride *= ext.extent(s);
+  }
+}
+
+} // namespace detail
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
