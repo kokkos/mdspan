@@ -13,6 +13,7 @@ macro(mdspan_add_test name)
   add_executable(${name} ${name}.cpp)
   target_link_libraries(${name} mdspan gtest_main)
   add_test(${name} ${name})
+  set_property(TARGET ${name} PROPERTY COMPILE_WARNING_AS_ERROR ON)
 endmacro()
 
 if(MDSPAN_USE_SYSTEM_GTEST)
