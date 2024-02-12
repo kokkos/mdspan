@@ -18,6 +18,8 @@
 
 #include "config.hpp"
 
+#include <cstdio>
+#include <cstdlib>
 #include <type_traits> // std::is_void
 
 #ifndef _MDSPAN_HOST_DEVICE
@@ -100,6 +102,52 @@
 
 #define MDSPAN_IMPL_STANDARD_NAMESPACE_STRING MDSPAN_PP_STRINGIFY(MDSPAN_IMPL_STANDARD_NAMESPACE)
 #define MDSPAN_IMPL_PROPOSED_NAMESPACE_STRING MDSPAN_PP_STRINGIFY(MDSPAN_IMPL_STANDARD_NAMESPACE) "::" MDSPAN_PP_STRINGIFY(MDSPAN_IMPL_PROPOSED_NAMESPACE)
+
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace detail {
+
+inline void default_precondition_violation_handler(const char* cond, const char* file, unsigned line)
+{
+  (void)std::fprintf(::stderr, "%s:%u: precondition failure: `%s`\n", file, line, cond);
+  std::abort();
+}
+
+} // namespace detail
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
+
+#ifndef MDSPAN_PRECONDITION_VIOLATION_HANDLER
+#define MDSPAN_PRECONDITION_VIOLATION_HANDLER(cond, file, line) \
+  MDSPAN_IMPL_STANDARD_NAMESPACE::detail::default_precondition_violation_handler(cond, file, line)
+#endif
+
+#ifndef MDSPAN_SKIP_PRECONDITION_VIOLATION_HANDLER
+  #ifndef NDEBUG
+    #define MDSPAN_SKIP_PRECONDITION_VIOLATION_HANDLER 0
+  #else
+    #define MDSPAN_SKIP_PRECONDITION_VIOLATION_HANDLER 1
+  #endif
+#endif
+
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace detail {
+
+template <bool skip = MDSPAN_SKIP_PRECONDITION_VIOLATION_HANDLER>
+constexpr void precondition(const char* cond, const char* file, unsigned line)
+{
+  if (skip) { return; }
+
+  MDSPAN_PRECONDITION_VIOLATION_HANDLER(cond, file, line);
+}
+
+} // namespace detail
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
+
+#define MDSPAN_PRECONDITION(...) \
+  do { \
+    if (not (__VA_ARGS__)) { \
+      MDSPAN_IMPL_STANDARD_NAMESPACE::detail::precondition(#__VA_ARGS__, __FILE__, __LINE__); \
+    } \
+  } while (0)
 
 // </editor-fold> end Preprocessor helpers }}}1
 //==============================================================================

@@ -157,8 +157,8 @@ class layout_left::mapping {
         * TODO: check precondition
         * other.required_span_size() is a representable value of type index_type
         */
-       #if !defined(_MDSPAN_HAS_CUDA) && !defined(_MDSPAN_HAS_HIP) && !defined(NDEBUG)
-       detail::terminate_if_invalid_strides(detail::with_rank<extents_type::rank()>{}, layout_left{}, __extents, other);
+       #if !defined(_MDSPAN_HAS_CUDA) && !defined(_MDSPAN_HAS_HIP)
+       detail::validate_strides(detail::with_rank<extents_type::rank()>{}, layout_left{}, __extents, other);
        #endif
     }
 

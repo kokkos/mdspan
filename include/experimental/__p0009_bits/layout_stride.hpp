@@ -25,10 +25,9 @@
 #  include "no_unique_address.hpp"
 #endif
 
-#include <algorithm>
 #include <array>
-#include <cstdlib>
-#include <numeric>
+#include <type_traits>
+#include <utility>
 
 #ifdef __cpp_lib_span
 #include <span>
@@ -578,11 +577,11 @@ struct layout_stride {
 namespace detail {
 
 template <class Layout, class Extents, class Mapping>
-constexpr void terminate_if_invalid_strides(with_rank<0>, Layout, const Extents&, const Mapping&)
+constexpr void validate_strides(with_rank<0>, Layout, const Extents&, const Mapping&)
 {}
 
 template <std::size_t N, class Layout, class Extents, class Mapping>
-constexpr void terminate_if_invalid_strides(with_rank<N>, Layout, const Extents& ext, const Mapping& other)
+constexpr void validate_strides(with_rank<N>, Layout, const Extents& ext, const Mapping& other)
 {
   static_assert(std::is_same<typename Mapping::layout_type, layout_stride>::value and
                 (std::is_same<Layout, layout_left>::value or
@@ -597,10 +596,9 @@ constexpr void terminate_if_invalid_strides(with_rank<N>, Layout, const Extents&
   for (std::size_t r = 0; r < N; r++) {
     const std::size_t s = is_left ? r : N - 1 - r;
 
-    if (not common_integral_compare(stride, other.stride(s))) {
-      // assigning to layout_{left,right} with invalid strides
-      std::abort();
-    }
+    MDSPAN_PRECONDITION(common_integral_compare(stride, other.stride(s))
+                        and "invalid strides for layout_{left,right}");
+
     stride *= ext.extent(s);
   }
 }
