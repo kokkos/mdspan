@@ -104,8 +104,8 @@ struct padded_extent {
   }
 
   MDSPAN_INLINE_FUNCTION static constexpr static_array_type
-      init_padding([[maybe_unused]] const _Extents &exts,
-                    [[maybe_unused]] index_type pv) {
+  init_padding([[maybe_unused]] const _Extents &exts,
+               [[maybe_unused]] index_type pv) {
     if constexpr (_Extents::rank() > 1) {
       return {find_next_multiple(pv,
                                    exts.extent(_ExtentToPadIdx))};
