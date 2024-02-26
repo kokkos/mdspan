@@ -31,10 +31,6 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 };
 
 namespace detail {
-using detail::first_of;
-using detail::stride_of;
-using detail::inv_map_rank;
-
 // constructs sub strides
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
 MDSPAN_INLINE_FUNCTION

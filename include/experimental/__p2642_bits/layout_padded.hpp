@@ -104,10 +104,10 @@ struct padded_extent {
   }
 
   MDSPAN_INLINE_FUNCTION static constexpr static_array_type
-      init_padding(const _Extents &exts,
-                          index_type padding_value) {
+      init_padding([[maybe_unused]] const _Extents &exts,
+                    [[maybe_unused]] index_type pv) {
     if constexpr (_Extents::rank() > 1) {
-      return {find_next_multiple(padding_value,
+      return {find_next_multiple(pv,
                                    exts.extent(_ExtentToPadIdx))};
     } else {
       return {};
@@ -116,7 +116,7 @@ struct padded_extent {
 
   template <typename _Mapping, size_t _PaddingStrideIdx>
   MDSPAN_INLINE_FUNCTION static constexpr static_array_type
-  init_padding(const _Mapping &other_mapping,
+  init_padding([[maybe_unused]] const _Mapping &other_mapping,
                       std::integral_constant<size_t, _PaddingStrideIdx>) {
     if constexpr (_Extents::rank() > 1) {
       return {other_mapping.stride(_PaddingStrideIdx)};
