@@ -202,6 +202,15 @@ TEST(TestLayoutLeftListInitialization, test_layout_left_extent_initialization) {
   ASSERT_TRUE(m.is_exhaustive());
 }
 
+TEST(TestConvertingConstructionFromLayoutStride, precondition_failure) {
+  using E = Kokkos::extents<size_t, 2, 2>;
+
+  const auto stride = Kokkos::layout_stride::mapping<E>{E{}, std::array<size_t, 2>{2, 2}};
+
+  ASSERT_DEATH(Kokkos::layout_left::mapping<E>{stride}, "invalid strides");
+  ASSERT_DEATH(Kokkos::layout_right::mapping<E>{stride}, "invalid strides");
+}
+
 // FIXME: CUDA NVCC including 12.0 does not like CTAD on nested classes
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION) && !defined(__NVCC__)
 TEST(TestLayoutLeftCTAD, test_layout_left_ctad) {

@@ -18,8 +18,9 @@
 #include "macros.hpp"
 #include "trait_backports.hpp"
 #include "extents.hpp"
+#include "layout_stride.hpp"
+#include "utility.hpp"
 #include "../__p2642_bits/layout_padded_fwd.hpp"
-#include <cassert>
 #include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
@@ -133,11 +134,11 @@ class layout_left::mapping {
       : __extents(__other.extents())
     {
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
-          check_padded_layout_converting_constructor_mandates<extents_type,
-                                                                _Mapping>();
+          check_padded_layout_converting_constructor_mandates<
+            extents_type, _Mapping>(detail::with_rank<extents_type::rank()>{});
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_preconditions<
-              extents_type>(__other);
+              extents_type>(detail::with_rank<extents_type::rank()>{}, __other);
     }
 #endif
 
@@ -156,16 +157,8 @@ class layout_left::mapping {
         * TODO: check precondition
         * other.required_span_size() is a representable value of type index_type
         */
-       #if !defined(_MDSPAN_HAS_CUDA) && !defined(_MDSPAN_HAS_HIP) && !defined(NDEBUG)
-       if constexpr (extents_type::rank() > 0) {
-         index_type stride = 1;
-         using common_t = std::common_type_t<index_type, typename OtherExtents::index_type>;
-         for(rank_type r=0; r<__extents.rank(); r++) {
-           if(static_cast<common_t>(stride) != static_cast<common_t>(other.stride(r)))
-             std::abort(); // ("Assigning layout_stride to layout_left with invalid strides.");
-           stride *= __extents.extent(r);
-         }
-       }
+       #if !defined(_MDSPAN_HAS_CUDA) && !defined(_MDSPAN_HAS_HIP)
+       detail::validate_strides(detail::with_rank<extents_type::rank()>{}, layout_left{}, __extents, other);
        #endif
     }
 

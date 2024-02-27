@@ -16,11 +16,13 @@
 
 #pragma once
 #include "dynamic_extent.hpp"
+#include "utility.hpp"
 
 #ifdef __cpp_lib_span
 #include <span>
 #endif
 #include <array>
+#include <type_traits>
 
 #include <cinttypes>
 
@@ -58,9 +60,9 @@ __check_compatible_extents(
 template<class IndexType, class ... Arguments>
 MDSPAN_INLINE_FUNCTION
 static constexpr bool are_valid_indices() {
-    return 
-      (std::is_convertible<Arguments, IndexType>::value && ... && true) &&
-      (std::is_nothrow_constructible<IndexType, Arguments>::value && ... && true);
+    return
+      _MDSPAN_FOLD_AND(std::is_convertible<Arguments, IndexType>::value) &&
+      _MDSPAN_FOLD_AND(std::is_nothrow_constructible<IndexType, Arguments>::value);
 }
 
 // ------------------------------------------------------------------
@@ -537,14 +539,9 @@ public:
   MDSPAN_INLINE_FUNCTION friend constexpr bool
   operator==(const extents &lhs,
              const extents<OtherIndexType, OtherExtents...> &rhs) noexcept {
-    if constexpr (rank() != extents<OtherIndexType, OtherExtents...>::rank()) {
-      return false;
-    } else {
-      using common_t = std::common_type_t<index_type, OtherIndexType>;
-      for (size_type r = 0; r < m_rank; r++)
-        if(static_cast<common_t>(rhs.extent(r)) != static_cast<common_t>(lhs.extent(r))) return false;
-    }
-    return true;
+    return
+      rank() == extents<OtherIndexType, OtherExtents...>::rank() and
+      detail::rankwise_equal(detail::with_rank<rank()>{}, rhs, lhs, detail::extent);
   }
 
 #if !(MDSPAN_HAS_CXX_20)

@@ -18,8 +18,8 @@
 #include "macros.hpp"
 #include "trait_backports.hpp"
 #include "extents.hpp"
-#include <stdexcept>
 #include "layout_stride.hpp"
+#include "utility.hpp"
 #include "../__p2642_bits/layout_padded_fwd.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
@@ -134,11 +134,11 @@ class layout_right::mapping {
         : __extents(__other.extents())
     {
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
-          check_padded_layout_converting_constructor_mandates<extents_type,
-                                                                _Mapping>();
+          check_padded_layout_converting_constructor_mandates<
+            extents_type, _Mapping>(detail::with_rank<extents_type::rank()>{});
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_preconditions<
-              extents_type>(__other);
+            extents_type>(detail::with_rank<extents_type::rank()>{}, __other);
     }
 #endif
 
@@ -157,17 +157,8 @@ class layout_right::mapping {
         * TODO: check precondition
         * other.required_span_size() is a representable value of type index_type
         */
-       #if !defined(_MDSPAN_HAS_CUDA) && !defined(_MDSPAN_HAS_HIP) && !defined(NDEBUG)
-       if constexpr (extents_type::rank() > 0) {
-         index_type stride = 1;
-         for(rank_type r=__extents.rank(); r>0; r--) {
-           if(stride != static_cast<index_type>(other.stride(r-1))) {
-             // Note this throw will lead to a terminate if triggered since this function is marked noexcept
-             throw std::runtime_error("Assigning layout_stride to layout_right with invalid strides.");
-           }
-           stride *= __extents.extent(r-1);
-         }
-       }
+       #if !defined(_MDSPAN_HAS_CUDA) && !defined(_MDSPAN_HAS_HIP)
+       detail::validate_strides(detail::with_rank<extents_type::rank()>{}, layout_right{}, __extents, other);
        #endif
     }
 
