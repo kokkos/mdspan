@@ -1337,7 +1337,7 @@ __check_compatible_extents(
 template<class IndexType, class ... Arguments>
 MDSPAN_INLINE_FUNCTION
 static constexpr bool are_valid_indices() {
-    return 
+    return
       (std::is_convertible<Arguments, IndexType>::value && ... && true) &&
       (std::is_nothrow_constructible<IndexType, Arguments>::value && ... && true);
 }
@@ -1427,7 +1427,8 @@ struct index_sequence_scan_impl<R, FirstVal, Values...> {
 
 template <size_t R, size_t FirstVal>
 struct index_sequence_scan_impl<R, FirstVal> {
-#if defined(__NVCC__) || defined(__NVCOMPILER)
+#if defined(__NVCC__) || defined(__NVCOMPILER) ||                              \
+    defined(_MDSPAN_COMPILER_INTEL)
   // NVCC warns about pointless comparison with 0 for R==0 and r being const
   // evaluatable and also 0.
   MDSPAN_INLINE_FUNCTION
@@ -2731,7 +2732,8 @@ struct layout_stride {
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
-     constexpr auto submdspan_mapping_impl(
+   MDSPAN_INLINE_FUNCTION
+   constexpr auto submdspan_mapping_impl(
        SliceSpecifiers... slices) const;
 
    template<class... SliceSpecifiers>
@@ -3092,7 +3094,8 @@ private:
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
-     constexpr auto submdspan_mapping_impl(
+   MDSPAN_INLINE_FUNCTION
+   constexpr auto submdspan_mapping_impl(
        SliceSpecifiers... slices) const;
 
    template<class... SliceSpecifiers>
@@ -3765,7 +3768,8 @@ private:
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
-     constexpr auto submdspan_mapping_impl(
+    MDSPAN_INLINE_FUNCTION
+    constexpr auto submdspan_mapping_impl(
        SliceSpecifiers... slices) const;
 
    template<class... SliceSpecifiers>
@@ -3879,10 +3883,10 @@ struct padded_extent {
   }
 
   MDSPAN_INLINE_FUNCTION static constexpr static_array_type
-      init_padding(const _Extents &exts,
-                          index_type padding_value) {
+  init_padding([[maybe_unused]] const _Extents &exts,
+               [[maybe_unused]] index_type pv) {
     if constexpr (_Extents::rank() > 1) {
-      return {find_next_multiple(padding_value,
+      return {find_next_multiple(pv,
                                    exts.extent(_ExtentToPadIdx))};
     } else {
       return {};
@@ -3891,7 +3895,7 @@ struct padded_extent {
 
   template <typename _Mapping, size_t _PaddingStrideIdx>
   MDSPAN_INLINE_FUNCTION static constexpr static_array_type
-  init_padding(const _Mapping &other_mapping,
+  init_padding([[maybe_unused]] const _Mapping &other_mapping,
                       std::integral_constant<size_t, _PaddingStrideIdx>) {
     if constexpr (_Extents::rank() > 1) {
       return {other_mapping.stride(_PaddingStrideIdx)};
@@ -4988,10 +4992,6 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 };
 
 namespace detail {
-using detail::first_of;
-using detail::stride_of;
-using detail::inv_map_rank;
-
 // constructs sub strides
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
 MDSPAN_INLINE_FUNCTION
