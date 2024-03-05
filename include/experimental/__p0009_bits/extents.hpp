@@ -58,7 +58,7 @@ __check_compatible_extents(
 template<class IndexType, class ... Arguments>
 MDSPAN_INLINE_FUNCTION
 static constexpr bool are_valid_indices() {
-    return 
+    return
       (std::is_convertible<Arguments, IndexType>::value && ... && true) &&
       (std::is_nothrow_constructible<IndexType, Arguments>::value && ... && true);
 }
@@ -148,7 +148,8 @@ struct index_sequence_scan_impl<R, FirstVal, Values...> {
 
 template <size_t R, size_t FirstVal>
 struct index_sequence_scan_impl<R, FirstVal> {
-#if defined(__NVCC__) || defined(__NVCOMPILER)
+#if defined(__NVCC__) || defined(__NVCOMPILER) ||                              \
+    defined(_MDSPAN_COMPILER_INTEL)
   // NVCC warns about pointless comparison with 0 for R==0 and r being const
   // evaluatable and also 0.
   MDSPAN_INLINE_FUNCTION

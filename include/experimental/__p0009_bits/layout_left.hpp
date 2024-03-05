@@ -254,7 +254,8 @@ private:
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
-     constexpr auto submdspan_mapping_impl(
+    MDSPAN_INLINE_FUNCTION
+    constexpr auto submdspan_mapping_impl(
        SliceSpecifiers... slices) const;
 
    template<class... SliceSpecifiers>
