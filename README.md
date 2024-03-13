@@ -3,7 +3,7 @@ Reference `mdspan` implementation
 
 The ISO-C++ proposal [P0009](https://wg21.link/p0009) will add support for non-owning multi-dimensional array references to the C++ standard library.  This repository aims to provide a production-quality implementation of the proposal as written (with a few caveats, see below) in preparation for the addition of `mdspan` to the standard.  Please feel free to use this, file bugs when it breaks, and let us know how it works for you :-)
 
-[Try it out on Godbolt](https://godbolt.org/z/Mxa7cej1a){: .btn }
+[Try it out on Godbolt](https://godbolt.org/z/or8eTj4Gx){: .btn }
 
 During the final leg of the ISO C++ committee review process a number of breaking changes were proposed and accepted (issue #136). These are now merged into the stable branch.
 
@@ -12,6 +12,8 @@ Note: There is a tag mdspan-0.4.0 which reflects the status of P0009 before
 
 * renaming `pointer`, `data`, `is_contiguous` and `is_always_contiguous`; and before
 * renaming `size_type` to `index_type` and introducing a new `size_type = make_unsigned_t<index_type>` alias.
+
+Since mdspan-0.7.0 the default namespace for `mdspan` is `Kokkos`, in order for this repository not to violate C++ rules.
 
 Using `mdspan`
 --------------
