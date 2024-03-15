@@ -19,6 +19,7 @@
 #include "../mdspan"
 #include <cassert>
 #include <vector>
+#include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
@@ -191,6 +192,7 @@ public:
     static_assert( std::is_constructible<extents_type, OtherExtents>::value, "");
   }
 
+#ifdef MDARRAY_SUPPORT_ALLOC
   // Constructors for container types constructible from a size and allocator
   MDSPAN_TEMPLATE_REQUIRES(
     class Alloc,
@@ -282,6 +284,117 @@ MDSPAN_TEMPLATE_REQUIRES(
   {
     static_assert( std::is_constructible<extents_type, OtherExtents>::value, "");
   }
+#endif
+
+#ifdef MDARRAY_SUPPORT_ITERATOR
+  // Constructors for container types constructible from a size and allocator
+  MDSPAN_TEMPLATE_REQUIRES(
+    class BeginIter, class EndIter,
+    /* requires */ (_MDSPAN_TRAIT( std::is_constructible, container_type, BeginIter, EndIter) &&
+                    _MDSPAN_TRAIT( std::is_constructible, mapping_type, extents_type) &&
+                    !_MDSPAN_TRAIT( std::is_same, typename std::iterator_traits<BeginIter>::iterator_category, void) &&
+                    !_MDSPAN_TRAIT( std::is_same, typename std::iterator_traits<EndIter>::iterator_category, void))
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const extents_type& exts, BeginIter b, EndIter e)
+    : map_(exts), ctr_(b, e)
+  {
+    assert(ctr_.size() >= map_.required_span_size());
+  }
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class BeginIter, class EndIter,
+    /* requires */ (_MDSPAN_TRAIT( std::is_constructible, container_type, BeginIter, EndIter) &&
+                    !_MDSPAN_TRAIT( std::is_same, typename std::iterator_traits<BeginIter>::iterator_category, void) &&
+                    !_MDSPAN_TRAIT( std::is_same, typename std::iterator_traits<EndIter>::iterator_category, void))
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const mapping_type& map, BeginIter b, EndIter e)
+    : map_(map), ctr_(b, e)
+  { 
+    assert(ctr_.size() >= map_.required_span_size());
+  }
+
+#ifdef MDARRAY_SUPPORT_ALLOC
+  // Constructors for container types constructible from a size and allocator
+  MDSPAN_TEMPLATE_REQUIRES(
+    class BeginIter, class EndIter, class Alloc,
+    /* requires */ (_MDSPAN_TRAIT( std::is_constructible, container_type, BeginIter, EndIter, Alloc) &&
+                    _MDSPAN_TRAIT( std::is_constructible, mapping_type, extents_type) &&
+                    !_MDSPAN_TRAIT( std::is_same, typename std::iterator_traits<BeginIter>::iterator_category, void) &&
+                    !_MDSPAN_TRAIT( std::is_same, typename std::iterator_traits<EndIter>::iterator_category, void))
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const extents_type& exts, BeginIter b, EndIter e, const Alloc& alloc)
+    : map_(exts), ctr_(b, e, alloc)
+  {
+    assert(ctr_.size() >= map_.required_span_size());
+  }
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class BeginIter, class EndIter, class Alloc,
+    /* requires */ (_MDSPAN_TRAIT( std::is_constructible, container_type, BeginIter, EndIter, Alloc) &&
+                    !_MDSPAN_TRAIT( std::is_same, typename std::iterator_traits<BeginIter>::iterator_category, void) &&
+                    !_MDSPAN_TRAIT( std::is_same, typename std::iterator_traits<EndIter>::iterator_category, void))
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const mapping_type& map, BeginIter b, EndIter e, const Alloc& alloc)
+    : map_(map), ctr_(b, e, alloc)
+  { 
+    assert(ctr_.size() >= map_.required_span_size());
+  }
+#endif
+#endif
+
+#ifdef MDARRAY_SUPPORT_INITLIST
+  // Constructors for container types constructible from a size and allocator
+//  MDSPAN_TEMPLATE_REQUIRES(
+//    /* requires */ (_MDSPAN_TRAIT( std::is_constructible, container_type, std::initializer_list<value_type>) &&
+//                    _MDSPAN_TRAIT( std::is_constructible, mapping_type, extents_type))
+//  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const extents_type& exts, std::initializer_list<value_type> il)
+    : map_(exts), ctr_(il)
+  {
+    assert(ctr_.size() >= map_.required_span_size());
+  }
+
+//  MDSPAN_TEMPLATE_REQUIRES(
+//    /* requires */ (_MDSPAN_TRAIT( std::is_constructible, container_type, std::initializer_list<value_type>))
+//  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const mapping_type& map,  std::initializer_list<value_type> il)
+    : map_(map), ctr_(il)
+  { 
+    assert(ctr_.size() >= map_.required_span_size());
+  }
+
+#ifdef MDARRAY_SUPPORT_ALLOC
+  // Constructors for container types constructible from a size and allocator
+  MDSPAN_TEMPLATE_REQUIRES(
+    class Alloc,
+    /* requires */ (_MDSPAN_TRAIT( std::is_constructible, container_type, std::initializer_list<value_type>, Alloc) &&
+                    _MDSPAN_TRAIT( std::is_constructible, mapping_type, extents_type))
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const extents_type& exts,  std::initializer_list<value_type> il, const Alloc& alloc)
+    : map_(exts), ctr_(il, alloc)
+  {
+    assert(ctr_.size() >= map_.required_span_size());
+  }
+
+  MDSPAN_TEMPLATE_REQUIRES(
+    class Alloc,
+    /* requires */ (_MDSPAN_TRAIT( std::is_constructible, container_type, std::initializer_list<value_type>, Alloc))
+  )
+  MDSPAN_INLINE_FUNCTION
+  constexpr mdarray(const mapping_type& map,  std::initializer_list<value_type> il, const Alloc& alloc)
+    : map_(map), ctr_(il, alloc)
+  { 
+    assert(ctr_.size() >= map_.required_span_size());
+  }
+#endif
+#endif
 
   // construction from mdspan
   // TODO: needs proper fill operation not just assuming contiguous and construction from iterators
