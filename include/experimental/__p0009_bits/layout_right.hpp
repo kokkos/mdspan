@@ -195,6 +195,31 @@ class layout_right::mapping {
     )
     _MDSPAN_HOST_DEVICE
     constexpr index_type operator()(Indices... idxs) const noexcept {
+#if ! defined(NDEBUG)
+#if defined(__cpp_if_constexpr) && defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas > 201707L)
+      std::tuple<Indices...> indices{idxs...};
+      auto check_one = [] <class InputIndex, rank_type RankIndex>
+        (const InputIndex& input_index,
+         index_type current_extent,
+         std::integral_constant<size_t, RankIndex> rank_index) {
+        if constexpr (std::is_signed_v<InputIndex>) {
+          assert(index >= 0);
+        }
+        assert(static_cast<index_type>(index) < current_extent);
+      };
+
+      [&] <size_t ... RankIndices> (std::index_sequence<RankIndices...>) {
+        ((check_one(std::get<RankIndices>(indices),
+                    this->extents().extent(RankIndices),
+                    std::integral_constant<size_t, RankIndices>{})), ...);
+      } (std::make_index_sequence<extents_type::rank()>());
+#else
+      std::array<index_type, extents_type::rank()> indices{static_cast<index_type>(idxs)...};
+      for (rank_type r = 0; r < extents_type::rank(); ++r) {
+        assert(indices[r] < this->extents().extent(r));
+      }
+#endif // if constexpr, and explicit template parameter list for generic lambdas
+#endif // ! NDEBUG
       return __compute_offset(__rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
     }
 
