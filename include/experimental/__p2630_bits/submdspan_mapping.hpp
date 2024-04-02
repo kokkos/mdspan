@@ -32,31 +32,31 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 
 namespace detail {
 
-  template<class IndexType, class Slice>
-  constexpr bool
-  one_slice_out_of_bounds(const IndexType& extent, Slice&& slice)
-  {
-    return detail::first_of(std::forward<Slice>(slice)) == extent;
-  }
+template<class IndexType, class Slice>
+constexpr bool
+one_slice_out_of_bounds(const IndexType& extent, Slice&& slice)
+{
+  return detail::first_of(std::forward<Slice>(slice)) == extent;
+}
 
-  template<size_t ... RankIndices, class Extents, class ... Slices>
-  constexpr bool
-  any_slice_out_of_bounds_helper(std::index_sequence<RankIndices...>,
-                                 const Extents& exts,
-                                 Slices&& ... slices)
-  {
-    return (one_slice_out_of_bounds(exts.extent(RankIndices),
-                                    std::forward<Slices>(slices)) || ...);
-  }
+template<size_t ... RankIndices, class Extents, class ... Slices>
+constexpr bool
+any_slice_out_of_bounds_helper(std::index_sequence<RankIndices...>,
+                               const Extents& exts,
+                               Slices&& ... slices)
+{
+  return (one_slice_out_of_bounds(exts.extent(RankIndices),
+                                  std::forward<Slices>(slices)) || ...);
+}
 
-  template<class Extents, class ... Slices>
-  constexpr bool
-  any_slice_out_of_bounds(const Extents& exts,
-                          Slices&& ... slices)
-  {
-    return any_slice_out_of_bounds_helper(std::make_index_sequence<sizeof...(Slices)>(),
-                                          exts, std::forward<Slices>(slices)...);
-  }
+template<class Extents, class ... Slices>
+constexpr bool
+any_slice_out_of_bounds(const Extents& exts,
+                        Slices&& ... slices)
+{
+  return any_slice_out_of_bounds_helper(std::make_index_sequence<sizeof...(Slices)>(),
+                                        exts, std::forward<Slices>(slices)...);
+}
   
 // constructs sub strides
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>

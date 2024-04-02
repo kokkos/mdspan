@@ -69,18 +69,18 @@ namespace detail {
   
   template<class ... Indices, class Extents, size_t ... RankIndices>
   constexpr void
-  check_all_indices_helper(const std::tuple<Indices...> indices,
+  check_all_indices_helper(std::index_sequence<RankIndices...>,
                            const Extents& exts,
-                           std::index_sequence<RankIndices...>)
+                           Indices... indices)
   {
-    ((check_one_index(std::get<RankIndices>(indices), exts.extent(RankIndices))), ...);
+    ((check_one_index(indices, exts.extent(RankIndices))), ...);
   }
 
-  template<class ... Indices, class Extents>
-  constexpr void check_all_indices(const std::tuple<Indices...>& indices,
-                         const Extents& exts)
+  template<class Extents, class ... Indices>
+  constexpr void check_all_indices(const Extents& exts,
+                                   Indices... indices)
   {
-    check_all_indices_helper(indices, exts, std::make_index_sequence<sizeof...(Indices)>());
+    check_all_indices_helper(std::make_index_sequence<sizeof...(Indices)>(), exts, indices...);
   }
 }
 
@@ -256,7 +256,7 @@ class layout_right::mapping {
     _MDSPAN_HOST_DEVICE
     constexpr index_type operator()(Indices... idxs) const noexcept {
 #if ! defined(NDEBUG)
-      detail::check_all_indices(std::tuple<Indices...>{idxs...}, this->extents());
+      detail::check_all_indices(this->extents(), idxs...);
 #endif // ! NDEBUG
       return __compute_offset(__rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
     }
