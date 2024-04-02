@@ -73,7 +73,9 @@ namespace detail {
                            const Extents& exts,
                            Indices... indices)
   {
-    ((check_one_index(indices, exts.extent(RankIndices))), ...);
+    _MDSPAN_FOLD_COMMA(
+      (check_one_index(indices, exts.extent(RankIndices)))
+    );
   }
 
   template<class Extents, class ... Indices>

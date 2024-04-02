@@ -45,8 +45,9 @@ any_slice_out_of_bounds_helper(std::index_sequence<RankIndices...>,
                                const Extents& exts,
                                Slices&& ... slices)
 {
-  return (one_slice_out_of_bounds(exts.extent(RankIndices),
-                                  std::forward<Slices>(slices)) || ...);
+  return _MDSPAN_FOLD_OR(
+    (one_slice_out_of_bounds(exts.extent(RankIndices), std::forward<Slices>(slices)))
+  );
 }
 
 template<class Extents, class ... Slices>
