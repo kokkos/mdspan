@@ -275,3 +275,24 @@ TYPED_TEST(TestSubMDSpan, submdspan_return_type) {
                 "SubMDSpan: wrong return type");
   __MDSPAN_TESTS_RUN_TEST(TestFixture::run());
 }
+
+TEST(TestSubmdspanIssue4060, Rank1) {
+  auto x = std::array<int, 3>{};
+  auto A = Kokkos::mdspan{x.data(), Kokkos::extents{3}};
+  auto B = Kokkos::submdspan(A, std::tuple{3, 3});
+
+  ASSERT_EQ(B.rank(), 1u);
+  EXPECT_EQ(B.extent(0), 0);
+  EXPECT_EQ(B.data_handle(), x.data() + 3);
+}
+
+TEST(TestSubmdspanIssue4060, Rank2) {
+  auto y = std::array<int, 9>{};
+  auto C = Kokkos::mdspan{y.data(), Kokkos::extents{3, 3}}; 
+  auto D = Kokkos::submdspan(C, std::tuple{3, 3}, std::tuple{3, 3});
+
+  ASSERT_EQ(D.rank(), 2u);
+  EXPECT_EQ(D.extent(0), 0);
+  EXPECT_EQ(D.extent(1), 0);
+  EXPECT_EQ(D.data_handle(), y.data() + 9);
+}
