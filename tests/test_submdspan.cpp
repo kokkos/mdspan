@@ -318,14 +318,34 @@ TEST(TestSubmdspanIssue4060, Rank2_all) {
   }
 }
 
-TEST(TestSubmdspanIssue4060, Rank2_one) {
+template<class MappingType>
+void test_submdspan_issue4060_rank2_one(const MappingType& mapping)
+{
   auto y = std::array<int, 9>{};
-  auto C = Kokkos::mdspan{y.data(), Kokkos::extents{3, 3}};
-  auto D = Kokkos::submdspan(C, std::tuple{0, 3}, std::tuple{3, 3});
+  ASSERT_EQ(mapping.extents().rank(), 2u);
+  ASSERT_EQ(mapping.required_span_size(), y.size());
+  auto C = Kokkos::mdspan{y.data(), mapping};
+  auto D = Kokkos::submdspan(C, std::tuple{0u, 3u}, std::tuple{3u, 3u});
 
   ASSERT_EQ(D.rank(), 2u);
-  EXPECT_EQ(D.extent(0), 3);
+  EXPECT_EQ(D.extent(0), 3u);
   EXPECT_EQ(D.extent(1), 0);
-  EXPECT_EQ(C.mapping().required_span_size(), 9);
-  EXPECT_EQ(D.data_handle(), y.data() + C.mapping().required_span_size());
+  EXPECT_EQ(D.data_handle(), y.data() + mapping.required_span_size());
+}
+
+TEST(TestSubmdspanIssue4060, Rank2_one) {
+  Kokkos::dextents<size_t, 2> exts{3u, 3u};
+  {
+    using mapping_type = Kokkos::layout_left::mapping<Kokkos::dextents<size_t, 2>>;
+    test_submdspan_issue4060_rank2_one(mapping_type{exts});
+  }
+  {
+    using mapping_type = Kokkos::layout_right::mapping<Kokkos::dextents<size_t, 2>>;
+    test_submdspan_issue4060_rank2_one(mapping_type{exts});
+  }
+  {
+    using mapping_type = Kokkos::layout_stride::mapping<Kokkos::dextents<size_t, 2>>;
+    std::array<size_t, 2> strides{1u, 3u};
+    test_submdspan_issue4060_rank2_one(mapping_type{exts, strides});
+  }
 }
