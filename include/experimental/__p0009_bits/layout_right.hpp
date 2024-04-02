@@ -24,6 +24,66 @@
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
+namespace impl {
+  template<class UserIndexType, class IndexType>
+  constexpr void check_lower_bound(const UserIndexType& user_index,
+                                   const IndexType& /* current_extent */,
+                                   std::true_type) /* is_signed */
+  {
+#if defined(NDEBUG)
+    (void) user_index;
+#else
+    assert(static_cast<IndexType>(user_index) >= 0);
+#endif
+  }
+
+  template<class UserIndexType, class IndexType>
+  constexpr void
+  check_lower_bound(const UserIndexType& /* user_index */,
+                    const IndexType& /* current_extent */,
+                    std::false_type) /* is_signed */
+  {}
+
+  template<class UserIndexType, class IndexType>
+  constexpr void
+  check_upper_bound(const UserIndexType& user_index,
+                    const IndexType& current_extent)
+  {
+#if defined(NDEBUG)
+    (void) user_index;
+    (void) current_extent;
+#else
+    assert(static_cast<IndexType>(user_index) < current_extent);
+#endif
+  }
+
+  template<class InputIndex, class IndexType>
+  constexpr void
+  check_one_index(const InputIndex& user_index,
+                  const IndexType& current_extent)
+  {
+    check_lower_bound(user_index, current_extent,
+                      std::bool_constant<std::is_signed_v<IndexType>>{});
+    check_upper_bound(user_index, current_extent);
+  }
+  
+  template<class ... Indices, class Extents, size_t ... RankIndices>
+  constexpr void
+  check_all_indices_helper(const std::tuple<Indices...> indices,
+                           const Extents& exts,
+                           std::index_sequence<RankIndices...>)
+  {
+    ((check_one_index(std::get<RankIndices>(indices), exts.extent(RankIndices))), ...);
+  }
+
+  template<class ... Indices, class Extents>
+  constexpr void check_all_indices(const std::tuple<Indices...>& indices,
+                         const Extents& exts)
+  {
+    check_all_indices_helper(indices, exts, std::make_index_sequence<sizeof...(Indices)>());
+  }
+}
+
 //==============================================================================
 template <class Extents>
 class layout_right::mapping {
@@ -196,29 +256,7 @@ class layout_right::mapping {
     _MDSPAN_HOST_DEVICE
     constexpr index_type operator()(Indices... idxs) const noexcept {
 #if ! defined(NDEBUG)
-#if defined(__cpp_if_constexpr) && defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas > 201707L)
-      std::tuple<Indices...> indices{idxs...};
-      auto check_one = [] <class InputIndex, rank_type RankIndex>
-        (const InputIndex& input_index,
-         index_type current_extent,
-         std::integral_constant<size_t, RankIndex> rank_index) {
-        if constexpr (std::is_signed_v<InputIndex>) {
-          assert(index >= 0);
-        }
-        assert(static_cast<index_type>(index) < current_extent);
-      };
-
-      [&] <size_t ... RankIndices> (std::index_sequence<RankIndices...>) {
-        ((check_one(std::get<RankIndices>(indices),
-                    this->extents().extent(RankIndices),
-                    std::integral_constant<size_t, RankIndices>{})), ...);
-      } (std::make_index_sequence<extents_type::rank()>());
-#else
-      std::array<index_type, extents_type::rank()> indices{static_cast<index_type>(idxs)...};
-      for (rank_type r = 0; r < extents_type::rank(); ++r) {
-        assert(indices[r] < this->extents().extent(r));
-      }
-#endif // if constexpr, and explicit template parameter list for generic lambdas
+      impl::check_all_indices(std::tuple<Indices...>{idxs...}, this->extents());
 #endif // ! NDEBUG
       return __compute_offset(__rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
     }
