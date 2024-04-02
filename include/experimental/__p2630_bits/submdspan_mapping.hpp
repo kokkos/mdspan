@@ -139,7 +139,6 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
       std::conditional_t<preserve_layout, layout_left, layout_stride>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
-#if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
   // Figure out if any slice's lower bound equals the corresponding extent.
   // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
   const bool out_of_bounds =
@@ -150,7 +149,6 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
     this->required_span_size() :
     this->operator()(detail::first_of(slices)...)
   );
-#endif // explicit template parameter list for generic lambdas
 
   if constexpr (std::is_same_v<dst_layout_t, layout_left>) {
     // layout_left case
@@ -257,7 +255,6 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
       std::conditional_t<preserve_layout, layout_right, layout_stride>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
-#if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
   // Figure out if any slice's lower bound equals the corresponding extent.
   // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
   const bool out_of_bounds =
@@ -268,7 +265,6 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
     this->required_span_size() :
     this->operator()(detail::first_of(slices)...)
   );
-#endif // explicit template parameter list for generic lambdas
   
   if constexpr (std::is_same_v<dst_layout_t, layout_right>) {
     // layout_right case
@@ -324,7 +320,6 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
       slices...);
   using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
 
-#if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
   // Figure out if any slice's lower bound equals the corresponding extent.
   // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
   const bool out_of_bounds =
@@ -335,7 +330,6 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
     this->required_span_size() :
     this->operator()(detail::first_of(slices)...)
   );
-#endif // explicit template parameter list for generic lambdas
 
   return submdspan_mapping_result<dst_mapping_t>{
       dst_mapping_t(dst_ext, detail::construct_sub_strides(
