@@ -24,7 +24,7 @@
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
-namespace impl {
+namespace detail {
   template<class UserIndexType, class IndexType>
   constexpr void check_lower_bound(const UserIndexType& user_index,
                                    const IndexType& /* current_extent */,
@@ -256,7 +256,7 @@ class layout_right::mapping {
     _MDSPAN_HOST_DEVICE
     constexpr index_type operator()(Indices... idxs) const noexcept {
 #if ! defined(NDEBUG)
-      impl::check_all_indices(std::tuple<Indices...>{idxs...}, this->extents());
+      detail::check_all_indices(std::tuple<Indices...>{idxs...}, this->extents());
 #endif // ! NDEBUG
       return __compute_offset(__rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
     }

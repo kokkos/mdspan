@@ -286,7 +286,7 @@ TEST(TestSubmdspanIssue4060, Rank1) {
   EXPECT_EQ(B.data_handle(), x.data() + 3);
 }
 
-TEST(TestSubmdspanIssue4060, Rank2) {
+TEST(TestSubmdspanIssue4060, Rank2_all) {
   auto y = std::array<int, 9>{};
   auto C = Kokkos::mdspan{y.data(), Kokkos::extents{3, 3}}; 
   auto D = Kokkos::submdspan(C, std::tuple{3, 3}, std::tuple{3, 3});
@@ -295,4 +295,16 @@ TEST(TestSubmdspanIssue4060, Rank2) {
   EXPECT_EQ(D.extent(0), 0);
   EXPECT_EQ(D.extent(1), 0);
   EXPECT_EQ(D.data_handle(), y.data() + 9);
+}
+
+TEST(TestSubmdspanIssue4060, Rank2_one) {
+  auto y = std::array<int, 9>{};
+  auto C = Kokkos::mdspan{y.data(), Kokkos::extents{3, 3}}; 
+  auto D = Kokkos::submdspan(C, std::tuple{0, 3}, std::tuple{3, 3});
+
+  ASSERT_EQ(D.rank(), 2u);
+  EXPECT_EQ(D.extent(0), 3);
+  EXPECT_EQ(D.extent(1), 0);
+  EXPECT_EQ(C.mapping().required_span_size(), 9);
+  EXPECT_EQ(D.data_handle(), y.data() + C.mapping().required_span_size());
 }

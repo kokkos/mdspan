@@ -31,6 +31,33 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 };
 
 namespace detail {
+
+  template<class IndexType, class Slice>
+  constexpr bool
+  one_slice_out_of_bounds(const IndexType& extent, Slice&& slice)
+  {
+    return detail::first_of(std::forward<Slice>(slice)) == extent;
+  }
+
+  template<size_t ... RankIndices, class Extents, class ... Slices>
+  constexpr bool
+  any_slice_out_of_bounds_helper(std::index_sequence<RankIndices...>,
+                                 const Extents& exts,
+                                 Slices&& ... slices)
+  {
+    return (one_slice_out_of_bounds(exts.extent(RankIndices),
+                                    std::forward<Slices>(slices)) || ...);
+  }
+
+  template<class Extents, class ... Slices>
+  constexpr bool
+  any_slice_out_of_bounds(const Extents& exts,
+                          Slices&& ... slices)
+  {
+    return any_slice_out_of_bounds_helper(std::make_index_sequence<sizeof...(Slices)>(),
+                                          exts, std::forward<Slices>(slices)...);
+  }
+  
 // constructs sub strides
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
 MDSPAN_INLINE_FUNCTION
@@ -115,9 +142,8 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
   // Figure out if any slice's lower bound equals the corresponding extent.
   // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
   const bool out_of_bounds =
-    [&] <size_t ... RankIndices> (const extents_type& exts, std::index_sequence<RankIndices...>) {
-      return ((detail::first_of(slices) == exts.extent(RankIndices)) && ...);
-    } (this->extents(), std::make_index_sequence<sizeof...(slices)>());
+    detail::any_slice_out_of_bounds(this->extents(),
+      std::forward<SliceSpecifiers>(slices)...);
   auto offset = static_cast<size_t>(
     out_of_bounds ?
     this->required_span_size() :
@@ -234,9 +260,8 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
   // Figure out if any slice's lower bound equals the corresponding extent.
   // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
   const bool out_of_bounds =
-    [&] <size_t ... RankIndices> (const extents_type& exts, std::index_sequence<RankIndices...>) {
-      return ((detail::first_of(slices) == exts.extent(RankIndices)) && ...);
-    } (this->extents(), std::make_index_sequence<sizeof...(slices)>());
+    detail::any_slice_out_of_bounds(this->extents(),
+      std::forward<SliceSpecifiers>(slices)...);
   auto offset = static_cast<size_t>(
     out_of_bounds ?
     this->required_span_size() :
@@ -302,9 +327,8 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
   // Figure out if any slice's lower bound equals the corresponding extent.
   // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
   const bool out_of_bounds =
-    [&] <size_t ... RankIndices> (const extents_type& exts, std::index_sequence<RankIndices...>) {
-      return ((detail::first_of(slices) == exts.extent(RankIndices)) && ...);
-    } (this->extents(), std::make_index_sequence<sizeof...(slices)>());
+    detail::any_slice_out_of_bounds(this->extents(),
+      std::forward<SliceSpecifiers>(slices)...);
   auto offset = static_cast<size_t>(
     out_of_bounds ?
     this->required_span_size() :
