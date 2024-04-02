@@ -434,6 +434,9 @@ struct layout_stride {
     )
     MDSPAN_FORCE_INLINE_FUNCTION
     constexpr index_type operator()(Indices... idxs) const noexcept {
+#if ! defined(NDEBUG)
+      detail::check_all_indices(this->extents(), idxs...);
+#endif // ! NDEBUG
       return static_cast<index_type>(__impl::_call_op_impl(*this, static_cast<index_type>(idxs)...));
     }
 

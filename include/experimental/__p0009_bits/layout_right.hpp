@@ -24,68 +24,6 @@
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
-namespace detail {
-  template<class UserIndexType, class IndexType>
-  constexpr void check_lower_bound(const UserIndexType& user_index,
-                                   const IndexType& /* current_extent */,
-                                   std::true_type) /* is_signed */
-  {
-#if defined(NDEBUG)
-    (void) user_index;
-#else
-    assert(static_cast<IndexType>(user_index) >= 0);
-#endif
-  }
-
-  template<class UserIndexType, class IndexType>
-  constexpr void
-  check_lower_bound(const UserIndexType& /* user_index */,
-                    const IndexType& /* current_extent */,
-                    std::false_type) /* is_signed */
-  {}
-
-  template<class UserIndexType, class IndexType>
-  constexpr void
-  check_upper_bound(const UserIndexType& user_index,
-                    const IndexType& current_extent)
-  {
-#if defined(NDEBUG)
-    (void) user_index;
-    (void) current_extent;
-#else
-    assert(static_cast<IndexType>(user_index) < current_extent);
-#endif
-  }
-
-  template<class InputIndex, class IndexType>
-  constexpr void
-  check_one_index(const InputIndex& user_index,
-                  const IndexType& current_extent)
-  {
-    check_lower_bound(user_index, current_extent,
-                      std::bool_constant<std::is_signed_v<IndexType>>{});
-    check_upper_bound(user_index, current_extent);
-  }
-  
-  template<class ... Indices, class Extents, size_t ... RankIndices>
-  constexpr void
-  check_all_indices_helper(std::index_sequence<RankIndices...>,
-                           const Extents& exts,
-                           Indices... indices)
-  {
-    _MDSPAN_FOLD_COMMA(
-      (check_one_index(indices, exts.extent(RankIndices)))
-    );
-  }
-
-  template<class Extents, class ... Indices>
-  constexpr void check_all_indices(const Extents& exts,
-                                   Indices... indices)
-  {
-    check_all_indices_helper(std::make_index_sequence<sizeof...(Indices)>(), exts, indices...);
-  }
-}
-
 //==============================================================================
 template <class Extents>
 class layout_right::mapping {

@@ -194,6 +194,9 @@ class layout_left::mapping {
     )
     _MDSPAN_HOST_DEVICE
     constexpr index_type operator()(Indices... idxs) const noexcept {
+#if ! defined(NDEBUG)
+      detail::check_all_indices(this->extents(), idxs...);
+#endif // ! NDEBUG
       return __compute_offset(__rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
     }
 
