@@ -382,6 +382,9 @@ public:
   )
   constexpr size_t operator()(_Indices... idxs) const noexcept
   {
+#if ! defined(NDEBUG)
+    ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_all_indices(this->extents(), idxs...);
+#endif // ! NDEBUG
     return compute_offset(std::index_sequence_for<_Indices...>{}, idxs...);
   }
 
