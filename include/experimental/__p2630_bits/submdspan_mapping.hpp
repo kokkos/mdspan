@@ -111,11 +111,23 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
       std::conditional_t<preserve_layout, layout_left, layout_stride>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
+#if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
+  // Figure out if any slice's lower bound equals the corresponding extent.
+  // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
+  const bool out_of_bounds =
+    [&] <size_t ... RankIndices> (const extents_type& exts, std::index_sequence<RankIndices...>) {
+      return ((detail::first_of(slices) == exts.extent(RankIndices)) && ...);
+    } (this->extents(), std::make_index_sequence<sizeof...(slices)>());
+  auto offset = static_cast<size_t>(
+    out_of_bounds ?
+    this->required_span_size() :
+    this->operator()(detail::first_of(slices)...)
+  );
+#endif // explicit template parameter list for generic lambdas
+
   if constexpr (std::is_same_v<dst_layout_t, layout_left>) {
     // layout_left case
-    return submdspan_mapping_result<dst_mapping_t>{
-        dst_mapping_t(dst_ext),
-        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
+    return submdspan_mapping_result<dst_mapping_t>{dst_mapping_t(dst_ext), offset};
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(
@@ -132,7 +144,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
     #else
                                    std::tuple{detail::stride_of(slices)...})),
     #endif
-        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
+        offset};
   }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
   __builtin_unreachable();
@@ -218,11 +230,23 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
       std::conditional_t<preserve_layout, layout_right, layout_stride>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
+#if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
+  // Figure out if any slice's lower bound equals the corresponding extent.
+  // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
+  const bool out_of_bounds =
+    [&] <size_t ... RankIndices> (const extents_type& exts, std::index_sequence<RankIndices...>) {
+      return ((detail::first_of(slices) == exts.extent(RankIndices)) && ...);
+    } (this->extents(), std::make_index_sequence<sizeof...(slices)>());
+  auto offset = static_cast<size_t>(
+    out_of_bounds ?
+    this->required_span_size() :
+    this->operator()(detail::first_of(slices)...)
+  );
+#endif // explicit template parameter list for generic lambdas
+  
   if constexpr (std::is_same_v<dst_layout_t, layout_right>) {
     // layout_right case
-    return submdspan_mapping_result<dst_mapping_t>{
-        dst_mapping_t(dst_ext),
-        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
+    return submdspan_mapping_result<dst_mapping_t>{dst_mapping_t(dst_ext), offset};
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(
@@ -239,7 +263,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
     #else
                                    std::tuple{detail::stride_of(slices)...})),
     #endif
-        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
+        offset};
   }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
   __builtin_unreachable();
@@ -273,6 +297,21 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
       std::index_sequence<>(),
       slices...);
   using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
+
+#if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
+  // Figure out if any slice's lower bound equals the corresponding extent.
+  // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
+  const bool out_of_bounds =
+    [&] <size_t ... RankIndices> (const extents_type& exts, std::index_sequence<RankIndices...>) {
+      return ((detail::first_of(slices) == exts.extent(RankIndices)) && ...);
+    } (this->extents(), std::make_index_sequence<sizeof...(slices)>());
+  auto offset = static_cast<size_t>(
+    out_of_bounds ?
+    this->required_span_size() :
+    this->operator()(detail::first_of(slices)...)
+  );
+#endif // explicit template parameter list for generic lambdas
+
   return submdspan_mapping_result<dst_mapping_t>{
       dst_mapping_t(dst_ext, detail::construct_sub_strides(
                                  *this, inv_map,
@@ -283,7 +322,7 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
 #else
                                  std::tuple(detail::stride_of(slices)...))),
 #endif
-      static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
+      offset};
 }
 
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
