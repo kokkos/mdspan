@@ -279,11 +279,12 @@ TYPED_TEST(TestSubMDSpan, submdspan_return_type) {
 TEST(TestSubmdspanIssue4060, Rank1) {
   auto x = std::array<int, 3>{};
   auto A = Kokkos::mdspan{x.data(), Kokkos::extents{3}};
+  ASSERT_EQ(A.mapping().required_span_size(), 3);
   auto B = Kokkos::submdspan(A, std::tuple{3, 3});
 
   ASSERT_EQ(B.rank(), 1u);
   EXPECT_EQ(B.extent(0), 0);
-  EXPECT_EQ(B.data_handle(), x.data() + 3);
+  EXPECT_EQ(B.data_handle(), x.data() + A.mapping().required_span_size());
 }
 
 template<class MappingType>

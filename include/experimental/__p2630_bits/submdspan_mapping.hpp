@@ -32,31 +32,44 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 
 namespace detail {
 
-template<class IndexType, class Slice>
+// We use const Slice& and not Slice&& because the various
+// submdspan_mapping_impl overloads use their slices arguments
+// multiple times.  This makes perfect forwarding not useful, but we
+// still don't want to pass those (possibly of size 64 x 3 bits)
+// objects by value.
+template<class IndexType,
+         class Slice>
+MDSPAN_INLINE_FUNCTION
 constexpr bool
-one_slice_out_of_bounds(const IndexType& extent, Slice&& slice)
+one_slice_out_of_bounds(const IndexType& extent, const Slice& slice)
 {
-  return detail::first_of(std::forward<Slice>(slice)) == extent;
+  return detail::first_of(slice) == extent;
 }
 
-template<size_t ... RankIndices, class Extents, class ... Slices>
+template<size_t ... RankIndices,
+         class IndexType, size_t ... Exts,
+         class ... Slices>
+MDSPAN_INLINE_FUNCTION
 constexpr bool
 any_slice_out_of_bounds_helper(std::index_sequence<RankIndices...>,
-                               const Extents& exts,
-                               Slices&& ... slices)
+                               const extents<IndexType, Exts...>& exts,
+                               const Slices& ... slices)
 {
   return _MDSPAN_FOLD_OR(
-    (one_slice_out_of_bounds(exts.extent(RankIndices), std::forward<Slices>(slices)))
+    (one_slice_out_of_bounds(exts.extent(RankIndices), slices))
   );
 }
 
-template<class Extents, class ... Slices>
+template<class IndexType, size_t ... Exts,
+         class ... Slices>
+MDSPAN_INLINE_FUNCTION
 constexpr bool
-any_slice_out_of_bounds(const Extents& exts,
-                        Slices&& ... slices)
+any_slice_out_of_bounds(const extents<IndexType, Exts...>& exts,
+                        const Slices& ... slices)
 {
-  return any_slice_out_of_bounds_helper(std::make_index_sequence<sizeof...(Slices)>(),
-                                        exts, std::forward<Slices>(slices)...);
+  return any_slice_out_of_bounds_helper(
+    std::make_index_sequence<sizeof...(Slices)>(),
+    exts, slices...);
 }
   
 // constructs sub strides
@@ -142,8 +155,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
   // Figure out if any slice's lower bound equals the corresponding extent.
   // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
   const bool out_of_bounds =
-    detail::any_slice_out_of_bounds(this->extents(),
-      std::forward<SliceSpecifiers>(slices)...);
+    detail::any_slice_out_of_bounds(this->extents(), slices...);
   auto offset = static_cast<size_t>(
     out_of_bounds ?
     this->required_span_size() :
@@ -258,8 +270,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
   // Figure out if any slice's lower bound equals the corresponding extent.
   // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
   const bool out_of_bounds =
-    detail::any_slice_out_of_bounds(this->extents(),
-      std::forward<SliceSpecifiers>(slices)...);
+    detail::any_slice_out_of_bounds(this->extents(), slices...);
   auto offset = static_cast<size_t>(
     out_of_bounds ?
     this->required_span_size() :
@@ -323,8 +334,7 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
   // Figure out if any slice's lower bound equals the corresponding extent.
   // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
   const bool out_of_bounds =
-    detail::any_slice_out_of_bounds(this->extents(),
-      std::forward<SliceSpecifiers>(slices)...);
+    detail::any_slice_out_of_bounds(this->extents(), slices...);
   auto offset = static_cast<size_t>(
     out_of_bounds ?
     this->required_span_size() :

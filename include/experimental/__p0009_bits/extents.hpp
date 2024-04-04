@@ -615,50 +615,58 @@ static
 #endif
 constexpr bool __is_extents_v = __is_extents<T>::value;
 
-template<class UserIndexType, class IndexType>
-constexpr void check_lower_bound(const UserIndexType& user_index,
-                                 const IndexType& /* current_extent */,
-                                 std::true_type) /* is_signed */
+template<class InputIndexType, class ExtentsIndexType>
+MDSPAN_INLINE_FUNCTION
+constexpr void
+check_lower_bound(InputIndexType user_index,
+                  ExtentsIndexType /* current_extent */,
+                  std::true_type /* is_signed */)
 {
   (void) user_index; // prevent unused variable warning
 #ifdef _MDSPAN_DEBUG
-  assert(static_cast<IndexType>(user_index) >= 0);
+  assert(static_cast<ExtentsIndexType>(user_index) >= 0);
 #endif
 }
 
-template<class UserIndexType, class IndexType>
+template<class InputIndexType, class ExtentsIndexType>
+MDSPAN_INLINE_FUNCTION
 constexpr void
-check_lower_bound(const UserIndexType& /* user_index */,
-                  const IndexType& /* current_extent */,
-                  std::false_type) /* is_signed */
+check_lower_bound(InputIndexType /* user_index */,
+                  ExtentsIndexType /* current_extent */,
+                  std::false_type /* is_signed */)
 {}
 
-template<class UserIndexType, class IndexType>
+template<class InputIndexType, class ExtentsIndexType>
+MDSPAN_INLINE_FUNCTION
 constexpr void
-check_upper_bound(const UserIndexType& user_index,
-                  const IndexType& current_extent)
+check_upper_bound(InputIndexType user_index,
+                  ExtentsIndexType current_extent)
 {
   (void) user_index; // prevent unused variable warnings
   (void) current_extent;
 #ifdef _MDSPAN_DEBUG
-  assert(static_cast<IndexType>(user_index) < current_extent);
+  assert(static_cast<ExtentsIndexType>(user_index) < current_extent);
 #endif
 }
 
-template<class InputIndex, class IndexType>
+template<class InputIndex, class ExtentsIndexType>
+MDSPAN_INLINE_FUNCTION
 constexpr void
-check_one_index(const InputIndex& user_index,
-                const IndexType& current_extent)
+check_one_index(InputIndex user_index,
+                ExtentsIndexType current_extent)
 {
   check_lower_bound(user_index, current_extent,
-                    std::bool_constant<std::is_signed_v<IndexType>>{});
+    std::bool_constant<std::is_signed_v<ExtentsIndexType>>{});
   check_upper_bound(user_index, current_extent);
 }
  
-template<class ... Indices, class Extents, size_t ... RankIndices>
+template<size_t ... RankIndices,
+         class ExtentsIndexType, size_t ... Exts,
+         class ... Indices>
+MDSPAN_INLINE_FUNCTION
 constexpr void
 check_all_indices_helper(std::index_sequence<RankIndices...>,
-                         const Extents& exts,
+                         const extents<ExtentsIndexType, Exts...>& exts,
                          Indices... indices)
 {
   _MDSPAN_FOLD_COMMA(
@@ -666,9 +674,12 @@ check_all_indices_helper(std::index_sequence<RankIndices...>,
   );
 }
 
-template<class Extents, class ... Indices>
-constexpr void check_all_indices(const Extents& exts,
-                                 Indices... indices)
+template<class ExtentsIndexType, size_t ... Exts,
+         class ... Indices>
+MDSPAN_INLINE_FUNCTION
+constexpr void
+check_all_indices(const extents<ExtentsIndexType, Exts...>& exts,
+                  Indices... indices)
 {
   check_all_indices_helper(std::make_index_sequence<sizeof...(Indices)>(),
                            exts, indices...);
