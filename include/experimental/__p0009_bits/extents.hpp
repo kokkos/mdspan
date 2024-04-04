@@ -620,9 +620,8 @@ constexpr void check_lower_bound(const UserIndexType& user_index,
                                  const IndexType& /* current_extent */,
                                  std::true_type) /* is_signed */
 {
-#if defined(NDEBUG)
-  (void) user_index;
-#else
+  (void) user_index; // prevent unused variable warning
+#ifdef _MDSPAN_DEBUG
   assert(static_cast<IndexType>(user_index) >= 0);
 #endif
 }
@@ -639,10 +638,9 @@ constexpr void
 check_upper_bound(const UserIndexType& user_index,
                   const IndexType& current_extent)
 {
-#if defined(NDEBUG)
-  (void) user_index;
+  (void) user_index; // prevent unused variable warnings
   (void) current_extent;
-#else
+#ifdef _MDSPAN_DEBUG
   assert(static_cast<IndexType>(user_index) < current_extent);
 #endif
 }
@@ -672,7 +670,8 @@ template<class Extents, class ... Indices>
 constexpr void check_all_indices(const Extents& exts,
                                  Indices... indices)
 {
-  check_all_indices_helper(std::make_index_sequence<sizeof...(Indices)>(), exts, indices...);
+  check_all_indices_helper(std::make_index_sequence<sizeof...(Indices)>(),
+                           exts, indices...);
 }
   
 } // namespace detail
