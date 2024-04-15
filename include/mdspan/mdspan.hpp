@@ -37,6 +37,7 @@
 #if MDSPAN_HAS_CXX_17
 #include "../experimental/__p2642_bits/layout_padded.hpp"
 #include "../experimental/__p2630_bits/submdspan.hpp"
+#include "../experimental/p3242_bits/copy.hpp"
 #endif
 #include "../experimental/__p2389_bits/dims.hpp"
 
