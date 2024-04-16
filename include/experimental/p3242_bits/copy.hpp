@@ -124,7 +124,7 @@ void copy(
       mdspan<SrcElementType, SrcExtents, SrcLayoutPolicy, SrcAccessorPolicy>;
   using dst_type =
       mdspan<DstElementType, DstExtents, DstLayoutPolicy, DstAccessorPolicy>;
-  detail::mdspan_copy_impl<src_type, dst_type>::copy_over_extents(src.extents(),
+  detail::mdspan_copy_impl<src_type, dst_type>::copy_over_extents(DstExtents{src.extents()},
                                                                   src, dst);
 }
 } // namespace MDSPAN_IMPL_PROPOSED_NAMESPACE
