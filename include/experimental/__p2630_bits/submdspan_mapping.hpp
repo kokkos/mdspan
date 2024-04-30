@@ -31,6 +31,9 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 };
 
 namespace detail {
+using detail::first_of;
+using detail::stride_of;
+using detail::inv_map_rank;
 
 // We use const Slice& and not Slice&& because the various
 // submdspan_mapping_impl overloads use their slices arguments
@@ -93,12 +96,15 @@ construct_sub_strides(const SrcMapping &src_mapping,
 namespace detail {
 
 // Figure out whether to preserve layout_left
-template <class IndexSequence, size_t SubRank, class... SliceSpecifiers>
-struct preserve_layout_left_mapping;
+template <class IndexType, class IndexSequence, size_t SubRank, class... SliceSpecifiers>
+struct deduce_layout_left_submapping;
 
-template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
-struct preserve_layout_left_mapping<std::index_sequence<Idx...>, SubRank,
-                                    SliceSpecifiers...> {
+template <class IndexType, class... SliceSpecifiers, size_t... Idx, size_t SubRank>
+struct deduce_layout_left_submapping<
+   IndexType, std::index_sequence<Idx...>, SubRank, SliceSpecifiers...> {
+
+  constexpr static int NumGaps = 
+    (((Idx>0 && std::is_convertible_v<SliceSpecifiers, IndexType>)?1:0) + ... + 0);
   constexpr static bool value =
       // Preserve layout for rank 0
       (SubRank == 0) ||
@@ -107,6 +113,24 @@ struct preserve_layout_left_mapping<std::index_sequence<Idx...>, SubRank,
           // for the last one which could also be tuple but not a strided index
           // range slice specifiers after subrank are integrals
           ((Idx > SubRank - 1) || // these are only integral slice specifiers
+           (std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+           ((Idx == SubRank - 1) &&
+            std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
+          ...);
+};
+
+template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
+struct preserve_layout_left_padded_mapping<std::index_sequence<Idx...>, SubRank,
+                                    SliceSpecifiers...> {
+
+  constexpr static bool value =
+      // Preserve layout for rank 0
+      (SubRank == 0) ||
+      (
+          // Slice specifiers up to subrank need to be full_extent_t - except
+          // for the last one which could also be tuple but not a strided index
+          // range slice specifiers after subrank are integrals
+          ((Idx > SubRank - 1 + NumGaps) || // these are only integral slice specifiers
            (std::is_same_v<SliceSpecifiers, full_extent_t>) ||
            ((Idx == SubRank - 1) &&
             std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
@@ -229,6 +253,31 @@ struct preserve_layout_right_mapping<std::index_sequence<Idx...>, SubRank,
             std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
           ...);
 };
+/*
+template <class IndexSequence, size_t SubRank, class... SliceSpecifiers>
+struct preserve_layout_right_padded_mapping;
+
+template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
+struct preserve_layout_right_padded_mapping<std::index_sequence<Idx...>, SubRank,
+                                     SliceSpecifiers...> {
+  constexpr static size_t SrcRank = sizeof...(SliceSpecifiers);
+  constexpr static bool value =
+      // Preserve layout for rank 0
+      (SubRank == 0) ||
+      (
+          // The last subrank slice specifiers need to be full_extent_t - except
+          // for the srcrank-subrank one which could also be tuple but not a
+          // strided index range slice specifiers before srcrank-subrank are
+          // integrals
+          ((Idx < SrcRank - SubRank) || // these are only integral slice specifiers
+           (std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+           ((Idx == SrcRank - 1) && std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)
+           ((Idx == SrcRank - SubRank) &&
+            std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
+          ...);
+};
+*/
+
 } // namespace detail
 
 // Suppress spurious warning with NVCC about no return statement.
@@ -250,11 +299,12 @@ struct preserve_layout_right_mapping<std::index_sequence<Idx...>, SubRank,
     #pragma    diagnostic push
     #pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
+template <size_t PaddingValue>
 template <class Extents>
 template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
-layout_right::mapping<Extents>::submdspan_mapping_impl(
+layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
                   SliceSpecifiers... slices) const {
   // get sub extents
   using src_ext_t = Extents;
@@ -262,11 +312,11 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
   using dst_ext_t = decltype(dst_ext);
 
   // determine new layout type
-  constexpr bool preserve_layout = detail::preserve_layout_right_mapping<
+  constexpr bool preserve_layout = detail::preserve_layout_right_padded_mapping<
       decltype(std::make_index_sequence<src_ext_t::rank()>()), dst_ext_t::rank(),
       SliceSpecifiers...>::value;
   using dst_layout_t =
-      std::conditional_t<preserve_layout, layout_right, layout_stride>;
+      std::conditional_t<preserve_layout, layout_right_padded, layout_stride>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
   // Figure out if any slice's lower bound equals the corresponding extent.
@@ -281,7 +331,13 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
   
   if constexpr (std::is_same_v<dst_layout_t, layout_right>) {
     // layout_right case
-    return submdspan_mapping_result<dst_mapping_t>{dst_mapping_t(dst_ext), offset};
+    return submdspan_mapping_result<dst_mapping_t>{
+        dst_mapping_t(dst_ext),
+        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
+  } else if constexpr (std::is_same_v<dst_layout_t, layout_right_padded<dynamic_extent>) {
+    return submdspan_mapping_result<dst_mapping_t>{
+        dst_mapping_t(dst_ext, extent(src_ext_t::rank()-1)),
+        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(

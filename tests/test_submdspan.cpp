@@ -145,10 +145,11 @@ using submdspan_test_types =
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,6,4,5,6,7,8>,  args_t<6,4,5,6,7,8>, Kokkos::extents<size_t,dyn,7,8>, int, int, int, std::pair<int,int>, Kokkos::full_extent_t, Kokkos::full_extent_t>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,6,4,5,6,7,8>,  args_t<6,4,5,6,7,8>, Kokkos::extents<size_t,dyn,8>, int, int, int, int, std::pair<int,int>, Kokkos::full_extent_t>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,6,4,5,6,7,8>,  args_t<6,4,5,6,7,8>, Kokkos::extents<size_t,8>, int, int, int, int, int, Kokkos::full_extent_t>
+    // LayoutLeft to layout_left_padded
+    , std::tuple<Kokkos::layout_left, Kokkos::Experimental::layout_left_padded<Kokkos::dynamic_extent>,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, std::pair<int,int>, Kokkos::full_extent_t>
     // LayoutLeft to LayoutStride
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,1>,          args_t<10>,          Kokkos::dextents<size_t,1>, Kokkos::strided_slice<int,int,int>>
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,1>, Kokkos::strided_slice<int,int,int>, int>
-    , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, std::pair<int,int>, Kokkos::full_extent_t>
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, std::pair<int,int>, Kokkos::strided_slice<int,int,int>>
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::strided_slice<int,int,int>, std::pair<int,int>>
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::strided_slice<int,int,int>, Kokkos::strided_slice<int,int,int>>
