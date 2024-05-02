@@ -96,46 +96,53 @@ construct_sub_strides(const SrcMapping &src_mapping,
 namespace detail {
 
 // Figure out whether to preserve layout_left
-template <class IndexType, class IndexSequence, size_t SubRank, class... SliceSpecifiers>
+template <class IndexType, size_t SubRank, class IndexSequence,
+          class... SliceSpecifiers>
 struct deduce_layout_left_submapping;
 
-template <class IndexType, class... SliceSpecifiers, size_t... Idx, size_t SubRank>
+template <class IndexType, size_t SubRank, size_t ... Idx, 
+          class ... SliceSpecifiers>
 struct deduce_layout_left_submapping<
-   IndexType, std::index_sequence<Idx...>, SubRank, SliceSpecifiers...> {
+   IndexType, SubRank, std::index_sequence<Idx...>,
+   SliceSpecifiers...> {
 
+ 
+  using CountRange =
+    index_sequence_scan_impl<0,(std::is_convertible_v<SliceSpecifiers, IndexType>?0:1)...>; 
+    //__static_partial_sums<!std::is_convertible_v<SliceSpecifiers, IndexType>...>; 
   constexpr static int NumGaps = 
-    (((Idx>0 && std::is_convertible_v<SliceSpecifiers, IndexType>)?1:0) + ... + 0);
-  constexpr static bool value =
-      // Preserve layout for rank 0
+    (((Idx>0 && CountRange::get(Idx)==1 && std::is_convertible_v<SliceSpecifiers, IndexType>)?1:0) + ... + 0);
+
+  constexpr static bool layout_left_value =
+      // Use layout_left for rank 0
       (SubRank == 0) ||
+      // Use layout_left for rank 1 if leftmost slice specifier is range like
+      ((SubRank == 1) && ((Idx==0 || CountRange::get(Idx)==1) && ...)) ||
+      // Preserve if leftmost SubRank-1 slices are full_extent_t and
+      // the leftmost SubRank slices are ranges
+      (((Idx < SubRank - 1 && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+        (Idx == SubRank -1) || // technically SliceSpecifier needs to be a range, but its implied by the last condition
+        (Idx >= SubRank && CountRange::get(Idx) == SubRank)) && ...);
+
+  constexpr static bool layout_left_padded_value =
+      // Use layout_left_padded for rank 0
+      (SubRank == 0) ||
+      // Use layout_left_padded for rank 1 if leftmost slice specifier is range like
+      ((SubRank == 1) && ((Idx==0 || CountRange::get(Idx)==1) && ...)) ||
+      // layout_left_padded case for SubRank > 1
       (
-          // Slice specifiers up to subrank need to be full_extent_t - except
-          // for the last one which could also be tuple but not a strided index
-          // range slice specifiers after subrank are integrals
-          ((Idx > SubRank - 1) || // these are only integral slice specifiers
-           (std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-           ((Idx == SubRank - 1) &&
-            std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
-          ...);
+       // leftmost must be range
+       (
+         (Idx == 0) ||
+         (Idx > 0 && Idx <= NumGaps && CountRange::get(Idx) == 1) ||
+         (Idx > NumGaps && Idx < NumGaps+SubRank-1 && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+         (Idx == NumGaps + SubRank -1 &&
+            (std::is_same_v<SliceSpecifiers, full_extent_t> ||
+             std::is_convertible_v<SliceSpecifiers, std::tuple<IndexType, IndexType>>)) ||
+         (Idx >= NumGaps + SubRank && CountRange::get(Idx) == SubRank)
+       ) && ... );
 };
 
-template <class... SliceSpecifiers, size_t... Idx, size_t SubRank>
-struct preserve_layout_left_padded_mapping<std::index_sequence<Idx...>, SubRank,
-                                    SliceSpecifiers...> {
-
-  constexpr static bool value =
-      // Preserve layout for rank 0
-      (SubRank == 0) ||
-      (
-          // Slice specifiers up to subrank need to be full_extent_t - except
-          // for the last one which could also be tuple but not a strided index
-          // range slice specifiers after subrank are integrals
-          ((Idx > SubRank - 1 + NumGaps) || // these are only integral slice specifiers
-           (std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-           ((Idx == SubRank - 1) &&
-            std::is_convertible_v<SliceSpecifiers, std::tuple<size_t, size_t>>)) &&
-          ...);
-};
 } // namespace detail
 
 // Suppress spurious warning with NVCC about no return statement.
@@ -170,11 +177,14 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
   using dst_ext_t = decltype(dst_ext);
 
   // figure out sub layout type
-  constexpr bool preserve_layout = detail::preserve_layout_left_mapping<
-      decltype(std::make_index_sequence<src_ext_t::rank()>()), dst_ext_t::rank(),
-      SliceSpecifiers...>::value;
+  using deduce_layout = detail::deduce_layout_left_submapping<
+    typename dst_ext_t::index_type, dst_ext_t::rank(), decltype(std::make_index_sequence<src_ext_t::rank()>()),
+    SliceSpecifiers...>;
+
   using dst_layout_t =
-      std::conditional_t<preserve_layout, layout_left, layout_stride>;
+      std::conditional_t<deduce_layout::layout_left_value, layout_left,
+           std::conditional_t<deduce_layout::layout_left_padded_value,
+             Experimental::layout_left_padded<dynamic_extent>, layout_stride>>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
   // Figure out if any slice's lower bound equals the corresponding extent.
@@ -189,7 +199,13 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
 
   if constexpr (std::is_same_v<dst_layout_t, layout_left>) {
     // layout_left case
-    return submdspan_mapping_result<dst_mapping_t>{dst_mapping_t(dst_ext), offset};
+    return submdspan_mapping_result<dst_mapping_t>{
+        dst_mapping_t(dst_ext),
+        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
+  } else if constexpr (std::is_same_v<dst_layout_t, Experimental::layout_left_padded<dynamic_extent>>) {
+    return submdspan_mapping_result<dst_mapping_t>{
+            dst_mapping_t(dst_ext, stride(1)),
+        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(
@@ -279,7 +295,7 @@ struct preserve_layout_right_padded_mapping<std::index_sequence<Idx...>, SubRank
 */
 
 } // namespace detail
-
+/*
 // Suppress spurious warning with NVCC about no return statement.
 // This is a known issue in NVCC and NVC++
 // Depending on the CUDA and GCC version we need both the builtin
@@ -372,7 +388,7 @@ layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
 #elif defined __NVCOMPILER
     #pragma    diagnostic pop
 #endif
-
+*/
 //**********************************
 // layout_stride submdspan_mapping
 //*********************************
