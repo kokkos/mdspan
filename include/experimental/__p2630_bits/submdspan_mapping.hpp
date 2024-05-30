@@ -75,7 +75,7 @@ any_slice_out_of_bounds(const extents<IndexType, Exts...>& exts,
     std::make_index_sequence<sizeof...(Slices)>(),
     exts, slices...);
 }
-  
+
 // constructs sub strides
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
 MDSPAN_INLINE_FUNCTION
@@ -184,7 +184,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
   using dst_layout_t =
       std::conditional_t<deduce_layout::layout_left_value, layout_left,
            std::conditional_t<deduce_layout::layout_left_padded_value,
-             Experimental::layout_left_padded<dynamic_extent>, layout_stride>>;
+             MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<dynamic_extent>, layout_stride>>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
 
   // Figure out if any slice's lower bound equals the corresponding extent.
@@ -202,9 +202,9 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
     return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext),
         static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
-  } else if constexpr (std::is_same_v<dst_layout_t, Experimental::layout_left_padded<dynamic_extent>>) {
+  } else if constexpr (std::is_same_v<dst_layout_t, MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<dynamic_extent>>) {
     return submdspan_mapping_result<dst_mapping_t>{
-            dst_mapping_t(dst_ext, stride(1)),
+            dst_mapping_t(dst_ext, stride(1+deduce_layout::NumGaps)),
         static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
   } else {
     // layout_stride case
@@ -241,6 +241,156 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices)
     #pragma    diagnostic pop
 #endif
 
+//**********************************
+// layout_right submdspan_mapping
+//*********************************
+namespace detail {
+
+// Figure out whether to preserve layout_right
+template <class IndexType, size_t SubRank, class IndexSequence,
+          class... SliceSpecifiers>
+struct deduce_layout_right_submapping;
+
+template <class IndexType, size_t SubRank, size_t ... Idx, 
+          class ... SliceSpecifiers>
+struct deduce_layout_right_submapping<
+   IndexType, SubRank, std::index_sequence<Idx...>,
+   SliceSpecifiers...> {
+
+  static constexpr size_t Rank = sizeof...(Idx); 
+  using CountRange =
+    index_sequence_scan_impl<0,(std::is_convertible_v<SliceSpecifiers, IndexType>?0:1)...>; 
+    //__static_partial_sums<!std::is_convertible_v<SliceSpecifiers, IndexType>...>; 
+  constexpr static int NumGaps = 
+    (((Idx<Rank-1 && CountRange::get(Idx)==SubRank-1 && std::is_convertible_v<SliceSpecifiers, IndexType>)?1:0) + ... + 0);
+
+  constexpr static bool layout_right_value =
+      // Use layout_right for rank 0
+      (SubRank == 0) ||
+      // Use layout_right for rank 1 if rightmost slice specifier is range like
+      ((SubRank == 1) && ((CountRange::get(Idx)==0) && ...)) ||
+      // Preserve if rightmost SubRank-1 slices are full_extent_t and
+      // the rightmost SubRank slices are ranges
+      (((Idx >= Rank - SubRank && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+        (Idx <= Rank - SubRank && CountRange::get(Idx) == 0)) && ...);
+
+  constexpr static bool layout_right_padded_value = (
+      // Use layout_right_padded for rank 0
+      (SubRank == 0) ||
+      // Use layout_right_padded for rank 1 if rightmost slice specifier is range like
+      ((SubRank == 1) && ((CountRange::get(Idx)==0) && ...)) ||
+      // layout_right_padded case for SubRank > 1
+      (
+       // rightmost must be range
+       (
+         (Idx == 0) ||
+         (Idx < Rank - NumGaps - SubRank  && CountRange::get(Idx) == 0) ||
+         (Idx > Rank - NumGaps - SubRank && Idx < Rank - NumGaps - 1 && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+         (Idx == Rank - NumGaps - SubRank &&
+            (std::is_same_v<SliceSpecifiers, full_extent_t> ||
+             std::is_convertible_v<SliceSpecifiers, std::tuple<IndexType, IndexType>>)) ||
+         (Idx >= Rank - NumGaps - 1 && CountRange::get(Idx) == SubRank - 1)
+       ) && ... ));
+};
+
+} // namespace detail
+
+// Suppress spurious warning with NVCC about no return statement.
+// This is a known issue in NVCC and NVC++
+// Depending on the CUDA and GCC version we need both the builtin
+// and the diagnostic push. I tried really hard to find something shorter
+// but no luck ...
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic push
+        #pragma nv_diag_suppress = implicit_return_from_non_void_function
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic push
+        #pragma diag_suppress implicit_return_from_non_void_function
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic push
+    #pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
+// Actual submdspan mapping call
+template <class Extents>
+template <class... SliceSpecifiers>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+layout_right::mapping<Extents>::submdspan_mapping_impl(SliceSpecifiers... slices) const {
+
+  // compute sub extents
+  using src_ext_t = Extents;
+  auto dst_ext = submdspan_extents(extents(), slices...);
+  using dst_ext_t = decltype(dst_ext);
+
+  // figure out sub layout type
+  using deduce_layout = detail::deduce_layout_right_submapping<
+    typename dst_ext_t::index_type, dst_ext_t::rank(), decltype(std::make_index_sequence<src_ext_t::rank()>()),
+    SliceSpecifiers...>;
+
+  using dst_layout_t =
+      std::conditional_t<deduce_layout::layout_right_value, layout_right,
+           std::conditional_t<deduce_layout::layout_right_padded_value,
+             MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<dynamic_extent>, layout_stride>>;
+  using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
+
+  // Figure out if any slice's lower bound equals the corresponding extent.
+  // If so, bypass evaluating the layout mapping.  This fixes LWG Issue 4060.
+  const bool out_of_bounds =
+    detail::any_slice_out_of_bounds(this->extents(), slices...);
+  auto offset = static_cast<size_t>(
+    out_of_bounds ?
+    this->required_span_size() :
+    this->operator()(detail::first_of(slices)...)
+  );
+
+  if constexpr (std::is_same_v<dst_layout_t, layout_right>) {
+    // layout_right case
+    return submdspan_mapping_result<dst_mapping_t>{
+        dst_mapping_t(dst_ext),
+        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
+  } else if constexpr (std::is_same_v<dst_layout_t, MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<dynamic_extent>>) {
+    return submdspan_mapping_result<dst_mapping_t>{
+            dst_mapping_t(dst_ext, stride(src_ext_t::rank() - 2 - deduce_layout::NumGaps)),
+        static_cast<size_t>(this->operator()(detail::first_of(slices)...))};
+  } else {
+    // layout_stride case
+    auto inv_map = detail::inv_map_rank(
+      std::integral_constant<size_t,0>(),
+      std::index_sequence<>(),
+      slices...);
+    return submdspan_mapping_result<dst_mapping_t>{
+        dst_mapping_t(dst_ext, detail::construct_sub_strides(
+                                   *this, inv_map,
+    // HIP needs deduction guides to have markups so we need to be explicit
+    // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have the issue
+    // But Clang-CUDA also doesn't accept the use of deduction guide so disable it for CUDA alltogether
+    #if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
+                                   std::tuple<decltype(detail::stride_of(slices))...>{detail::stride_of(slices)...})),
+    #else
+                                   std::tuple{detail::stride_of(slices)...})),
+    #endif
+        offset};
+  }
+#if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+  __builtin_unreachable();
+#endif
+}
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+        #pragma nv_diagnostic pop
+    #else
+      #ifdef __CUDA_ARCH__
+        #pragma diagnostic pop
+      #endif
+    #endif
+#elif defined __NVCOMPILER
+    #pragma    diagnostic pop
+#endif
+#if 0
 //**********************************
 // layout_right submdspan_mapping
 //*********************************
@@ -389,6 +539,8 @@ layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
     #pragma    diagnostic pop
 #endif
 */
+#endif
+
 //**********************************
 // layout_stride submdspan_mapping
 //*********************************
