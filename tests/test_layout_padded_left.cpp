@@ -482,4 +482,3 @@ TEST(LayoutRightTests, access) {
           Kokkos::extents<std::size_t>>({}, 4);
   ASSERT_EQ(mapping6(), 0);
 }
-

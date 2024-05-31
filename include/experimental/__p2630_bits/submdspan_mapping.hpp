@@ -31,10 +31,6 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 };
 
 namespace detail {
-using detail::first_of;
-using detail::stride_of;
-using detail::inv_map_rank;
-
 // We use const Slice& and not Slice&& because the various
 // submdspan_mapping_impl overloads use their slices arguments
 // multiple times.  This makes perfect forwarding not useful, but we

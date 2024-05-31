@@ -388,7 +388,7 @@ public:
       for (rank_type r = 1; r < extents_type::rank(); ++r) {
         value *= exts.extent(r);
       }
-      return value - (padded_stride.value(0) - exts.extent(0));
+      return value;
     }
   }
 
