@@ -225,31 +225,28 @@ class layout_foo::mapping {
     }
 #endif
 
+   template<class... SliceSpecifiers>
+     friend constexpr auto submdspan_mapping(
+       const mapping& src, SliceSpecifiers... slices) {
+         // use the fact that layout_foo is layout_right with rank 1 or rank 2
+         // i.e. we don't need to implement everything here, we just reuse submdspan_mapping for layout_right
+         Kokkos::layout_right::mapping<Extents> compatible_mapping(src.extents());
+         auto sub_right = submdspan_mapping(compatible_mapping, slices...);
+         if constexpr (std::is_same_v<typename decltype(sub_right.mapping)::layout_type, Kokkos::layout_right>) {
+           // NVCC does not like deduction here, so get the extents type explicitly
+           using sub_ext_t = std::remove_const_t<std::remove_reference_t<decltype(sub_right.mapping.extents())>>;
+           auto sub_mapping = layout_foo::mapping<sub_ext_t>(sub_right.mapping.extents());
+           return Kokkos::submdspan_mapping_result<decltype(sub_mapping)>{sub_mapping, sub_right.offset};
+         } else {
+           return sub_right;
+         }
+     }
+
 private:
    _MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents{};
 
 };
 
-#if MDSPAN_HAS_CXX_17
-template <class Extents, class... SliceSpecifiers>
-MDSPAN_INLINE_FUNCTION
-constexpr auto
-submdspan_mapping(const layout_foo::mapping<Extents> &src_mapping,
-		                  SliceSpecifiers... slices) {
-   // use the fact that layout_foo is layout_right with rank 1 or rank 2
-   // i.e. we don't need to implement everything here, we just reuse submdspan_mapping for layout_right
-   Kokkos::layout_right::mapping<Extents> compatible_mapping(src_mapping.extents());
-   auto sub_right = submdspan_mapping(compatible_mapping, slices...);
-   if constexpr (std::is_same_v<typename decltype(sub_right.mapping)::layout_type, Kokkos::layout_right>) {
-     // NVCC does not like deduction here, so get the extents type explicitly
-     using sub_ext_t = std::remove_const_t<std::remove_reference_t<decltype(sub_right.mapping.extents())>>;
-     auto sub_mapping = layout_foo::mapping<sub_ext_t>(sub_right.mapping.extents());
-     return Kokkos::submdspan_mapping_result<decltype(sub_mapping)>{sub_mapping, sub_right.offset};
-   } else {
-     return sub_right;
-   }
-}
-#endif
 }
 #endif
 
