@@ -225,6 +225,7 @@ class layout_foo::mapping {
     }
 #endif
 
+#if MDSPAN_HAS_CXX_17
    template<class... SliceSpecifiers>
      friend constexpr auto submdspan_mapping(
        const mapping& src, SliceSpecifiers... slices) {
@@ -241,6 +242,7 @@ class layout_foo::mapping {
            return sub_right;
          }
      }
+#endif
 
 private:
    _MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents{};
