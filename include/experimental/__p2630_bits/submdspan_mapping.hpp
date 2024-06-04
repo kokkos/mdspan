@@ -222,7 +222,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
 // HIP needs deduction guides to have markups so we need to be explicit
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue But Clang-CUDA also doesn't accept the use of deduction guide so
-// disable it for CUDA alltogether
+// disable it for CUDA altogether
 #if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
                         std::tuple<decltype(detail::stride_of(slices))...>{
                             detail::stride_of(slices)...})),
@@ -405,7 +405,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
 // HIP needs deduction guides to have markups so we need to be explicit
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue But Clang-CUDA also doesn't accept the use of deduction guide so
-// disable it for CUDA alltogether
+// disable it for CUDA altogether
 #if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
                         std::tuple<decltype(detail::stride_of(slices))...>{
                             detail::stride_of(slices)...})),
