@@ -36,14 +36,13 @@ namespace detail {
 // multiple times.  This makes perfect forwarding not useful, but we
 // still don't want to pass those (possibly of size 64 x 3 bits)
 // objects by value.
-template<class IndexType,
-         class Slice>
-MDSPAN_INLINE_FUNCTION
-constexpr bool
-one_slice_out_of_bounds(const IndexType& ext, const Slice& slice)
-{
-  using common_t = std::common_type_t<decltype(detail::first_of(slice)), IndexType>;
-  return static_cast<common_t>(detail::first_of(slice)) == static_cast<common_t>(ext);
+template <class IndexType, class Slice>
+MDSPAN_INLINE_FUNCTION constexpr bool
+one_slice_out_of_bounds(const IndexType &ext, const Slice &slice) {
+  using common_t =
+      std::common_type_t<decltype(detail::first_of(slice)), IndexType>;
+  return static_cast<common_t>(detail::first_of(slice)) ==
+         static_cast<common_t>(ext);
 }
 
 template <size_t... RankIndices, class IndexType, size_t... Exts,
@@ -94,7 +93,7 @@ struct deduce_layout_left_submapping<
   using CountRange = index_sequence_scan_impl<
       0, (std::is_convertible_v<SliceSpecifiers, IndexType> ? 0 : 1)...>;
   //__static_partial_sums<!std::is_convertible_v<SliceSpecifiers,
-  //IndexType>...>;
+  // IndexType>...>;
   constexpr static int NumGaps =
       (((Idx > 0 && CountRange::get(Idx) == 1 &&
          std::is_convertible_v<SliceSpecifiers, IndexType>)
@@ -267,7 +266,7 @@ struct deduce_layout_right_submapping<
   using CountRange = index_sequence_scan_impl<
       0, (std::is_convertible_v<SliceSpecifiers, IndexType> ? 0 : 1)...>;
   //__static_partial_sums<!std::is_convertible_v<SliceSpecifiers,
-  //IndexType>...>;
+  // IndexType>...>;
   constexpr static int NumGaps =
       (((Idx < Rank - 1 && CountRange::get(Idx) == SubRank - 1 &&
          std::is_convertible_v<SliceSpecifiers, IndexType>)
