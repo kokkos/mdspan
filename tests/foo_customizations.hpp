@@ -193,7 +193,7 @@ class layout_foo::mapping {
     template<class Indx0, class Indx1>
     MDSPAN_INLINE_FUNCTION
     constexpr index_type operator()(Indx0 idx0, Indx1 idx1) const noexcept {
-      return static_cast<index_type>(idx0 * __extents.extent(0) + idx1);
+      return static_cast<index_type>(idx0 * __extents.extent(1) + idx1);
     }
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }

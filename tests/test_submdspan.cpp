@@ -224,38 +224,56 @@ struct TestSubMDSpan<
     return Kokkos::full_extent;
   }
 
-  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
-  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, int, SliceArgs ... slices) {
-    return match_expected_extents(++src_idx, sub_idx, src_ext, sub_ext, slices...);
+  static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>, int, SliceArgs ... slices) {
+    return check_submdspan_match(++src_idx, sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,2>(), std::index_sequence<SubIdx...>(), slices...);
   }
-  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
-  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, std::pair<int,int> p, SliceArgs ... slices) {
-    using idx_t = typename SubExtents::index_type;
-    return (sub_ext.extent(sub_idx)==static_cast<idx_t>(p.second-p.first)) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+  static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>, std::pair<int,int> p, SliceArgs ... slices) {
+    using idx_t = typename SubMDSpan::index_type;
+    return (sub_mds.extent(sub_idx)==static_cast<idx_t>(p.second-p.first)) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,2>(), std::index_sequence<SubIdx...,1>(), slices...);
   }
-  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
-  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext,
+  static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>,
                                      Kokkos::strided_slice<int,int,int> p, SliceArgs ... slices) {
-    using idx_t = typename SubExtents::index_type;
-    return (sub_ext.extent(sub_idx)==static_cast<idx_t>((p.extent+p.stride-1)/p.stride)) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+    using idx_t = typename SubMDSpan::index_type;
+    return (sub_mds.extent(sub_idx)==static_cast<idx_t>((p.extent+p.stride-1)/p.stride)) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,3>(), std::index_sequence<SubIdx...,1>(), slices...);
   }
-  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
-  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext,
+  static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>,
                                      Kokkos::strided_slice<int,std::integral_constant<int, 0>,std::integral_constant<int,0>>, SliceArgs ... slices) {
-    return (sub_ext.extent(sub_idx)==0) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+    return (sub_mds.extent(sub_idx)==0) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,1>(), std::index_sequence<SubIdx...,0>(), slices...);
   }
-  template<class SrcExtents, class SubExtents, class ... SliceArgs>
+  template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
-  static bool match_expected_extents(int src_idx, int sub_idx, SrcExtents src_ext, SubExtents sub_ext, Kokkos::full_extent_t, SliceArgs ... slices) {
-    return (sub_ext.extent(sub_idx)==src_ext.extent(src_idx)) && match_expected_extents(++src_idx, ++sub_idx, src_ext, sub_ext, slices...);
+  static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>, Kokkos::full_extent_t, SliceArgs ... slices) {
+    return (sub_mds.extent(sub_idx)==src_mds.extent(src_idx)) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,1>(), std::index_sequence<SubIdx...,1>(), slices...);
   }
-  template<class SrcExtents, class SubExtents>
+  template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx>
   MDSPAN_INLINE_FUNCTION
-  static bool match_expected_extents(int, int, SrcExtents, SubExtents) { return true; }
+  static bool check_submdspan_match(int, int, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>) {
+#if MDSPAN_HAS_CXX_23
+    if constexpr (SrcMDSpan::rank() == 0) {
+      return (&src_mds[]==&sub_mds[]);
+    } else if constexpr (SubMDSpan::rank() == 0) {
+      return (&src_mds[SrcIdx...]==&sub_mds[]); 
+    } else {
+      return (&src_mds[SrcIdx...]==&sub_mds[SubIdx...]);
+    }
+#else
+    if constexpr (SrcMDSpan::rank() == 0) {
+      return (&src_mds()==&sub_mds());
+    } else if constexpr (SubMDSpan::rank() == 0) {
+      return (&src_mds(SrcIdx...)==&sub_mds());
+    } else {
+      return (&src_mds(SrcIdx...)==&sub_mds(SubIdx...));
+    }
+#endif
+  }
 
   static void run() {
     typename mds_org_t::mapping_type map(typename mds_org_t::extents_type(ConstrArgs...));
@@ -265,7 +283,7 @@ struct TestSubMDSpan<
 
     dispatch([=] _MDSPAN_HOST_DEVICE () {
       auto sub = Kokkos::submdspan(src, create_slice_arg(SubArgs())...);
-      bool match = match_expected_extents(0, 0, src.extents(), sub.extents(), create_slice_arg(SubArgs())...);
+      bool match = check_submdspan_match(0, 0, src, sub, std::index_sequence<>(), std::index_sequence<>(), create_slice_arg(SubArgs())...);
       result[0] = match?1:0;
     });
     EXPECT_EQ(result[0], 1);
