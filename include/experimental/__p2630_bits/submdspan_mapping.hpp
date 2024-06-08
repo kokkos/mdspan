@@ -73,6 +73,26 @@ MDSPAN_INLINE_FUNCTION constexpr auto construct_sub_strides(
       (static_cast<index_type>(src_mapping.stride(InvMapIdxs)) *
        static_cast<index_type>(std::get<InvMapIdxs>(slices_stride_factor)))...};
 }
+
+template<class SliceSpecifier, class IndexType>
+struct is_range_slice {
+  constexpr static bool value =
+    std::is_same_v<SliceSpecifier, full_extent_t> ||
+    std::is_convertible_v<SliceSpecifier,
+                          std::tuple<IndexType, IndexType>>;
+};
+
+template<class SliceSpecifier, class IndexType>
+constexpr bool is_range_slice_v = is_range_slice<SliceSpecifier, IndexType>::value;
+
+template<class SliceSpecifier, class IndexType>
+struct is_index_slice {
+  constexpr static bool value = std::is_convertible_v<SliceSpecifier, IndexType>;
+};
+
+template<class SliceSpecifier, class IndexType>
+constexpr bool is_index_slice_v = is_index_slice<SliceSpecifier, IndexType>::value;
+
 } // namespace detail
 
 //**********************************
@@ -91,59 +111,55 @@ struct deduce_layout_left_submapping<
     IndexType, SubRank, std::index_sequence<Idx...>, SliceSpecifiers...> {
 
   using CountRange = index_sequence_scan_impl<
-      0, (std::is_convertible_v<SliceSpecifiers, IndexType> ? 0 : 1)...>;
-  //__static_partial_sums<!std::is_convertible_v<SliceSpecifiers,
-  // IndexType>...>;
+      0, (is_index_slice_v<SliceSpecifiers, IndexType> ? 0 : 1)...>;
+
   constexpr static int NumGaps =
       (((Idx > 0 && CountRange::get(Idx) == 1 &&
-         std::is_convertible_v<SliceSpecifiers, IndexType>)
+         is_index_slice_v<SliceSpecifiers, IndexType>)
             ? 1
             : 0) +
        ... + 0);
 
-  constexpr static bool layout_left_value =
-      // Use layout_left for rank 0
-      (SubRank == 0) ||
-      // Use layout_left for rank 1 if leftmost slice specifier is range like
-      ((SubRank == 1) &&
-       ((Idx > 0 || std::is_same_v<SliceSpecifiers, full_extent_t> ||
-         std::is_convertible_v<SliceSpecifiers,
-                               std::tuple<IndexType, IndexType>>)&&...)) ||
+  MDSPAN_INLINE_FUNCTION
+  constexpr static bool layout_left_value() {
+    // Use layout_left for rank 0
+    if constexpr (SubRank == 0) {
+      return true;
+    // Use layout_left for rank 1 result if leftmost slice specifier is range like
+    } else if constexpr (SubRank == 1) {
+      return ((Idx > 0 || is_range_slice_v<SliceSpecifiers, IndexType>)&&...);
+    } else {
       // Preserve if leftmost SubRank-1 slices are full_extent_t and
-      // the leftmost SubRank slices are ranges
-      (((Idx < SubRank - 1 && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-        (Idx == SubRank - 1 &&
-         (std::is_same_v<SliceSpecifiers, full_extent_t> ||
-          std::is_convertible_v<SliceSpecifiers,
-                                std::tuple<IndexType, IndexType>>)) ||
-        (Idx >= SubRank && CountRange::get(Idx) == SubRank)) &&
-       ...);
+      // the slice at idx Subrank - 1 is a range and
+      // for idx > SubRank the slice is an index
+      return ((((Idx <  SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+               ((Idx == SubRank - 1) && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+               ((Idx >  SubRank - 1) && is_index_slice_v<SliceSpecifiers, IndexType>)) && ...);
+    }
+#if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+    __builtin_unreachable();
+#endif
+  }
 
-  constexpr static bool layout_left_padded_value =
-      // Use layout_left_padded for rank 0
-      (SubRank == 0) ||
-      // Use layout_left_padded for rank 1 if leftmost slice specifier is range
-      // like
-      ((SubRank == 1) &&
-       ((Idx > 0 || std::is_same_v<SliceSpecifiers, full_extent_t> ||
-         std::is_convertible_v<SliceSpecifiers,
-                               std::tuple<IndexType, IndexType>>)&&...)) ||
-      // layout_left_padded case for SubRank > 1
-      (
-          // leftmost must be range
-          ((Idx == 0 &&
-            (std::is_same_v<SliceSpecifiers, full_extent_t> ||
-             std::is_convertible_v<SliceSpecifiers,
-                                   std::tuple<IndexType, IndexType>>)) ||
-           (Idx > 0 && Idx <= NumGaps && CountRange::get(Idx) == 1) ||
-           (Idx > NumGaps && Idx < NumGaps + SubRank - 1 &&
-            std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-           (Idx == NumGaps + SubRank - 1 &&
-            (std::is_same_v<SliceSpecifiers, full_extent_t> ||
-             std::is_convertible_v<SliceSpecifiers,
-                                   std::tuple<IndexType, IndexType>>)) ||
-           (Idx >= NumGaps + SubRank && CountRange::get(Idx) == SubRank)) &&
-          ...);
+  MDSPAN_INLINE_FUNCTION
+  constexpr static bool layout_left_padded_value() {
+    // Technically could also keep layout_left_padded for SubRank==0
+    // and SubRank==1 with leftmost slice specifier being a contiguous range
+    // but we intercept these cases separately
+
+    // In all other cases:
+    // leftmost slice must be range
+    // then there can be a gap with index slices
+    // then SubRank - 2 full_extent slices
+    // then another range slice
+    // then more index slices
+    // e.g. R I I I F F F R I I for obtaining a rank-5 from a rank-10
+    return ((((Idx == 0)                                     && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx > 0 && Idx <= NumGaps)                    && is_index_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx > NumGaps && Idx < NumGaps + SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) || 
+             ((Idx == NumGaps + SubRank - 1)                 && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx >  NumGaps + SubRank - 1)                 && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
+  }
 };
 
 } // namespace detail
@@ -186,9 +202,9 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
       SliceSpecifiers...>;
 
   using dst_layout_t = std::conditional_t<
-      deduce_layout::layout_left_value, layout_left,
+      deduce_layout::layout_left_value(), layout_left,
       std::conditional_t<
-          deduce_layout::layout_left_padded_value,
+          deduce_layout::layout_left_padded_value(),
           MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<dynamic_extent>,
           layout_stride>>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
@@ -274,56 +290,46 @@ struct deduce_layout_right_submapping<
             : 0) +
        ... + 0);
 
-  constexpr static bool layout_right_value =
-      // Use layout_right for rank 0
-      (SubRank == 0) ||
-      // Use layout_right for rank 1 if rightmost slice specifier is range like
-      ((SubRank == 1) &&
-       (((Idx < Rank - 1) ||
-         ((Idx == Rank - 1) &&
-          (std::is_same_v<SliceSpecifiers, full_extent_t> ||
-           std::is_convertible_v<SliceSpecifiers,
-                                 std::tuple<IndexType, IndexType>>))) &&
-        ...)) ||
+  MDSPAN_INLINE_FUNCTION
+  constexpr static bool layout_right_value() {
+    // Use layout_right for rank 0
+    if constexpr (SubRank == 0) {
+      return true;
+    // Use layout_right for rank 1 result if rightmost slice specifier is range like
+    } else if constexpr (SubRank == 1) {
+      return ((Idx < Rank - 1 || is_range_slice_v<SliceSpecifiers, IndexType>)&&...);
+    } else {
       // Preserve if rightmost SubRank-1 slices are full_extent_t and
-      // the rightmost SubRank slices are ranges
-      (((Idx >= Rank - SubRank &&
-         std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-        (Idx == Rank - SubRank &&
-         std::is_convertible_v<SliceSpecifiers,
-                               std::tuple<IndexType, IndexType>>) ||
-        (Idx < Rank - SubRank && CountRange::get(Idx) == 0)) &&
-       ...);
+      // the slice at idx Rank-Subrank is a range and
+      // for idx < Rank - SubRank the slice is an index
+      return ((((Idx >= Rank - SubRank) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+               ((Idx == Rank - SubRank) && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+               ((Idx <  Rank - SubRank) && is_index_slice_v<SliceSpecifiers, IndexType>)) && ...);
+    }
+#if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+    __builtin_unreachable();
+#endif
+  }
 
-  constexpr static bool layout_right_padded_value = (
-      // Use layout_right_padded for rank 0
-      (SubRank == 0) ||
-      // Use layout_right_padded for rank 1 if rightmost slice specifier is
-      // range like
-      ((SubRank == 1) &&
-       (((Idx < Rank - 1) ||
-         ((Idx == Rank - 1) &&
-          (std::is_same_v<SliceSpecifiers, full_extent_t> ||
-           std::is_convertible_v<SliceSpecifiers,
-                                 std::tuple<IndexType, IndexType>>))) &&
-        ...)) ||
-      // layout_right_padded case for SubRank > 1
-      (
-          // rightmost must be range
-          ((Idx < Rank - NumGaps - SubRank && CountRange::get(Idx) == 0) ||
-           (Idx == Rank - NumGaps - SubRank &&
-            (std::is_same_v<SliceSpecifiers, full_extent_t> ||
-             std::is_convertible_v<SliceSpecifiers,
-                                   std::tuple<IndexType, IndexType>>)) ||
-           (Idx > Rank - NumGaps - SubRank && Idx < Rank - NumGaps - 1 &&
-            std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-           (Idx >= Rank - NumGaps - 1 && Idx < Rank - 1 &&
-            CountRange::get(Idx) == SubRank - 1) ||
-           (Idx == Rank - 1 &&
-            (std::is_same_v<SliceSpecifiers, full_extent_t> ||
-             std::is_convertible_v<SliceSpecifiers,
-                                   std::tuple<IndexType, IndexType>>))) &&
-          ...));
+  MDSPAN_INLINE_FUNCTION
+  constexpr static bool layout_right_padded_value() {
+    // Technically could also keep layout_right_padded for SubRank==0
+    // and SubRank==1 with rightmost slice specifier being a contiguous range
+    // but we intercept these cases separately
+
+    // In all other cases:
+    // rightmost slice must be range
+    // then there can be a gap with index slices
+    // then SubRank - 2 full_extent slices
+    // then another range slice
+    // then more index slices
+    // e.g. I I R F F F I I I R for obtaining a rank-5 from a rank-10
+    return ((((Idx == Rank - 1)                                             && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx >= Rank - NumGaps - 1 && Idx < Rank - 1)                 && is_index_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx >  Rank - NumGaps - SubRank && Idx < Rank - NumGaps - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+             ((Idx == Rank - NumGaps - SubRank)                             && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx <  Rank - NumGaps - SubRank)                             && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
+  }
 };
 
 } // namespace detail
@@ -366,9 +372,9 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
       SliceSpecifiers...>;
 
   using dst_layout_t = std::conditional_t<
-      deduce_layout::layout_right_value, layout_right,
+      deduce_layout::layout_right_value(), layout_right,
       std::conditional_t<
-          deduce_layout::layout_right_padded_value,
+          deduce_layout::layout_right_padded_value(),
           MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<dynamic_extent>,
           layout_stride>>;
   using dst_mapping_t = typename dst_layout_t::template mapping<dst_ext_t>;
