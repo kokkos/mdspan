@@ -21,6 +21,26 @@
 #include <type_traits>
 #include <utility> // index_sequence
 
+// Suppress spurious warning with NVCC about no return statement.
+// This is a known issue in NVCC and NVC++
+// Depending on the CUDA and GCC version we need both the builtin
+// and the diagnostic push. I tried really hard to find something shorter
+// but no luck ...
+#if defined __NVCC__
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function
+#else
+#ifdef __CUDA_ARCH__
+#pragma diagnostic push
+#pragma diag_suppress implicit_return_from_non_void_function
+#endif
+#endif
+#elif defined __NVCOMPILER
+#pragma diagnostic push
+#pragma diag_suppress = implicit_return_from_non_void_function
+#endif
+
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 //******************************************
 // Return type of submdspan_mapping overloads
@@ -110,11 +130,11 @@ template <class IndexType, size_t SubRank, size_t... Idx,
 struct deduce_layout_left_submapping<
     IndexType, SubRank, std::index_sequence<Idx...>, SliceSpecifiers...> {
 
-  using CountRange = index_sequence_scan_impl<
+  using count_range = index_sequence_scan_impl<
       0, (is_index_slice_v<SliceSpecifiers, IndexType> ? 0 : 1)...>;
 
-  constexpr static int NumGaps =
-      (((Idx > 0 && CountRange::get(Idx) == 1 &&
+  constexpr static int num_gaps =
+      (((Idx > 0 && count_range::get(Idx) == 1 &&
          is_index_slice_v<SliceSpecifiers, IndexType>)
             ? 1
             : 0) +
@@ -154,35 +174,16 @@ struct deduce_layout_left_submapping<
     // then another range slice
     // then more index slices
     // e.g. R I I I F F F R I I for obtaining a rank-5 from a rank-10
-    return ((((Idx == 0)                                     && is_range_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx > 0 && Idx <= NumGaps)                    && is_index_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx > NumGaps && Idx < NumGaps + SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) || 
-             ((Idx == NumGaps + SubRank - 1)                 && is_range_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx >  NumGaps + SubRank - 1)                 && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
+    return ((((Idx == 0)                                       && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx > 0 && Idx <= num_gaps)                     && is_index_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx > num_gaps && Idx < num_gaps + SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) || 
+             ((Idx == num_gaps + SubRank - 1)                  && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx >  num_gaps + SubRank - 1)                  && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
   }
 };
 
 } // namespace detail
 
-// Suppress spurious warning with NVCC about no return statement.
-// This is a known issue in NVCC and NVC++
-// Depending on the CUDA and GCC version we need both the builtin
-// and the diagnostic push. I tried really hard to find something shorter
-// but no luck ...
-#if defined __NVCC__
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress = implicit_return_from_non_void_function
-#else
-#ifdef __CUDA_ARCH__
-#pragma diagnostic push
-#pragma diag_suppress implicit_return_from_non_void_function
-#endif
-#endif
-#elif defined __NVCOMPILER
-#pragma diagnostic push
-#pragma diag_suppress = implicit_return_from_non_void_function
-#endif
 // Actual submdspan mapping call
 template <class Extents>
 template <class... SliceSpecifiers>
@@ -225,7 +226,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
                                       MDSPAN_IMPL_PROPOSED_NAMESPACE::
                                           layout_left_padded<dynamic_extent>>) {
     return submdspan_mapping_result<dst_mapping_t>{
-        dst_mapping_t(dst_ext, stride(1 + deduce_layout::NumGaps)), offset};
+        dst_mapping_t(dst_ext, stride(1 + deduce_layout::num_gaps)), offset};
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
@@ -251,17 +252,6 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
   __builtin_unreachable();
 #endif
 }
-#if defined __NVCC__
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diagnostic pop
-#else
-#ifdef __CUDA_ARCH__
-#pragma diagnostic pop
-#endif
-#endif
-#elif defined __NVCOMPILER
-#pragma diagnostic pop
-#endif
 
 //**********************************
 // layout_right submdspan_mapping
@@ -279,12 +269,12 @@ struct deduce_layout_right_submapping<
     IndexType, SubRank, std::index_sequence<Idx...>, SliceSpecifiers...> {
 
   static constexpr size_t Rank = sizeof...(Idx);
-  using CountRange = index_sequence_scan_impl<
+  using count_range = index_sequence_scan_impl<
       0, (std::is_convertible_v<SliceSpecifiers, IndexType> ? 0 : 1)...>;
   //__static_partial_sums<!std::is_convertible_v<SliceSpecifiers,
   // IndexType>...>;
-  constexpr static int NumGaps =
-      (((Idx < Rank - 1 && CountRange::get(Idx) == SubRank - 1 &&
+  constexpr static int num_gaps =
+      (((Idx < Rank - 1 && count_range::get(Idx) == SubRank - 1 &&
          std::is_convertible_v<SliceSpecifiers, IndexType>)
             ? 1
             : 0) +
@@ -324,35 +314,16 @@ struct deduce_layout_right_submapping<
     // then another range slice
     // then more index slices
     // e.g. I I R F F F I I I R for obtaining a rank-5 from a rank-10
-    return ((((Idx == Rank - 1)                                             && is_range_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx >= Rank - NumGaps - 1 && Idx < Rank - 1)                 && is_index_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx >  Rank - NumGaps - SubRank && Idx < Rank - NumGaps - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-             ((Idx == Rank - NumGaps - SubRank)                             && is_range_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx <  Rank - NumGaps - SubRank)                             && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
+    return ((((Idx == Rank - 1)                                               && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx >= Rank - num_gaps - 1 && Idx < Rank - 1)                  && is_index_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx >  Rank - num_gaps - SubRank && Idx < Rank - num_gaps - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+             ((Idx == Rank - num_gaps - SubRank)                              && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx <  Rank - num_gaps - SubRank)                              && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
   }
 };
 
 } // namespace detail
 
-// Suppress spurious warning with NVCC about no return statement.
-// This is a known issue in NVCC and NVC++
-// Depending on the CUDA and GCC version we need both the builtin
-// and the diagnostic push. I tried really hard to find something shorter
-// but no luck ...
-#if defined __NVCC__
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress = implicit_return_from_non_void_function
-#else
-#ifdef __CUDA_ARCH__
-#pragma diagnostic push
-#pragma diag_suppress implicit_return_from_non_void_function
-#endif
-#endif
-#elif defined __NVCOMPILER
-#pragma diagnostic push
-#pragma diag_suppress = implicit_return_from_non_void_function
-#endif
 // Actual submdspan mapping call
 template <class Extents>
 template <class... SliceSpecifiers>
@@ -397,7 +368,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
                                dynamic_extent>>) {
     return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext,
-                      stride(src_ext_t::rank() - 2 - deduce_layout::NumGaps)),
+                      stride(src_ext_t::rank() - 2 - deduce_layout::num_gaps)),
         offset};
   } else {
     // layout_stride case
@@ -424,17 +395,6 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
   __builtin_unreachable();
 #endif
 }
-#if defined __NVCC__
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diagnostic pop
-#else
-#ifdef __CUDA_ARCH__
-#pragma diagnostic pop
-#endif
-#endif
-#elif defined __NVCOMPILER
-#pragma diagnostic pop
-#endif
 
 //**********************************
 // layout_stride submdspan_mapping
@@ -478,3 +438,15 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
 }
 
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
+
+#if defined __NVCC__
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diagnostic pop
+#else
+#ifdef __CUDA_ARCH__
+#pragma diagnostic pop
+#endif
+#endif
+#elif defined __NVCOMPILER
+#pragma diagnostic pop
+#endif
