@@ -133,7 +133,7 @@ struct deduce_layout_left_submapping<
   using count_range = index_sequence_scan_impl<
       0, (is_index_slice_v<SliceSpecifiers, IndexType> ? 0 : 1)...>;
 
-  constexpr static int num_gaps =
+  constexpr static int gap_len =
       (((Idx > 0 && count_range::get(Idx) == 1 &&
          is_index_slice_v<SliceSpecifiers, IndexType>)
             ? 1
@@ -175,10 +175,10 @@ struct deduce_layout_left_submapping<
     // then more index slices
     // e.g. R I I I F F F R I I for obtaining a rank-5 from a rank-10
     return ((((Idx == 0)                                       && is_range_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx > 0 && Idx <= num_gaps)                     && is_index_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx > num_gaps && Idx < num_gaps + SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) || 
-             ((Idx == num_gaps + SubRank - 1)                  && is_range_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx >  num_gaps + SubRank - 1)                  && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
+             ((Idx > 0 && Idx <= gap_len)                     && is_index_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx > gap_len && Idx < gap_len + SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) || 
+             ((Idx == gap_len + SubRank - 1)                  && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx >  gap_len + SubRank - 1)                  && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
   }
 };
 
@@ -199,7 +199,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
   // figure out sub layout type
   using deduce_layout = detail::deduce_layout_left_submapping<
       typename dst_ext_t::index_type, dst_ext_t::rank(),
-      decltype(std::make_index_sequence<src_ext_t::rank()>()),
+      std::make_index_sequence<src_ext_t::rank()>,
       SliceSpecifiers...>;
 
   using dst_layout_t = std::conditional_t<
@@ -226,7 +226,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
                                       MDSPAN_IMPL_PROPOSED_NAMESPACE::
                                           layout_left_padded<dynamic_extent>>) {
     return submdspan_mapping_result<dst_mapping_t>{
-        dst_mapping_t(dst_ext, stride(1 + deduce_layout::num_gaps)), offset};
+        dst_mapping_t(dst_ext, stride(1 + deduce_layout::gap_len)), offset};
   } else {
     // layout_stride case
     auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
@@ -273,7 +273,7 @@ struct deduce_layout_right_submapping<
       0, (std::is_convertible_v<SliceSpecifiers, IndexType> ? 0 : 1)...>;
   //__static_partial_sums<!std::is_convertible_v<SliceSpecifiers,
   // IndexType>...>;
-  constexpr static int num_gaps =
+  constexpr static int gap_len =
       (((Idx < Rank - 1 && count_range::get(Idx) == SubRank - 1 &&
          std::is_convertible_v<SliceSpecifiers, IndexType>)
             ? 1
@@ -315,10 +315,10 @@ struct deduce_layout_right_submapping<
     // then more index slices
     // e.g. I I R F F F I I I R for obtaining a rank-5 from a rank-10
     return ((((Idx == Rank - 1)                                               && is_range_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx >= Rank - num_gaps - 1 && Idx < Rank - 1)                  && is_index_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx >  Rank - num_gaps - SubRank && Idx < Rank - num_gaps - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-             ((Idx == Rank - num_gaps - SubRank)                              && is_range_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx <  Rank - num_gaps - SubRank)                              && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
+             ((Idx >= Rank - gap_len - 1 && Idx < Rank - 1)                  && is_index_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx >  Rank - gap_len - SubRank && Idx < Rank - gap_len - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
+             ((Idx == Rank - gap_len - SubRank)                              && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx <  Rank - gap_len - SubRank)                              && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
   }
 };
 
@@ -339,7 +339,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
   // figure out sub layout type
   using deduce_layout = detail::deduce_layout_right_submapping<
       typename dst_ext_t::index_type, dst_ext_t::rank(),
-      decltype(std::make_index_sequence<src_ext_t::rank()>()),
+      std::make_index_sequence<src_ext_t::rank()>,
       SliceSpecifiers...>;
 
   using dst_layout_t = std::conditional_t<
@@ -368,7 +368,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
                                dynamic_extent>>) {
     return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext,
-                      stride(src_ext_t::rank() - 2 - deduce_layout::num_gaps)),
+                      stride(src_ext_t::rank() - 2 - deduce_layout::gap_len)),
         offset};
   } else {
     // layout_stride case
