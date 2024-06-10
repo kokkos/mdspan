@@ -256,7 +256,7 @@ struct TestSubMDSpan<
   template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx>
   MDSPAN_INLINE_FUNCTION
   static bool check_submdspan_match(int, int, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>) {
-#if MDSPAN_HAS_CXX_23
+#if MDSPAN_USE_BRACKET_OPERATOR
     if constexpr (SrcMDSpan::rank() == 0) {
       return (&src_mds[]==&sub_mds[]);
     } else if constexpr (SubMDSpan::rank() == 0) {
