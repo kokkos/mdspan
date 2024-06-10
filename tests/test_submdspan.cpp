@@ -262,6 +262,7 @@ struct TestSubMDSpan<
     } else if constexpr (SubMDSpan::rank() == 0) {
       return (&src_mds[SrcIdx...]==&sub_mds[]); 
     } else {
+      if(sub_mds.size() == 0) return true;
       return (&src_mds[SrcIdx...]==&sub_mds[SubIdx...]);
     }
 #else
@@ -270,6 +271,7 @@ struct TestSubMDSpan<
     } else if constexpr (SubMDSpan::rank() == 0) {
       return (&src_mds(SrcIdx...)==&sub_mds());
     } else {
+      if(sub_mds.size() == 0) return true;
       return (&src_mds(SrcIdx...)==&sub_mds(SubIdx...));
     }
 #endif
