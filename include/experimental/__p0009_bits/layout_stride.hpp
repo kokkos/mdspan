@@ -605,7 +605,7 @@ struct layout_stride {
     )
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(const mapping& x, const StridedLayoutMapping& y) noexcept {
-      return not (x == y);
+      return !(x == y);
     }
 
     MDSPAN_TEMPLATE_REQUIRES(
@@ -643,7 +643,7 @@ constexpr void validate_strides(with_rank<0>, Layout, const Extents&, const Mapp
 template <std::size_t N, class Layout, class Extents, class Mapping>
 constexpr void validate_strides(with_rank<N>, Layout, const Extents& ext, const Mapping& other)
 {
-  static_assert(std::is_same<typename Mapping::layout_type, layout_stride>::value and
+  static_assert(std::is_same<typename Mapping::layout_type, layout_stride>::value &&
                 (std::is_same<Layout, layout_left>::value or
                  std::is_same<Layout, layout_right>::value)
                 , "This function is only intended to validate construction of "
@@ -657,7 +657,7 @@ constexpr void validate_strides(with_rank<N>, Layout, const Extents& ext, const 
     const std::size_t s = is_left ? r : N - 1 - r;
 
     MDSPAN_IMPL_PRECONDITION(common_integral_compare(expected_stride, other.stride(s))
-                             and "invalid strides for layout_{left,right}");
+                             && "invalid strides for layout_{left,right}");
 
     expected_stride *= ext.extent(s);
   }
