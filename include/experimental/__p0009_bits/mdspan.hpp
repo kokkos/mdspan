@@ -24,6 +24,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 template <
@@ -234,7 +235,7 @@ public:
   {
     size_t r = 0;
     for (const auto& index : {indices...}) {
-      if (index >= __mapping_ref().extents().extent(r)) {
+      if (__is_index_oor(index, __mapping_ref().extents().extent(r))) {
         throw std::out_of_range(
           "mdspan::at(...," + std::to_string(index) + ",...) out-of-range at rank index " + std::to_string(r) +
           " for mdspan with extent {...," + std::to_string(__mapping_ref().extents().extent(r)) + ",...}");
@@ -254,7 +255,7 @@ public:
   constexpr reference at(const std::array<SizeType, rank()>& indices) const
   {
     for (size_t r = 0; r < indices.size(); ++r) {
-      if (indices[r] >= __mapping_ref().extents().extent(r)) {
+      if (__is_index_oor(indices[r], __mapping_ref().extents().extent(r))) {
         throw std::out_of_range(
           "mdspan::at({...," + std::to_string(indices[r]) + ",...}) out-of-range at rank index " + std::to_string(r) +
           " for mdspan with extent {...," + std::to_string(__mapping_ref().extents().extent(r)) + ",...}");
@@ -274,7 +275,7 @@ public:
   constexpr reference at(std::span<SizeType, rank()> indices) const
   {
     for (size_t r = 0; r < indices.size(); ++r) {
-      if (indices[r] >= __mapping_ref().extents().extent(r)) {
+      if (__is_index_oor(indices[r], __mapping_ref().extents().extent(r))) {
         throw std::out_of_range(
           "mdspan::at({...," + std::to_string(indices[r]) + ",...}) out-of-range at rank index " + std::to_string(r) +
           " for mdspan with extent {...," + std::to_string(__mapping_ref().extents().extent(r)) + ",...}");
@@ -441,6 +442,23 @@ private:
   MDSPAN_FORCE_INLINE_FUNCTION constexpr mapping_type const& mapping_ref() const noexcept { return m_members.second().first(); }
   MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 accessor_type& accessor_ref() noexcept { return m_members.second().second(); }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr accessor_type const& accessor_ref() const noexcept { return m_members.second().second(); }
+  
+  MDSPAN_TEMPLATE_REQUIRES(
+    class SizeType,
+    /* requires */ (
+      _MDSPAN_TRAIT(std::is_convertible, const SizeType&, index_type) &&
+      _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const SizeType&)
+    )
+  )
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr bool __is_index_oor(SizeType index, index_type extent) const noexcept {
+    // Check for negative indices
+    if constexpr(std::is_signed_v<SizeType>) {
+      if(index < 0) {
+        return true;
+      }
+    }
+    return static_cast<index_type>(index) >= extent;
+  }
 
   template <class, class, class, class>
   friend class mdspan;
