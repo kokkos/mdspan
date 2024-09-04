@@ -140,6 +140,7 @@ using submdspan_test_types =
     // layout_right to layout_right Check Extents Preservation
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10>,           args_t<10>,          Kokkos::extents<size_t,10>, Kokkos::full_extent_t>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10>,           args_t<10>,          Kokkos::extents<size_t,dyn>, std::pair<int,int>>
+    , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10>,           args_t<10>,          Kokkos::extents<size_t,dyn>, std::complex<double>>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10>,           args_t<10>,          Kokkos::extents<size_t>, int>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10,20>,        args_t<10,20>,       Kokkos::extents<size_t,10,20>, Kokkos::full_extent_t, Kokkos::full_extent_t>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10,20>,        args_t<10,20>,       Kokkos::extents<size_t,dyn,20>, std::pair<int,int>, Kokkos::full_extent_t>
@@ -274,6 +275,10 @@ struct TestSubMDSpan<
     return std::pair<int,int>(1,3);
   }
   MDSPAN_INLINE_FUNCTION
+  static auto create_slice_arg(std::complex<double>) {
+    return std::complex<double>{1.,3.};
+  }
+  MDSPAN_INLINE_FUNCTION
   static auto create_slice_arg(Kokkos::strided_slice<int,int,int>) {
     return Kokkos::strided_slice<int,int,int>{1,3,2};
   }
@@ -297,6 +302,12 @@ struct TestSubMDSpan<
   static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>, std::pair<int,int> p, SliceArgs ... slices) {
     using idx_t = typename SubMDSpan::index_type;
     return (sub_mds.extent(sub_idx)==static_cast<idx_t>(p.second-p.first)) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,2>(), std::index_sequence<SubIdx...,1>(), slices...);
+  }
+  template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
+  static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>, std::complex<double> p, SliceArgs ... slices) {
+    using idx_t = typename SubMDSpan::index_type;
+    return (sub_mds.extent(sub_idx)==static_cast<idx_t>(p.imag()-p.real())) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,2>(), std::index_sequence<SubIdx...,1>(), slices...);
   }
   template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION
