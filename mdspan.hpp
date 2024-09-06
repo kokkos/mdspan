@@ -4194,6 +4194,7 @@ struct padded_extent {
   using static_array_type = typename static_array_type_for_padded_extent<
       padding_value, _Extents, _ExtentToPadIdx, _Extents::rank()>::type;
 
+  MDSPAN_INLINE_FUNCTION
   static constexpr auto static_value() { return static_array_type::static_value(0); }
 
   MDSPAN_INLINE_FUNCTION
@@ -4302,7 +4303,7 @@ private:
   }
 
 public:
-#if !MDSPAN_HAS_CXX_20
+#if !MDSPAN_HAS_CXX_20 || defined(__NVCC__)
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr mapping()
       : mapping(extents_type{})
@@ -4446,7 +4447,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const _Mapping &other_mapping) noexcept
       : padded_stride(padded_stride_type::init_padding(
-            other_mapping.extents(),
+            static_cast<extents_type>(other_mapping.extents()),
             other_mapping.extents().extent(extent_to_pad_idx))),
         exts(other_mapping.extents()) {}
 
@@ -4665,7 +4666,7 @@ public:
   }
 
 public:
-#if !MDSPAN_HAS_CXX_20
+#if !MDSPAN_HAS_CXX_20 || defined(__NVCC__)
   MDSPAN_INLINE_FUNCTION_DEFAULTED
       constexpr mapping()
       : mapping(extents_type{})
@@ -4806,7 +4807,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const _Mapping &other_mapping) noexcept
       : padded_stride(padded_stride_type::init_padding(
-            other_mapping.extents(),
+            static_cast<extents_type>(other_mapping.extents()),
             other_mapping.extents().extent(extent_to_pad_idx))),
         exts(other_mapping.extents()) {}
 
@@ -5002,6 +5003,7 @@ public:
 
 
 #include <tuple>
+#include <complex>
 
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/strided_slice.hpp
 
@@ -5085,6 +5087,31 @@ template <class OffsetType, class ExtentType, class StrideType>
 struct is_strided_slice<
     strided_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
 
+// Helper for identifying valid pair like things
+template <class T, class IndexType> struct index_pair_like : std::false_type {};
+
+template <class IdxT1, class IdxT2, class IndexType>
+struct index_pair_like<std::pair<IdxT1, IdxT2>, IndexType> {
+  static constexpr bool value = std::is_convertible_v<IdxT1, IndexType> &&
+                                std::is_convertible_v<IdxT2, IndexType>;
+};
+
+template <class IdxT1, class IdxT2, class IndexType>
+struct index_pair_like<std::tuple<IdxT1, IdxT2>, IndexType> {
+  static constexpr bool value = std::is_convertible_v<IdxT1, IndexType> &&
+                                std::is_convertible_v<IdxT2, IndexType>;
+};
+
+template <class IdxT, class IndexType>
+struct index_pair_like<std::complex<IdxT>, IndexType> {
+  static constexpr bool value = std::is_convertible_v<IdxT, IndexType>;
+};
+
+template <class IdxT, class IndexType>
+struct index_pair_like<std::array<IdxT, 2>, IndexType> {
+  static constexpr bool value = std::is_convertible_v<IdxT, IndexType>;
+};
+
 // first_of(slice): getting begin of slice specifier range
 MDSPAN_TEMPLATE_REQUIRES(
   class Integral,
@@ -5103,11 +5130,17 @@ first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
 
 MDSPAN_TEMPLATE_REQUIRES(
   class Slice,
-  /* requires */(std::is_convertible_v<Slice, std::tuple<size_t, size_t>>)
+  /* requires */(index_pair_like<Slice, size_t>::value)
 )
 MDSPAN_INLINE_FUNCTION
 constexpr auto first_of(const Slice &i) {
   return std::get<0>(i);
+}
+
+template<class T>
+MDSPAN_INLINE_FUNCTION
+constexpr auto first_of(const std::complex<T> &i) {
+  return i.real();
 }
 
 template <class OffsetType, class ExtentType, class StrideType>
@@ -5133,12 +5166,18 @@ constexpr Integral
 
 MDSPAN_TEMPLATE_REQUIRES(
   size_t k, class Extents, class Slice,
-  /* requires */(std::is_convertible_v<Slice, std::tuple<size_t, size_t>>)
+  /* requires */(index_pair_like<Slice, size_t>::value)
 )
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &,
                        const Slice &i) {
   return std::get<1>(i);
+}
+
+template<size_t k, class Extents, class T>
+MDSPAN_INLINE_FUNCTION
+constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const std::complex<T> &i) {
+  return i.imag();
 }
 
 // Suppress spurious warning with NVCC about no return statement.
@@ -5453,8 +5492,7 @@ template<class SliceSpecifier, class IndexType>
 struct is_range_slice {
   constexpr static bool value =
     std::is_same_v<SliceSpecifier, full_extent_t> ||
-    std::is_convertible_v<SliceSpecifier,
-                          std::tuple<IndexType, IndexType>>;
+    index_pair_like<SliceSpecifier, IndexType>::value;
 };
 
 template<class SliceSpecifier, class IndexType>
