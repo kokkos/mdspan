@@ -18,6 +18,7 @@
 
 #include "default_accessor.hpp"
 #include "layout_right.hpp"
+#include "macros.hpp"
 #include "extents.hpp"
 #include "trait_backports.hpp"
 #include "compressed_pair.hpp"
@@ -452,7 +453,7 @@ private:
   )
   MDSPAN_FORCE_INLINE_FUNCTION constexpr bool __is_index_oor(SizeType index, index_type extent) const noexcept {
     // Check for negative indices
-    if constexpr(std::is_signed_v<SizeType>) {
+    if _MDSPAN_IF_CONSTEXPR_17 (_MDSPAN_TRAIT(std::is_signed, SizeType)) {
       if(index < 0) {
         return true;
       }
