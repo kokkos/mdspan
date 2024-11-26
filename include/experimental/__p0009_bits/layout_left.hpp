@@ -248,7 +248,7 @@ class layout_left::mapping {
     }
 
 private:
-   _MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents{};
+   MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents{};
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>

@@ -21,7 +21,7 @@
 #include "compressed_pair.hpp"
 #include "utility.hpp"
 
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if !defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #  include "no_unique_address.hpp"
 #endif
 
@@ -32,7 +32,7 @@
 #ifdef __cpp_lib_span
 #include <span>
 #endif
-#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20 && defined(__cpp_lib_concepts)
+#if defined(MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20 && defined(__cpp_lib_concepts)
 #  include <concepts>
 #endif
 
@@ -52,7 +52,7 @@ namespace detail {
   constexpr bool __is_mapping_of =
     std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
 
-#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+#if defined(MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #  if !defined(__cpp_lib_concepts)
   namespace internal {
   namespace detail {
@@ -87,7 +87,7 @@ namespace detail {
 struct layout_stride {
   template <class Extents>
   class mapping
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if !defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : private detail::__no_unique_address_emulation<
         detail::__compressed_pair<
           Extents,
@@ -115,15 +115,15 @@ struct layout_stride {
     using __strides_storage_t = detail::possibly_empty_array<index_type, extents_type::rank()>;
     using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
 
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-    _MDSPAN_NO_UNIQUE_ADDRESS __member_pair_t __members;
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    MDSPAN_NO_UNIQUE_ADDRESS __member_pair_t __members;
 #else
     using __base_t = detail::__no_unique_address_emulation<__member_pair_t>;
 #endif
 
     MDSPAN_FORCE_INLINE_FUNCTION constexpr __strides_storage_t const&
     __strides_storage() const noexcept {
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return __members.__second();
 #else
       return this->__base_t::__ref().__second();
@@ -131,7 +131,7 @@ struct layout_stride {
     }
     MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 __strides_storage_t&
     __strides_storage() noexcept {
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return __members.__second();
 #else
       return this->__base_t::__ref().__second();
@@ -258,7 +258,7 @@ struct layout_stride {
 
     //----------------------------------------------------------------------------
 
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     MDSPAN_INLINE_FUNCTION constexpr explicit
     mapping(__member_pair_t&& __m) : __members(::std::move(__m)) {}
 #else
@@ -271,14 +271,14 @@ struct layout_stride {
     //--------------------------------------------------------------------------------
 
     MDSPAN_INLINE_FUNCTION constexpr mapping() noexcept
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           extents_type(),
           __strides_storage_t(strides_storage(detail::with_rank<extents_type::rank()>{}))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -301,13 +301,13 @@ struct layout_stride {
       extents_type const& e,
       std::array<IntegralTypes, extents_type::rank()> const& s
     ) noexcept
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           e, __strides_storage_t(__impl::fill_strides(s))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -340,13 +340,13 @@ struct layout_stride {
       // Need to avoid zero-length c-array
       const IntegralTypes (&s)[extents_type::rank()>0?extents_type::rank():1]
     ) noexcept
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           e, __strides_storage_t(__impl::fill_strides(mdspan_non_standard, s))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -377,13 +377,13 @@ struct layout_stride {
       extents_type const& e,
       std::span<IntegralTypes, extents_type::rank()> const& s
     ) noexcept
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           e, __strides_storage_t(__impl::fill_strides(s))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -400,7 +400,7 @@ struct layout_stride {
     }
 #endif // __cpp_lib_span
 
-#if !(defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
+#if !(defined(MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
       /* requires */ (
@@ -427,13 +427,13 @@ struct layout_stride {
     ) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(StridedLayoutMapping const& other) noexcept // NOLINT(google-explicit-constructor)
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           other.extents(), __strides_storage_t(__impl::fill_strides(other))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -453,7 +453,7 @@ struct layout_stride {
     mapping& operator=(mapping const&) noexcept = default;
 
     MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept {
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return __members.__first();
 #else
       return this->__base_t::__ref().__first();
@@ -555,7 +555,7 @@ struct layout_stride {
       return __strides_storage()[r];
     }
 
-#if !(defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
+#if !(defined(MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
       /* requires */ (

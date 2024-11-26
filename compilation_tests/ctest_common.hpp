@@ -33,7 +33,7 @@
 // At least in the case of clang, that error is descriptive enough to see what's
 // going on if we're careful with how we do things.
 
-#if _MDSPAN_USE_CONSTEXPR_14
+#if MDSPAN_USE_CONSTEXPR_14
 
 // A nice marker in the compiler output. Also, use std::is_constant_evaluated if we have it
 #if __cpp_lib_is_constant_evaluated > 201811
@@ -117,7 +117,7 @@ struct _____constexpr_assertion_failed_ {
 #define constexpr_assert_greater_than(expr, ...) \
   _____constexpr_assertion_failed_{#__VA_ARGS__}._expected_to_be_greater_than_(expr).but_actual_value_was_((__VA_ARGS__));
 
-#endif // _MDSPAN_USE_CONSTEXPR_14
+#endif // MDSPAN_USE_CONSTEXPR_14
 
 // </editor-fold> end assert-like macros that don't break constexpr }}}1
 //==============================================================================

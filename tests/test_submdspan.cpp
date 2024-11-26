@@ -28,71 +28,71 @@ _MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 TEST(TestSubmdspanLayoutRightStaticSizedRankReducing3Dto1D, test_submdspan_layout_right_static_sized_rank_reducing_3d_to_1d) {
   std::vector<int> d(2 * 3 * 4, 0);
   Kokkos::mdspan<int, Kokkos::extents<size_t,2, 3, 4>> m(d.data());
-  __MDSPAN_OP(m, 1, 1, 1) = 42;
+  MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = Kokkos::submdspan(m, 1, 1, Kokkos::full_extent);
   static_assert(decltype(sub0)::rank()==1,"unexpected submdspan rank");
   ASSERT_EQ(sub0.rank(),         1);
   ASSERT_EQ(sub0.rank_dynamic(), 0);
   ASSERT_EQ(sub0.extent(0),      4);
-  ASSERT_EQ((__MDSPAN_OP(sub0, 1)), 42);
+  ASSERT_EQ((MDSPAN_OP(sub0, 1)), 42);
 }
 
 TEST(TestSubmdspanLayoutLeftStaticSizedRankReducing3Dto1D, test_submdspan_layout_left_static_sized_rank_reducing_3d_to_1d) {
   std::vector<int> d(2 * 3 * 4, 0);
   Kokkos::mdspan<int, Kokkos::extents<size_t,2, 3, 4>, Kokkos::layout_left> m(d.data());
-  __MDSPAN_OP(m, 1, 1, 1) = 42;
+  MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = Kokkos::submdspan(m, 1, 1, Kokkos::full_extent);
   ASSERT_EQ(sub0.rank(),         1);
   ASSERT_EQ(sub0.rank_dynamic(), 0);
   ASSERT_EQ(sub0.extent(0),      4);
-  ASSERT_EQ((__MDSPAN_OP(sub0, 1)), 42);
+  ASSERT_EQ((MDSPAN_OP(sub0, 1)), 42);
 }
 
 TEST(TestSubmdspanLayoutRightStaticSizedRankReducingNested3Dto0D, test_submdspan_layout_right_static_sized_rank_reducing_nested_3d_to_0d) {
   std::vector<int> d(2 * 3 * 4, 0);
   Kokkos::mdspan<int, Kokkos::extents<size_t,2, 3, 4>> m(d.data());
-  __MDSPAN_OP(m, 1, 1, 1) = 42;
+  MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = Kokkos::submdspan(m, 1, Kokkos::full_extent, Kokkos::full_extent);
   ASSERT_EQ(sub0.rank(),         2);
   ASSERT_EQ(sub0.rank_dynamic(), 0);
   ASSERT_EQ(sub0.extent(0),      3);
   ASSERT_EQ(sub0.extent(1),      4);
-  ASSERT_EQ((__MDSPAN_OP(sub0, 1, 1)), 42);
+  ASSERT_EQ((MDSPAN_OP(sub0, 1, 1)), 42);
   auto sub1 = Kokkos::submdspan(sub0, 1, Kokkos::full_extent);
   ASSERT_EQ(sub1.rank(),         1);
   ASSERT_EQ(sub1.rank_dynamic(), 0);
   ASSERT_EQ(sub1.extent(0),      4);
-  ASSERT_EQ((__MDSPAN_OP(sub1,1)),42);
+  ASSERT_EQ((MDSPAN_OP(sub1,1)),42);
   auto sub2 = Kokkos::submdspan(sub1, 1);
   ASSERT_EQ(sub2.rank(),         0);
   ASSERT_EQ(sub2.rank_dynamic(), 0);
-  ASSERT_EQ((__MDSPAN_OP0(sub2)), 42);
+  ASSERT_EQ((MDSPAN_OP0(sub2)), 42);
 }
 
 TEST(TestSubmdspanLayoutRightStaticSizedPairs, test_submdspan_layout_right_static_sized_pairs) {
   std::vector<int> d(2 * 3 * 4, 0);
   Kokkos::mdspan<int, Kokkos::extents<size_t,2, 3, 4>> m(d.data());
-  __MDSPAN_OP(m, 1, 1, 1) = 42;
+  MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = Kokkos::submdspan(m, std::pair<int,int>{1, 2}, std::pair<int,int>{1, 3}, std::pair<int,int>{1, 4});
   ASSERT_EQ(sub0.rank(),         3);
   ASSERT_EQ(sub0.rank_dynamic(), 3);
   ASSERT_EQ(sub0.extent(0),      1);
   ASSERT_EQ(sub0.extent(1),      2);
   ASSERT_EQ(sub0.extent(2),      3);
-  ASSERT_EQ((__MDSPAN_OP(sub0, 0, 0, 0)), 42);
+  ASSERT_EQ((MDSPAN_OP(sub0, 0, 0, 0)), 42);
 }
 
 TEST(TestSubmdspanLayoutRightStaticSizedTuples, test_submdspan_layout_right_static_sized_tuples) {
   std::vector<int> d(2 * 3 * 4, 0);
   Kokkos::mdspan<int, Kokkos::extents<size_t,2, 3, 4>> m(d.data());
-  __MDSPAN_OP(m, 1, 1, 1) = 42;
+  MDSPAN_OP(m, 1, 1, 1) = 42;
   auto sub0 = Kokkos::submdspan(m, std::tuple<int,int>{1, 2}, std::tuple<int,int>{1, 3}, std::tuple<int,int>{1, 4});
   ASSERT_EQ(sub0.rank(),         3);
   ASSERT_EQ(sub0.rank_dynamic(), 3);
   ASSERT_EQ(sub0.extent(0),      1);
   ASSERT_EQ(sub0.extent(1),      2);
   ASSERT_EQ(sub0.extent(2),      3);
-  ASSERT_EQ((__MDSPAN_OP(sub0, 0, 0, 0)),       42);
+  ASSERT_EQ((MDSPAN_OP(sub0, 0, 0, 0)),       42);
 }
 
 
@@ -334,7 +334,7 @@ struct TestSubMDSpan<
     if constexpr (SrcMDSpan::rank() == 0) {
       return (&src_mds[]==&sub_mds[]);
     } else if constexpr (SubMDSpan::rank() == 0) {
-      return (&src_mds[SrcIdx...]==&sub_mds[]); 
+      return (&src_mds[SrcIdx...]==&sub_mds[]);
     } else {
       if(sub_mds.size() == 0) return true;
       return (&src_mds[SrcIdx...]==&sub_mds[SubIdx...]);
@@ -379,7 +379,7 @@ TYPED_TEST(TestSubMDSpan, submdspan_return_type) {
   __MDSPAN_TESTS_RUN_TEST(TestFixture::run());
 }
 
-#ifdef _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#ifdef MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
 TEST(TestSubmdspanIssue4060, Rank1) {
   auto x = std::array<int, 3>{};
   auto A = Kokkos::mdspan{x.data(), Kokkos::extents{3}};

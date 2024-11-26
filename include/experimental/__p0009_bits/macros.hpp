@@ -21,12 +21,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <type_traits> // std::is_void
-#if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_SYCL)
+#if defined(MDSPAN_HAS_CUDA) || defined(MDSPAN_HAS_HIP) || defined(MDSPAN_HAS_SYCL)
 #include "assert.h"
 #endif
 
 #ifndef _MDSPAN_HOST_DEVICE
-#  if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
+#  if defined(MDSPAN_HAS_CUDA) || defined(MDSPAN_HAS_HIP)
 #    define _MDSPAN_HOST_DEVICE __host__ __device__
 #  else
 #    define _MDSPAN_HOST_DEVICE
@@ -34,7 +34,7 @@
 #endif
 
 #ifndef MDSPAN_FORCE_INLINE_FUNCTION
-#  ifdef _MDSPAN_COMPILER_MSVC // Microsoft compilers
+#  ifdef MDSPAN_COMPILER_MSVC // Microsoft compilers
 #    define MDSPAN_FORCE_INLINE_FUNCTION __forceinline _MDSPAN_HOST_DEVICE
 #  else
 #    define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline)) _MDSPAN_HOST_DEVICE
@@ -49,7 +49,7 @@
 #  define MDSPAN_FUNCTION _MDSPAN_HOST_DEVICE
 #endif
 
-#ifdef _MDSPAN_HAS_HIP
+#ifdef MDSPAN_HAS_HIP
 #  define MDSPAN_DEDUCTION_GUIDE _MDSPAN_HOST_DEVICE
 #else
 #  define MDSPAN_DEDUCTION_GUIDE
@@ -109,13 +109,13 @@
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
-#if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
+#if defined(MDSPAN_HAS_CUDA) || defined(MDSPAN_HAS_HIP)
 MDSPAN_FUNCTION inline void default_precondition_violation_handler(const char* cond, const char* file, unsigned line)
 {
   printf("%s:%u: precondition failure: `%s`\n", file, line, cond);
   assert(0);
 }
-#elif defined(_MDSPAN_HAS_SYCL)
+#elif defined(MDSPAN_HAS_SYCL)
 MDSPAN_FUNCTION inline void default_precondition_violation_handler(const char* cond, const char* file, unsigned line)
 {
   sycl::ext::oneapi::experimental::printf("%s:%u: precondition failure: `%s`\n", file, line, cond);
@@ -177,7 +177,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 
 // These compatibility macros don't help with partial ordering, but they should do the trick
 // for what we need to do with concepts in mdspan
-#ifdef _MDSPAN_USE_CONCEPTS
+#ifdef MDSPAN_USE_CONCEPTS
 #  define MDSPAN_CLOSE_ANGLE_REQUIRES(REQ) > requires REQ
 #  define MDSPAN_FUNCTION_REQUIRES(PAREN_PREQUALS, FNAME, PAREN_PARAMS, QUALS, REQ) \
      MDSPAN_PP_REMOVE_PARENS(PAREN_PREQUALS) FNAME PAREN_PARAMS QUALS requires REQ \
@@ -192,7 +192,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
      /**/
 #endif
 
-#if defined(_MDSPAN_COMPILER_MSVC) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
+#if defined(MDSPAN_COMPILER_MSVC) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
 #  define MDSPAN_TEMPLATE_REQUIRES(...) \
       MDSPAN_PP_CAT( \
         MDSPAN_PP_CAT(MDSPAN_TEMPLATE_REQUIRES_, MDSPAN_PP_COUNT(__VA_ARGS__))\
@@ -298,7 +298,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 //==============================================================================
 // <editor-fold desc="inline variables"> {{{1
 
-#ifdef _MDSPAN_USE_INLINE_VARIABLES
+#ifdef MDSPAN_USE_INLINE_VARIABLES
 #  define _MDSPAN_INLINE_VARIABLE inline
 #else
 #  define _MDSPAN_INLINE_VARIABLE
@@ -310,7 +310,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 //==============================================================================
 // <editor-fold desc="Return type deduction"> {{{1
 
-#if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+#if MDSPAN_USE_RETURN_TYPE_DEDUCTION
 #  define _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
     auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) { return MDSPAN_PP_REMOVE_PARENS(BODY); }
 #  define _MDSPAN_DEDUCE_DECLTYPE_AUTO_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
@@ -335,7 +335,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 
 struct __mdspan_enable_fold_comma { };
 
-#ifdef _MDSPAN_USE_FOLD_EXPRESSIONS
+#ifdef MDSPAN_USE_FOLD_EXPRESSIONS
 #  define _MDSPAN_FOLD_AND(...) ((__VA_ARGS__) && ...)
 #  define _MDSPAN_FOLD_AND_TEMPLATE(...) ((__VA_ARGS__) && ...)
 #  define _MDSPAN_FOLD_OR(...) ((__VA_ARGS__) || ...)
@@ -353,7 +353,7 @@ namespace __fold_compatibility_impl {
 // We could probably be more clever here, but at the (small) risk of losing some compiler understanding.  For the
 // few operations we need, it's not worth generalizing over the operation
 
-#if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+#if MDSPAN_USE_RETURN_TYPE_DEDUCTION
 
 MDSPAN_FORCE_INLINE_FUNCTION
 constexpr decltype(auto) __fold_right_and_impl() {
@@ -670,7 +670,7 @@ struct __bools;
 //==============================================================================
 // <editor-fold desc="Variable template compatibility"> {{{1
 
-#if _MDSPAN_USE_VARIABLE_TEMPLATES
+#if MDSPAN_USE_VARIABLE_TEMPLATES
 #  define _MDSPAN_TRAIT(TRAIT, ...) TRAIT##_v<__VA_ARGS__>
 #else
 #  define _MDSPAN_TRAIT(TRAIT, ...) TRAIT<__VA_ARGS__>::value
@@ -682,7 +682,7 @@ struct __bools;
 //==============================================================================
 // <editor-fold desc="Pre-C++14 constexpr"> {{{1
 
-#if _MDSPAN_USE_CONSTEXPR_14
+#if MDSPAN_USE_CONSTEXPR_14
 #  define _MDSPAN_CONSTEXPR_14 constexpr
 // Workaround for a bug (I think?) in EDG frontends
 #  ifdef __EDG__

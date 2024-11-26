@@ -18,7 +18,7 @@
 #include "macros.hpp"
 #include "trait_backports.hpp"
 
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if !defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #  include "no_unique_address.hpp"
 #endif
 
@@ -28,8 +28,8 @@ namespace detail {
 // For no unique address emulation, this is the case taken when neither are empty.
 // For real `[[no_unique_address]]`, this case is always taken.
 template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
-  _MDSPAN_NO_UNIQUE_ADDRESS _T1 __t1_val{};
-  _MDSPAN_NO_UNIQUE_ADDRESS _T2 __t2_val{};
+  MDSPAN_NO_UNIQUE_ADDRESS _T1 __t1_val{};
+  MDSPAN_NO_UNIQUE_ADDRESS _T2 __t2_val{};
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
     return __t1_val;
@@ -58,7 +58,7 @@ template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
       : __t1_val((_T1Like &&) __t1), __t2_val((_T2Like &&) __t2) {}
 };
 
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if !defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 
 // First empty.
 template <class _T1, class _T2>
@@ -142,7 +142,7 @@ struct __compressed_pair<
     std::enable_if_t<_MDSPAN_TRAIT(std::is_empty, _T1) && _MDSPAN_TRAIT(std::is_empty, _T2)>>
     // We need to use the __no_unique_address_emulation wrapper here to avoid
     // base class ambiguities.
-#ifdef _MDSPAN_COMPILER_MSVC
+#ifdef MDSPAN_COMPILER_MSVC
 // MSVC doesn't allow you to access public static member functions of a type
 // when you *happen* to privately inherit from that type.
     : protected __no_unique_address_emulation<_T1, 0>,
@@ -189,7 +189,7 @@ struct __compressed_pair<
   { }
 };
 
-#endif // !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#endif // !defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 
 } // end namespace detail
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE

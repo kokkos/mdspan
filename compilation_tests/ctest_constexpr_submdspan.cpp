@@ -18,7 +18,7 @@
 #include <mdspan/mdspan.hpp>
 
 // Only works with newer constexpr
-#if defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
+#if defined(MDSPAN_USE_CONSTEXPR_14) && MDSPAN_USE_CONSTEXPR_14
 
 //==============================================================================
 // <editor-fold desc="1D dynamic extent ptrdiff_t submdspan"> {{{1
@@ -31,7 +31,7 @@ dynamic_extent_1d() {
   int result = 0;
   for (size_t i = 0; i < s.extent(0); ++i) {
     auto ss = Kokkos::submdspan(s, i);
-    result += __MDSPAN_OP0(ss);
+    result += MDSPAN_OP0(ss);
   }
   // 1 + 2 + 3 + 4 + 5
   constexpr_assert_equal(15, result);
@@ -57,7 +57,7 @@ dynamic_extent_1d_all_slice() {
   int result = 0;
   auto ss = Kokkos::submdspan(s, Kokkos::full_extent);
   for (size_t i = 0; i < s.extent(0); ++i) {
-    result += __MDSPAN_OP(ss, i);
+    result += MDSPAN_OP(ss, i);
   }
   // 1 + 2 + 3 + 4 + 5
   constexpr_assert_equal(15, result);
@@ -82,7 +82,7 @@ dynamic_extent_1d_pair_full() {
   int result = 0;
   auto ss = Kokkos::submdspan(s, std::pair<std::ptrdiff_t, std::ptrdiff_t>{0, 5});
   for (size_t i = 0; i < s.extent(0); ++i) {
-    result += __MDSPAN_OP(ss, i);
+    result += MDSPAN_OP(ss, i);
   }
   constexpr_assert_equal(15, result);
   return result == 15;
@@ -101,14 +101,14 @@ dynamic_extent_1d_pair_each() {
   for (size_t i = 0; i < s.extent(0); ++i) {
     auto ss = Kokkos::submdspan(s,
       std::pair<std::ptrdiff_t, std::ptrdiff_t>{i, i+1});
-    result += __MDSPAN_OP(ss, 0);
+    result += MDSPAN_OP(ss, 0);
   }
   constexpr_assert_equal(15, result);
   return result == 15;
 }
 
 // MSVC ICE
-#ifndef _MDSPAN_COMPILER_MSVC
+#ifndef MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<Kokkos::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_pair_each<Kokkos::layout_right>());
 #endif
@@ -130,14 +130,14 @@ dynamic_extent_1d_all_three() {
   int result = 0;
   for (size_t i = 0; i < s.extent(0); ++i) {
     auto ss = Kokkos::submdspan(s2, i);
-    result += __MDSPAN_OP0(ss);
+    result += MDSPAN_OP0(ss);
   }
   constexpr_assert_equal(15, result);
   return result == 15;
 }
 
 // MSVC ICE
-#ifndef _MDSPAN_COMPILER_MSVC
+#ifndef MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<Kokkos::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_1d_all_three<Kokkos::layout_right>());
 #endif
@@ -156,7 +156,7 @@ dynamic_extent_2d_idx_idx() {
   for(size_t row = 0; row < s.extent(0); ++row) {
     for(size_t col = 0; col < s.extent(1); ++col) {
       auto ss = Kokkos::submdspan(s, row, col);
-      result += __MDSPAN_OP0(ss);
+      result += MDSPAN_OP0(ss);
     }
   }
   constexpr_assert_equal(21, result);
@@ -177,8 +177,8 @@ dynamic_extent_2d_idx_all_idx() {
     auto srow = Kokkos::submdspan(s, row, Kokkos::full_extent);
     for(size_t col = 0; col < s.extent(1); ++col) {
       auto scol = Kokkos::submdspan(srow, col);
-      constexpr_assert_equal(__MDSPAN_OP0(scol), __MDSPAN_OP(srow, col));
-      result += __MDSPAN_OP0(scol);
+      constexpr_assert_equal(MDSPAN_OP0(scol), MDSPAN_OP(srow, col));
+      result += MDSPAN_OP0(scol);
     }
   }
   constexpr_assert_equal(21, result);
@@ -186,7 +186,7 @@ dynamic_extent_2d_idx_all_idx() {
 }
 
 // MSVC ICE
-#ifndef _MDSPAN_COMPILER_MSVC
+#ifndef MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<Kokkos::layout_left>());
 MDSPAN_STATIC_TEST(dynamic_extent_2d_idx_all_idx<Kokkos::layout_right>());
 #endif
@@ -206,14 +206,14 @@ simple_static_submdspan_test_1(int add_to_row) {
     auto scol = Kokkos::submdspan(s, Kokkos::full_extent, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = Kokkos::submdspan(scol, row);
-      result += __MDSPAN_OP0(srow) * (row + add_to_row);
+      result += MDSPAN_OP0(srow) * (row + add_to_row);
     }
   }
   return result;
 }
 
 // MSVC ICE
-#if !defined(_MDSPAN_COMPILER_MSVC) && (!defined(__GNUC__) || (__GNUC__>=6 && __GNUC_MINOR__>=4))
+#if !defined(MDSPAN_COMPILER_MSVC) && (!defined(__GNUC__) || (__GNUC__>=6 && __GNUC_MINOR__>=4))
 MDSPAN_STATIC_TEST(
   // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9) = 108
   simple_static_submdspan_test_1(1) == 108
@@ -248,7 +248,7 @@ mixed_submdspan_left_test_2() {
     auto scol = Kokkos::submdspan(s, Kokkos::full_extent, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = Kokkos::submdspan(scol, row);
-      result += __MDSPAN_OP0(srow) * (row + 1);
+      result += MDSPAN_OP0(srow) * (row + 1);
     }
   }
   // 1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)= 108
@@ -257,7 +257,7 @@ mixed_submdspan_left_test_2() {
     auto srow = Kokkos::submdspan(s, row, Kokkos::full_extent);
     for(int col = 0; col < 5; ++col) {
       auto scol = Kokkos::submdspan(srow, col);
-      result += __MDSPAN_OP0(scol) * (row + 1);
+      result += MDSPAN_OP0(scol) * (row + 1);
     }
   }
   result /= 2;
@@ -267,7 +267,7 @@ mixed_submdspan_left_test_2() {
 }
 
 // MSVC ICE
-#if !defined(_MDSPAN_COMPILER_MSVC) && (!defined(__GNUC__) || (__GNUC__>=6 && __GNUC_MINOR__>=4))
+#if !defined(MDSPAN_COMPILER_MSVC) && (!defined(__GNUC__) || (__GNUC__>=6 && __GNUC_MINOR__>=4))
 MDSPAN_STATIC_TEST(
   // 2 * (1 + 2 + 3 + 2*(4 + 5 + 6) + 3*(7 + 8 + 9)) / 2 = 108
   mixed_submdspan_left_test_2()
@@ -291,7 +291,7 @@ mixed_submdspan_test_3() {
     auto scol = Kokkos::submdspan(s, Kokkos::full_extent, col);
     for(int row = 0; row < 3; ++row) {
       auto srow = Kokkos::submdspan(scol, row);
-      result += __MDSPAN_OP0(srow) * (row + 1);
+      result += MDSPAN_OP0(srow) * (row + 1);
     }
   }
   constexpr_assert_equal(71, result);
@@ -299,7 +299,7 @@ mixed_submdspan_test_3() {
     auto srow = Kokkos::submdspan(s, row, Kokkos::full_extent);
     for(int col = 0; col < 5; ++col) {
       auto scol = Kokkos::submdspan(srow, col);
-      result += __MDSPAN_OP0(scol) * (row + 1);
+      result += MDSPAN_OP0(scol) * (row + 1);
     }
   }
   result /= 2;
@@ -309,7 +309,7 @@ mixed_submdspan_test_3() {
 }
 
 // MSVC ICE
-#ifndef _MDSPAN_COMPILER_MSVC
+#ifndef MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(
   mixed_submdspan_test_3<Kokkos::layout_right>()
 );
@@ -340,19 +340,19 @@ submdspan_single_element_stress_test_impl_2(
   auto ss_dyn = Kokkos::submdspan(s_dyn, _repeated_ptrdiff_t<0, Idxs>...);
   auto ss_all = Kokkos::submdspan(s, _repeated_with_idxs_t<Kokkos::full_extent_t, Idxs>{}...);
   auto ss_all_dyn = Kokkos::submdspan(s_dyn, _repeated_with_idxs_t<Kokkos::full_extent_t, Idxs>{}...);
-  auto val = __MDSPAN_OP(ss_all, (_repeated_ptrdiff_t<0, Idxs>...));
-  auto val_dyn = __MDSPAN_OP(ss_all_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
+  auto val = MDSPAN_OP(ss_all, (_repeated_ptrdiff_t<0, Idxs>...));
+  auto val_dyn = MDSPAN_OP(ss_all_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
   auto ss_pair = Kokkos::submdspan(s, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
   auto ss_pair_dyn = Kokkos::submdspan(s_dyn, _repeated_with_idxs_t<std::pair<ptrdiff_t, ptrdiff_t>, Idxs>{0, 1}...);
-  auto val_pair = __MDSPAN_OP(ss_pair, (_repeated_ptrdiff_t<0, Idxs>...));
-  auto val_pair_dyn = __MDSPAN_OP(ss_pair_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
+  auto val_pair = MDSPAN_OP(ss_pair, (_repeated_ptrdiff_t<0, Idxs>...));
+  auto val_pair_dyn = MDSPAN_OP(ss_pair_dyn, (_repeated_ptrdiff_t<0, Idxs>...));
   constexpr_assert_equal(42, ss());
   constexpr_assert_equal(42, ss_dyn());
   constexpr_assert_equal(42, val);
   constexpr_assert_equal(42, val_dyn);
   constexpr_assert_equal(42, val_pair);
   constexpr_assert_equal(42, val_pair_dyn);
-  return __MDSPAN_OP0(ss) == 42 && __MDSPAN_OP0(ss_dyn) == 42 && val == 42 && val_dyn == 42 && val_pair == 42 && val_pair_dyn == 42;
+  return MDSPAN_OP0(ss) == 42 && MDSPAN_OP0(ss_dyn) == 42 && val == 42 && val_dyn == 42 && val_pair == 42 && val_pair_dyn == 42;
 }
 
 template <class Layout, size_t... Sizes>
@@ -384,4 +384,4 @@ MDSPAN_STATIC_TEST(
 
 #endif // MDSPAN_DISABLE_EXPENSIVE_COMPILATION_TESTS
 
-#endif // defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
+#endif // defined(MDSPAN_USE_CONSTEXPR_14) && MDSPAN_USE_CONSTEXPR_14

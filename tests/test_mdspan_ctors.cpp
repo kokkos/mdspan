@@ -59,7 +59,7 @@ void test_mdspan_ctor_data_carray() {
     __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.static_extent(0), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.stride(0), 1);
-    auto val = __MDSPAN_OP(m,0);
+    auto val = MDSPAN_OP(m,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val, 42);
     __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
     __MDSPAN_DEVICE_ASSERT_EQ(m.size(), 1);
@@ -81,7 +81,7 @@ TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
+  ASSERT_EQ(MDSPAN_OP(m, 0), 42);
   ASSERT_TRUE(m.is_exhaustive());
 }
 
@@ -93,7 +93,7 @@ TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
+  ASSERT_EQ(MDSPAN_OP(m, 0), 42);
   ASSERT_TRUE(m.is_exhaustive());
 }
 
@@ -150,7 +150,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
   ASSERT_FALSE(m.is_exhaustive());
 }
 
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+#if defined(MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestMdspanCTAD, extents_pack) {
   std::array<int, 1> d{42};
   Kokkos::mdspan m(d.data(), 64, 128);
@@ -203,7 +203,7 @@ TEST(TestMdspanCTAD, ctad_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.static_extent(0), 5);
   ASSERT_EQ(m.extent(0), 5);
-  ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
+  ASSERT_EQ(MDSPAN_OP(m, 2), 3);
   ASSERT_TRUE(m.is_exhaustive());
 
 
@@ -214,7 +214,7 @@ TEST(TestMdspanCTAD, ctad_carray) {
   ASSERT_EQ(m2.rank_dynamic(), 1);
   ASSERT_EQ(m2.extent(0), 3);
   ASSERT_TRUE(m2.is_exhaustive());
-  ASSERT_EQ(__MDSPAN_OP(m2, 2), 3);
+  ASSERT_EQ(MDSPAN_OP(m2, 2), 3);
 }
 
 TEST(TestMdspanCTAD, ctad_const_carray) {
@@ -226,7 +226,7 @@ TEST(TestMdspanCTAD, ctad_const_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.static_extent(0), 5);
   ASSERT_EQ(m.extent(0), 5);
-  ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
+  ASSERT_EQ(MDSPAN_OP(m, 2), 3);
   ASSERT_TRUE(m.is_exhaustive());
 }
 

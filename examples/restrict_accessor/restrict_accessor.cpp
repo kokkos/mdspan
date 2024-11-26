@@ -28,7 +28,7 @@
 namespace {
 
 
-#if defined(_MDSPAN_COMPILER_MSVC) || defined(__INTEL_COMPILER)
+#if defined(MDSPAN_COMPILER_MSVC) || defined(__INTEL_COMPILER)
 #  define _MDSPAN_RESTRICT_KEYWORD __restrict
 #elif defined(__GNUC__) || defined(__clang__)
 #  define _MDSPAN_RESTRICT_KEYWORD __restrict__

@@ -425,7 +425,7 @@ TYPED_TEST(TestExtentsCompatCtors, construct_from_all_array) {
     ASSERT_EQ(e2.extent(r), (r+1)*5);
 }
 
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+#if defined(MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestExtentsCTADPack, test_extents_ctad_pack) {
   Kokkos::extents m0;
   ASSERT_EQ(m0.rank(), 0);

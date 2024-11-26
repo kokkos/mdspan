@@ -19,7 +19,7 @@
 
 
 // Only works with newer constexpr
-#if defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
+#if defined(MDSPAN_USE_CONSTEXPR_14) && MDSPAN_USE_CONSTEXPR_14
 
 constexpr std::ptrdiff_t
 layout_stride_simple(int i) {
@@ -36,4 +36,4 @@ MDSPAN_STATIC_TEST(
   layout_stride_simple(1) == 1
 );
 
-#endif // _MDSPAN_USE_CONSTEXPR_14
+#endif // MDSPAN_USE_CONSTEXPR_14

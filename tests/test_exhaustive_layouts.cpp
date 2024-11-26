@@ -365,7 +365,7 @@ TYPED_TEST_SUITE(TestLayoutConversion_L2R, layout_conversion_test_types_left_to_
 TYPED_TEST(TestLayoutConversion, implicit_conversion) {
   typename TestFixture::map_2_t map2 = this->create_map2(this->exts2);
   typename TestFixture::map_1_t map1;
-  #if MDSPAN_HAS_CXX_20 && !defined(_MDSPAN_COMPILER_MSVC)
+  #if MDSPAN_HAS_CXX_20 && !defined(MDSPAN_COMPILER_MSVC)
   static_assert(TestFixture::implicit ==
    (
     (

@@ -25,9 +25,9 @@
 //==============================================================================
 // <editor-fold desc="Variable template trait backports (e.g., is_void_v)"> {{{1
 
-#ifdef _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
+#ifdef MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
 
-#if _MDSPAN_USE_VARIABLE_TEMPLATES
+#if MDSPAN_USE_VARIABLE_TEMPLATES
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 #define _MDSPAN_BACKPORT_TRAIT(TRAIT) \
@@ -46,9 +46,9 @@ _MDSPAN_BACKPORT_TRAIT(is_void)
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
-#endif // _MDSPAN_USE_VARIABLE_TEMPLATES
+#endif // MDSPAN_USE_VARIABLE_TEMPLATES
 
-#endif // _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
+#endif // MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
 
 // </editor-fold> end Variable template trait backports (e.g., is_void_v) }}}1
 //==============================================================================
@@ -56,7 +56,7 @@ _MDSPAN_BACKPORT_TRAIT(is_void)
 //==============================================================================
 // <editor-fold desc="integer sequence (ugh...)"> {{{1
 
-#if !defined(_MDSPAN_USE_INTEGER_SEQUENCE) || !_MDSPAN_USE_INTEGER_SEQUENCE
+#if !defined(MDSPAN_USE_INTEGER_SEQUENCE) || !MDSPAN_USE_INTEGER_SEQUENCE
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
@@ -107,7 +107,7 @@ using index_sequence_for = make_index_sequence<sizeof...(T)>;
 //==============================================================================
 // <editor-fold desc="standard trait aliases"> {{{1
 
-#if !defined(_MDSPAN_USE_STANDARD_TRAIT_ALIASES) || !_MDSPAN_USE_STANDARD_TRAIT_ALIASES
+#if !defined(MDSPAN_USE_STANDARD_TRAIT_ALIASES) || !MDSPAN_USE_STANDARD_TRAIT_ALIASES
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 

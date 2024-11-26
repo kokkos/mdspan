@@ -37,20 +37,20 @@ void test_mdspan_std_swap_static_extents() {
     Kokkos::layout_right::mapping<Kokkos::extents<size_t, 3, 4>> map2(exts2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.data_handle(), data1);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.mapping(), map1);
-    auto val1 = __MDSPAN_OP(m1,0,0);
+    auto val1 = MDSPAN_OP(m1,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val1, 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.data_handle(), data2);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.mapping(), map2);
-    auto val2 = __MDSPAN_OP(m2,0,0);
+    auto val2 = MDSPAN_OP(m2,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val2, 21);
     swap(m1,m2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.data_handle(), data2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.mapping(), map2);
-    val1 = __MDSPAN_OP(m1,0,0);
+    val1 = MDSPAN_OP(m1,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val1, 21);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.data_handle(), data1);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.mapping(), map1);
-    val2 = __MDSPAN_OP(m2,0,0);
+    val2 = MDSPAN_OP(m2,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val2, 1);
   });
   ASSERT_EQ(errors[0], 0);
@@ -77,20 +77,20 @@ void test_mdspan_std_swap_dynamic_extents() {
     Kokkos::layout_right::mapping<Kokkos::dextents<size_t,2>> map2(exts2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.data_handle(), data1);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.mapping(), map1);
-    auto val1 = __MDSPAN_OP(m1,0,0);
+    auto val1 = MDSPAN_OP(m1,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val1, 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.data_handle(), data2);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.mapping(), map2);
-    auto val2 = __MDSPAN_OP(m2,0,0);
+    auto val2 = MDSPAN_OP(m2,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val2, 21);
     swap(m1,m2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.data_handle(), data2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.mapping(), map2);
-    val1 = __MDSPAN_OP(m1,0,0);
+    val1 = MDSPAN_OP(m1,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val1, 21);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.data_handle(), data1);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.mapping(), map1);
-    val2 = __MDSPAN_OP(m2,0,0);
+    val2 = MDSPAN_OP(m2,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val2, 1);
   });
   ASSERT_EQ(errors[0], 0);
@@ -103,7 +103,7 @@ TEST(TestMDSpanSwap, std_swap_dynamic_extents) {
 
 // On HIP/CUDA we actually don't call through to swap via ADL
 // so the foo swap test which has side effects will fail
-#if !defined(_MDSPAN_HAS_HIP) && !defined(_MDSPAN_HAS_CUDA)
+#if !defined(MDSPAN_HAS_HIP) && !defined(MDSPAN_HAS_CUDA)
 void test_mdspan_foo_swap_dynamic_extents() {
   size_t* errors = allocate_array<size_t>(1);
   errors[0] = 0;
@@ -131,23 +131,23 @@ void test_mdspan_foo_swap_dynamic_extents() {
     __MDSPAN_DEVICE_ASSERT_EQ(m1.data_handle().data, data1);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.mapping(), map1);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.accessor().flag[0], 9);
-    auto val1 = __MDSPAN_OP(m1,0,0);
+    auto val1 = MDSPAN_OP(m1,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val1, 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.data_handle().data, data2);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.mapping(), map2);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.accessor().flag[0], 7);
-    auto val2 = __MDSPAN_OP(m2,0,0);
+    auto val2 = MDSPAN_OP(m2,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val2, 21);
     swap(m1,m2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.data_handle().data, data2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.mapping(), map2);
     __MDSPAN_DEVICE_ASSERT_EQ(m1.accessor().flag[0], 77);
-    val1 = __MDSPAN_OP(m1,0,0);
+    val1 = MDSPAN_OP(m1,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val1, 21);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.data_handle().data, data1);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.mapping(), map1);
     __MDSPAN_DEVICE_ASSERT_EQ(m2.accessor().flag[0], 99);
-    val2 = __MDSPAN_OP(m2,0,0);
+    val2 = MDSPAN_OP(m2,0,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val2, 1);
     __MDSPAN_DEVICE_ASSERT_EQ(flag1, 99);
     __MDSPAN_DEVICE_ASSERT_EQ(flag2, 77);

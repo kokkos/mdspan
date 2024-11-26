@@ -3,7 +3,7 @@
 
 TEST(mdspan_macros, precondition_violation)
 {
-#if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_SYCL)
+#if defined(MDSPAN_HAS_CUDA) || defined(MDSPAN_HAS_HIP) || defined(MDSPAN_HAS_SYCL)
   constexpr auto msg = "";
 #else
   constexpr auto msg = "hello, world!";

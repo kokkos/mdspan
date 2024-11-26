@@ -19,7 +19,7 @@
 
 
 // Only works with newer constexpr
-#if defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
+#if defined(MDSPAN_USE_CONSTEXPR_14) && MDSPAN_USE_CONSTEXPR_14
 
 //==============================================================================
 
@@ -34,7 +34,7 @@ simple_static_sum_test_1(int add_to_row) {
   int result = 0;
   for(int col = 0; col < 3; ++col) {
     for(int row = 0; row < 3; ++row) {
-      result += __MDSPAN_OP(s, row, col) * (row + add_to_row);
+      result += MDSPAN_OP(s, row, col) * (row + add_to_row);
     }
   }
   return result;
@@ -87,7 +87,7 @@ simple_dynamic_sum_test_2(int add_to_row) {
   int result = 0;
   for(int col = 0; col < 3; ++col) {
     for(int row = 0; row < 3; ++row) {
-      result += __MDSPAN_OP(s, row, col) * (row + add_to_row);
+      result += MDSPAN_OP(s, row, col) * (row + add_to_row);
     }
   }
   return result;
@@ -120,7 +120,7 @@ simple_mixed_layout_left_sum_test_3(int add_to_row) {
   int result = 0;
   for(int col = 0; col < 3; ++col) {
     for(int row = 0; row < 3; ++row) {
-      result += __MDSPAN_OP(s, row, col) * (row + add_to_row);
+      result += MDSPAN_OP(s, row, col) * (row + add_to_row);
     }
   }
   return result;
@@ -150,8 +150,8 @@ multidimensional_single_element_stress_test_impl_2(
   int data[] = { 42 };
   auto s = mdspan_t(data);
   auto s_dyn = dyn_mdspan_t(data, _repeated_ptrdiff_t<1, Idxs>...);
-  auto val = __MDSPAN_OP(s, _repeated_ptrdiff_t<0, Idxs>...);
-  auto val_dyn = __MDSPAN_OP(s_dyn, _repeated_ptrdiff_t<0, Idxs>...);
+  auto val = MDSPAN_OP(s, _repeated_ptrdiff_t<0, Idxs>...);
+  auto val_dyn = MDSPAN_OP(s_dyn, _repeated_ptrdiff_t<0, Idxs>...);
   constexpr_assert_equal(42, val);
   constexpr_assert_equal(42, val_dyn);
   return val == 42 && val_dyn == 42;
@@ -205,13 +205,13 @@ stress_test_2d_single_element_stress_test_impl_2(
   auto s12 = dyn_mdspan_t(data, Idx1, Idx2);
   for(ptrdiff_t i = 0; i < Idx1; ++i) {
     for(ptrdiff_t j = 0; j < Idx2; ++j) {
-      __MDSPAN_OP(s, i, j) = __MDSPAN_OP(s1, i, j) = __MDSPAN_OP(s2, i, j) = __MDSPAN_OP(s12, i, j) = 1;
+      MDSPAN_OP(s, i, j) = MDSPAN_OP(s1, i, j) = MDSPAN_OP(s2, i, j) = MDSPAN_OP(s12, i, j) = 1;
     }
   }
   int result = 0;
   for(ptrdiff_t i = 0; i < Idx1; ++i) {
     for(ptrdiff_t j = 0; j < Idx2; ++j) {
-      result += __MDSPAN_OP(s, i, j) + __MDSPAN_OP(s1, i, j) + __MDSPAN_OP(s2, i, j) + __MDSPAN_OP(s12, i, j);
+      result += MDSPAN_OP(s, i, j) + MDSPAN_OP(s1, i, j) + MDSPAN_OP(s2, i, j) + MDSPAN_OP(s12, i, j);
     }
   }
   result /= 4;
@@ -270,4 +270,4 @@ static bool _stress_2d_result =
 #endif // MDSPAN_DISABLE_EXPENSIVE_COMPILATION_TESTS
 
 
-#endif //defined(_MDSPAN_USE_CONSTEXPR_14) && _MDSPAN_USE_CONSTEXPR_14
+#endif //defined(MDSPAN_USE_CONSTEXPR_14) && MDSPAN_USE_CONSTEXPR_14

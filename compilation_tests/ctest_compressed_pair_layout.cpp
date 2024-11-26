@@ -60,7 +60,7 @@ struct E3 {};
 void instantiate_tests() {
 //==============================================================================
 // <editor-fold desc="compressed pair layout: 2 leaf elements"> {{{1
-#ifdef _MDSPAN_COMPILER_MSVC
+#ifdef MDSPAN_COMPILER_MSVC
 test<CP<E0, E0>, 1, empty, non_standard_layout>();
 test<CP<E0, E1>, 1, empty, standard_layout>();
 #else
@@ -75,10 +75,10 @@ test<CP<int*, int*>, 2 * sizeof(int*), non_empty>();
 
 //==============================================================================
 // <editor-fold desc="compressed pair layout: 1 nested pair, 3 leaf element"> {{{1
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 test<CP<E0,   CP<E0,   E0>>,   3,                empty>();     // Emulation can't handle this correctly.
 #endif
-#ifdef _MDSPAN_COMPILER_MSVC
+#ifdef MDSPAN_COMPILER_MSVC
 test<CP<E0,   CP<E1,   E2>>,   2,                empty>();
 #else
 test<CP<E0,   CP<E1,   E2>>,   1,                empty>();
@@ -86,7 +86,7 @@ test<CP<E0,   CP<E1,   E2>>,   1,                empty>();
 test<CP<E0,   CP<E1,   int*>>, sizeof(int*),     non_empty>();
 test<CP<E0,   CP<int*, E2>>,   sizeof(int*),     non_empty>();
 test<CP<E0,   CP<int*, int*>>, 2 * sizeof(int*), non_empty>();
-#ifdef _MDSPAN_COMPILER_MSVC
+#ifdef MDSPAN_COMPILER_MSVC
 test<CP<int*, CP<E1,   E2>>,   2 * sizeof(int*), non_empty>();
 #else
 test<CP<int*, CP<E1,   E2>>,   sizeof(int*),     non_empty>();
@@ -94,10 +94,10 @@ test<CP<int*, CP<E1,   E2>>,   sizeof(int*),     non_empty>();
 test<CP<int*, CP<E1,   int*>>, 2 * sizeof(int*), non_empty>();
 test<CP<int*, CP<int*, E2>>,   2 * sizeof(int*), non_empty>();
 test<CP<int*, CP<int*, int*>>, 3 * sizeof(int*), non_empty>();
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 test<CP<CP<E0,   E0>,   E0>,   3,                empty>();     // Emulation can't handle this correctly.
 #endif
-#ifdef _MDSPAN_COMPILER_MSVC
+#ifdef MDSPAN_COMPILER_MSVC
 test<CP<CP<E0,   E1>,   E2>,   2,                empty>();
 test<CP<CP<E0,   E1>,   int*>, 2 * sizeof(int*), non_empty>();
 #else
@@ -115,10 +115,10 @@ test<CP<CP<int*, int*>, int*>, 3 * sizeof(int*), non_empty>();
 
 //==============================================================================
 // <editor-fold desc="compressed pair layout: 2 nested pairs, 4 leaf element"> {{{1
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 test<CP<CP<E0,   E0>,   CP<E0,  E0>>,    4,                empty>(); // Emulation can't handle this correctly.
 #endif
-#ifdef _MDSPAN_COMPILER_MSVC
+#ifdef MDSPAN_COMPILER_MSVC
 test<CP<CP<E0,   E1>,   CP<E2,   E3>>,   3,                empty>();
 test<CP<CP<E0,   E1>,   CP<E2,   int*>>, 2 * sizeof(int*), non_empty>();
 test<CP<CP<E0,   E1>,   CP<int*, E3>>,   2 * sizeof(int*), non_empty>();

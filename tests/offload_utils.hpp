@@ -14,11 +14,11 @@
 //
 //@HEADER
 
-#ifdef _MDSPAN_HAS_SYCL
+#ifdef MDSPAN_HAS_SYCL
 #include <sycl/sycl.hpp>
 #endif
 
-#ifdef _MDSPAN_HAS_HIP
+#ifdef MDSPAN_HAS_HIP
 #include <hip/hip_runtime.h>
 #include <hip/hip_runtime_api.h>
 #endif
@@ -28,7 +28,7 @@
 namespace {
 bool dispatch_host = true;
 
-#ifdef _MDSPAN_HAS_SYCL
+#ifdef MDSPAN_HAS_SYCL
 #define __MDSPAN_DEVICE_ASSERT_EQ(LHS, RHS) \
 if (!(LHS == RHS)) { \
   sycl::ext::oneapi::experimental::printf("expected equality of %s and %s\n", #LHS, #RHS); \
@@ -42,9 +42,9 @@ if (!(LHS == RHS)) { \
 }
 #endif
 
-#if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
+#if defined(MDSPAN_HAS_CUDA) || defined(MDSPAN_HAS_HIP)
 
-#if defined(_MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_HAS_CUDA)
 void deviceSynchronize() { (void) cudaDeviceSynchronize(); }
 template<class T>
 void mallocManaged(T** ptr, size_t size) { (void) cudaMallocManaged(ptr, size); }
@@ -52,7 +52,7 @@ template<class T>
 void freeManaged(T* ptr) { (void) cudaFree(ptr); }
 #endif
 
-#if defined(_MDSPAN_HAS_HIP)
+#if defined(MDSPAN_HAS_HIP)
 void deviceSynchronize() { (void) hipDeviceSynchronize(); }
 template<class T>
 void mallocManaged(T** ptr, size_t size) { (void) hipMallocManaged(ptr, size); }
@@ -100,9 +100,9 @@ void free_array(T* ptr) {
  A;
 
 #define __MDSPAN_TESTS_DISPATCH_DEFINED
-#endif // _MDSPAN_HAS_CUDA
+#endif // MDSPAN_HAS_CUDA
 
-#ifdef _MDSPAN_HAS_SYCL
+#ifdef MDSPAN_HAS_SYCL
 
 sycl::queue get_test_queue()
 {
@@ -154,7 +154,7 @@ void free_array(T* ptr) {
  A;
 
 #define __MDSPAN_TESTS_DISPATCH_DEFINED
-#endif // _MDSPAN_HAS_SYCL
+#endif // MDSPAN_HAS_SYCL
 
 #ifndef __MDSPAN_TESTS_DISPATCH_DEFINED
 template<class LAMBDA>

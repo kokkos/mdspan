@@ -154,7 +154,7 @@ struct index_sequence_scan_impl<R, FirstVal, Values...> {
 template <size_t R, size_t FirstVal>
 struct index_sequence_scan_impl<R, FirstVal> {
 #if defined(__NVCC__) || defined(__NVCOMPILER) ||                              \
-    defined(_MDSPAN_COMPILER_INTEL)
+    defined(MDSPAN_COMPILER_INTEL)
   // NVCC warns about pointless comparison with 0 for R==0 and r being const
   // evaluatable and also 0.
   MDSPAN_INLINE_FUNCTION
@@ -217,7 +217,7 @@ private:
       _MDSPAN_FOLD_PLUS_RIGHT((Values == dyn_tag), 0);
 
   // Dynamic values member
-  _MDSPAN_NO_UNIQUE_ADDRESS possibly_empty_array<TDynamic, m_size_dynamic>
+  MDSPAN_NO_UNIQUE_ADDRESS possibly_empty_array<TDynamic, m_size_dynamic>
       m_dyn_vals;
 
   // static mapping of indices to the position in the dynamic values array
@@ -403,7 +403,7 @@ private:
   // internal storage type using maybe_static_array
   using vals_t =
       detail::maybe_static_array<IndexType, size_t, dynamic_extent, Extents...>;
-  _MDSPAN_NO_UNIQUE_ADDRESS vals_t m_vals;
+  MDSPAN_NO_UNIQUE_ADDRESS vals_t m_vals;
 
 public:
   // [mdspan.extents.obs], observers of multidimensional index space
@@ -590,7 +590,7 @@ template <class IndexType, size_t Rank>
 using dextents = typename detail::__make_dextents<IndexType, Rank>::type;
 
 // Deduction guide for extents
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+#if defined(MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 template <class... IndexTypes>
 extents(IndexTypes...)
     -> extents<size_t,

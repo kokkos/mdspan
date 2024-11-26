@@ -132,7 +132,7 @@ struct layout_stride_as_member_should_be_standard_layout :
 };
 
 // Fails with MSVC which adds some padding
-#ifndef _MDSPAN_COMPILER_MSVC
+#ifndef MDSPAN_COMPILER_MSVC
 MDSPAN_STATIC_TEST(
   std::is_standard_layout<layout_stride_as_member_should_be_standard_layout>::value
 );

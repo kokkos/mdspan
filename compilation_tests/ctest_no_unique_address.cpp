@@ -43,7 +43,7 @@ MDSPAN_STATIC_TEST(
   sizeof(Kokkos::extents<size_t,45, Kokkos::dynamic_extent, 1>) == sizeof(ptrdiff_t)
 );
 
-#ifdef _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
+#ifdef MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS
 MDSPAN_STATIC_TEST(
   std::is_empty<Kokkos::extents<size_t,1, 2, 3>>::value
 );
@@ -65,7 +65,7 @@ MDSPAN_STATIC_TEST(
   >) == sizeof(size_t)
 );
 
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS) && !defined(_MDSPAN_USE_FAKE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS) && !defined(MDSPAN_USE_FAKE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 MDSPAN_STATIC_TEST(
   std::is_empty<Kokkos::layout_right::template mapping<
     Kokkos::extents<size_t,42, 123, 73>

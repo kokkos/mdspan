@@ -63,7 +63,7 @@ template<>
 struct mdarray_values<0> {
   template<class MDA>
   static void check(const MDA& m) {
-    ASSERT_EQ(__MDSPAN_OP(m), 42);
+    ASSERT_EQ(MDSPAN_OP(m), 42);
   }
   template<class pointer, class extents_type>
   static void fill(const pointer& ptr, const extents_type&, bool) {
@@ -77,7 +77,7 @@ struct mdarray_values<1> {
   static void check(const MDA& m) {
     using index_type = typename MDA::index_type;
     for(index_type i=0; i<m.extent(0); i++)
-      ASSERT_EQ(__MDSPAN_OP(m,i), 42 + i);
+      ASSERT_EQ(MDSPAN_OP(m,i), 42 + i);
   }
   template<class pointer, class extents_type>
   static void fill(const pointer& ptr, const extents_type& ext, bool) {
@@ -94,7 +94,7 @@ struct mdarray_values<2> {
     using index_type = typename MDA::index_type;
     for(index_type i=0; i<m.extent(0); i++)
       for(index_type j=0; j<m.extent(1); j++) {
-        auto tmp = __MDSPAN_OP(m,i,j);
+        auto tmp = MDSPAN_OP(m,i,j);
         ASSERT_EQ(tmp, 42 + i*1000 + j);
       }
   }
@@ -118,7 +118,7 @@ struct mdarray_values<3> {
     for(int i=0; i<m.extent(0); i++)
       for(int j=0; j<m.extent(1); j++)
         for(int k=0; k<m.extent(2); k++) {
-          auto tmp = __MDSPAN_OP(m,i,j,k);
+          auto tmp = MDSPAN_OP(m,i,j,k);
           ASSERT_EQ(tmp, 42 + i*1000000 + j*1000 + k);
         }
   }
@@ -180,7 +180,7 @@ void test_mdarray_ctor_data_carray() {
     __MDSPAN_DEVICE_ASSERT_EQ(m.static_extent(0), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.stride(0), 1);
     m.data()[0] = {42};
-    auto val = __MDSPAN_OP(m,0);
+    auto val = MDSPAN_OP(m,0);
     __MDSPAN_DEVICE_ASSERT_EQ(val, 42);
     __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
   });
@@ -488,7 +488,7 @@ TEST(TestMdarrayCtorDataStdArray, test_mdarray_ctor_data_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
+  ASSERT_EQ(MDSPAN_OP(m, 0), 42);
   ASSERT_TRUE(m.is_exhaustive());
 }
 
@@ -499,7 +499,7 @@ TEST(TestMdarrayCtorDataVector, test_mdarray_ctor_data_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
+  ASSERT_EQ(MDSPAN_OP(m, 0), 42);
   ASSERT_TRUE(m.is_exhaustive());
 }
 
@@ -562,7 +562,7 @@ TEST(TestMdarrayListInitializationLayoutStride, test_mdarray_list_initialization
 
 #if 0
 
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+#if defined(MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestMdarrayCTAD, extents_pack) {
   std::array<int, 1> d{42};
   KokkosEx::mdarray m(d.data(), 64, 128);
@@ -594,7 +594,7 @@ TEST(TestMdarrayCTAD, ctad_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.static_extent(0), 5);
   ASSERT_EQ(m.extent(0), 5);
-  ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
+  ASSERT_EQ(MDSPAN_OP(m, 2), 3);
   #else
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
@@ -609,7 +609,7 @@ TEST(TestMdarrayCTAD, ctad_carray) {
   ASSERT_EQ(m2.rank_dynamic(), 1);
   ASSERT_EQ(m2.extent(0), 3);
   ASSERT_TRUE(m2.is_exhaustive());
-  ASSERT_EQ(__MDSPAN_OP(m2, 2), 3);
+  ASSERT_EQ(MDSPAN_OP(m2, 2), 3);
 }
 
 TEST(TestMdarrayCTAD, ctad_const_carray) {
@@ -622,7 +622,7 @@ TEST(TestMdarrayCTAD, ctad_const_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.static_extent(0), 5);
   ASSERT_EQ(m.extent(0), 5);
-  ASSERT_EQ(__MDSPAN_OP(m, 2), 3);
+  ASSERT_EQ(MDSPAN_OP(m, 2), 3);
   #else
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);

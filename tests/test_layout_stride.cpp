@@ -152,7 +152,7 @@ TYPED_TEST(TestLayoutEquality, equality_op) {
 }
 
 // FIXME: CUDA NVCC including 12.0 does not like CTAD on nested classes
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION) && !defined(__NVCC__)
+#if defined(MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION) && !defined(__NVCC__)
 TEST(TestLayoutStrideCTAD, test_ctad) {
   // This is not possible wiht the array constructor we actually provide
   /*

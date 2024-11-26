@@ -18,7 +18,7 @@
 #include <experimental/mdarray>
 #include <complex>
 
-#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+#if defined(MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #include <concepts>
 #endif
 
@@ -27,7 +27,7 @@ namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESP
 using E1 = Kokkos::extents<int32_t, Kokkos::dynamic_extent, 3>;
 using M1 = KokkosEx::mdarray<float, E1, Kokkos::layout_left>;
 
-#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+#if defined(MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 template<class T>
 constexpr bool is_copyable = std::copyable<T>;
 #else

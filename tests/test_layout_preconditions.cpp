@@ -22,7 +22,7 @@ TEST(TestConvertingConstructionFromLayoutStride, precondition_failure) {
 
   const auto stride = Kokkos::layout_stride::mapping<E>{E{}, std::array<size_t, 2>{2, 8}};
 
-#if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_SYCL)
+#if defined(MDSPAN_HAS_CUDA) || defined(MDSPAN_HAS_HIP) || defined(MDSPAN_HAS_SYCL)
   ASSERT_DEATH(Kokkos::layout_left::mapping<E>{stride}, "");
   ASSERT_DEATH(Kokkos::layout_right::mapping<E>{stride}, "");
 #else
