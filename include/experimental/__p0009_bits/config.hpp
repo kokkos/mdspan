@@ -245,7 +245,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #    if defined(_MDSPAN_COMPILER_CLANG) &&                                         \
         ((__clang_major__ < 17) ||                                                 \
          (__clang_major__ == 17 && __clang_minor__ == 0 &&                         \
-          __clang_patchlevel__ < 1))
+          __clang_patchlevel__ == 0))
 #      define MDSPAN_USE_BRACKET_OPERATOR 0
 #    else
 #      define MDSPAN_USE_BRACKET_OPERATOR 1
