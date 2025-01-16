@@ -20,7 +20,7 @@ jobs:
           compiler_prefix: /usr/bin
         - compiler_driver: clang++
           compiler_prefix: /usr/bin
-          cxx_flags_extra: "-Wno-c++17-attribute-extensions -Wno-gnu-zero-variadic-macro-arguments"
+          cxx_flags_extra: "-stdlib=libc++ -Wno-c++17-attribute-extensions -Wno-gnu-zero-variadic-macro-arguments"
         - compiler_driver: icpx
           compiler_prefix: /opt/intel/oneapi/compiler/latest/linux/bin
           # To get new URL, look here:
