@@ -47,25 +47,25 @@ class layout_left::mapping {
 
     // i0+(i1 + E(1)*(i2 + E(2)*i3))
     template <size_t r, size_t Rank>
-    struct __rank_count {};
+    struct rank_count {};
 
     template <size_t r, size_t Rank, class I, class... Indices>
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(
-      __rank_count<r,Rank>, const I& i, Indices... idx) const {
-      return __compute_offset(__rank_count<r+1,Rank>(), idx...) *
+    constexpr index_type compute_offset(
+      rank_count<r,Rank>, const I& i, Indices... idx) const {
+      return compute_offset(rank_count<r+1,Rank>(), idx...) *
                  __extents.extent(r) + i;
     }
 
     template<class I>
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(
-      __rank_count<extents_type::rank()-1,extents_type::rank()>, const I& i) const {
+    constexpr index_type compute_offset(
+      rank_count<extents_type::rank()-1,extents_type::rank()>, const I& i) const {
       return i;
     }
 
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(__rank_count<0,0>) const { return 0; }
+    constexpr index_type compute_offset(rank_count<0,0>) const { return 0; }
 
   public:
 
@@ -75,8 +75,8 @@ class layout_left::mapping {
     MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping const&) noexcept = default;
 
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr mapping(extents_type const& __exts) noexcept
-      :__extents(__exts)
+    constexpr mapping(extents_type const& exts) noexcept
+      :__extents(exts)
     { }
 
     MDSPAN_TEMPLATE_REQUIRES(
@@ -118,27 +118,27 @@ class layout_left::mapping {
     /**
      * Converting constructor from `layout_left_padded::mapping`.
      *
-     * This overload participates in overload resolution only if _Mapping is a layout_left_padded mapping and
-     * extents_type is constructible from _Mapping::extents_type.
+     * This overload participates in overload resolution only if Mapping is a layout_left_padded mapping and
+     * extents_type is constructible from Mapping::extents_type.
      *
      * \note There is currently a difference from p2642r2, where this function is specified as taking
      * `layout_left_padded< padding_value >::mapping< Extents>`. However, this makes `padding_value` non-deducible.
      */
     MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
+      class Mapping,
       /* requires */ (
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<_Mapping>::value
-        && std::is_constructible_v<extents_type, typename _Mapping::extents_type>
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<Mapping>::value
+        && std::is_constructible_v<extents_type, typename Mapping::extents_type>
       )
     )
-    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
+    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
     MDSPAN_INLINE_FUNCTION constexpr
     mapping(const _Mapping& __other) noexcept
       : __extents(__other.extents())
     {
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_mandates<
-            extents_type, _Mapping>(detail::with_rank<extents_type::rank()>{});
+            extents_type, Mapping>(detail::with_rank<extents_type::rank()>{});
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_preconditions<
               extents_type>(detail::with_rank<extents_type::rank()>{}, __other);
@@ -191,7 +191,7 @@ class layout_left::mapping {
 #if ! defined(NDEBUG)
       detail::check_all_indices(this->extents(), idxs...);
 #endif // ! NDEBUG
-      return __compute_offset(__rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
+      return compute_offset(rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
     }
 
 

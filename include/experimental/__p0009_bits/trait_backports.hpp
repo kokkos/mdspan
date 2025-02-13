@@ -117,8 +117,8 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 MDSPAN_IMPL_BACKPORT_TRAIT_ALIAS(remove_cv)
 MDSPAN_IMPL_BACKPORT_TRAIT_ALIAS(remove_reference)
 
-template <bool _B, class _T=void>
-using enable_if_t = typename enable_if<_B, _T>::type;
+template <bool _B, class T=void>
+using enable_if_t = typename enable_if<_B, T>::type;
 
 #undef MDSPAN_IMPL_BACKPORT_TRAIT_ALIAS
 

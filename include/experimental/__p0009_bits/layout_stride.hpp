@@ -56,8 +56,8 @@ namespace detail {
 #  if !defined(__cpp_lib_concepts)
   namespace internal {
   namespace detail {
-  template <typename _Tp, typename _Up>
-  concept __same_as = std::is_same_v<_Tp, _Up>;
+  template <typename Tp, typename _Up>
+  concept __same_as = std::is_same_v<Tp, _Up>;
   } // namespace detail
   template <class T, class U>
   concept __same_as = detail::__same_as<T, U> && detail::__same_as<U, T>;
