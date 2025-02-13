@@ -39,10 +39,10 @@ private:
 
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
   template <class>
-  struct __deduction_workaround;
+  struct deduction_workaround;
 
   template <size_t... Idxs>
-  struct __deduction_workaround<std::index_sequence<Idxs...>>
+  struct deduction_workaround<std::index_sequence<Idxs...>>
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
     size_t __size(mdspan const& __self) noexcept {
@@ -90,8 +90,8 @@ public:
 
 private:
 
-  // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
-  using __impl = __deduction_workaround<std::make_index_sequence<extents_type::rank()>>;
+  // Can't use defaulted parameter in the deduction_workaround template because of a bug in MSVC warning C4348.
+  using __impl = deduction_workaround<std::make_index_sequence<extents_type::rank()>>;
 
   using __map_acc_pair_t = detail::impl_compressed_pair<mapping_type, accessor_type>;
 
@@ -127,7 +127,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   explicit constexpr mdspan(data_handle_type p, SizeTypes... dynamic_extents)
     // TODO @proposal-bug shouldn't I be allowed to do `move(p)` here?
-    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(static_cast<index_type>(std::move(dynamic_extents))...)), accessor_type()))
+    : m_members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(static_cast<index_type>(std::move(dynamic_extents))...)), accessor_type()))
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -143,7 +143,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(data_handle_type p, const std::array<SizeType, N>& dynamic_extents)
-    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
+    : m_members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
 #ifdef __cpp_lib_span
@@ -160,7 +160,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(data_handle_type p, std::span<SizeType, N> dynamic_extents)
-    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(as_const(dynamic_extents))), accessor_type()))
+    : m_members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(as_const(dynamic_extents))), accessor_type()))
   { }
 #endif
 
@@ -169,19 +169,19 @@ public:
     mdspan, (data_handle_type p, const extents_type& exts), ,
     /* requires */ (MDSPAN_IMPL_TRAIT(std::is_default_constructible, accessor_type) &&
                     MDSPAN_IMPL_TRAIT(std::is_constructible, mapping_type, const extents_type&))
-  ) : __members(std::move(p), __map_acc_pair_t(mapping_type(exts), accessor_type()))
+  ) : m_members(std::move(p), __map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdspan, (data_handle_type p, const mapping_type& m), ,
     /* requires */ (MDSPAN_IMPL_TRAIT(std::is_default_constructible, accessor_type))
-  ) : __members(std::move(p), __map_acc_pair_t(m, accessor_type()))
+  ) : m_members(std::move(p), __map_acc_pair_t(m, accessor_type()))
   { }
 
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(data_handle_type p, const mapping_type& m, const accessor_type& a)
-    : __members(std::move(p), __map_acc_pair_t(m, a))
+    : m_members(std::move(p), __map_acc_pair_t(m, a))
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -197,7 +197,7 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(const mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other)
-    : __members(other.__ptr_ref(), __map_acc_pair_t(other.__mapping_ref(), other.__accessor_ref()))
+    : m_members(other.__ptr_ref(), __map_acc_pair_t(other.__mapping_ref(), other.__accessor_ref()))
   {
       static_assert(MDSPAN_IMPL_TRAIT(std::is_constructible, data_handle_type, typename OtherAccessor::data_handle_type),"Incompatible data_handle_type for mdspan construction");
       static_assert(MDSPAN_IMPL_TRAIT(std::is_constructible, extents_type, OtherExtents),"Incompatible extents for mdspan construction");
@@ -368,14 +368,14 @@ public:
 
 private:
 
-  detail::impl_compressed_pair<data_handle_type, __map_acc_pair_t> __members{};
+  detail::impl_compressed_pair<data_handle_type, __map_acc_pair_t> m_members{};
 
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 data_handle_type& __ptr_ref() noexcept { return __members.first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr data_handle_type const& __ptr_ref() const noexcept { return __members.first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 mapping_type& __mapping_ref() noexcept { return __members.second().first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr mapping_type const& __mapping_ref() const noexcept { return __members.second().first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 accessor_type& __accessor_ref() noexcept { return __members.second().second(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr accessor_type const& __accessor_ref() const noexcept { return __members.second().second(); }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 data_handle_type& __ptr_ref() noexcept { return m_members.first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr data_handle_type const& __ptr_ref() const noexcept { return m_members.first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 mapping_type& __mapping_ref() noexcept { return m_members.second().first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr mapping_type const& __mapping_ref() const noexcept { return m_members.second().first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 accessor_type& __accessor_ref() noexcept { return m_members.second().second(); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr accessor_type const& __accessor_ref() const noexcept { return m_members.second().second(); }
 
   template <class, class, class, class>
   friend class mdspan;

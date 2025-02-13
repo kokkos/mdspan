@@ -51,7 +51,7 @@ class layout_right::mapping {
     MDSPAN_IMPL_HOST_DEVICE
     constexpr index_type compute_offset(
       index_type offset, rank_count<r,Rank>, const I& i, Indices... idx) const {
-      return compute_offset(offset * __extents.extent(r) + i,rank_count<r+1,Rank>(),  idx...);
+      return compute_offset(offset * m_extents.extent(r) + i,rank_count<r+1,Rank>(),  idx...);
     }
 
     template<class I, class ... Indices>
@@ -78,7 +78,7 @@ class layout_right::mapping {
 
     MDSPAN_IMPL_HOST_DEVICE
     constexpr mapping(extents_type const& exts) noexcept
-      :__extents(exts)
+      :m_extents(exts)
     { }
 
     MDSPAN_TEMPLATE_REQUIRES(
@@ -90,7 +90,7 @@ class layout_right::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
@@ -108,7 +108,7 @@ class layout_right::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(layout_left::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
@@ -133,15 +133,15 @@ class layout_right::mapping {
         && std::is_constructible_v<extents_type, typename Mapping::extents_type>))
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
     MDSPAN_INLINE_FUNCTION constexpr
-    mapping(const _Mapping &__other) noexcept
-        : __extents(__other.extents())
+    mapping(const Mapping &other) noexcept
+        : m_extents(other.extents())
     {
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_mandates<
             extents_type, Mapping>(detail::with_rank<extents_type::rank()>{});
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_preconditions<
-            extents_type>(detail::with_rank<extents_type::rank()>{}, __other);
+            extents_type>(detail::with_rank<extents_type::rank()>{}, other);
     }
 #endif
 
@@ -154,26 +154,26 @@ class layout_right::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(layout_stride::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
         * other.required_span_size() is a representable value of type index_type
         */
-       detail::validate_strides(detail::with_rank<extents_type::rank()>{}, layout_right{}, __extents, other);
+       detail::validate_strides(detail::with_rank<extents_type::rank()>{}, layout_right{}, m_extents, other);
     }
 
     MDSPAN_INLINE_FUNCTION_DEFAULTED MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping const&) noexcept = default;
 
     MDSPAN_INLINE_FUNCTION
     constexpr const extents_type& extents() const noexcept {
-      return __extents;
+      return m_extents;
     }
 
     MDSPAN_INLINE_FUNCTION
     constexpr index_type required_span_size() const noexcept {
       index_type value = 1;
-      for(rank_type r=0; r != extents_type::rank(); ++r) value*=__extents.extent(r);
+      for(rank_type r=0; r != extents_type::rank(); ++r) value*=m_extents.extent(r);
       return value;
     }
 
@@ -208,7 +208,7 @@ class layout_right::mapping {
 #endif
     {
       index_type value = 1;
-      for(rank_type r=extents_type::rank()-1; r>i; r--) value*=__extents.extent(r);
+      for(rank_type r=extents_type::rank()-1; r>i; r--) value*=m_extents.extent(r);
       return value;
     }
 
@@ -236,17 +236,17 @@ class layout_right::mapping {
     // Not really public, but currently needed to implement fully constexpr useable submdspan:
     template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type __get_stride(MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
-      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((Idx>N? __extents.template __extent<Idx>():1),1);
+    constexpr index_type impl_get_stride(MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
+      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((Idx>N? m_extents.template __extent<Idx>():1),1);
     }
     template<size_t N>
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type __stride() const noexcept {
-      return __get_stride<N>(__extents, std::make_index_sequence<extents_type::rank()>());
+    constexpr index_type impl_stide() const noexcept {
+      return impl_get_stride<N>(m_extents, std::make_index_sequence<extents_type::rank()>());
     }
 
 private:
-   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type __extents{};
+   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type m_extents{};
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
