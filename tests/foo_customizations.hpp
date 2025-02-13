@@ -245,10 +245,9 @@ class layout_foo::mapping {
 #endif
 
 private:
-   _MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents{};
+   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type __extents{};
 
 };
 
 }
 #endif
-
