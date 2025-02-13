@@ -133,11 +133,15 @@
 //
 //@HEADER
 
-#ifndef __has_include
-#  define __has_include(x) 0
+#ifndef MDSPAN_IMPL_HAS_INCLUDE
+#  ifndef __has_include
+#    define MDSPAN_IMPL_HAS_INCLUDE(x) 0
+#  else
+#    define MDSPAN_IMPL_HAS_INCLUDE(x) __has_include(x)
+#  endif
 #endif
 
-#if __has_include(<version>)
+#if MDSPAN_IMPL_HAS_INCLUDE(<version>)
 #  include <version>
 #else
 #  include <type_traits>
@@ -145,9 +149,9 @@
 #endif
 
 #ifdef _MSVC_LANG
-#define _MDSPAN_CPLUSPLUS _MSVC_LANG
+#define MDSPAN_IMPL_CPLUSPLUS _MSVC_LANG
 #else
-#define _MDSPAN_CPLUSPLUS __cplusplus
+#define MDSPAN_IMPL_CPLUSPLUS __cplusplus
 #endif
 
 #define MDSPAN_CXX_STD_14 201402L
@@ -160,190 +164,194 @@
 #define MDSPAN_CXX_STD_23 202100L
 #endif
 
-#define MDSPAN_HAS_CXX_14 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14)
-#define MDSPAN_HAS_CXX_17 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_17)
-#define MDSPAN_HAS_CXX_20 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_20)
-#define MDSPAN_HAS_CXX_23 (_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_23)
+#define MDSPAN_HAS_CXX_14 (MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_14)
+#define MDSPAN_HAS_CXX_17 (MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_17)
+#define MDSPAN_HAS_CXX_20 (MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_20)
+#define MDSPAN_HAS_CXX_23 (MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_23)
 
-static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or later.");
+static_assert(MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or later.");
 
-#ifndef _MDSPAN_COMPILER_CLANG
+#ifndef MDSPAN_IMPL_COMPILER_CLANG
 #  if defined(__clang__)
-#    define _MDSPAN_COMPILER_CLANG __clang__
+#    define MDSPAN_IMPL_COMPILER_CLANG __clang__
 #  endif
 #endif
 
-#if !defined(_MDSPAN_COMPILER_MSVC) && !defined(_MDSPAN_COMPILER_MSVC_CLANG)
+#if !defined(MDSPAN_IMPL_COMPILER_MSVC) && !defined(MDSPAN_IMPL_COMPILER_MSVC_CLANG)
 #  if defined(_MSC_VER)
-#    if !defined(_MDSPAN_COMPILER_CLANG)
-#      define _MDSPAN_COMPILER_MSVC _MSC_VER
+#    if !defined(MDSPAN_IMPL_COMPILER_CLANG)
+#      define MDSPAN_IMPL_COMPILER_MSVC _MSC_VER
 #    else
-#      define _MDSPAN_COMPILER_MSVC_CLANG _MSC_VER
+#      define MDSPAN_IMPL_COMPILER_MSVC_CLANG _MSC_VER
 #    endif
 #  endif
 #endif
 
-#ifndef _MDSPAN_COMPILER_INTEL
+#ifndef MDSPAN_IMPL_COMPILER_INTEL
 #  ifdef __INTEL_COMPILER
-#    define _MDSPAN_COMPILER_INTEL __INTEL_COMPILER
+#    define MDSPAN_IMPL_COMPILER_INTEL __INTEL_COMPILER
 #  endif
 #endif
 
-#ifndef _MDSPAN_COMPILER_APPLECLANG
+#ifndef MDSPAN_IMPL_COMPILER_APPLECLANG
 #  ifdef __apple_build_version__
-#    define _MDSPAN_COMPILER_APPLECLANG __apple_build_version__
+#    define MDSPAN_IMPL_COMPILER_APPLECLANG __apple_build_version__
 #  endif
 #endif
 
-#ifndef _MDSPAN_HAS_CUDA
+#ifndef MDSPAN_IMPL_HAS_CUDA
 #  if defined(__CUDACC__)
-#    define _MDSPAN_HAS_CUDA __CUDACC__
+#    define MDSPAN_IMPL_HAS_CUDA __CUDACC__
 #  endif
 #endif
 
-#ifndef _MDSPAN_HAS_HIP
+#ifndef MDSPAN_IMPL_HAS_HIP
 #  if defined(__HIPCC__)
-#    define _MDSPAN_HAS_HIP __HIPCC__
+#    define MDSPAN_IMPL_HAS_HIP __HIPCC__
 #  endif
 #endif
 
-#ifndef _MDSPAN_HAS_SYCL
+#ifndef MDSPAN_IMPL_HAS_SYCL
 #  if defined(SYCL_LANGUAGE_VERSION)
-#    define _MDSPAN_HAS_SYCL SYCL_LANGUAGE_VERSION
+#    define MDSPAN_IMPL_HAS_SYCL SYCL_LANGUAGE_VERSION
 #  endif
 #endif
 
-#ifndef __has_cpp_attribute
-#  define __has_cpp_attribute(x) 0
+#ifndef MDSPAN_IMPL_HAS_CPP_ATTRIBUTE
+#  ifndef __has_cpp_attribute
+#    define MDSPAN_IMPL_HAS_CPP_ATTRIBUTE(x) 0
+#  else
+#    define MDSPAN_IMPL_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#  endif
 #endif
 
-#ifndef _MDSPAN_PRESERVE_STANDARD_LAYOUT
+#ifndef MDSPAN_IMPL_PRESERVE_STANDARD_LAYOUT
 // Preserve standard layout by default, but we're not removing the old version
 // that turns this off until we're sure this doesn't have an unreasonable cost
 // to the compiler or optimizer.
-#  define _MDSPAN_PRESERVE_STANDARD_LAYOUT 1
+#  define MDSPAN_IMPL_PRESERVE_STANDARD_LAYOUT 1
 #endif
 
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-#  if ((__has_cpp_attribute(no_unique_address) >= 201803L) && \
+#if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#  if ((MDSPAN_IMPL_HAS_CPP_ATTRIBUTE(no_unique_address) >= 201803L) && \
        (!defined(__NVCC__) || MDSPAN_HAS_CXX_20) && \
-       (!defined(_MDSPAN_COMPILER_MSVC) || MDSPAN_HAS_CXX_20))
-#    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
-#    define _MDSPAN_NO_UNIQUE_ADDRESS [[no_unique_address]]
+       (!defined(MDSPAN_IMPL_COMPILER_MSVC) || MDSPAN_HAS_CXX_20))
+#    define MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
+#    define MDSPAN_IMPL_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #  else
-#    define _MDSPAN_NO_UNIQUE_ADDRESS
+#    define MDSPAN_IMPL_NO_UNIQUE_ADDRESS
 #  endif
 #endif
 
 // NVCC older than 11.6 chokes on the no-unique-address-emulation
 // so just pretend to use it (to avoid the full blown EBO workaround
 // which NVCC also doesn't like ...), and leave the macro empty
-#ifndef _MDSPAN_NO_UNIQUE_ADDRESS
+#ifndef MDSPAN_IMPL_NO_UNIQUE_ADDRESS
 #  if defined(__NVCC__)
-#    define _MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
-#    define _MDSPAN_USE_FAKE_ATTRIBUTE_NO_UNIQUE_ADDRESS
+#    define MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS 1
+#    define MDSPAN_IMPL_USE_FAKE_ATTRIBUTE_NO_UNIQUE_ADDRESS
 #  endif
-#  define _MDSPAN_NO_UNIQUE_ADDRESS
+#  define MDSPAN_IMPL_NO_UNIQUE_ADDRESS
 #endif
 
 // AMDs HIP compiler seems to have issues with concepts
 // it pretends concepts exist, but doesn't ship <concept>
 #ifndef __HIPCC__
-#ifndef _MDSPAN_USE_CONCEPTS
+#ifndef MDSPAN_IMPL_USE_CONCEPTS
 #  if defined(__cpp_concepts) && __cpp_concepts >= 201507L
-#    define _MDSPAN_USE_CONCEPTS 1
+#    define MDSPAN_IMPL_USE_CONCEPTS 1
 #  endif
 #endif
 #endif
 
-#ifndef _MDSPAN_USE_FOLD_EXPRESSIONS
+#ifndef MDSPAN_IMPL_USE_FOLD_EXPRESSIONS
 #  if (defined(__cpp_fold_expressions) && __cpp_fold_expressions >= 201603L) \
           || (!defined(__cpp_fold_expressions) && MDSPAN_HAS_CXX_17)
-#    define _MDSPAN_USE_FOLD_EXPRESSIONS 1
+#    define MDSPAN_IMPL_USE_FOLD_EXPRESSIONS 1
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_INLINE_VARIABLES
+#ifndef MDSPAN_IMPL_USE_INLINE_VARIABLES
 #  if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L \
          || (!defined(__cpp_inline_variables) && MDSPAN_HAS_CXX_17)
-#    define _MDSPAN_USE_INLINE_VARIABLES 1
+#    define MDSPAN_IMPL_USE_INLINE_VARIABLES 1
 #  endif
 #endif
 
-#ifndef _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
+#ifndef MDSPAN_IMPL_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
 #  if (!(defined(__cpp_lib_type_trait_variable_templates) && __cpp_lib_type_trait_variable_templates >= 201510L) \
           || !MDSPAN_HAS_CXX_17)
-#    if !(defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_17)
-#      define _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS 1
+#    if !(defined(MDSPAN_IMPL_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_17)
+#      define MDSPAN_IMPL_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS 1
 #    endif
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_VARIABLE_TEMPLATES
+#ifndef MDSPAN_IMPL_USE_VARIABLE_TEMPLATES
 #  if (defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304 && MDSPAN_HAS_CXX_17) \
         || (!defined(__cpp_variable_templates) && MDSPAN_HAS_CXX_17)
-#    define _MDSPAN_USE_VARIABLE_TEMPLATES 1
+#    define MDSPAN_IMPL_USE_VARIABLE_TEMPLATES 1
 #  endif
-#endif // _MDSPAN_USE_VARIABLE_TEMPLATES
+#endif // MDSPAN_IMPL_USE_VARIABLE_TEMPLATES
 
-#ifndef _MDSPAN_USE_CONSTEXPR_14
+#ifndef MDSPAN_IMPL_USE_CONSTEXPR_14
 #  if (defined(__cpp_constexpr) && __cpp_constexpr >= 201304) \
         || (!defined(__cpp_constexpr) && MDSPAN_HAS_CXX_14) \
         && (!(defined(__INTEL_COMPILER) && __INTEL_COMPILER <= 1700))
-#    define _MDSPAN_USE_CONSTEXPR_14 1
+#    define MDSPAN_IMPL_USE_CONSTEXPR_14 1
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_INTEGER_SEQUENCE
-#  if defined(_MDSPAN_COMPILER_MSVC)
+#ifndef MDSPAN_IMPL_USE_INTEGER_SEQUENCE_14
+#  if defined(MDSPAN_IMPL_COMPILER_MSVC)
 #    if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304)
-#      define _MDSPAN_USE_INTEGER_SEQUENCE 1
+#      define MDSPAN_IMPL_USE_INTEGER_SEQUENCE_14 1
 #    endif
 #  endif
 #endif
-#ifndef _MDSPAN_USE_INTEGER_SEQUENCE
+#ifndef MDSPAN_IMPL_USE_INTEGER_SEQUENCE_14
 #  if (defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304) \
         || (!defined(__cpp_lib_integer_sequence) && MDSPAN_HAS_CXX_14) \
         /* as far as I can tell, libc++ seems to think this is a C++11 feature... */ \
         || (defined(__GLIBCXX__) && __GLIBCXX__ > 20150422 && __GNUC__ < 5 && !defined(__INTEL_CXX11_MODE__))
      // several compilers lie about integer_sequence working properly unless the C++14 standard is used
-#    define _MDSPAN_USE_INTEGER_SEQUENCE 1
-#  elif defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
+#    define MDSPAN_IMPL_USE_INTEGER_SEQUENCE_14 1
+#  elif defined(MDSPAN_IMPL_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
      // appleclang seems to be missing the __cpp_lib_... macros, but doesn't seem to lie about C++14 making
      // integer_sequence work
-#    define _MDSPAN_USE_INTEGER_SEQUENCE 1
+#    define MDSPAN_IMPL_USE_INTEGER_SEQUENCE_14 1
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+#ifndef MDSPAN_IMPL_USE_RETURN_TYPE_DEDUCTION
 #  if (defined(__cpp_return_type_deduction) && __cpp_return_type_deduction >= 201304) \
           || (!defined(__cpp_return_type_deduction) && MDSPAN_HAS_CXX_14)
-#    define _MDSPAN_USE_RETURN_TYPE_DEDUCTION 1
+#    define MDSPAN_IMPL_USE_RETURN_TYPE_DEDUCTION 1
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
+#ifndef MDSPAN_IMPL_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION
 #  if (!defined(__NVCC__) || (__CUDACC_VER_MAJOR__ * 100 + __CUDACC_VER_MINOR__ * 10 >= 1170)) && \
       ((defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201703) || \
        (!defined(__cpp_deduction_guides) && MDSPAN_HAS_CXX_17))
-#    define _MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
+#    define MDSPAN_IMPL_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION 1
 #  endif
 #endif
 
-#ifndef _MDSPAN_USE_STANDARD_TRAIT_ALIASES
+#ifndef MDSPAN_IMPL_USE_STANDARD_TRAIT_ALIASES
 #  if (defined(__cpp_lib_transformation_trait_aliases) && __cpp_lib_transformation_trait_aliases >= 201304) \
           || (!defined(__cpp_lib_transformation_trait_aliases) && MDSPAN_HAS_CXX_14)
-#    define _MDSPAN_USE_STANDARD_TRAIT_ALIASES 1
-#  elif defined(_MDSPAN_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
+#    define MDSPAN_IMPL_USE_STANDARD_TRAIT_ALIASES 1
+#  elif defined(MDSPAN_IMPL_COMPILER_APPLECLANG) && MDSPAN_HAS_CXX_14
      // appleclang seems to be missing the __cpp_lib_... macros, but doesn't seem to lie about C++14
-#    define _MDSPAN_USE_STANDARD_TRAIT_ALIASES 1
+#    define MDSPAN_IMPL_USE_STANDARD_TRAIT_ALIASES 1
 #  endif
 #endif
 
-#ifndef _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
+#ifndef MDSPAN_IMPL_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND
 #  ifdef __GNUC__
 #    if __GNUC__ < 9
-#      define _MDSPAN_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND 1
+#      define MDSPAN_IMPL_DEFAULTED_CONSTRUCTORS_INHERITANCE_WORKAROUND 1
 #    endif
 #  endif
 #endif
@@ -360,7 +368,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  if defined(__cpp_multidimensional_subscript)
 // The following if/else is necessary to workaround a clang issue
 // relative to using a parameter pack inside a bracket operator in C++2b/C++23 mode
-#    if defined(_MDSPAN_COMPILER_CLANG) &&                                         \
+#    if defined(MDSPAN_IMPL_COMPILER_CLANG) &&                                         \
         ((__clang_major__ < 17) ||                                                 \
          (__clang_major__ == 17 && __clang_minor__ == 0 &&                         \
           __clang_patchlevel__ == 0))
@@ -382,41 +390,41 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #endif
 
 #if MDSPAN_USE_BRACKET_OPERATOR
-#  define __MDSPAN_OP(mds,...) mds[__VA_ARGS__]
+#  define MDSPAN_IMPL_OP(mds,...) mds[__VA_ARGS__]
 // Corentins demo compiler for subscript chokes on empty [] call,
 // though I believe the proposal supports it?
 #ifdef MDSPAN_NO_EMPTY_BRACKET_OPERATOR
-#  define __MDSPAN_OP0(mds) mds.accessor().access(mds.data_handle(),0)
+#  define MDSPAN_IMPL_OP0(mds) mds.accessor().access(mds.data_handle(),0)
 #else
-#  define __MDSPAN_OP0(mds) mds[]
+#  define MDSPAN_IMPL_OP0(mds) mds[]
 #endif
-#  define __MDSPAN_OP1(mds, a) mds[a]
-#  define __MDSPAN_OP2(mds, a, b) mds[a,b]
-#  define __MDSPAN_OP3(mds, a, b, c) mds[a,b,c]
-#  define __MDSPAN_OP4(mds, a, b, c, d) mds[a,b,c,d]
-#  define __MDSPAN_OP5(mds, a, b, c, d, e) mds[a,b,c,d,e]
-#  define __MDSPAN_OP6(mds, a, b, c, d, e, f) mds[a,b,c,d,e,f]
+#  define MDSPAN_IMPL_OP1(mds, a) mds[a]
+#  define MDSPAN_IMPL_OP2(mds, a, b) mds[a,b]
+#  define MDSPAN_IMPL_OP3(mds, a, b, c) mds[a,b,c]
+#  define MDSPAN_IMPL_OP4(mds, a, b, c, d) mds[a,b,c,d]
+#  define MDSPAN_IMPL_OP5(mds, a, b, c, d, e) mds[a,b,c,d,e]
+#  define MDSPAN_IMPL_OP6(mds, a, b, c, d, e, f) mds[a,b,c,d,e,f]
 #else
-#  define __MDSPAN_OP(mds,...) mds(__VA_ARGS__)
-#  define __MDSPAN_OP0(mds) mds()
-#  define __MDSPAN_OP1(mds, a) mds(a)
-#  define __MDSPAN_OP2(mds, a, b) mds(a,b)
-#  define __MDSPAN_OP3(mds, a, b, c) mds(a,b,c)
-#  define __MDSPAN_OP4(mds, a, b, c, d) mds(a,b,c,d)
-#  define __MDSPAN_OP5(mds, a, b, c, d, e) mds(a,b,c,d,e)
-#  define __MDSPAN_OP6(mds, a, b, c, d, e, f) mds(a,b,c,d,e,f)
+#  define MDSPAN_IMPL_OP(mds,...) mds(__VA_ARGS__)
+#  define MDSPAN_IMPL_OP0(mds) mds()
+#  define MDSPAN_IMPL_OP1(mds, a) mds(a)
+#  define MDSPAN_IMPL_OP2(mds, a, b) mds(a,b)
+#  define MDSPAN_IMPL_OP3(mds, a, b, c) mds(a,b,c)
+#  define MDSPAN_IMPL_OP4(mds, a, b, c, d) mds(a,b,c,d)
+#  define MDSPAN_IMPL_OP5(mds, a, b, c, d, e) mds(a,b,c,d,e)
+#  define MDSPAN_IMPL_OP6(mds, a, b, c, d, e, f) mds(a,b,c,d,e,f)
 #endif
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/config.hpp
 
 #include <cstdio>
 #include <cstdlib>
 #include <type_traits> // std::is_void
-#if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_SYCL)
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL)
 #include "assert.h"
 #endif
 
 #ifndef _MDSPAN_HOST_DEVICE
-#  if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
+#  if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP)
 #    define _MDSPAN_HOST_DEVICE __host__ __device__
 #  else
 #    define _MDSPAN_HOST_DEVICE
@@ -424,7 +432,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #endif
 
 #ifndef MDSPAN_FORCE_INLINE_FUNCTION
-#  ifdef _MDSPAN_COMPILER_MSVC // Microsoft compilers
+#  ifdef MDSPAN_IMPL_COMPILER_MSVC // Microsoft compilers
 #    define MDSPAN_FORCE_INLINE_FUNCTION __forceinline _MDSPAN_HOST_DEVICE
 #  else
 #    define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline)) _MDSPAN_HOST_DEVICE
@@ -439,7 +447,7 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 #  define MDSPAN_FUNCTION _MDSPAN_HOST_DEVICE
 #endif
 
-#ifdef _MDSPAN_HAS_HIP
+#ifdef MDSPAN_IMPL_HAS_HIP
 #  define MDSPAN_DEDUCTION_GUIDE _MDSPAN_HOST_DEVICE
 #else
 #  define MDSPAN_DEDUCTION_GUIDE
@@ -499,13 +507,13 @@ static_assert(_MDSPAN_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
-#if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP)
 MDSPAN_FUNCTION inline void default_precondition_violation_handler(const char* cond, const char* file, unsigned line)
 {
   printf("%s:%u: precondition failure: `%s`\n", file, line, cond);
   assert(0);
 }
-#elif defined(_MDSPAN_HAS_SYCL)
+#elif defined(MDSPAN_IMPL_HAS_SYCL)
 MDSPAN_FUNCTION inline void default_precondition_violation_handler(const char* cond, const char* file, unsigned line)
 {
   sycl::ext::oneapi::experimental::printf("%s:%u: precondition failure: `%s`\n", file, line, cond);
@@ -567,7 +575,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 
 // These compatibility macros don't help with partial ordering, but they should do the trick
 // for what we need to do with concepts in mdspan
-#ifdef _MDSPAN_USE_CONCEPTS
+#ifdef MDSPAN_IMPL_USE_CONCEPTS
 #  define MDSPAN_CLOSE_ANGLE_REQUIRES(REQ) > requires REQ
 #  define MDSPAN_FUNCTION_REQUIRES(PAREN_PREQUALS, FNAME, PAREN_PARAMS, QUALS, REQ) \
      MDSPAN_PP_REMOVE_PARENS(PAREN_PREQUALS) FNAME PAREN_PARAMS QUALS requires REQ \
@@ -582,7 +590,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
      /**/
 #endif
 
-#if defined(_MDSPAN_COMPILER_MSVC) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
+#if defined(MDSPAN_IMPL_COMPILER_MSVC) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
 #  define MDSPAN_TEMPLATE_REQUIRES(...) \
       MDSPAN_PP_CAT( \
         MDSPAN_PP_CAT(MDSPAN_TEMPLATE_REQUIRES_, MDSPAN_PP_COUNT(__VA_ARGS__))\
@@ -688,7 +696,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 //==============================================================================
 // <editor-fold desc="inline variables"> {{{1
 
-#ifdef _MDSPAN_USE_INLINE_VARIABLES
+#ifdef MDSPAN_IMPL_USE_INLINE_VARIABLES
 #  define _MDSPAN_INLINE_VARIABLE inline
 #else
 #  define _MDSPAN_INLINE_VARIABLE
@@ -700,7 +708,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 //==============================================================================
 // <editor-fold desc="Return type deduction"> {{{1
 
-#if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+#if MDSPAN_IMPL_USE_RETURN_TYPE_DEDUCTION
 #  define _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
     auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) { return MDSPAN_PP_REMOVE_PARENS(BODY); }
 #  define _MDSPAN_DEDUCE_DECLTYPE_AUTO_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
@@ -725,7 +733,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 
 struct __mdspan_enable_fold_comma { };
 
-#ifdef _MDSPAN_USE_FOLD_EXPRESSIONS
+#ifdef MDSPAN_IMPL_USE_FOLD_EXPRESSIONS
 #  define _MDSPAN_FOLD_AND(...) ((__VA_ARGS__) && ...)
 #  define _MDSPAN_FOLD_AND_TEMPLATE(...) ((__VA_ARGS__) && ...)
 #  define _MDSPAN_FOLD_OR(...) ((__VA_ARGS__) || ...)
@@ -743,7 +751,7 @@ namespace __fold_compatibility_impl {
 // We could probably be more clever here, but at the (small) risk of losing some compiler understanding.  For the
 // few operations we need, it's not worth generalizing over the operation
 
-#if _MDSPAN_USE_RETURN_TYPE_DEDUCTION
+#if MDSPAN_IMPL_USE_RETURN_TYPE_DEDUCTION
 
 MDSPAN_FORCE_INLINE_FUNCTION
 constexpr decltype(auto) __fold_right_and_impl() {
@@ -1060,7 +1068,7 @@ struct __bools;
 //==============================================================================
 // <editor-fold desc="Variable template compatibility"> {{{1
 
-#if _MDSPAN_USE_VARIABLE_TEMPLATES
+#if MDSPAN_IMPL_USE_VARIABLE_TEMPLATES
 #  define _MDSPAN_TRAIT(TRAIT, ...) TRAIT##_v<__VA_ARGS__>
 #else
 #  define _MDSPAN_TRAIT(TRAIT, ...) TRAIT<__VA_ARGS__>::value
@@ -1072,7 +1080,7 @@ struct __bools;
 //==============================================================================
 // <editor-fold desc="Pre-C++14 constexpr"> {{{1
 
-#if _MDSPAN_USE_CONSTEXPR_14
+#if MDSPAN_IMPL_USE_CONSTEXPR_14
 #  define _MDSPAN_CONSTEXPR_14 constexpr
 // Workaround for a bug (I think?) in EDG frontends
 #  ifdef __EDG__
@@ -1214,9 +1222,9 @@ _MDSPAN_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 //==============================================================================
 // <editor-fold desc="Variable template trait backports (e.g., is_void_v)"> {{{1
 
-#ifdef _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
+#ifdef MDSPAN_IMPL_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
 
-#if _MDSPAN_USE_VARIABLE_TEMPLATES
+#if MDSPAN_IMPL_USE_VARIABLE_TEMPLATES
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 #define _MDSPAN_BACKPORT_TRAIT(TRAIT) \
@@ -1235,9 +1243,9 @@ _MDSPAN_BACKPORT_TRAIT(is_void)
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
-#endif // _MDSPAN_USE_VARIABLE_TEMPLATES
+#endif // MDSPAN_IMPL_USE_VARIABLE_TEMPLATES
 
-#endif // _MDSPAN_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
+#endif // MDSPAN_IMPL_NEEDS_TRAIT_VARIABLE_TEMPLATE_BACKPORTS
 
 // </editor-fold> end Variable template trait backports (e.g., is_void_v) }}}1
 //==============================================================================
@@ -1245,7 +1253,7 @@ _MDSPAN_BACKPORT_TRAIT(is_void)
 //==============================================================================
 // <editor-fold desc="integer sequence (ugh...)"> {{{1
 
-#if !defined(_MDSPAN_USE_INTEGER_SEQUENCE) || !_MDSPAN_USE_INTEGER_SEQUENCE
+#if !defined(MDSPAN_IMPL_USE_INTEGER_SEQUENCE_14) || !MDSPAN_IMPL_USE_INTEGER_SEQUENCE_14
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
@@ -1296,7 +1304,7 @@ using index_sequence_for = make_index_sequence<sizeof...(T)>;
 //==============================================================================
 // <editor-fold desc="standard trait aliases"> {{{1
 
-#if !defined(_MDSPAN_USE_STANDARD_TRAIT_ALIASES) || !_MDSPAN_USE_STANDARD_TRAIT_ALIASES
+#if !defined(MDSPAN_IMPL_USE_STANDARD_TRAIT_ALIASES) || !MDSPAN_IMPL_USE_STANDARD_TRAIT_ALIASES
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
@@ -1682,7 +1690,7 @@ struct index_sequence_scan_impl<R, FirstVal, Values...> {
 template <size_t R, size_t FirstVal>
 struct index_sequence_scan_impl<R, FirstVal> {
 #if defined(__NVCC__) || defined(__NVCOMPILER) ||                              \
-    defined(_MDSPAN_COMPILER_INTEL)
+    defined(MDSPAN_IMPL_COMPILER_INTEL)
   // NVCC warns about pointless comparison with 0 for R==0 and r being const
   // evaluatable and also 0.
   MDSPAN_INLINE_FUNCTION
@@ -1745,7 +1753,7 @@ private:
       _MDSPAN_FOLD_PLUS_RIGHT((Values == dyn_tag), 0);
 
   // Dynamic values member
-  _MDSPAN_NO_UNIQUE_ADDRESS possibly_empty_array<TDynamic, m_size_dynamic>
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS possibly_empty_array<TDynamic, m_size_dynamic>
       m_dyn_vals;
 
   // static mapping of indices to the position in the dynamic values array
@@ -1931,7 +1939,7 @@ private:
   // internal storage type using maybe_static_array
   using vals_t =
       detail::maybe_static_array<IndexType, size_t, dynamic_extent, Extents...>;
-  _MDSPAN_NO_UNIQUE_ADDRESS vals_t m_vals;
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS vals_t m_vals;
 
 public:
   // [mdspan.extents.obs], observers of multidimensional index space
@@ -2118,7 +2126,7 @@ template <class IndexType, size_t Rank>
 using dextents = typename detail::__make_dextents<IndexType, Rank>::type;
 
 // Deduction guide for extents
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+#if defined(MDSPAN_IMPL_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 template <class... IndexTypes>
 extents(IndexTypes...)
     -> extents<size_t,
@@ -2255,7 +2263,7 @@ check_all_indices(const extents<ExtentsIndexType, Exts...>& exts,
 //@HEADER
 
 
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/no_unique_address.hpp
 //@HEADER
 // ************************************************************************
@@ -2302,7 +2310,7 @@ struct __no_unique_address_emulation<
                 // won't be called at the right time, so don't use this
                 // specialization
                 _MDSPAN_TRAIT(std::is_trivially_destructible, _T)>> :
-#ifdef _MDSPAN_COMPILER_MSVC
+#ifdef MDSPAN_IMPL_COMPILER_MSVC
     // MSVC doesn't allow you to access public static member functions of a type
     // when you *happen* to privately inherit from that type.
     protected
@@ -2360,8 +2368,8 @@ namespace detail {
 // For no unique address emulation, this is the case taken when neither are empty.
 // For real `[[no_unique_address]]`, this case is always taken.
 template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
-  _MDSPAN_NO_UNIQUE_ADDRESS _T1 __t1_val{};
-  _MDSPAN_NO_UNIQUE_ADDRESS _T2 __t2_val{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS _T1 __t1_val{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS _T2 __t2_val{};
   MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
     return __t1_val;
@@ -2390,7 +2398,7 @@ template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
       : __t1_val((_T1Like &&) __t1), __t2_val((_T2Like &&) __t2) {}
 };
 
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 
 // First empty.
 template <class _T1, class _T2>
@@ -2474,7 +2482,7 @@ struct __compressed_pair<
     std::enable_if_t<_MDSPAN_TRAIT(std::is_empty, _T1) && _MDSPAN_TRAIT(std::is_empty, _T2)>>
     // We need to use the __no_unique_address_emulation wrapper here to avoid
     // base class ambiguities.
-#ifdef _MDSPAN_COMPILER_MSVC
+#ifdef MDSPAN_IMPL_COMPILER_MSVC
 // MSVC doesn't allow you to access public static member functions of a type
 // when you *happen* to privately inherit from that type.
     : protected __no_unique_address_emulation<_T1, 0>,
@@ -2521,13 +2529,13 @@ struct __compressed_pair<
   { }
 };
 
-#endif // !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#endif // !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 
 } // end namespace detail
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/compressed_pair.hpp
 
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #endif
 
 #include <array>
@@ -2537,7 +2545,7 @@ struct __compressed_pair<
 #ifdef __cpp_lib_span
 #include <span>
 #endif
-#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20 && defined(__cpp_lib_concepts)
+#if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20 && defined(__cpp_lib_concepts)
 #  include <concepts>
 #endif
 
@@ -2557,7 +2565,7 @@ namespace detail {
   constexpr bool __is_mapping_of =
     std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
 
-#if defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+#if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #  if !defined(__cpp_lib_concepts)
   namespace internal {
   namespace detail {
@@ -2592,7 +2600,7 @@ namespace detail {
 struct layout_stride {
   template <class Extents>
   class mapping
-#if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : private detail::__no_unique_address_emulation<
         detail::__compressed_pair<
           Extents,
@@ -2620,15 +2628,15 @@ struct layout_stride {
     using __strides_storage_t = detail::possibly_empty_array<index_type, extents_type::rank()>;
     using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
 
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-    _MDSPAN_NO_UNIQUE_ADDRESS __member_pair_t __members;
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+    MDSPAN_IMPL_NO_UNIQUE_ADDRESS __member_pair_t __members;
 #else
     using __base_t = detail::__no_unique_address_emulation<__member_pair_t>;
 #endif
 
     MDSPAN_FORCE_INLINE_FUNCTION constexpr __strides_storage_t const&
     __strides_storage() const noexcept {
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return __members.__second();
 #else
       return this->__base_t::__ref().__second();
@@ -2636,7 +2644,7 @@ struct layout_stride {
     }
     MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 __strides_storage_t&
     __strides_storage() noexcept {
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return __members.__second();
 #else
       return this->__base_t::__ref().__second();
@@ -2763,7 +2771,7 @@ struct layout_stride {
 
     //----------------------------------------------------------------------------
 
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     MDSPAN_INLINE_FUNCTION constexpr explicit
     mapping(__member_pair_t&& __m) : __members(::std::move(__m)) {}
 #else
@@ -2776,14 +2784,14 @@ struct layout_stride {
     //--------------------------------------------------------------------------------
 
     MDSPAN_INLINE_FUNCTION constexpr mapping() noexcept
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           extents_type(),
           __strides_storage_t(strides_storage(detail::with_rank<extents_type::rank()>{}))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -2806,13 +2814,13 @@ struct layout_stride {
       extents_type const& e,
       std::array<IntegralTypes, extents_type::rank()> const& s
     ) noexcept
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           e, __strides_storage_t(__impl::fill_strides(s))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -2845,13 +2853,13 @@ struct layout_stride {
       // Need to avoid zero-length c-array
       const IntegralTypes (&s)[extents_type::rank()>0?extents_type::rank():1]
     ) noexcept
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           e, __strides_storage_t(__impl::fill_strides(mdspan_non_standard, s))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -2882,13 +2890,13 @@ struct layout_stride {
       extents_type const& e,
       std::span<IntegralTypes, extents_type::rank()> const& s
     ) noexcept
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           e, __strides_storage_t(__impl::fill_strides(s))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -2905,7 +2913,7 @@ struct layout_stride {
     }
 #endif // __cpp_lib_span
 
-#if !(defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
+#if !(defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
       /* requires */ (
@@ -2932,13 +2940,13 @@ struct layout_stride {
     ) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
     mapping(StridedLayoutMapping const& other) noexcept // NOLINT(google-explicit-constructor)
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       : __members{
 #else
       : __base_t(__base_t{__member_pair_t(
 #endif
           other.extents(), __strides_storage_t(__impl::fill_strides(other))
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
         )})
@@ -2958,7 +2966,7 @@ struct layout_stride {
     mapping& operator=(mapping const&) noexcept = default;
 
     MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept {
-#if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
+#if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return __members.__first();
 #else
       return this->__base_t::__ref().__first();
@@ -3060,7 +3068,7 @@ struct layout_stride {
       return __strides_storage()[r];
     }
 
-#if !(defined(_MDSPAN_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
+#if !(defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
       /* requires */ (
@@ -3531,7 +3539,7 @@ class layout_right::mapping {
     }
 
 private:
-   _MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents{};
+   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type __extents{};
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
@@ -3548,7 +3556,6 @@ private:
 };
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_right.hpp
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
@@ -3862,7 +3869,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   friend constexpr void swap(mdspan& x, mdspan& y) noexcept {
     // can't call the std::swap inside on HIP
-    #if !defined(_MDSPAN_HAS_HIP) && !defined(_MDSPAN_HAS_CUDA)
+    #if !defined(MDSPAN_IMPL_HAS_HIP) && !defined(MDSPAN_IMPL_HAS_CUDA)
     using std::swap;
     swap(x.__ptr_ref(), y.__ptr_ref());
     swap(x.__mapping_ref(), y.__mapping_ref());
@@ -3911,7 +3918,7 @@ private:
 
 };
 
-#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+#if defined(MDSPAN_IMPL_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 MDSPAN_TEMPLATE_REQUIRES(
   class ElementType, class... SizeTypes,
   /* requires */ _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_convertible, SizeTypes, size_t) /* && ... */) &&
@@ -4204,7 +4211,7 @@ class layout_left::mapping {
     }
 
 private:
-   _MDSPAN_NO_UNIQUE_ADDRESS extents_type __extents{};
+   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type __extents{};
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
@@ -4222,7 +4229,6 @@ private:
 
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
 #if MDSPAN_HAS_CXX_17
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2642_bits/layout_padded.hpp
@@ -5163,9 +5169,9 @@ struct strided_slice {
   using extent_type = ExtentType;
   using stride_type = StrideType;
 
-  _MDSPAN_NO_UNIQUE_ADDRESS OffsetType offset{};
-  _MDSPAN_NO_UNIQUE_ADDRESS ExtentType extent{};
-  _MDSPAN_NO_UNIQUE_ADDRESS StrideType stride{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS OffsetType offset{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS ExtentType extent{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS StrideType stride{};
 
   static_assert(std::is_integral_v<OffsetType> || __mdspan_is_integral_constant<OffsetType>::value);
   static_assert(std::is_integral_v<ExtentType> || __mdspan_is_integral_constant<ExtentType>::value);
@@ -5618,7 +5624,7 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 // Return type of submdspan_mapping overloads
 //******************************************
 template <class LayoutMapping> struct submdspan_mapping_result {
-  _MDSPAN_NO_UNIQUE_ADDRESS LayoutMapping mapping{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS LayoutMapping mapping{};
   size_t offset;
 };
 
@@ -5754,7 +5760,7 @@ struct deduce_layout_left_submapping<
     // e.g. R I I I F F F R I I for obtaining a rank-5 from a rank-10
     return ((((Idx == 0)                                       && is_range_slice_v<SliceSpecifiers, IndexType>) ||
              ((Idx > 0 && Idx <= gap_len)                     && is_index_slice_v<SliceSpecifiers, IndexType>) ||
-             ((Idx > gap_len && Idx < gap_len + SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) || 
+             ((Idx > gap_len && Idx < gap_len + SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
              ((Idx == gap_len + SubRank - 1)                  && is_range_slice_v<SliceSpecifiers, IndexType>) ||
              ((Idx >  gap_len + SubRank - 1)                  && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
   }
@@ -5826,7 +5832,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA altogether
-#if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                         detail::tuple<decltype(detail::stride_of(slices))...>{
                             detail::stride_of(slices)...}).values),
 #else
@@ -5904,7 +5910,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::mapping<Extent
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA alltogether
-#if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                         MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices))...>{
                             MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
 #else
@@ -6059,7 +6065,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA altogether
-#if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                         MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(detail::stride_of(slices))...>{
                             detail::stride_of(slices)...}).values),
 #else
@@ -6129,7 +6135,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::mapping<Exten
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA alltogether
-#if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                         MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices))...>{
                             MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
 #else
@@ -6177,7 +6183,7 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA alltogether
-#if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                       MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(detail::stride_of(slices))...>(
                           detail::stride_of(slices)...)).values),
 #else
