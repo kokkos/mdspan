@@ -162,7 +162,7 @@ constexpr bool
 multidimensional_single_element_stress_test_impl_1(
   std::integer_sequence<size_t, Sizes...>
 ) {
-  return _MDSPAN_FOLD_AND(
+  return MDSPAN_IMPL_FOLD_AND(
     multidimensional_single_element_stress_test_impl_2<Layout>(
       std::make_index_sequence<Sizes>{}
     ) /* && ... */
@@ -226,7 +226,7 @@ stress_test_2d_single_element_stress_test_impl_1(
   std::integer_sequence<size_t, Idxs2...>
 )
 {
-  return _MDSPAN_FOLD_AND(
+  return MDSPAN_IMPL_FOLD_AND(
     stress_test_2d_single_element_stress_test_impl_2<Layout>(
       idx1, std::integral_constant<size_t, Idxs2+1>{}
     ) /* && ... */
@@ -240,7 +240,7 @@ stress_test_2d_single_element_stress_test_impl_0(
   std::integer_sequence<size_t, Idxs2...> idxs2
 )
 {
-  return _MDSPAN_FOLD_AND(
+  return MDSPAN_IMPL_FOLD_AND(
     stress_test_2d_single_element_stress_test_impl_1<Layout>(
       std::integral_constant<size_t, Idxs1+1>{}, idxs2
     ) /* && ... */

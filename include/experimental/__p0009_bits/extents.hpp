@@ -52,7 +52,7 @@ struct __compare_extent_compatible : std::integral_constant<bool,
 template <size_t... Extents, size_t... OtherExtents>
 MDSPAN_INLINE_FUNCTION
 static constexpr std::integral_constant<
-    bool, _MDSPAN_FOLD_AND(__compare_extent_compatible<Extents, OtherExtents>::value)>
+    bool, MDSPAN_IMPL_FOLD_AND(__compare_extent_compatible<Extents, OtherExtents>::value)>
 __check_compatible_extents(
     std::integral_constant<bool, true>,
     std::integer_sequence<size_t, Extents...>,
@@ -64,8 +64,8 @@ template<class IndexType, class ... Arguments>
 MDSPAN_INLINE_FUNCTION
 static constexpr bool are_valid_indices() {
     return
-      _MDSPAN_FOLD_AND(std::is_convertible<Arguments, IndexType>::value) &&
-      _MDSPAN_FOLD_AND(std::is_nothrow_constructible<IndexType, Arguments>::value);
+      MDSPAN_IMPL_FOLD_AND(std::is_convertible<Arguments, IndexType>::value) &&
+      MDSPAN_IMPL_FOLD_AND(std::is_nothrow_constructible<IndexType, Arguments>::value);
 }
 
 // ------------------------------------------------------------------
@@ -214,7 +214,7 @@ private:
   using static_vals_t = static_array<TStatic, Values...>;
   constexpr static size_t m_size = sizeof...(Values);
   constexpr static size_t m_size_dynamic =
-      _MDSPAN_FOLD_PLUS_RIGHT((Values == dyn_tag), 0);
+      MDSPAN_IMPL_FOLD_PLUS_RIGHT((Values == dyn_tag), 0);
 
   // Dynamic values member
   MDSPAN_IMPL_NO_UNIQUE_ADDRESS possibly_empty_array<TDynamic, m_size_dynamic>
@@ -398,7 +398,7 @@ public:
 private:
   constexpr static rank_type m_rank = sizeof...(Extents);
   constexpr static rank_type m_rank_dynamic =
-      _MDSPAN_FOLD_PLUS_RIGHT((Extents == dynamic_extent), /* + ... + */ 0);
+      MDSPAN_IMPL_FOLD_PLUS_RIGHT((Extents == dynamic_extent), /* + ... + */ 0);
 
   // internal storage type using maybe_static_array
   using vals_t =
@@ -428,9 +428,9 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
       class... OtherIndexTypes,
       /* requires */ (
-          _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_convertible, OtherIndexTypes,
+          MDSPAN_IMPL_FOLD_AND(MDSPAN_IMPL_TRAIT(std::is_convertible, OtherIndexTypes,
                                          index_type) /* && ... */) &&
-          _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_nothrow_constructible, index_type,
+          MDSPAN_IMPL_FOLD_AND(MDSPAN_IMPL_TRAIT(std::is_nothrow_constructible, index_type,
                                          OtherIndexTypes) /* && ... */) &&
           (sizeof...(OtherIndexTypes) == m_rank ||
            sizeof...(OtherIndexTypes) == m_rank_dynamic)))
@@ -442,8 +442,8 @@ public:
       class OtherIndexType, size_t N,
       /* requires */
       (
-          _MDSPAN_TRAIT(std::is_convertible, const OtherIndexType&, index_type) &&
-          _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type,
+          MDSPAN_IMPL_TRAIT(std::is_convertible, const OtherIndexType&, index_type) &&
+          MDSPAN_IMPL_TRAIT(std::is_nothrow_constructible, index_type,
               const OtherIndexType&) &&
           (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
@@ -455,8 +455,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
       class OtherIndexType, size_t N,
       /* requires */
-      (_MDSPAN_TRAIT(std::is_convertible, const OtherIndexType&, index_type) &&
-       _MDSPAN_TRAIT(std::is_nothrow_constructible, index_type, const OtherIndexType&) &&
+      (MDSPAN_IMPL_TRAIT(std::is_convertible, const OtherIndexType&, index_type) &&
+       MDSPAN_IMPL_TRAIT(std::is_nothrow_constructible, index_type, const OtherIndexType&) &&
        (N == m_rank || N == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
@@ -650,7 +650,7 @@ check_upper_bound(InputIndexType user_index,
 
 // Returning true to use AND fold instead of comma
 // CPP14 mode doesn't like the use of void expressions
-// with the way the _MDSPAN_FOLD_AND is set up
+// with the way the MDSPAN_IMPL_FOLD_AND is set up
 template<class InputIndex, class ExtentsIndexType>
 MDSPAN_INLINE_FUNCTION
 constexpr bool
@@ -673,7 +673,7 @@ check_all_indices_helper(std::index_sequence<RankIndices...>,
                          Indices... indices)
 {
   // Suppress warning about statement has no effect
-  (void) _MDSPAN_FOLD_AND(
+  (void) MDSPAN_IMPL_FOLD_AND(
     (check_one_index(indices, exts.extent(RankIndices)))
   );
 }

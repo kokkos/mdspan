@@ -30,11 +30,11 @@ namespace detail {
 template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
   MDSPAN_IMPL_NO_UNIQUE_ADDRESS _T1 __t1_val{};
   MDSPAN_IMPL_NO_UNIQUE_ADDRESS _T2 __t2_val{};
-  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
     return __t1_val;
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T2 &__second() noexcept { return __t2_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T2 &__second() noexcept { return __t2_val; }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T2 const &__second() const noexcept {
     return __t2_val;
   }
@@ -46,10 +46,10 @@ template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
   operator=(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
   operator=(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~__compressed_pair() = default;
@@ -64,16 +64,16 @@ template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
 template <class _T1, class _T2>
 struct __compressed_pair<
     _T1, _T2,
-    std::enable_if_t<_MDSPAN_TRAIT(std::is_empty, _T1) && !_MDSPAN_TRAIT(std::is_empty, _T2)>>
+    std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, _T1) && !MDSPAN_IMPL_TRAIT(std::is_empty, _T2)>>
     : private _T1 {
   _T2 __t2_val{};
-  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T1 &__first() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T1 &__first() noexcept {
     return *static_cast<_T1 *>(this);
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
     return *static_cast<_T1 const *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T2 &__second() noexcept { return __t2_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T2 &__second() noexcept { return __t2_val; }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T2 const &__second() const noexcept {
     return __t2_val;
   }
@@ -85,10 +85,10 @@ struct __compressed_pair<
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
   operator=(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
   operator=(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~__compressed_pair() = default;
@@ -101,14 +101,14 @@ struct __compressed_pair<
 template <class _T1, class _T2>
 struct __compressed_pair<
     _T1, _T2,
-    std::enable_if_t<!_MDSPAN_TRAIT(std::is_empty, _T1) && _MDSPAN_TRAIT(std::is_empty, _T2)>>
+    std::enable_if_t<!MDSPAN_IMPL_TRAIT(std::is_empty, _T1) && MDSPAN_IMPL_TRAIT(std::is_empty, _T2)>>
     : private _T2 {
   _T1 __t1_val{};
-  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
     return __t1_val;
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T2 &__second() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T2 &__second() noexcept {
     return *static_cast<_T2 *>(this);
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T2 const &__second() const noexcept {
@@ -122,10 +122,10 @@ struct __compressed_pair<
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
   operator=(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
   operator=(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~__compressed_pair() = default;
@@ -139,7 +139,7 @@ struct __compressed_pair<
 template <class _T1, class _T2>
 struct __compressed_pair<
     _T1, _T2,
-    std::enable_if_t<_MDSPAN_TRAIT(std::is_empty, _T1) && _MDSPAN_TRAIT(std::is_empty, _T2)>>
+    std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, _T1) && MDSPAN_IMPL_TRAIT(std::is_empty, _T2)>>
     // We need to use the __no_unique_address_emulation wrapper here to avoid
     // base class ambiguities.
 #ifdef MDSPAN_IMPL_COMPILER_MSVC
@@ -155,13 +155,13 @@ struct __compressed_pair<
   using __first_base_t = __no_unique_address_emulation<_T1, 0>;
   using __second_base_t = __no_unique_address_emulation<_T2, 1>;
 
-  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T1 &__first() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T1 &__first() noexcept {
     return this->__first_base_t::__ref();
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
     return this->__first_base_t::__ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14 _T2 &__second() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T2 &__second() noexcept {
     return this->__second_base_t::__ref();
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr _T2 const &__second() const noexcept {
@@ -175,10 +175,10 @@ struct __compressed_pair<
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr __compressed_pair(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
   operator=(__compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  _MDSPAN_CONSTEXPR_14_DEFAULTED __compressed_pair &
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
   operator=(__compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   ~__compressed_pair() = default;

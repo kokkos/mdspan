@@ -21,7 +21,7 @@
 
 namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
+MDSPAN_IMPL_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 template<class MDSpan, class MDArray>
 struct MDArrayToMDSpanOperatorTest {
@@ -60,5 +60,3 @@ TEST(TestMDArray,mdarray_to_mdspan) {
                               100
                               );
 }
-
-

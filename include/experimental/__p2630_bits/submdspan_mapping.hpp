@@ -72,7 +72,7 @@ MDSPAN_INLINE_FUNCTION constexpr bool
 any_slice_out_of_bounds_helper(std::index_sequence<RankIndices...>,
                                const extents<IndexType, Exts...> &exts,
                                const Slices &... slices) {
-  return _MDSPAN_FOLD_OR(
+  return MDSPAN_IMPL_FOLD_OR(
       (one_slice_out_of_bounds(exts.extent(RankIndices), slices)));
 }
 

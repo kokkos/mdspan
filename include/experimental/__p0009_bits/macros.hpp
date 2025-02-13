@@ -25,32 +25,32 @@
 #include "assert.h"
 #endif
 
-#ifndef _MDSPAN_HOST_DEVICE
+#ifndef MDSPAN_IMPL_HOST_DEVICE
 #  if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP)
-#    define _MDSPAN_HOST_DEVICE __host__ __device__
+#    define MDSPAN_IMPL_HOST_DEVICE __host__ __device__
 #  else
-#    define _MDSPAN_HOST_DEVICE
+#    define MDSPAN_IMPL_HOST_DEVICE
 #  endif
 #endif
 
 #ifndef MDSPAN_FORCE_INLINE_FUNCTION
 #  ifdef MDSPAN_IMPL_COMPILER_MSVC // Microsoft compilers
-#    define MDSPAN_FORCE_INLINE_FUNCTION __forceinline _MDSPAN_HOST_DEVICE
+#    define MDSPAN_FORCE_INLINE_FUNCTION __forceinline MDSPAN_IMPL_HOST_DEVICE
 #  else
-#    define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline)) _MDSPAN_HOST_DEVICE
+#    define MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline)) MDSPAN_IMPL_HOST_DEVICE
 #  endif
 #endif
 
 #ifndef MDSPAN_INLINE_FUNCTION
-#  define MDSPAN_INLINE_FUNCTION inline _MDSPAN_HOST_DEVICE
+#  define MDSPAN_INLINE_FUNCTION inline MDSPAN_IMPL_HOST_DEVICE
 #endif
 
 #ifndef MDSPAN_FUNCTION
-#  define MDSPAN_FUNCTION _MDSPAN_HOST_DEVICE
+#  define MDSPAN_FUNCTION MDSPAN_IMPL_HOST_DEVICE
 #endif
 
 #ifdef MDSPAN_IMPL_HAS_HIP
-#  define MDSPAN_DEDUCTION_GUIDE _MDSPAN_HOST_DEVICE
+#  define MDSPAN_DEDUCTION_GUIDE MDSPAN_IMPL_HOST_DEVICE
 #else
 #  define MDSPAN_DEDUCTION_GUIDE
 #endif
@@ -64,15 +64,15 @@
 // <editor-fold desc="Preprocessor helpers"> {{{1
 
 #define MDSPAN_PP_COUNT(...) \
-  _MDSPAN_PP_INTERNAL_EXPAND_ARGS_PRIVATE( \
-    _MDSPAN_PP_INTERNAL_ARGS_AUGMENTER(__VA_ARGS__) \
+  MDSPAN_IMPL_PP_INTERNAL_EXPAND_ARGS( \
+    MDSPAN_IMPL_PP_INTERNAL_ARGS_AUGMENTER(__VA_ARGS__) \
   )
 
-#define _MDSPAN_PP_INTERNAL_ARGS_AUGMENTER(...) unused, __VA_ARGS__
-#define _MDSPAN_PP_INTERNAL_EXPAND(x) x
-#define _MDSPAN_PP_INTERNAL_EXPAND_ARGS_PRIVATE(...) \
-  _MDSPAN_PP_INTERNAL_EXPAND( \
-    _MDSPAN_PP_INTERNAL_COUNT_PRIVATE( \
+#define MDSPAN_IMPL_PP_INTERNAL_ARGS_AUGMENTER(...) unused, __VA_ARGS__
+#define MDSPAN_IMPL_PP_INTERNAL_EXPAND(x) x
+#define MDSPAN_IMPL_PP_INTERNAL_EXPAND_ARGS(...) \
+  MDSPAN_IMPL_PP_INTERNAL_EXPAND( \
+    MDSPAN_IMPL_PP_INTERNAL_COUNT( \
       __VA_ARGS__, 69, 68, 67, 66, 65, 64, 63, 62, 61, \
       60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49,  \
       48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37,  \
@@ -81,7 +81,7 @@
       12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 \
     ) \
   )
-# define _MDSPAN_PP_INTERNAL_COUNT_PRIVATE( \
+# define MDSPAN_IMPL_PP_INTERNAL_COUNT( \
          _1_, _2_, _3_, _4_, _5_, _6_, _7_, _8_, _9_, \
     _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, \
     _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, \
@@ -288,7 +288,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 #define MDSPAN_INSTANTIATE_ONLY_IF_USED \
   MDSPAN_TEMPLATE_REQUIRES( \
     class __instantiate_only_if_used_tparam=void, \
-    ( _MDSPAN_TRAIT(std::is_void, __instantiate_only_if_used_tparam) ) \
+    ( MDSPAN_IMPL_TRAIT(std::is_void, __instantiate_only_if_used_tparam) ) \
   ) \
   /**/
 
@@ -299,9 +299,9 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 // <editor-fold desc="inline variables"> {{{1
 
 #ifdef MDSPAN_IMPL_USE_INLINE_VARIABLES
-#  define _MDSPAN_INLINE_VARIABLE inline
+#  define MDSPAN_IMPL_INLINE_VARIABLE inline
 #else
-#  define _MDSPAN_INLINE_VARIABLE
+#  define MDSPAN_IMPL_INLINE_VARIABLE
 #endif
 
 // </editor-fold> end inline variables }}}1
@@ -311,16 +311,16 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 // <editor-fold desc="Return type deduction"> {{{1
 
 #if MDSPAN_IMPL_USE_RETURN_TYPE_DEDUCTION
-#  define _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
+#  define MDSPAN_IMPL_DEDUCE_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
     auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) { return MDSPAN_PP_REMOVE_PARENS(BODY); }
-#  define _MDSPAN_DEDUCE_DECLTYPE_AUTO_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
+#  define MDSPAN_IMPL_DEDUCE_DECLTYPE_AUTO_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
     decltype(auto) MDSPAN_PP_REMOVE_PARENS(SIGNATURE) { return MDSPAN_PP_REMOVE_PARENS(BODY); }
 #else
-#  define _MDSPAN_DEDUCE_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
+#  define MDSPAN_IMPL_DEDUCE_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
     auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) \
       -> std::remove_cv_t<std::remove_reference_t<decltype(BODY)>> \
     { return MDSPAN_PP_REMOVE_PARENS(BODY); }
-#  define _MDSPAN_DEDUCE_DECLTYPE_AUTO_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
+#  define MDSPAN_IMPL_DEDUCE_DECLTYPE_AUTO_RETURN_TYPE_SINGLE_LINE(SIGNATURE, BODY) \
     auto MDSPAN_PP_REMOVE_PARENS(SIGNATURE) \
       -> decltype(BODY) \
     { return MDSPAN_PP_REMOVE_PARENS(BODY); }
@@ -336,14 +336,14 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 struct __mdspan_enable_fold_comma { };
 
 #ifdef MDSPAN_IMPL_USE_FOLD_EXPRESSIONS
-#  define _MDSPAN_FOLD_AND(...) ((__VA_ARGS__) && ...)
-#  define _MDSPAN_FOLD_AND_TEMPLATE(...) ((__VA_ARGS__) && ...)
-#  define _MDSPAN_FOLD_OR(...) ((__VA_ARGS__) || ...)
-#  define _MDSPAN_FOLD_ASSIGN_LEFT(INIT, ...) (INIT = ... = (__VA_ARGS__))
-#  define _MDSPAN_FOLD_ASSIGN_RIGHT(PACK, ...) (PACK = ... = (__VA_ARGS__))
-#  define _MDSPAN_FOLD_TIMES_RIGHT(PACK, ...) (PACK * ... * (__VA_ARGS__))
-#  define _MDSPAN_FOLD_PLUS_RIGHT(PACK, ...) (PACK + ... + (__VA_ARGS__))
-#  define _MDSPAN_FOLD_COMMA(...) ((__VA_ARGS__), ...)
+#  define MDSPAN_IMPL_FOLD_AND(...) ((__VA_ARGS__) && ...)
+#  define MDSPAN_IMPL_FOLD_AND_TEMPLATE(...) ((__VA_ARGS__) && ...)
+#  define MDSPAN_IMPL_FOLD_OR(...) ((__VA_ARGS__) || ...)
+#  define MDSPAN_IMPL_FOLD_ASSIGN_LEFT(INIT, ...) (INIT = ... = (__VA_ARGS__))
+#  define MDSPAN_IMPL_FOLD_ASSIGN_RIGHT(PACK, ...) (PACK = ... = (__VA_ARGS__))
+#  define MDSPAN_IMPL_FOLD_TIMES_RIGHT(PACK, ...) (PACK * ... * (__VA_ARGS__))
+#  define MDSPAN_IMPL_FOLD_PLUS_RIGHT(PACK, ...) (PACK + ... + (__VA_ARGS__))
+#  define MDSPAN_IMPL_FOLD_COMMA(...) ((__VA_ARGS__), ...)
 #else
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
@@ -651,16 +651,16 @@ struct __bools;
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
-#  define _MDSPAN_FOLD_AND(...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_and_impl((__VA_ARGS__)...)
-#  define _MDSPAN_FOLD_OR(...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_or_impl((__VA_ARGS__)...)
-#  define _MDSPAN_FOLD_ASSIGN_LEFT(INIT, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_left_assign_impl(INIT, (__VA_ARGS__)...)
-#  define _MDSPAN_FOLD_ASSIGN_RIGHT(PACK, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_assign_impl((PACK)..., __VA_ARGS__)
-#  define _MDSPAN_FOLD_TIMES_RIGHT(PACK, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_times_impl((PACK)..., __VA_ARGS__)
-#  define _MDSPAN_FOLD_PLUS_RIGHT(PACK, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_plus_impl((PACK)..., __VA_ARGS__)
-#  define _MDSPAN_FOLD_COMMA(...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_comma_impl((__VA_ARGS__)...)
+#  define MDSPAN_IMPL_FOLD_AND(...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_and_impl((__VA_ARGS__)...)
+#  define MDSPAN_IMPL_FOLD_OR(...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_or_impl((__VA_ARGS__)...)
+#  define MDSPAN_IMPL_FOLD_ASSIGN_LEFT(INIT, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_left_assign_impl(INIT, (__VA_ARGS__)...)
+#  define MDSPAN_IMPL_FOLD_ASSIGN_RIGHT(PACK, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_assign_impl((PACK)..., __VA_ARGS__)
+#  define MDSPAN_IMPL_FOLD_TIMES_RIGHT(PACK, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_times_impl((PACK)..., __VA_ARGS__)
+#  define MDSPAN_IMPL_FOLD_PLUS_RIGHT(PACK, ...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_right_plus_impl((PACK)..., __VA_ARGS__)
+#  define MDSPAN_IMPL_FOLD_COMMA(...) MDSPAN_IMPL_STANDARD_NAMESPACE::__fold_compatibility_impl::__fold_comma_impl((__VA_ARGS__)...)
 
-#  define _MDSPAN_FOLD_AND_TEMPLATE(...) \
-  _MDSPAN_TRAIT(std::is_same, __fold_compatibility_impl::__bools<(__VA_ARGS__)..., true>, __fold_compatibility_impl::__bools<true, (__VA_ARGS__)...>)
+#  define MDSPAN_IMPL_FOLD_AND_TEMPLATE(...) \
+  MDSPAN_IMPL_TRAIT(std::is_same, __fold_compatibility_impl::__bools<(__VA_ARGS__)..., true>, __fold_compatibility_impl::__bools<true, (__VA_ARGS__)...>)
 
 #endif
 
@@ -671,9 +671,9 @@ struct __bools;
 // <editor-fold desc="Variable template compatibility"> {{{1
 
 #if MDSPAN_IMPL_USE_VARIABLE_TEMPLATES
-#  define _MDSPAN_TRAIT(TRAIT, ...) TRAIT##_v<__VA_ARGS__>
+#  define MDSPAN_IMPL_TRAIT(TRAIT, ...) TRAIT##_v<__VA_ARGS__>
 #else
-#  define _MDSPAN_TRAIT(TRAIT, ...) TRAIT<__VA_ARGS__>::value
+#  define MDSPAN_IMPL_TRAIT(TRAIT, ...) TRAIT<__VA_ARGS__>::value
 #endif
 
 // </editor-fold> end Variable template compatibility }}}1
@@ -683,16 +683,16 @@ struct __bools;
 // <editor-fold desc="Pre-C++14 constexpr"> {{{1
 
 #if MDSPAN_IMPL_USE_CONSTEXPR_14
-#  define _MDSPAN_CONSTEXPR_14 constexpr
+#  define MDSPAN_IMPL_CONSTEXPR_14 constexpr
 // Workaround for a bug (I think?) in EDG frontends
 #  ifdef __EDG__
-#    define _MDSPAN_CONSTEXPR_14_DEFAULTED
+#    define MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED
 #  else
-#    define _MDSPAN_CONSTEXPR_14_DEFAULTED constexpr
+#    define MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED constexpr
 #  endif
 #else
-#  define _MDSPAN_CONSTEXPR_14
-#  define _MDSPAN_CONSTEXPR_14_DEFAULTED
+#  define MDSPAN_IMPL_CONSTEXPR_14
+#  define MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED
 #endif
 
 // </editor-fold> end Pre-C++14 constexpr }}}1

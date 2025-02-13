@@ -118,7 +118,7 @@ constexpr T&& _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
 
 template <class T, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
-_MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
+MDSPAN_IMPL_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
   Kokkos::mdspan<T, Kokkos::extents<index_type>, Rest...> s
 )
@@ -128,7 +128,7 @@ _MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
 
 template <class T, size_t E, size_t... Es, class... Rest>
 MDSPAN_FORCE_INLINE_FUNCTION
-_MDSPAN_CONSTEXPR_14 void _do_sum_submdspan(
+MDSPAN_IMPL_CONSTEXPR_14 void _do_sum_submdspan(
   T& sum,
   Kokkos::mdspan<T, Kokkos::extents<index_type, E, Es...>, Rest...> s
 )
@@ -195,4 +195,3 @@ BENCHMARK_CAPTURE(
 //================================================================================
 
 BENCHMARK_MAIN();
-
