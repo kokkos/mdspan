@@ -306,7 +306,7 @@ struct ImplicitConversionToExts<Extents,false> {
 };
 
 
-#ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
+#ifdef MDSPAN_HAS_CXX_20
 TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
   bool exts1_convertible_exts2 =
     std::is_convertible<typename TestFixture::extents_type1,
