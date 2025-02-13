@@ -73,10 +73,10 @@ if __name__ == "__main__":
             # We use an include guard instead of `#pragma once` because Godbolt will
             # cause complaints about `#pragma once` when they are used in URL includes.
             [
-                "#ifndef _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_\n",
-                "#define _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_\n",
+                "#ifndef MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_\n",
+                "#define MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_\n",
             ],
-            ["#endif // _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_\n"],
+            ["#endif // MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_\n"],
             [str(Path(sys.argv[1]).resolve())],
         )
     )
