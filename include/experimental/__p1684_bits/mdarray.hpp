@@ -290,7 +290,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr const_reference operator[](const std::array<SizeType, N>& indices) const noexcept
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return __impl::template callop<reference>(*this, indices);
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -303,7 +303,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](const std::array<SizeType, N>& indices) noexcept
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return __impl::template callop<reference>(*this, indices);
   }
 #endif
 
@@ -345,7 +345,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr const_reference operator()(const std::array<SizeType, N>& indices) const noexcept
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return __impl::template callop<reference>(*this, indices);
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -358,7 +358,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(const std::array<SizeType, N>& indices) noexcept
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return __impl::template callop<reference>(*this, indices);
   }
 #endif
   #endif
