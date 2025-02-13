@@ -97,25 +97,25 @@ using test_right_type_compatible = std::tuple<
   typename Kokkos::layout_right::template mapping<E2>, S2
 >;
 template <size_t... Ds>
-using _sizes = std::integer_sequence<size_t, Ds...>;
+using sizes = std::integer_sequence<size_t, Ds...>;
 template <size_t... Ds>
-using _exts = Kokkos::extents<size_t,Ds...>;
+using exts = Kokkos::extents<size_t,Ds...>;
 
-template <template <class, class, class, class> class _test_case_type>
+template <template <class, class, class, class> class test_case_type>
 using compatible_layout_test_types =
   ::testing::Types<
-    _test_case_type<_exts<dyn>, _sizes<10>, _exts<10>, _sizes<>>,
+    test_case_type<exts<dyn>, sizes<10>, exts<10>, sizes<>>,
     //--------------------
-    _test_case_type<_exts<dyn, 10>, _sizes<5>, _exts<5, dyn>, _sizes<10>>,
-    _test_case_type<_exts<dyn, dyn>, _sizes<5, 10>, _exts<5, dyn>, _sizes<10>>,
-    _test_case_type<_exts<dyn, dyn>, _sizes<5, 10>, _exts<dyn, 10>, _sizes<5>>,
-    _test_case_type<_exts<dyn, dyn>, _sizes<5, 10>, _exts<5, 10>, _sizes<>>,
-    _test_case_type<_exts<5, 10>, _sizes<>, _exts<5, dyn>, _sizes<10>>,
-    _test_case_type<_exts<5, 10>, _sizes<>, _exts<dyn, 10>, _sizes<5>>,
+    test_case_type<exts<dyn, 10>, sizes<5>, exts<5, dyn>, sizes<10>>,
+    test_case_type<exts<dyn, dyn>, sizes<5, 10>, exts<5, dyn>, sizes<10>>,
+    test_case_type<exts<dyn, dyn>, sizes<5, 10>, exts<dyn, 10>, sizes<5>>,
+    test_case_type<exts<dyn, dyn>, sizes<5, 10>, exts<5, 10>, sizes<>>,
+    test_case_type<exts<5, 10>, sizes<>, exts<5, dyn>, sizes<10>>,
+    test_case_type<exts<5, 10>, sizes<>, exts<dyn, 10>, sizes<5>>,
     //--------------------
-    _test_case_type<_exts<dyn, dyn, 15>, _sizes<5, 10>, _exts<5, dyn, 15>, _sizes<10>>,
-    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<5, dyn, 15>, _sizes<10>>,
-    _test_case_type<_exts<5, 10, 15>, _sizes<>, _exts<dyn, dyn, dyn>, _sizes<5, 10, 15>>
+    test_case_type<exts<dyn, dyn, 15>, sizes<5, 10>, exts<5, dyn, 15>, sizes<10>>,
+    test_case_type<exts<5, 10, 15>, sizes<>, exts<5, dyn, 15>, sizes<10>>,
+    test_case_type<exts<5, 10, 15>, sizes<>, exts<dyn, dyn, dyn>, sizes<5, 10, 15>>
   >;
 
 using left_compatible_test_types = compatible_layout_test_types<test_left_type_compatible>;

@@ -1,5 +1,5 @@
 #define MDSPAN_INTERNAL_TEST
-#define _MDSPAN_DEBUG
+#define MDSPAN_DEBUG
 #include <cassert>
 
 #include <mdspan/mdspan.hpp>

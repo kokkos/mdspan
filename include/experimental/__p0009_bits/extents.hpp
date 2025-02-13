@@ -294,7 +294,7 @@ public:
         m_dyn_vals[dyn_map_t::get(r)] = values[r];
       }
 // Precondition check
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
       else {
         assert(values[r] == static_cast<TDynamic>(static_val));
       }
@@ -309,7 +309,7 @@ public:
   constexpr maybe_static_array(const std::array<T, N> &vals) {
     static_assert((N == m_size), "Invalid number of values.");
 // Precondition check
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
     assert(N == m_size);
 #endif
     for (size_t r = 0; r < m_size; r++) {
@@ -318,7 +318,7 @@ public:
         m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
       }
 // Precondition check
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
       else {
         assert(static_cast<TDynamic>(vals[r]) ==
                static_cast<TDynamic>(static_val));
@@ -334,7 +334,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr maybe_static_array(const std::span<T, N> &vals) {
     static_assert((N == m_size) || (m_size == dynamic_extent));
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
     assert(N == m_size);
 #endif
     for (size_t r = 0; r < m_size; r++) {
@@ -342,7 +342,7 @@ public:
       if (static_val == dyn_tag) {
         m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
       }
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
       else {
         assert(static_cast<TDynamic>(vals[r]) ==
                static_cast<TDynamic>(static_val));
@@ -625,7 +625,7 @@ check_lower_bound(InputIndexType user_index,
                   std::true_type /* is_signed */)
 {
   (void) user_index; // prevent unused variable warning
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
   assert(static_cast<ExtentsIndexType>(user_index) >= 0);
 #endif
 }
@@ -646,7 +646,7 @@ check_upper_bound(InputIndexType user_index,
 {
   (void) user_index; // prevent unused variable warnings
   (void) current_extent;
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
   assert(static_cast<ExtentsIndexType>(user_index) < current_extent);
 #endif
 }

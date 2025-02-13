@@ -33,9 +33,9 @@ struct TestLayoutStride<std::tuple<
 };
 
 template <size_t... Extents>
-using _exts = Kokkos::extents<size_t,Extents...>;
+using exts = Kokkos::extents<size_t,Extents...>;
 template <size_t... Vals>
-using _ints = std::integer_sequence<size_t, Vals...>;
+using ints = std::integer_sequence<size_t, Vals...>;
 template <class E, class DSz, class SStr, class DStr>
 using layout_stride_case_t =
   std::tuple<E, DSz, SStr, DStr>;
@@ -45,9 +45,9 @@ using extents_3dyn5_t = Kokkos::extents<size_t,3, dyn, 5>;
 using extents_ddd_t = Kokkos::extents<size_t,dyn, dyn, dyn>;
 using zero_stride_maps =
   ::testing::Types<
-    layout_stride_case_t<extents_345_t, _ints<>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>,
-    layout_stride_case_t<extents_3dyn5_t, _ints<4>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>,
-    layout_stride_case_t<extents_ddd_t, _ints<3, 4, 5>, _ints<dyn, dyn, dyn>, _ints<0, 0, 0>>
+    layout_stride_case_t<extents_345_t, ints<>, ints<dyn, dyn, dyn>, ints<0, 0, 0>>,
+    layout_stride_case_t<extents_3dyn5_t, ints<4>, ints<dyn, dyn, dyn>, ints<0, 0, 0>>,
+    layout_stride_case_t<extents_ddd_t, ints<3, 4, 5>, ints<dyn, dyn, dyn>, ints<0, 0, 0>>
   >;
 
 template <class T>
@@ -130,17 +130,17 @@ using test_stride_equality = std::tuple<
   Equal
 >;
 template <size_t... Ds>
-using _sizes = std::integer_sequence<size_t, Ds...>;
+using sizes = std::integer_sequence<size_t, Ds...>;
 template <size_t... Ds>
-using _exts = Kokkos::extents<size_t,Ds...>;
+using exts = Kokkos::extents<size_t,Ds...>;
 
-template <template <class, class, class, class, class> class _test_case_type>
+template <template <class, class, class, class, class> class test_case_type>
 using equality_test_types =
   ::testing::Types<
-    _test_case_type<_exts<16, 32>, _sizes<1, 16>, _exts<16, 32>, _sizes<1, 16>, std:: true_type>,
-    _test_case_type<_exts<16, 32>, _sizes<1, 16>, _exts<16, 32>, _sizes<1, 17>, std::false_type>,
-    _test_case_type<_exts<16, 32>, _sizes<1, 16>, _exts<16, 64>, _sizes<1, 16>, std::false_type>,
-    _test_case_type<_exts<16, 32>, _sizes<1, 16>, _exts<16, 64>, _sizes<1, 17>, std::false_type>
+    test_case_type<exts<16, 32>, sizes<1, 16>, exts<16, 32>, sizes<1, 16>, std:: true_type>,
+    test_case_type<exts<16, 32>, sizes<1, 16>, exts<16, 32>, sizes<1, 17>, std::false_type>,
+    test_case_type<exts<16, 32>, sizes<1, 16>, exts<16, 64>, sizes<1, 16>, std::false_type>,
+    test_case_type<exts<16, 32>, sizes<1, 16>, exts<16, 64>, sizes<1, 17>, std::false_type>
   >;
 
 using layout_stride_equality_test_types = equality_test_types<test_stride_equality>;
