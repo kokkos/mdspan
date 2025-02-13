@@ -377,7 +377,7 @@ TYPED_TEST(TestSubMDSpan, submdspan_return_type) {
   static_assert(std::is_same<typename TestFixture::mds_sub_t,
                              typename TestFixture::mds_sub_deduced_t>::value,
                 "SubMDSpan: wrong return type");
-  __MDSPAN_TESTS_RUN_TEST(TestFixture::run());
+  MDSPAN_IMPL_TESTS_RUN_TEST(TestFixture::run());
 }
 
 #ifdef MDSPAN_IMPL_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION

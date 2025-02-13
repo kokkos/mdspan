@@ -29,13 +29,13 @@ namespace {
 bool dispatch_host = true;
 
 #ifdef MDSPAN_IMPL_HAS_SYCL
-#define __MDSPAN_DEVICE_ASSERT_EQ(LHS, RHS) \
+#define MDSPAN_IMPL_DEVICE_ASSERT_EQ(LHS, RHS) \
 if (!(LHS == RHS)) { \
   sycl::ext::oneapi::experimental::printf("expected equality of %s and %s\n", #LHS, #RHS); \
   errors[0]++; \
 }
 #else
- #define __MDSPAN_DEVICE_ASSERT_EQ(LHS, RHS) \
+ #define MDSPAN_IMPL_DEVICE_ASSERT_EQ(LHS, RHS) \
  if (!(LHS == RHS)) { \
   printf("expected equality of %s and %s\n", #LHS, #RHS); \
   errors[0]++; \
@@ -93,13 +93,13 @@ void free_array(T* ptr) {
     freeManaged(ptr);
 }
 
-#define __MDSPAN_TESTS_RUN_TEST(A) \
+#define MDSPAN_IMPL_TESTS_RUN_TEST(A) \
  dispatch_host = true; \
  A; \
  dispatch_host = false; \
  A;
 
-#define __MDSPAN_TESTS_DISPATCH_DEFINED
+#define MDSPAN_IMPL_TESTS_DISPATCH_DEFINED
 #endif // MDSPAN_IMPL_HAS_CUDA
 
 #ifdef MDSPAN_IMPL_HAS_SYCL
@@ -147,16 +147,16 @@ void free_array(T* ptr) {
   }
 }
 
-#define __MDSPAN_TESTS_RUN_TEST(A) \
+#define MDSPAN_IMPL_TESTS_RUN_TEST(A) \
  dispatch_host = true; \
  A; \
  dispatch_host = false; \
  A;
 
-#define __MDSPAN_TESTS_DISPATCH_DEFINED
+#define MDSPAN_IMPL_TESTS_DISPATCH_DEFINED
 #endif // MDSPAN_IMPL_HAS_SYCL
 
-#ifndef __MDSPAN_TESTS_DISPATCH_DEFINED
+#ifndef MDSPAN_IMPL_TESTS_DISPATCH_DEFINED
 template<class LAMBDA>
 void dispatch(LAMBDA&& f) {
   static_cast<LAMBDA&&>(f)();
@@ -173,7 +173,7 @@ void free_array(T* ptr) {
   delete [] ptr;
 }
 
-#define __MDSPAN_TESTS_RUN_TEST(A) \
+#define MDSPAN_IMPL_TESTS_RUN_TEST(A) \
  dispatch_host = true; \
  A;
 #endif

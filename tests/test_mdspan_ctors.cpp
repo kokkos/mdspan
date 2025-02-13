@@ -28,22 +28,22 @@ void test_mdspan_ctor_default() {
 
   dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
     Kokkos::mdspan<int, Kokkos::dextents<size_t,1>> m;
-    __MDSPAN_DEVICE_ASSERT_EQ(m.data_handle(), nullptr);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 0);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.static_extent(0), dyn);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.stride(0), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.size(), 0);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.empty(), true);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.data_handle(), nullptr);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.rank(), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.rank_dynamic(), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.extent(0), 0);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.static_extent(0), dyn);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.stride(0), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.size(), 0);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.empty(), true);
   });
   ASSERT_EQ(errors[0], 0);
   free_array(errors);
 }
 
 TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_default) {
-  __MDSPAN_TESTS_RUN_TEST(test_mdspan_ctor_default())
+  MDSPAN_IMPL_TESTS_RUN_TEST(test_mdspan_ctor_default())
 }
 
 void test_mdspan_ctor_data_carray() {
@@ -53,24 +53,24 @@ void test_mdspan_ctor_data_carray() {
   dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
     int data[1] = {42};
     Kokkos::mdspan<int, Kokkos::extents<size_t,1>> m(data);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.data_handle(), data);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.static_extent(0), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.stride(0), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.data_handle(), data);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.rank(), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.extent(0), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.static_extent(0), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.stride(0), 1);
     auto val = MDSPAN_IMPL_OP(m,0);
-    __MDSPAN_DEVICE_ASSERT_EQ(val, 42);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.size(), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.empty(), false);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(val, 42);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.size(), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.empty(), false);
   });
   ASSERT_EQ(errors[0], 0);
   free_array(errors);
 }
 
 TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_data_carray) {
-  __MDSPAN_TESTS_RUN_TEST(test_mdspan_ctor_data_carray())
+  MDSPAN_IMPL_TESTS_RUN_TEST(test_mdspan_ctor_data_carray())
 }
 
 TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {

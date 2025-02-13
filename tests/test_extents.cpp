@@ -119,15 +119,15 @@ using extents_test_types =
 TYPED_TEST_SUITE(TestExtents, extents_test_types);
 
 TYPED_TEST(TestExtents, rank) {
-  __MDSPAN_TESTS_RUN_TEST(this->test_rank())
+  MDSPAN_IMPL_TESTS_RUN_TEST(this->test_rank())
 }
 
 TYPED_TEST(TestExtents, static_extent) {
-  __MDSPAN_TESTS_RUN_TEST(this->test_static_extent())
+  MDSPAN_IMPL_TESTS_RUN_TEST(this->test_static_extent())
 }
 
 TYPED_TEST(TestExtents, extent) {
-  __MDSPAN_TESTS_RUN_TEST(this->test_extent())
+  MDSPAN_IMPL_TESTS_RUN_TEST(this->test_extent())
 }
 
 TYPED_TEST(TestExtents, default_ctor) {
