@@ -26,7 +26,7 @@ void test_mdspan_std_swap_static_extents() {
   size_t* errors = allocate_array<size_t>(1);
   errors[0] = 0;
 
-  dispatch([=] _MDSPAN_HOST_DEVICE () {
+  dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
     int data1[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
     int data2[12] = {21,22,23,24,25,26,27,28,29,30,31,32};
     Kokkos::mdspan<int, Kokkos::extents<size_t,3,4>> m1(data1);
@@ -66,7 +66,7 @@ void test_mdspan_std_swap_dynamic_extents() {
   size_t* errors = allocate_array<size_t>(1);
   errors[0] = 0;
 
-  dispatch([=] _MDSPAN_HOST_DEVICE () {
+  dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
     int data1[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
     int data2[12] = {21,22,23,24,25,26,27,28,29,30,31,32};
     Kokkos::mdspan<int, Kokkos::dextents<size_t,2>> m1(data1,3,4);
@@ -108,7 +108,7 @@ void test_mdspan_foo_swap_dynamic_extents() {
   size_t* errors = allocate_array<size_t>(1);
   errors[0] = 0;
 
-  dispatch([=] _MDSPAN_HOST_DEVICE () {
+  dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
     using map_t = Foo::layout_foo::template mapping<Kokkos::dextents<size_t ,2>>;
     using acc_t = Foo::foo_accessor<int>;
 

@@ -45,7 +45,7 @@ struct TestExtents<
   void test_rank() {
     size_t* result = allocate_array<size_t>(2);
 
-    dispatch([=] _MDSPAN_HOST_DEVICE () {
+    dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
       extents_type _exts(DynamicSizes...);
       // Silencing an unused warning in nvc++ the condition will never be true
       size_t dyn_val = _exts.rank()>0?static_cast<size_t>(_exts.extent(0)):1;
@@ -63,7 +63,7 @@ struct TestExtents<
   void test_static_extent() {
     size_t* result = allocate_array<size_t>(extents_type::rank());
 
-    dispatch([=] _MDSPAN_HOST_DEVICE () {
+    dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
       extents_type _exts(DynamicSizes...);
       for(size_t r=0; r<_exts.rank(); r++) {
         // Silencing an unused warning in nvc++ the condition will never be true
@@ -83,7 +83,7 @@ struct TestExtents<
   void test_extent() {
     size_t* result = allocate_array<size_t>(extents_type::rank());
 
-    dispatch([=] _MDSPAN_HOST_DEVICE () {
+    dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
       extents_type _exts(DynamicSizes...);
       for(size_t r=0; r<_exts.rank(); r++ )
         result[r] = _exts.extent(r);

@@ -23,7 +23,7 @@
 #include "offload_utils.hpp"
 #include "foo_customizations.hpp"
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
+MDSPAN_IMPL_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 TEST(TestSubmdspanLayoutRightStaticSizedRankReducing3Dto1D, test_submdspan_layout_right_static_sized_rank_reducing_3d_to_1d) {
   std::vector<int> d(2 * 3 * 4, 0);
@@ -357,7 +357,7 @@ struct TestSubMDSpan<
     map_t map{ typename mds_org_t::extents_type(ConstrArgs...) };
     mds_org_t src(data, map);
 
-    dispatch([=] _MDSPAN_HOST_DEVICE () {
+    dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
       auto sub = Kokkos::submdspan(src, create_slice_arg(SubArgs())...);
       bool match = check_submdspan_match(0, 0, src, sub, std::index_sequence<>(), std::index_sequence<>(), create_slice_arg(SubArgs())...);
       result[0] = match?1:0;

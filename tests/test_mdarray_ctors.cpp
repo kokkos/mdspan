@@ -54,7 +54,7 @@ struct ChatterResource : std::pmr::memory_resource{
 
 namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
+MDSPAN_IMPL_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 template<int Rank>
 struct mdarray_values;
@@ -172,7 +172,7 @@ void test_mdarray_ctor_data_carray() {
   size_t* errors = allocate_array<size_t>(1);
   errors[0] = 0;
 
-  dispatch([=] _MDSPAN_HOST_DEVICE () {
+  dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
     KokkosEx::mdarray<int, Kokkos::extents<size_t,1>, Kokkos::layout_right, std::array<int, 1>> m(Kokkos::extents<int,1>{});
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);

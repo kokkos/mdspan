@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
+MDSPAN_IMPL_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 template <class> struct TestLayoutCtors;
 template <class Mapping, size_t... DynamicSizes>

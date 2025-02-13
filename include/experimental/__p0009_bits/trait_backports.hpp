@@ -31,7 +31,7 @@
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 #define _MDSPAN_BACKPORT_TRAIT(TRAIT) \
-  template <class... Args> _MDSPAN_INLINE_VARIABLE constexpr auto TRAIT##_v = TRAIT<Args...>::value;
+  template <class... Args> MDSPAN_IMPL_INLINE_VARIABLE constexpr auto TRAIT##_v = TRAIT<Args...>::value;
 
 _MDSPAN_BACKPORT_TRAIT(is_assignable)
 _MDSPAN_BACKPORT_TRAIT(is_constructible)

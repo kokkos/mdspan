@@ -20,7 +20,7 @@
 #include <tuple>
 #include <utility>
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
+MDSPAN_IMPL_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 template <class Extents>
 size_t get_expected_mapping(

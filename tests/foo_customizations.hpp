@@ -101,11 +101,11 @@ class layout_foo::mapping {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(std::is_constructible, extents_type, OtherExtents)
+        MDSPAN_IMPL_TRAIT(std::is_constructible, extents_type, OtherExtents)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {
@@ -118,11 +118,11 @@ class layout_foo::mapping {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(std::is_constructible, extents_type, OtherExtents)
+        MDSPAN_IMPL_TRAIT(std::is_constructible, extents_type, OtherExtents)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(Kokkos::layout_right::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {}
@@ -130,12 +130,12 @@ class layout_foo::mapping {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(std::is_constructible, extents_type, OtherExtents) &&
+        MDSPAN_IMPL_TRAIT(std::is_constructible, extents_type, OtherExtents) &&
         (extents_type::rank() <= 1)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(Kokkos::layout_left::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {}
@@ -143,11 +143,11 @@ class layout_foo::mapping {
     MDSPAN_TEMPLATE_REQUIRES(
       class OtherExtents,
       /* requires */ (
-        _MDSPAN_TRAIT(std::is_constructible, extents_type, OtherExtents)
+        MDSPAN_IMPL_TRAIT(std::is_constructible, extents_type, OtherExtents)
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
-    MDSPAN_INLINE_FUNCTION _MDSPAN_CONSTEXPR_14
+    MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(Kokkos::layout_stride::mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
       :__extents(other.extents())
     {
@@ -165,7 +165,7 @@ class layout_foo::mapping {
        #endif
     }
 
-    MDSPAN_INLINE_FUNCTION_DEFAULTED _MDSPAN_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping const&) noexcept = default;
+    MDSPAN_INLINE_FUNCTION_DEFAULTED MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping const&) noexcept = default;
 
     MDSPAN_INLINE_FUNCTION
     constexpr const extents_type& extents() const noexcept {

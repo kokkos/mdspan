@@ -19,14 +19,14 @@
 #include <gtest/gtest.h>
 #include "offload_utils.hpp"
 
-_MDSPAN_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
+MDSPAN_IMPL_INLINE_VARIABLE constexpr auto dyn = Kokkos::dynamic_extent;
 
 
 void test_mdspan_ctor_default() {
   size_t* errors = allocate_array<size_t>(1);
   errors[0] = 0;
 
-  dispatch([=] _MDSPAN_HOST_DEVICE () {
+  dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
     Kokkos::mdspan<int, Kokkos::dextents<size_t,1>> m;
     __MDSPAN_DEVICE_ASSERT_EQ(m.data_handle(), nullptr);
     __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
@@ -50,7 +50,7 @@ void test_mdspan_ctor_data_carray() {
   size_t* errors = allocate_array<size_t>(1);
   errors[0] = 0;
 
-  dispatch([=] _MDSPAN_HOST_DEVICE () {
+  dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
     int data[1] = {42};
     Kokkos::mdspan<int, Kokkos::extents<size_t,1>> m(data);
     __MDSPAN_DEVICE_ASSERT_EQ(m.data_handle(), data);

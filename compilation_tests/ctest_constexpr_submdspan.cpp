@@ -360,7 +360,7 @@ constexpr bool
 submdspan_single_element_stress_test_impl_1(
   std::integer_sequence<size_t, Sizes...>
 ) {
-  return _MDSPAN_FOLD_AND(
+  return MDSPAN_IMPL_FOLD_AND(
     submdspan_single_element_stress_test_impl_2<Layout>(
       std::make_index_sequence<Sizes>{}
     ) /* && ... */
