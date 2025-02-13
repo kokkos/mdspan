@@ -32,7 +32,7 @@ template <
 class mdspan
 {
 private:
-  static_assert(detail::__is_extents_v<Extents>,
+  static_assert(detail::impl_is_extents_v<Extents>,
                 MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::mdspan's Extents template parameter must be a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
   static_assert(std::is_same<ElementType, typename AccessorPolicy::element_type>::value,
                 MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::mdspan's ElementType template parameter must be the same as its AccessorPolicy::element_type.");
@@ -93,7 +93,7 @@ private:
   // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
   using __impl = __deduction_workaround<std::make_index_sequence<extents_type::rank()>>;
 
-  using __map_acc_pair_t = detail::__compressed_pair<mapping_type, accessor_type>;
+  using __map_acc_pair_t = detail::impl_compressed_pair<mapping_type, accessor_type>;
 
 public:
 
@@ -368,14 +368,14 @@ public:
 
 private:
 
-  detail::__compressed_pair<data_handle_type, __map_acc_pair_t> __members{};
+  detail::impl_compressed_pair<data_handle_type, __map_acc_pair_t> __members{};
 
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 data_handle_type& __ptr_ref() noexcept { return __members.__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr data_handle_type const& __ptr_ref() const noexcept { return __members.__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 mapping_type& __mapping_ref() noexcept { return __members.__second().__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr mapping_type const& __mapping_ref() const noexcept { return __members.__second().__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 accessor_type& __accessor_ref() noexcept { return __members.__second().__second(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr accessor_type const& __accessor_ref() const noexcept { return __members.__second().__second(); }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 data_handle_type& __ptr_ref() noexcept { return __members.first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr data_handle_type const& __ptr_ref() const noexcept { return __members.first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 mapping_type& __mapping_ref() noexcept { return __members.second().first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr mapping_type const& __mapping_ref() const noexcept { return __members.second().first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 accessor_type& __accessor_ref() noexcept { return __members.second().second(); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr accessor_type const& __accessor_ref() const noexcept { return __members.second().second(); }
 
   template <class, class, class, class>
   friend class mdspan;

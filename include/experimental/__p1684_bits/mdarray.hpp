@@ -59,7 +59,7 @@ template <
 >
 class mdarray {
 private:
-  static_assert(::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::__is_extents_v<Extents>,
+  static_assert(::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::impl_is_extents_v<Extents>,
                 MDSPAN_IMPL_PROPOSED_NAMESPACE_STRING "::mdspan's Extents template parameter must be a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
 public:

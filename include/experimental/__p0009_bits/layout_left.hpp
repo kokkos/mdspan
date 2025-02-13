@@ -39,7 +39,7 @@ class layout_left::mapping {
     using layout_type = layout_left;
   private:
 
-    static_assert(detail::__is_extents_v<extents_type>,
+    static_assert(detail::impl_is_extents_v<extents_type>,
                   MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::layout_left::mapping must be instantiated with a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
     template <class>

@@ -66,7 +66,7 @@ namespace detail {
 
   template<class M>
   concept __layout_mapping_alike = requires {
-    requires __is_extents<typename M::extents_type>::value;
+    requires impl_is_extents<typename M::extents_type>::value;
 #if defined(__cpp_lib_concepts)
     { M::is_always_strided() } -> std::same_as<bool>;
     { M::is_always_exhaustive() } -> std::same_as<bool>;
@@ -89,7 +89,7 @@ struct layout_stride {
   class mapping
 #if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     : private detail::__no_unique_address_emulation<
-        detail::__compressed_pair<
+        detail::impl_compressed_pair<
           Extents,
           detail::possibly_empty_array<typename Extents::index_type, Extents::rank()>
         >
@@ -104,7 +104,7 @@ struct layout_stride {
     using layout_type = layout_stride;
 
     // This could be a `requires`, but I think it's better and clearer as a `static_assert`.
-    static_assert(detail::__is_extents_v<Extents>,
+    static_assert(detail::impl_is_extents_v<Extents>,
                   MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::layout_stride::mapping must be instantiated with a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
 
@@ -113,7 +113,7 @@ struct layout_stride {
     //----------------------------------------------------------------------------
 
     using __strides_storage_t = detail::possibly_empty_array<index_type, extents_type::rank()>;
-    using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
+    using __member_pair_t = detail::impl_compressed_pair<extents_type, __strides_storage_t>;
 
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     MDSPAN_IMPL_NO_UNIQUE_ADDRESS __member_pair_t __members;
@@ -124,17 +124,17 @@ struct layout_stride {
     MDSPAN_FORCE_INLINE_FUNCTION constexpr __strides_storage_t const&
     __strides_storage() const noexcept {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      return __members.__second();
+      return __members.second();
 #else
-      return this->__base_t::__ref().__second();
+      return this->__base_t::__ref().second();
 #endif
     }
     MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 __strides_storage_t&
     __strides_storage() noexcept {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      return __members.__second();
+      return __members.second();
 #else
-      return this->__base_t::__ref().__second();
+      return this->__base_t::__ref().second();
 #endif
     }
 
@@ -454,9 +454,9 @@ struct layout_stride {
 
     MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      return __members.__first();
+      return __members.first();
 #else
-      return this->__base_t::__ref().__first();
+      return this->__base_t::__ref().first();
 #endif
     };
 
