@@ -88,7 +88,7 @@ struct layout_stride {
   template <class Extents>
   class mapping
 #if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-    : private detail::__no_unique_address_emulation<
+    : private detail::no_unique_address_emulation<
         detail::impl_compressed_pair<
           Extents,
           detail::possibly_empty_array<typename Extents::index_type, Extents::rank()>
@@ -118,7 +118,7 @@ struct layout_stride {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     MDSPAN_IMPL_NO_UNIQUE_ADDRESS member_pair_t m_members;
 #else
-    using base_t = detail::__no_unique_address_emulation<member_pair_t>;
+    using base_t = detail::no_unique_address_emulation<member_pair_t>;
 #endif
 
     MDSPAN_FORCE_INLINE_FUNCTION constexpr strides_storage_t const&
@@ -126,7 +126,7 @@ struct layout_stride {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return m_members.second();
 #else
-      return this->base_t::__ref().second();
+      return this->base_t::ref().second();
 #endif
     }
     MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 strides_storage_t&
@@ -134,7 +134,7 @@ struct layout_stride {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return m_members.second();
 #else
-      return this->base_t::__ref().second();
+      return this->base_t::ref().second();
 #endif
     }
 
@@ -456,7 +456,7 @@ struct layout_stride {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
       return m_members.first();
 #else
-      return this->base_t::__ref().first();
+      return this->base_t::ref().first();
 #endif
     };
 

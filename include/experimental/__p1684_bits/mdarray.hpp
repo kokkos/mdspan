@@ -378,7 +378,7 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return map_.extents(); };
   MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return map_.extents().extent(r); };
   MDSPAN_INLINE_FUNCTION constexpr index_type size() const noexcept {
-//    return __impl::__size(*this);
+//    return __impl::size(*this);
     return ctr_.size();
   };
 

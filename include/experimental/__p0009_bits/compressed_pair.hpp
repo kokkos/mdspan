@@ -140,32 +140,32 @@ template <class T1, class T2>
 struct impl_compressed_pair<
     T1, T2,
     std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, T1) && MDSPAN_IMPL_TRAIT(std::is_empty, T2)>>
-    // We need to use the __no_unique_address_emulation wrapper here to avoid
+    // We need to use the no_unique_address_emulation wrapper here to avoid
     // base class ambiguities.
 #ifdef MDSPAN_IMPL_COMPILER_MSVC
 // MSVC doesn't allow you to access public static member functions of a type
 // when you *happen* to privately inherit from that type.
-    : protected __no_unique_address_emulation<T1, 0>,
-      protected __no_unique_address_emulation<T2, 1>
+    : protected no_unique_address_emulation<T1, 0>,
+      protected no_unique_address_emulation<T2, 1>
 #else
-    : private __no_unique_address_emulation<T1, 0>,
-      private __no_unique_address_emulation<T2, 1>
+    : private no_unique_address_emulation<T1, 0>,
+      private no_unique_address_emulation<T2, 1>
 #endif
 {
-  using __first_base_t = __no_unique_address_emulation<T1, 0>;
-  using __second_base_t = __no_unique_address_emulation<T2, 1>;
+  using __first_base_t = no_unique_address_emulation<T1, 0>;
+  using __second_base_t = no_unique_address_emulation<T2, 1>;
 
   MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &__first() noexcept {
-    return this->__first_base_t::__ref();
+    return this->__first_base_t::ref();
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &__first() const noexcept {
-    return this->__first_base_t::__ref();
+    return this->__first_base_t::ref();
   }
   MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &__second() noexcept {
-    return this->__second_base_t::__ref();
+    return this->__second_base_t::ref();
   }
   MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &__second() const noexcept {
-    return this->__second_base_t::__ref();
+    return this->__second_base_t::ref();
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
