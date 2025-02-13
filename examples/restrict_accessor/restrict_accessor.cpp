@@ -29,14 +29,14 @@ namespace {
 
 
 #if defined(MDSPAN_IMPL_COMPILER_MSVC) || defined(__INTEL_COMPILER)
-#  define _MDSPAN_RESTRICT_KEYWORD __restrict
+#  define MDSPAN_IMPL_RESTRICT_KEYWORD __restrict
 #elif defined(__GNUC__) || defined(__clang__)
-#  define _MDSPAN_RESTRICT_KEYWORD __restrict__
+#  define MDSPAN_IMPL_RESTRICT_KEYWORD __restrict__
 #else
-#  define _MDSPAN_RESTRICT_KEYWORD
+#  define MDSPAN_IMPL_RESTRICT_KEYWORD
 #endif
 
-#define _MDSPAN_RESTRICT_POINTER( ELEMENT_TYPE ) ELEMENT_TYPE * _MDSPAN_RESTRICT_KEYWORD
+#define MDSPAN_IMPL_RESTRICT_POINTER( ELEMENT_TYPE ) ELEMENT_TYPE * MDSPAN_IMPL_RESTRICT_KEYWORD
 
 // https://en.cppreference.com/w/c/language/restrict gives examples
 // of the kinds of optimizations that may apply to restrict.  For instance,
@@ -70,7 +70,7 @@ struct restrict_accessor {
   using offset_policy = Kokkos::default_accessor<ElementType>;
   using element_type = ElementType;
   using reference = ElementType&;
-  using data_handle_type = _MDSPAN_RESTRICT_POINTER( ElementType );
+  using data_handle_type = MDSPAN_IMPL_RESTRICT_POINTER( ElementType );
 
   constexpr restrict_accessor() noexcept = default;
 
@@ -171,9 +171,9 @@ auto benchmark_add_raw_1d(const std::size_t num_trials, const index_type n, cons
 
 template<class ElementType>
 void add_restrict_raw_1d(const index_type n,
-  _MDSPAN_RESTRICT_POINTER(const ElementType) x,
-  _MDSPAN_RESTRICT_POINTER(const ElementType) y,
-  _MDSPAN_RESTRICT_POINTER(ElementType) z)
+  MDSPAN_IMPL_RESTRICT_POINTER(const ElementType) x,
+  MDSPAN_IMPL_RESTRICT_POINTER(const ElementType) y,
+  MDSPAN_IMPL_RESTRICT_POINTER(ElementType) z)
 {
   for (index_type i = 0; i < n; ++i) {
     z[i] = x[i] + y[i];
@@ -184,9 +184,9 @@ template<class ElementType>
 auto benchmark_add_restrict_raw_1d(const std::size_t num_trials, const index_type n, const ElementType* x, const ElementType* y, ElementType* z)
 {
   TICK();
-  _MDSPAN_RESTRICT_POINTER(const ElementType) x2 = x;
-  _MDSPAN_RESTRICT_POINTER(const ElementType) y2 = y;
-  _MDSPAN_RESTRICT_POINTER(ElementType) z2 = z;
+  MDSPAN_IMPL_RESTRICT_POINTER(const ElementType) x2 = x;
+  MDSPAN_IMPL_RESTRICT_POINTER(const ElementType) y2 = y;
+  MDSPAN_IMPL_RESTRICT_POINTER(ElementType) z2 = z;
   for (std::size_t trial = 0; trial < num_trials; ++trial) {
     add_restrict_raw_1d(n, x2, y2, z2);
   }
@@ -197,9 +197,9 @@ auto benchmark_add_restrict_raw_1d(const std::size_t num_trials, const index_typ
 // This checks whether the compiler's alias analysis suffices.
 template<class ElementType>
 void add_unrestrict_raw_1d(const index_type n,
-  _MDSPAN_RESTRICT_POINTER(const ElementType) x,
-  _MDSPAN_RESTRICT_POINTER(const ElementType) y,
-  _MDSPAN_RESTRICT_POINTER(ElementType) z)
+  MDSPAN_IMPL_RESTRICT_POINTER(const ElementType) x,
+  MDSPAN_IMPL_RESTRICT_POINTER(const ElementType) y,
+  MDSPAN_IMPL_RESTRICT_POINTER(ElementType) z)
 {
   const ElementType* x2 = x;
   const ElementType* y2 = y;
@@ -211,9 +211,9 @@ template<class ElementType>
 auto benchmark_add_unrestrict_raw_1d(const std::size_t num_trials, const index_type n, const ElementType* x, const ElementType* y, ElementType* z)
 {
   TICK();
-  _MDSPAN_RESTRICT_POINTER(const ElementType) x2 = x;
-  _MDSPAN_RESTRICT_POINTER(const ElementType) y2 = y;
-  _MDSPAN_RESTRICT_POINTER(ElementType) z2 = z;
+  MDSPAN_IMPL_RESTRICT_POINTER(const ElementType) x2 = x;
+  MDSPAN_IMPL_RESTRICT_POINTER(const ElementType) y2 = y;
+  MDSPAN_IMPL_RESTRICT_POINTER(ElementType) z2 = z;
   for (std::size_t trial = 0; trial < num_trials; ++trial) {
     add_unrestrict_raw_1d(n, x2, y2, z2);
   }
