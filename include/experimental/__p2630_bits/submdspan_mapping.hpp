@@ -46,7 +46,7 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 // Return type of submdspan_mapping overloads
 //******************************************
 template <class LayoutMapping> struct submdspan_mapping_result {
-  MDSPAN_NO_UNIQUE_ADDRESS LayoutMapping mapping{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS LayoutMapping mapping{};
   size_t offset;
 };
 
@@ -254,7 +254,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA altogether
-#if defined(MDSPAN_HAS_HIP) || defined(MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                         detail::tuple<decltype(detail::stride_of(slices))...>{
                             detail::stride_of(slices)...}).values),
 #else
@@ -332,7 +332,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::mapping<Extent
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA alltogether
-#if defined(MDSPAN_HAS_HIP) || defined(MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                         MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices))...>{
                             MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
 #else
@@ -487,7 +487,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA altogether
-#if defined(MDSPAN_HAS_HIP) || defined(MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                         MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(detail::stride_of(slices))...>{
                             detail::stride_of(slices)...}).values),
 #else
@@ -557,7 +557,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::mapping<Exten
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA alltogether
-#if defined(MDSPAN_HAS_HIP) || defined(MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                         MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices))...>{
                             MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
 #else
@@ -605,7 +605,7 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
 // NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
 // the issue but Clang-CUDA also doesn't accept the use of deduction guide so
 // disable it for CUDA alltogether
-#if defined(MDSPAN_HAS_HIP) || defined(MDSPAN_HAS_CUDA)
+#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
                       MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(detail::stride_of(slices))...>(
                           detail::stride_of(slices)...)).values),
 #else
