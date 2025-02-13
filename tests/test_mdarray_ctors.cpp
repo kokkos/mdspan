@@ -589,16 +589,8 @@ TEST(TestMdarrayCTAD, ctad_carray) {
   KokkosEx::mdarray m(data);
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
   ASSERT_EQ(m.data(), &data[0]);
-  #ifdef  _MDSPAN_USE_P2554
-  ASSERT_EQ(m.rank(), 1);
-  ASSERT_EQ(m.rank_dynamic(), 0);
-  ASSERT_EQ(m.static_extent(0), 5);
-  ASSERT_EQ(m.extent(0), 5);
-  ASSERT_EQ(MDSPAN_IMPL_OP(m, 2), 3);
-  #else
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
-  #endif
   ASSERT_TRUE(m.is_exhaustive());
 
 
@@ -617,16 +609,8 @@ TEST(TestMdarrayCTAD, ctad_const_carray) {
   KokkosEx::mdarray m(data);
   static_assert(std::is_same<decltype(m)::element_type,const int>::value);
   ASSERT_EQ(m.data(), &data[0]);
-  #ifdef  _MDSPAN_USE_P2554
-  ASSERT_EQ(m.rank(), 1);
-  ASSERT_EQ(m.rank_dynamic(), 0);
-  ASSERT_EQ(m.static_extent(0), 5);
-  ASSERT_EQ(m.extent(0), 5);
-  ASSERT_EQ(MDSPAN_IMPL_OP(m, 2), 3);
-  #else
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
-  #endif
   ASSERT_TRUE(m.is_exhaustive());
 }
 
