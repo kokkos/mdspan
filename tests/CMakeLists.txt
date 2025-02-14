@@ -20,7 +20,7 @@ function(mdspan_add_test name)
     set_source_files_properties(${name} PROPERTIES LANGUAGE ${MDSPAN_TEST_LANGUAGE})
   endif()
   add_executable(${name} ${ARGUMENT_SOURCE})
-  target_link_libraries(${name} mdspan gtest_main)
+  target_link_libraries(${name} mdspan GTest::gtest_main)
   add_test(${name} ${name})
   set_property(TARGET ${name} PROPERTY COMPILE_WARNING_AS_ERROR ON)
   target_compile_definitions(${name}
@@ -31,7 +31,6 @@ endfunction()
 
 if(MDSPAN_USE_SYSTEM_GTEST)
   find_package(GTest CONFIG REQUIRED)
-  add_library(gtest_main ALIAS GTest::gtest_main)
 else()
   include(FetchContent)
   
@@ -42,6 +41,8 @@ else()
   )
   
   fetchcontent_makeavailable(googletest)
+  
+  add_library(GTest::gtest_main ALIAS gtest_main)
 endif()
 
 # FIXME_MSVC
