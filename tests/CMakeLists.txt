@@ -34,6 +34,9 @@ if(MDSPAN_USE_SYSTEM_GTEST)
 else()
   include(FetchContent)
   
+  if (MSVC)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  endif()
   fetchcontent_declare(
       googletest
       GIT_REPOSITORY https://github.com/google/googletest.git
