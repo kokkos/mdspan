@@ -132,6 +132,7 @@ class layout_left::mapping {
       )
     )
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
+    MDSPAN_INLINE_FUNCTION constexpr
     mapping(const _Mapping& __other) noexcept
       : __extents(__other.extents())
     {
