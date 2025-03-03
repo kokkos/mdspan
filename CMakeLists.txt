@@ -22,6 +22,7 @@ option(MDSPAN_ENABLE_SYCL "Enable SYCL tests/benchmarks/examples if tests/benchm
 option(MDSPAN_ENABLE_HIP "Enable HIP tests/benchmarks/examples if tests/benchmarks/examples are enabled." Off)
 option(MDSPAN_ENABLE_OPENMP "Enable OpenMP benchmarks if benchmarks are enabled." On)
 option(MDSPAN_USE_SYSTEM_GTEST "Use system-installed GoogleTest library for tests." Off)
+option(MDSPAN_USE_SYSTEM_BENCHMARK "Use system-installed Google Benchmark library for benchmarks." On)
 option(MDSPAN_INSTALL_STDMODE_HEADERS "Whether to install headers to emulate standard library headers and namespaces" Off)
 
 # Option to override which C++ standard to use
