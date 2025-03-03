@@ -359,8 +359,11 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr TDynamic value(size_t r) const {
     TStatic static_val = static_vals_t::get(r);
-    return static_val == dyn_tag ? m_dyn_vals[dyn_map_t::get(r)]
-                                        : static_cast<TDynamic>(static_val);
+
+    // FIXME: workaround for nvhpc OpenACC compiler bug
+    TStatic dyn_tag_val = dyn_tag;
+    return static_val == dyn_tag_val ? m_dyn_vals[dyn_map_t::get(r)]
+                                     : static_cast<TDynamic>(static_val);
   }
   MDSPAN_INLINE_FUNCTION
   constexpr TDynamic operator[](size_t r) const { return value(r); }
