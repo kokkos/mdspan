@@ -20,7 +20,7 @@ function(mdspan_add_test name)
     set_source_files_properties(${name} PROPERTIES LANGUAGE ${MDSPAN_TEST_LANGUAGE})
   endif()
   add_executable(${name} ${ARGUMENT_SOURCE})
-  target_link_libraries(${name} mdspan gtest_main)
+  target_link_libraries(${name} mdspan GTest::gtest_main)
   add_test(${name} ${name})
   set_property(TARGET ${name} PROPERTY COMPILE_WARNING_AS_ERROR ON)
   target_compile_definitions(${name}
@@ -31,35 +31,21 @@ endfunction()
 
 if(MDSPAN_USE_SYSTEM_GTEST)
   find_package(GTest CONFIG REQUIRED)
-  add_library(gtest_main ALIAS GTest::gtest_main)
 else()
-  # adapted from https://github.com/google/googletest/blob/master/googletest/README.md
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/googletest/CMakeLists.txt.in googletest-download/CMakeLists.txt)
-  execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
-  )
-  if(result)
-    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+  include(FetchContent)
+  
+  if (MSVC)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   endif()
-  execute_process(COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
+  fetchcontent_declare(
+      googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG v1.16.0
   )
-  if(result)
-    message(FATAL_ERROR "Build step for googletest failed: ${result}")
-  endif()
-
-  # Prevent overriding the parent project's compiler/linker
-  # settings on Windows
-  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-  # Add googletest directly to our build. This defines
-  # the gtest and gtest_main targets.
-  add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-    ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-    EXCLUDE_FROM_ALL
-  )
+  
+  fetchcontent_makeavailable(googletest)
+  
+  add_library(GTest::gtest_main ALIAS gtest_main)
 endif()
 
 # FIXME_MSVC
