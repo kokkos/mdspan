@@ -82,27 +82,6 @@ endif()
 
 ################################################################################
 
-if(MDSPAN_ENABLE_CONCEPTS)
-  if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
-    include(CheckCXXCompilerFlag)
-    check_cxx_compiler_flag("-fconcepts" COMPILER_SUPPORTS_FCONCEPTS)
-    if(COMPILER_SUPPORTS_FCONCEPTS)
-      message(STATUS "Using \"-fconcepts\" to enable concepts support")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts")
-    else()
-      check_cxx_compiler_flag("-fconcepts-ts" COMPILER_SUPPORTS_FCONCEPTS_TS)
-      if(COMPILER_SUPPORTS_FCONCEPTS)
-        message(STATUS "Using \"-fconcepts-ts\" to enable concepts support")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts-ts")
-      endif()
-    endif()
-    # Otherwise, it's possible that the compiler supports concepts without flags,
-    # but if it doesn't, they just won't be used, which is fine
-  endif()
-endif()
-
-################################################################################
-
 if(MDSPAN_ENABLE_CUDA)
   include(CheckLanguage)
   check_language(CUDA)
