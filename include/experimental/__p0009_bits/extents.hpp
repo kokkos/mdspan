@@ -361,8 +361,8 @@ public:
     TStatic static_val = static_vals_t::get(r);
 
     // FIXME: workaround for nvhpc OpenACC compiler bug
-    TStatic dyn_tag_val = dyn_tag;
-    return static_val == dyn_tag_val ? m_dyn_vals[dyn_map_t::get(r)]
+    TStatic dyn_tag_copy = dyn_tag;
+    return static_val == dyn_tag_copy ? m_dyn_vals[dyn_map_t::get(r)]
                                      : static_cast<TDynamic>(static_val);
   }
   MDSPAN_INLINE_FUNCTION
