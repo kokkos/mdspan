@@ -57,10 +57,10 @@ namespace detail {
   namespace internal {
   namespace detail {
   template <typename Tp, typename _Up>
-  concept __same_as = std::is_same_v<Tp, _Up>;
+  concept same_as = std::is_same_v<Tp, _Up>;
   } // namespace detail
   template <class T, class U>
-  concept __same_as = detail::__same_as<T, U> && detail::__same_as<U, T>;
+  concept same_as = detail::same_as<T, U> && detail::same_as<U, T>;
   } // namespace internal
 #  endif
 
@@ -72,9 +72,9 @@ namespace detail {
     { M::is_always_exhaustive() } -> std::same_as<bool>;
     { M::is_always_unique() } -> std::same_as<bool>;
 #else
-    { M::is_always_strided() } -> internal::__same_as<bool>;
-    { M::is_always_exhaustive() } -> internal::__same_as<bool>;
-    { M::is_always_unique() } -> internal::__same_as<bool>;
+    { M::is_always_strided() } -> internal::same_as<bool>;
+    { M::is_always_exhaustive() } -> internal::_ame_as<bool>;
+    { M::is_always_unique() } -> internal::same_as<bool>;
 #endif
     std::bool_constant<M::is_always_strided()>::value;
     std::bool_constant<M::is_always_exhaustive()>::value;
@@ -182,7 +182,7 @@ struct layout_stride {
       MDSPAN_INLINE_FUNCTION
       static constexpr size_t _req_span_size_impl(mapping const& self) noexcept {
         // assumes no negative strides; not sure if I'm allowed to assume that or not
-        return deduction_workaround_impl::_call_op_impl(self, (self.extents().template __extent<Idxs>() - 1)...) + 1;
+        return deduction_workaround_impl::_call_op_impl(self, (self.extents().template extent<Idxs>() - 1)...) + 1;
       }
 
       template<class OtherMapping>

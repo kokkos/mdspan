@@ -67,14 +67,14 @@ struct impl_compressed_pair<
     std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, T1) && !MDSPAN_IMPL_TRAIT(std::is_empty, T2)>>
     : private T1 {
   T2 m_t2_val{};
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &__first() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &first() noexcept {
     return *static_cast<T1 *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &__first() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &first() const noexcept {
     return *static_cast<T1 const *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &__second() noexcept { return m_t2_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &__second() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &second() noexcept { return m_t2_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &second() const noexcept {
     return m_t2_val;
   }
 
@@ -104,14 +104,14 @@ struct impl_compressed_pair<
     std::enable_if_t<!MDSPAN_IMPL_TRAIT(std::is_empty, T1) && MDSPAN_IMPL_TRAIT(std::is_empty, T2)>>
     : private T2 {
   T1 m_t1_val{};
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &__first() noexcept { return m_t1_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &__first() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &first() noexcept { return m_t1_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &first() const noexcept {
     return m_t1_val;
   }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &__second() noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &second() noexcept {
     return *static_cast<T2 *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &__second() const noexcept {
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &second() const noexcept {
     return *static_cast<T2 const *>(this);
   }
 
@@ -152,20 +152,20 @@ struct impl_compressed_pair<
       private no_unique_address_emulation<T2, 1>
 #endif
 {
-  using __first_base_t = no_unique_address_emulation<T1, 0>;
-  using __second_base_t = no_unique_address_emulation<T2, 1>;
+  using first_base_t = no_unique_address_emulation<T1, 0>;
+  using second_base_t = no_unique_address_emulation<T2, 1>;
 
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &__first() noexcept {
-    return this->__first_base_t::ref();
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &first() noexcept {
+    return this->first_base_t::ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &__first() const noexcept {
-    return this->__first_base_t::ref();
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &first() const noexcept {
+    return this->first_base_t::ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &__second() noexcept {
-    return this->__second_base_t::ref();
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &second() noexcept {
+    return this->second_base_t::ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &__second() const noexcept {
-    return this->__second_base_t::ref();
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &second() const noexcept {
+    return this->second_base_t::ref();
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
@@ -184,8 +184,8 @@ struct impl_compressed_pair<
   ~impl_compressed_pair() = default;
   template <class T1Like, class T2Like>
   MDSPAN_INLINE_FUNCTION constexpr impl_compressed_pair(T1Like &&t1, T2Like &&t2) noexcept
-    : __first_base_t(T1((T1Like &&) t1)),
-      __second_base_t(T2((T2Like &&) t2))
+    : first_base_t(T1((T1Like &&) t1)),
+      second_base_t(T2((T2Like &&) t2))
   { }
 };
 

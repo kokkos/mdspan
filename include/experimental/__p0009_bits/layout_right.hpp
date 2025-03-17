@@ -237,7 +237,7 @@ class layout_right::mapping {
     template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
     MDSPAN_INLINE_FUNCTION
     constexpr index_type impl_get_stride(MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
-      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((Idx>N? m_extents.template __extent<Idx>():1),1);
+      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((Idx>N? m_extents.template extent<Idx>():1),1);
     }
     template<size_t N>
     MDSPAN_INLINE_FUNCTION
