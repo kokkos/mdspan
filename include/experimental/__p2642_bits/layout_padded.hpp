@@ -16,6 +16,8 @@
 #pragma once
 
 #include <cassert>
+#include <utility>
+#include <type_traits>
 #include "layout_padded_fwd.hpp"
 #include "../__p0009_bits/dynamic_extent.hpp"
 #include "../__p0009_bits/extents.hpp"
@@ -28,13 +30,46 @@
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 
+#if defined(__cpp_lib_integer_comparison_functions) &&                         \
+    __cpp_lib_integer_comparison_functions >= 202002L
+using std::cmp_greater_equal;
+using std::cmp_less;
+using std::cmp_less_equal;
+using std::in_range;
+#else
+// Backport from https://en.cppreference.com/w/cpp/utility/intcmp
+// and https://en.cppreference.com/w/cpp/utility/in_range
+template <class T, class U> constexpr bool cmp_less(T t, U u) noexcept {
+  if constexpr (std::is_signed_v<T> == std::is_signed_v<U>)
+    return t < u;
+  else if constexpr (std::is_signed_v<T>)
+    return t < 0 || std::make_unsigned_t<T>(t) < u;
+  else
+    return u >= 0 && t < std::make_unsigned_t<U>(u);
+}
+
+template <class T, class U> constexpr bool cmp_less_equal(T t, U u) noexcept {
+  return !cmp_less(u, t);
+}
+
+template <class T, class U>
+constexpr bool cmp_greater_equal(T t, U u) noexcept {
+  return !cmp_less(t, u);
+}
+
+template <class R, class T> constexpr bool in_range(T t) noexcept {
+  return cmp_greater_equal(t, std::numeric_limits<R>::min()) &&
+         cmp_less_equal(t, std::numeric_limits<R>::max());
+}
+#endif
+
 namespace detail {
-template<class T>
+template<class T, class U>
 MDSPAN_INLINE_FUNCTION
 constexpr T
-find_next_multiple(T alignment, T offset)
+find_next_multiple(T alignment, U offset)
 {
-  if ( alignment == 0 ) {
+  if ( alignment == T(0) ) {
     return T(0);
   } else {
     return ( ( offset + alignment - 1 ) / alignment) * alignment;
@@ -55,8 +90,15 @@ MDSPAN_INLINE_FUNCTION constexpr size_t get_actual_static_padding_value() {
             (ExtentsType::static_extent(ExtentToPadIdx) == 0),
         "padding stride can be 0 only if "
         "extents_type::static_extent(extent-to-pad) is 0 or dynamic_extent");
-    return find_next_multiple(PaddingValue,
-                                ExtentsType::static_extent(ExtentToPadIdx));
+    constexpr auto ret = find_next_multiple(
+        PaddingValue, ExtentsType::static_extent(ExtentToPadIdx));
+
+    using index_type = typename ExtentsType::index_type;
+    static_assert(in_range<index_type>(ret),
+                  "The least multiple of padding_value and first-static-extent "
+                  "must be representable by index_type");
+
+    return ret;
   } else {
     return dynamic_extent;
   }
@@ -66,26 +108,27 @@ MDSPAN_INLINE_FUNCTION constexpr size_t get_actual_static_padding_value() {
 #endif
 }
 
-template <size_t PaddingValue, typename Extents, size_t ExtentToPadIdx, size_t Rank, typename Enabled = void>
-struct static_array_type_for_padded_extent
-{
+template <size_t PaddingValue, typename Extents, size_t ExtentToPadIdx,
+          size_t Rank, typename Enabled = void>
+struct static_array_type_for_padded_extent {
   static constexpr size_t padding_value = PaddingValue;
   using index_type = typename Extents::index_type;
   using extents_type = Extents;
   using type = ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::maybe_static_array<
       index_type, size_t, dynamic_extent,
-      ::MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::get_actual_static_padding_value<extents_type, PaddingValue,
-                                                ExtentToPadIdx>()>;
+      ::MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
+          get_actual_static_padding_value<extents_type, PaddingValue,
+                                          ExtentToPadIdx>()>;
 };
 
-template <size_t PaddingValue, typename Extents, size_t ExtentToPadIdx, size_t Rank>
-struct static_array_type_for_padded_extent<PaddingValue, Extents,
-                                             ExtentToPadIdx, Rank, std::enable_if_t<Rank <= 1>> {
+template <size_t PaddingValue, typename Extents, size_t ExtentToPadIdx,
+          size_t Rank>
+struct static_array_type_for_padded_extent<
+    PaddingValue, Extents, ExtentToPadIdx, Rank, std::enable_if_t<Rank <= 1>> {
   using index_type = typename Extents::index_type;
   using extents_type = Extents;
-  using type =
-      ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::maybe_static_array<
-          index_type, size_t, dynamic_extent, 0>;
+  using type = ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::maybe_static_array<
+      index_type, size_t, dynamic_extent, 0>;
 };
 
 template <size_t PaddingValue, typename Extents, size_t ExtentToPadIdx>
@@ -97,11 +140,12 @@ struct padded_extent {
       padding_value, Extents, ExtentToPadIdx, Extents::rank()>::type;
 
   MDSPAN_INLINE_FUNCTION
-  static constexpr auto static_value() { return static_array_type::static_value(0); }
+  static constexpr auto static_value() {
+    return static_array_type::static_value(0);
+  }
 
   MDSPAN_INLINE_FUNCTION
-  static constexpr static_array_type
-  init_padding(const Extents &exts) {
+  static constexpr static_array_type init_padding(const Extents &exts) {
     if constexpr ((Extents::rank() > 1) && (padding_value == dynamic_extent)) {
       return {exts.extent(ExtentToPadIdx)};
     } else {
@@ -115,10 +159,11 @@ struct padded_extent {
 
   MDSPAN_INLINE_FUNCTION static constexpr static_array_type
   init_padding([[maybe_unused]] const Extents &exts,
-               [[maybe_unused]] index_type pv) {
+               [[maybe_unused]] size_t pv) {
     if constexpr (Extents::rank() > 1) {
-      return {find_next_multiple(pv,
-                                   exts.extent(ExtentToPadIdx))};
+      auto strd = find_next_multiple(pv, exts.extent(ExtentToPadIdx));
+      assert(in_range<index_type>(strd));
+      return {strd};
     } else {
       return {};
     }
@@ -131,7 +176,7 @@ struct padded_extent {
   template <typename Mapping, size_t PaddingStrideIdx>
   MDSPAN_INLINE_FUNCTION static constexpr static_array_type
   init_padding([[maybe_unused]] const Mapping &other_mapping,
-                      std::integral_constant<size_t, PaddingStrideIdx>) {
+               std::integral_constant<size_t, PaddingStrideIdx>) {
     if constexpr (Extents::rank() > 1) {
       return {other_mapping.stride(PaddingStrideIdx)};
     } else {
