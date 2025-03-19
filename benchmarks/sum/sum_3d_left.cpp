@@ -49,7 +49,8 @@ void BM_MDSpan_Sum_3D_left(benchmark::State& state, MDSpan, DynSizes... dyn) {
       }
     }
     benchmark::DoNotOptimize(sum);
-    benchmark::DoNotOptimize(s.data_handle());
+    auto sdata = s.data_handle();
+    benchmark::DoNotOptimize(sdata);
   }
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
