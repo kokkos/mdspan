@@ -60,7 +60,7 @@ void test_padding_stride(const Extents &extents, const TestExtents &test_extents
     ASSERT_EQ(mapping.padded_stride.value(0), 0);
   }
 
-  size_t prod = 1;
+  [[maybe_unused]] size_t prod = 1;
   size_t span_size = 1;
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
   if constexpr (TestExtents::rank() > 0) {
@@ -87,7 +87,7 @@ void test_padding_stride(const Extents &extents, const TestExtents &test_extents
     ASSERT_EQ(mapping.padded_stride.value(0), 0);
   }
 
-  size_t prod = 1;
+  [[maybe_unused]] size_t prod = 1;
   size_t span_size = 1;
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
   if constexpr (TestExtents::rank() > 0) {
