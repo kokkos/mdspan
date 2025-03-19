@@ -488,3 +488,9 @@ TEST(LayoutRightTests, access)
           Kokkos::extents<std::size_t>>({}, 4);
   ASSERT_EQ(mapping6(), 0);
 }
+
+// https://github.com/kokkos/mdspan/issues/362
+TEST(LayoutRightTests, issue362) {
+  auto mapping = KokkosEx::layout_right_padded< 5 >::mapping< Kokkos::extents< std::size_t, 2, 2 > >();
+  ASSERT_EQ(mapping.required_span_size(), mapping(1, 1) + 1);
+}

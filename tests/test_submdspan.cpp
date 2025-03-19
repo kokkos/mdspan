@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 
 #include <utility>
+#include <numeric>
 
 #include "offload_utils.hpp"
 #include "foo_customizations.hpp"
@@ -455,3 +456,16 @@ TEST(TestSubmdspanIssue4060, Rank2_one) {
   }
 }
 #endif
+
+// https://github.com/kokkos/mdspan/issues/362
+TEST(TestSubmdspanIssue362, LayoutRightPadded) {
+  float array[1024] = {};
+  std::iota(array, array + 1024, 0);
+  // Original mdspan across a 4x5 data block.
+  Kokkos::mdspan<float, Kokkos::extents<size_t, 4, 5>> m1(array);
+
+  // The bottom-right 2x2 matrix
+  auto m2 = submdspan(m1, std::pair(2, 4), std::pair(3, 5));
+      
+  EXPECT_EQ(m2.mapping().required_span_size(), m2.mapping()(1, 1) + 1);
+}
