@@ -61,17 +61,20 @@ void test_padding_stride(const Extents &extents, const TestExtents &test_extents
   }
 
   size_t prod = 1;
+  size_t span_size = 1;
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
   if constexpr (TestExtents::rank() > 0) {
     auto strs = mapping.strides();
     for (typename decltype(mapping)::rank_type r = 0; r < TestExtents::rank(); ++r)
     {
       ASSERT_EQ(strs[r], prod);
+      ASSERT_EQ(mapping.stride(r), prod);
       prod *= test_extents.extent(r);
+      span_size += (extents.extent(r) - 1) * strs[r];
     }
   }
 
-  ASSERT_EQ(prod, mapping.required_span_size());
+  ASSERT_EQ(span_size, mapping.required_span_size());
 }
 
 template <class LayoutLeftPadded, class Extents, class TestExtents, class Size>
@@ -85,17 +88,20 @@ void test_padding_stride(const Extents &extents, const TestExtents &test_extents
   }
 
   size_t prod = 1;
+  size_t span_size = 1;
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
   if constexpr (TestExtents::rank() > 0) {
     auto strs = mapping.strides();
     for (typename decltype(mapping)::rank_type r = 0; r < TestExtents::rank(); ++r)
     {
       ASSERT_EQ(strs[r], prod);
+      ASSERT_EQ(mapping.stride(r), prod);
       prod *= test_extents.extent(r);
+      span_size += (extents.extent(r) - 1) * strs[r];
     }
   }
 
-  ASSERT_EQ(prod, mapping.required_span_size());
+  ASSERT_EQ(span_size, mapping.required_span_size());
 }
 
 template<class LayoutLeftPadded, class Extents>
