@@ -498,3 +498,29 @@ TEST(LayoutLeftTests, issue362) {
   auto mapping = KokkosEx::layout_left_padded< 5 >::mapping< Kokkos::extents< std::size_t, 2, 2 > >();
   ASSERT_EQ(mapping.required_span_size(), mapping(1, 1) + 1);
 }
+
+// https://github.com/kokkos/mdspan/issues/393
+#define LAYOUT_LEFT_COMPILE_ISSUE393_DEATH 0
+TEST(LayoutLeftTests, issue393) {
+  // Should not compile
+#if LAYOUT_LEFT_COMPILE_ISSUE393_DEATH
+  {
+    // static extents size not representable
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded< 2 >::mapping< Kokkos::extents< std::int8_t, 50, 50 > >();
+  }
+  {
+    // Padding value not representable
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded< 500 >::mapping< Kokkos::extents< std::int8_t, 2, 2 > >();
+  }
+  {
+    // Padding value product with remaining extents is representable
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded< 50 >::mapping< Kokkos::extents< std::int8_t, 2, 50 > >();
+  }
+#endif
+
+// Valid usage, should compile without narrowing warnings
+{
+  [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded< 5 >::mapping< Kokkos::extents< std::int16_t, 2, 50 > >();
+}
+}
+#undef LAYOUT_LEFT_COMPILE_ISSUE393_DEATH
