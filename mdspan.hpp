@@ -4620,7 +4620,7 @@ public:
       for (rank_type r = 1; r < extents_type::rank(); ++r) {
         value *= exts.extent(r);
       }
-      return value;
+      return value + exts.extent(0) - padded_stride.value(0);
     }
   }
 
@@ -4975,11 +4975,11 @@ public:
     } else if constexpr (extents_type::rank() == 1) {
       return exts.extent(0);
     } else {
-      index_type value = 1;
+      index_type value = padded_stride.value(0);
       for (rank_type r = 0; r < extent_to_pad_idx; ++r) {
         value *= exts.extent(r);
       }
-      return value * padded_stride.value(0);
+      return value + exts.extent(extent_to_pad_idx) - padded_stride.value(0);
     }
   }
 
