@@ -60,7 +60,8 @@ void test_padding_stride(const Extents &extents, const TestExtents &test_extents
     ASSERT_EQ(mapping.padded_stride.value(0), 0);
   }
 
-  size_t prod = 1;
+  [[maybe_unused]] size_t prod = 1;
+  size_t span_size = 1;
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
   if constexpr (TestExtents::rank() > 0) {
     auto strs = mapping.strides();
@@ -68,10 +69,12 @@ void test_padding_stride(const Extents &extents, const TestExtents &test_extents
     {
       auto r = TestExtents::rank() - 1 - rrev;
       ASSERT_EQ(strs[r], prod);
+      ASSERT_EQ(mapping.stride(r), prod);
       prod *= test_extents.extent(r);
+      span_size += (extents.extent(r) - 1) * strs[r];
     }
   }
-  ASSERT_EQ(prod, mapping.required_span_size());
+  ASSERT_EQ(span_size, mapping.required_span_size());
 }
 
 template <class LayoutrightPadded, class Extents, class TestExtents, class Size>
@@ -84,7 +87,8 @@ void test_padding_stride(const Extents &extents, const TestExtents &test_extents
     ASSERT_EQ(mapping.padded_stride.value(0), 0);
   }
 
-  size_t prod = 1;
+  [[maybe_unused]] size_t prod = 1;
+  size_t span_size = 1;
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
   if constexpr (TestExtents::rank() > 0) {
     auto strs = mapping.strides();
@@ -92,10 +96,12 @@ void test_padding_stride(const Extents &extents, const TestExtents &test_extents
     {
       auto r = TestExtents::rank() - 1 - rrev;
       ASSERT_EQ(strs[r], prod);
+      ASSERT_EQ(mapping.stride(r), prod);
       prod *= test_extents.extent(r);
+      span_size += (extents.extent(r) - 1) * strs[r];
     }
   }
-  ASSERT_EQ(prod, mapping.required_span_size());
+  ASSERT_EQ(span_size, mapping.required_span_size());
 }
 
 template <class LayoutRightPadded, class Extents>
@@ -487,4 +493,10 @@ TEST(LayoutRightTests, access)
       KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<
           Kokkos::extents<std::size_t>>({}, 4);
   ASSERT_EQ(mapping6(), 0);
+}
+
+// https://github.com/kokkos/mdspan/issues/362
+TEST(LayoutRightTests, issue362) {
+  auto mapping = KokkosEx::layout_right_padded< 5 >::mapping< Kokkos::extents< std::size_t, 2, 2 > >();
+  ASSERT_EQ(mapping.required_span_size(), mapping(1, 1) + 1);
 }
