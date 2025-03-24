@@ -47,9 +47,11 @@ void BM_MDSpan_TinyMatrixSum_right(benchmark::State& state, MDSpan, DynSizes... 
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(o);
-    benchmark::DoNotOptimize(o.data_handle());
+    auto odata = o.data_handle();
+    benchmark::DoNotOptimize(odata);
     benchmark::DoNotOptimize(s);
-    benchmark::DoNotOptimize(s.data_handle());
+    auto sdata = s.data_handle();
+    benchmark::DoNotOptimize(sdata);
     for(index_type i = 0; i < s.extent(0); i ++) {
       for(index_type j = 0; j < s.extent(1); j ++) {
         for(index_type k = 0; k < s.extent(2); k ++) {

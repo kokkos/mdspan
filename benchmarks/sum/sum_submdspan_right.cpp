@@ -45,7 +45,8 @@ void BM_MDSpan_Sum_Subspan_3D_right(benchmark::State& state, MDSpan, DynSizes...
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(s);
-    benchmark::DoNotOptimize(s.data_handle());
+    auto sdata = s.data_handle();
+    benchmark::DoNotOptimize(sdata);
     value_type sum = 0;
     using index_type = typename MDSpan::index_type;
     for(index_type i = 0; i < s.extent(0); ++i) {
@@ -58,7 +59,7 @@ void BM_MDSpan_Sum_Subspan_3D_right(benchmark::State& state, MDSpan, DynSizes...
       }
     }
     benchmark::DoNotOptimize(sum);
-    benchmark::DoNotOptimize(s.data_handle());
+    benchmark::DoNotOptimize(sdata);
   }
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
@@ -154,7 +155,8 @@ void BM_MDSpan_Sum_Subspan_MD_right(benchmark::State& state, MDSpan, DynSizes...
     value_type sum = 0;
     _impl::_do_sum_submdspan(sum, s);
     benchmark::DoNotOptimize(sum);
-    benchmark::DoNotOptimize(s.data_handle());
+    auto sdata = s.data_handle();
+    benchmark::DoNotOptimize(sdata);
   }
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
