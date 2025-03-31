@@ -43,7 +43,12 @@ else()
       GIT_TAG v1.16.0
   )
   
-  fetchcontent_makeavailable(googletest)
+  # TODO CMake 3.28, we can pass EXCLUDE_FROM_ALL directly to fetchcontent_makeavailable
+  fetchcontent_getproperties(googletest)
+  if (NOT googletest_POPULATED)
+    fetchcontent_populate(googletest)
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+  endif()
   
   add_library(GTest::gtest_main ALIAS gtest_main)
 endif()
