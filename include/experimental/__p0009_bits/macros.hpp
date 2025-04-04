@@ -120,6 +120,10 @@ MDSPAN_FUNCTION inline void default_precondition_violation_handler(const char* c
 {
 #ifdef __INTEL_LLVM_COMPILER
   sycl::ext::oneapi::experimental::printf("%s:%u: precondition failure: `%s`\n", file, line, cond);
+#else
+  (void) cond;
+  (void) file;
+  (void) line;
 #endif
   assert(0);
 }
