@@ -538,7 +538,7 @@ TEST(LayoutLeftTests, issue393) {
   {
     // extents not representable
     precondition_failed = false;
-    auto mapping = KokkosEx::layout_left_padded<2>::mapping<
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<2>::mapping<
         Kokkos::dextents<std::int8_t, 2>>{
         Kokkos::dextents<std::int8_t, 2>{50, 50}};
     ASSERT_TRUE(precondition_failed);
@@ -547,7 +547,7 @@ TEST(LayoutLeftTests, issue393) {
   {
     // Padding value not representable
     precondition_failed = false;
-    auto mapping =
+    [[maybe_unused]] auto mapping =
         KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<
             Kokkos::extents<std::int8_t, 2, 2>>{{}, 500};
     ASSERT_TRUE(precondition_failed);
@@ -556,7 +556,7 @@ TEST(LayoutLeftTests, issue393) {
   {
     // Padding value product with remaining extents is representable
     precondition_failed = false;
-    auto mapping =
+    [[maybe_unused]] auto mapping =
         KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<
             Kokkos::extents<std::int8_t, 2, 50>>{{}, 50};
     ASSERT_TRUE(precondition_failed);
@@ -565,7 +565,7 @@ TEST(LayoutLeftTests, issue393) {
   {
     // Padding value product with remaining extents is representable
     precondition_failed = false;
-    auto mapping = KokkosEx::layout_left_padded<
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<
         Kokkos::dynamic_extent>::mapping<Kokkos::dextents<std::int8_t, 2>>{
         Kokkos::dextents<std::int8_t, 2>{2, 50}, 50};
     ASSERT_TRUE(precondition_failed);
@@ -574,7 +574,7 @@ TEST(LayoutLeftTests, issue393) {
   {
     // Padding value product with remaining extents is representable
     precondition_failed = false;
-    auto mapping = KokkosEx::layout_left_padded<50>::mapping<
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<50>::mapping<
         Kokkos::dextents<std::int8_t, 2>>{
         Kokkos::dextents<std::int8_t, 2>{2, 50}};
     ASSERT_TRUE(precondition_failed);
