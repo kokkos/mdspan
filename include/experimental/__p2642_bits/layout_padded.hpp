@@ -161,7 +161,7 @@ struct padded_extent {
                [[maybe_unused]] size_t pv) {
     if constexpr (Extents::rank() > 1) {
       auto strd = find_next_multiple(pv, exts.extent(ExtentToPadIdx));
-      assert(in_range<index_type>(strd));
+      MDSPAN_IMPL_PRECONDITION(in_range<index_type>(strd));
       return {strd};
     } else {
       return {};
@@ -209,15 +209,17 @@ check_mul_result_is_representable(T a, T b) {
 }
 
 template <typename Extents>
-constexpr bool
-check_extents_representability() {
-  if constexpr (Extents::rank_dynamic() != 0)
-    return true;
-
+constexpr bool check_static_extents_representability() {
+  // We cannot check statically for sure if the extents are representable
+  // if we have dynamic values -- this can only be checked by a precondition
+  // We can check if the product of only the static extents is representable though...
   using index_type = typename Extents::index_type;
   auto prod = index_type(1);
   for (size_t i = 0; i < Extents::rank(); ++i) {
-    if (!check_mul_result_is_representable(prod, static_cast< index_type >(Extents::static_extent(i))))
+    if (Extents::static_extent(i) == dynamic_extent)
+      continue;
+    if (!check_mul_result_is_representable(
+            prod, static_cast<index_type>(Extents::static_extent(i))))
       return false;
     prod *= Extents::static_extent(i);
   }
@@ -225,23 +227,36 @@ check_extents_representability() {
   return true;
 }
 
-template <typename CheckType, size_t StaticPaddingValue, typename Extents>
-constexpr bool
-check_extents_and_left_padding_representability() {
-  if constexpr (Extents::rank_dynamic() != 0)
-    return true;
-  
-  if constexpr (StaticPaddingValue == dynamic_extent) {
-    return true;
+template <typename Extents>
+constexpr bool check_extents_representability(const Extents &exts) {
+  using index_type = typename Extents::index_type;
+  auto prod = index_type(1);
+  for (size_t i = 0; i < Extents::rank(); ++i) {
+    if (!check_mul_result_is_representable(
+            prod, static_cast<index_type>(exts.extent(i))))
+      return false;
+    prod *= exts.extent(i);
   }
 
+  return true;
+}
+
+template <typename CheckType, size_t StaticPaddingValue, typename Extents>
+constexpr bool
+check_static_extents_and_left_padding_representability() {
   if constexpr (Extents::rank() < 2) {
     return true;
   }
 
+  // We cannot check statically for sure if the product of the extents and padding value
+  // are representable if we have dynamic values -- this can only be checked by a precondition
+  // We can check if the product of only the static extents and potentially the padding value (if it is static)
+  // is representable though...
   // We already checked that StaticPaddingValue is representable by index_type
-  auto prod = static_cast< CheckType >(StaticPaddingValue);
+  auto prod = (StaticPaddingValue != dynamic_extent) ? static_cast< CheckType >(StaticPaddingValue) : CheckType(1);
   for (size_t i = 1; i < Extents::rank(); ++i) {
+    if (Extents::static_extent(i) == dynamic_extent)
+      continue;
     if (!check_mul_result_is_representable(prod, static_cast< CheckType >(Extents::static_extent(i))))
       return false;
     prod *= Extents::static_extent(i);
@@ -250,26 +265,62 @@ check_extents_and_left_padding_representability() {
   return true;
 }
 
-template <typename CheckType, size_t StaticPaddingValue, typename Extents>
+template <typename CheckType, typename Extents>
 constexpr bool
-check_extents_and_right_padding_representability() {
-  if constexpr (Extents::rank_dynamic() != 0)
-    return true;
-  
-  if constexpr (StaticPaddingValue == dynamic_extent) {
-    return true;
-  }
-
+check_extents_and_left_padding_representability(const Extents &exts,
+                                                size_t dynamic_padding_value) {
   if constexpr (Extents::rank() < 2) {
     return true;
   }
 
+  auto prod = static_cast<CheckType>(dynamic_padding_value);
+  for (size_t i = 1; i < Extents::rank(); ++i) {
+    if (!check_mul_result_is_representable(
+            prod, static_cast<CheckType>(exts.extent(i))))
+      return false;
+    prod *= exts.extent(i);
+  }
+
+  return true;
+}
+
+template <typename CheckType, size_t StaticPaddingValue, typename Extents>
+constexpr bool
+check_static_extents_and_right_padding_representability() {
+  if constexpr (Extents::rank() < 2) {
+    return true;
+  }
+
+  // We cannot check statically for sure if the product of the extents and padding value
+  // are representable if we have dynamic values -- this can only be checked by a precondition
+  // We can check if the product of only the static extents and potentially the padding value (if it is static)
+  // is representable though...
   // We already checked that StaticPaddingValue is representable by index_type
-  auto prod = static_cast< CheckType >(StaticPaddingValue);
+  auto prod = (StaticPaddingValue != dynamic_extent) ? static_cast< CheckType >(StaticPaddingValue) : CheckType(1);
   for (size_t i = 0; i < Extents::rank() - 1; ++i) {
+    if (Extents::static_extent(i) == dynamic_extent)
+      continue;
     if (!check_mul_result_is_representable(prod, static_cast< CheckType >(Extents::static_extent(i))))
       return false;
     prod *= Extents::static_extent(i);
+  }
+
+  return true;
+}
+
+template <typename CheckType, typename Extents>
+constexpr bool
+check_extents_and_right_padding_representability(const Extents &exts,
+                                                 size_t dynamic_padding_value) {
+  if constexpr (Extents::rank() < 2) {
+    return true;
+  }
+
+  auto prod = static_cast<CheckType>(dynamic_padding_value);
+  for (size_t i = 0; i < Extents::rank() - 1; ++i) {
+    if (!check_mul_result_is_representable(prod, static_cast< CheckType >(exts.extent(i))))
+      return false;
+    prod *= exts.extent(i);
   }
 
   return true;
@@ -299,15 +350,15 @@ private:
                 || (extents_type::static_extent(extent_to_pad_idx) == 0)
                 || (extents_type::static_extent(extent_to_pad_idx) == dynamic_extent),
                 "out of bounds access for rank 0");
-  static_assert(detail::check_extents_representability<extents_type>(), "The size of the muiltidimensional index space given by the extents must be representable as a value of index_type");
+  static_assert(detail::check_static_extents_representability<extents_type>(), "The size of the muiltidimensional index space given by the extents must be representable as a value of index_type");
   static_assert((padding_value == dynamic_extent) || detail::in_range<index_type>(padding_value), "padding_value must be representable as a value of type index_type");
 
   using padded_stride_type = detail::padded_extent< padding_value, extents_type, extent_to_pad_idx >;
 
   static constexpr size_t static_padding_stride = padded_stride_type::static_value();
 
-  static_assert(detail::check_extents_and_left_padding_representability<index_type, static_padding_stride, extents_type>()
-                && detail::check_extents_and_left_padding_representability<size_t, static_padding_stride, extents_type>(),
+  static_assert(detail::check_static_extents_and_left_padding_representability<index_type, static_padding_stride, extents_type>()
+                && detail::check_static_extents_and_left_padding_representability<size_t, static_padding_stride, extents_type>(),
                 "the product of static_padding_stride and static extents 1 through rank must be representable as a value of type size_t and index_type");
 
   typename padded_stride_type::static_array_type padded_stride = {};
@@ -370,7 +421,12 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type& ext)
     : padded_stride(padded_stride_type::init_padding(ext)), exts(ext)
-  {}
+  {
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(ext));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_left_padding_representability<index_type>(
+            ext, padded_stride.value(0)));
+  }
 
   /**
    * Initializes the mapping with the given extents and the specified padding value.
@@ -393,6 +449,10 @@ public:
       : padded_stride(padded_stride_type::init_padding(ext, dynamic_padding_value)), exts(ext)
   {
     assert((padding_value == dynamic_extent) || (static_cast<index_type>(padding_value) == static_cast<index_type>(dynamic_padding_value)));
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(ext));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_left_padding_representability<index_type>(
+            ext, dynamic_padding_value));
   }
 
   /**
@@ -422,6 +482,10 @@ public:
         (OtherExtents::static_extent(extent_to_pad_idx) != dynamic_extent) ||
         (static_padding_stride ==
          OtherExtents::static_extent(extent_to_pad_idx)));
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(exts));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_left_padding_representability<index_type>(
+            exts, padded_stride.value(0)));
   }
 
   /**
@@ -439,7 +503,12 @@ public:
       : padded_stride(padded_stride_type::init_padding(
             other_mapping,
             std::integral_constant<size_t, padded_stride_idx>{})),
-        exts(other_mapping.extents()) {}
+        exts(other_mapping.extents()) {
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(exts));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_left_padding_representability<index_type>(
+            exts, padded_stride.value(0)));
+  }
 
   /**
    * Converting constructor from `layout_left_padded::mapping`.
@@ -466,6 +535,10 @@ public:
     static_assert(padding_value == dynamic_extent ||
                   Mapping::padding_value == dynamic_extent ||
                   padding_value == Mapping::padding_value);
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(exts));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_left_padding_representability<index_type>(
+            exts, padded_stride.value(0)));
   }
 
   /**
@@ -488,7 +561,12 @@ public:
       : padded_stride(padded_stride_type::init_padding(
             static_cast<extents_type>(other_mapping.extents()),
             other_mapping.extents().extent(extent_to_pad_idx))),
-        exts(other_mapping.extents()) {}
+        exts(other_mapping.extents()) {
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(exts));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_left_padding_representability<index_type>(
+            exts, padded_stride.value(0)));
+  }
 
   MDSPAN_INLINE_FUNCTION constexpr const extents_type &
   extents() const noexcept {
@@ -671,15 +749,15 @@ public:
                 || (extents_type::static_extent(extent_to_pad_idx) == 0)
                 || (extents_type::static_extent(extent_to_pad_idx) == dynamic_extent),
                 "if padding stride is 0, static_extent(extent-to-pad-rank) must also be 0 or dynamic_extent");
-  static_assert(detail::check_extents_representability<extents_type>(), "The size of the muiltidimensional index space given by the extents must be representable as a value of index_type");
+  static_assert(detail::check_static_extents_representability<extents_type>(), "The size of the muiltidimensional index space given by the extents must be representable as a value of index_type");
   static_assert((padding_value == dynamic_extent) || detail::in_range<index_type>(padding_value), "padding_value must be representable as a value of type index_type");
 
 
   using padded_stride_type = detail::padded_extent< padding_value, extents_type, extent_to_pad_idx >;
   static constexpr size_t static_padding_stride = padded_stride_type::static_value();
 
-  static_assert(detail::check_extents_and_right_padding_representability<index_type, static_padding_stride, extents_type>()
-                && detail::check_extents_and_right_padding_representability<size_t, static_padding_stride, extents_type>(),
+  static_assert(detail::check_static_extents_and_right_padding_representability<index_type, static_padding_stride, extents_type>()
+                && detail::check_static_extents_and_right_padding_representability<size_t, static_padding_stride, extents_type>(),
                 "the product of static_padding_stride and static extents 1 through rank must be representable as a value of type size_t and index_type");
 
   typename padded_stride_type::static_array_type padded_stride = {};
@@ -739,7 +817,12 @@ public:
    */
   MDSPAN_INLINE_FUNCTION
   constexpr mapping(const extents_type &ext)
-      : padded_stride(padded_stride_type::init_padding(ext)), exts(ext) {}
+      : padded_stride(padded_stride_type::init_padding(ext)), exts(ext) {
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(ext));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_right_padding_representability<index_type>(
+            ext, padded_stride.value(0)));
+  }
 
   /**
    * Initializes the mapping with the given extents and the specified padding value.
@@ -763,6 +846,10 @@ public:
         exts(ext) {
     assert((padding_value == dynamic_extent) ||
            (static_cast<index_type>(padding_value) == static_cast<index_type>(dynamic_padding_value)));
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(ext));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_right_padding_representability<index_type>(
+            ext, dynamic_padding_value));
   }
 
   /**
@@ -789,6 +876,10 @@ public:
         (OtherExtents::static_extent(extent_to_pad_idx) != dynamic_extent) ||
         (padded_stride_type::static_value() ==
          OtherExtents::static_extent(extent_to_pad_idx)));
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(exts));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_right_padding_representability<index_type>(
+            exts, padded_stride.value(0)));
   }
 
   /**
@@ -806,7 +897,12 @@ public:
       : padded_stride(padded_stride_type::init_padding(
             other_mapping,
             std::integral_constant<size_t, padded_stride_idx>{})),
-        exts(other_mapping.extents()) {}
+        exts(other_mapping.extents()) {
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(exts));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_right_padding_representability<index_type>(
+            exts, padded_stride.value(0)));
+  }
 
   /**
    * Converting constructor from `layout_right_padded::mapping`.
@@ -833,6 +929,10 @@ public:
     static_assert(padding_value == dynamic_extent ||
                   Mapping::padding_value == dynamic_extent ||
                   padding_value == Mapping::padding_value);
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(exts));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_right_padding_representability<index_type>(
+            exts, padded_stride.value(0)));
   }
 
   /**
@@ -855,7 +955,12 @@ public:
       : padded_stride(padded_stride_type::init_padding(
             static_cast<extents_type>(other_mapping.extents()),
             other_mapping.extents().extent(extent_to_pad_idx))),
-        exts(other_mapping.extents()) {}
+        exts(other_mapping.extents()) {
+    MDSPAN_IMPL_PRECONDITION(detail::check_extents_representability(exts));
+    MDSPAN_IMPL_PRECONDITION(
+        detail::check_extents_and_right_padding_representability<index_type>(
+            exts, padded_stride.value(0)));
+  }
 
   MDSPAN_INLINE_FUNCTION constexpr const extents_type &
   extents() const noexcept {

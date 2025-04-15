@@ -1,9 +1,19 @@
 #define MDSPAN_INTERNAL_TEST
 #define MDSPAN_DEBUG
 #include <cassert>
+#include <gtest/gtest.h>
+
+namespace {
+static bool precondition_failed = false;
+void handle_test_precondition_failure(const char *, const char *, unsigned) {
+  precondition_failed = true;
+}
+} // namespace
+
+#define MDSPAN_IMPL_PRECONDITION_VIOLATION_HANDLER(cond, file, line) \
+  handle_test_precondition_failure(cond, file, line)
 
 #include <mdspan/mdspan.hpp>
-#include <gtest/gtest.h>
 
 namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
@@ -520,9 +530,57 @@ TEST(LayoutRightTests, issue393) {
   }
 #endif
 
-// Valid usage, should compile without narrowing warnings
-{
-  [[maybe_unused]] auto mapping = KokkosEx::layout_right_padded< 5 >::mapping< Kokkos::extents< std::int16_t, 2, 50 > >();
-}
+  // Valid usage, should compile without narrowing warnings
+  {
+    [[maybe_unused]] auto mapping = KokkosEx::layout_right_padded<5>::mapping<
+        Kokkos::extents<std::int16_t, 2, 50>>();
+  }
+
+  // Test runtime
+  {
+    // extents not representable
+    precondition_failed = false;
+    auto mapping = KokkosEx::layout_right_padded<2>::mapping<
+        Kokkos::dextents<std::int8_t, 2>>{
+        Kokkos::dextents<std::int8_t, 2>{50, 50}};
+    ASSERT_TRUE(precondition_failed);
+    precondition_failed = false;
+  }
+  {
+    // Padding value not representable
+    precondition_failed = false;
+    auto mapping =
+        KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<
+            Kokkos::extents<std::int8_t, 2, 2>>{{}, 500};
+    ASSERT_TRUE(precondition_failed);
+    precondition_failed = false;
+  }
+  {
+    // Padding value product with remaining extents is representable
+    precondition_failed = false;
+    auto mapping =
+        KokkosEx::layout_right_padded<Kokkos::dynamic_extent>::mapping<
+            Kokkos::extents<std::int8_t, 50, 2>>{{}, 50};
+    ASSERT_TRUE(precondition_failed);
+    precondition_failed = false;
+  }
+  {
+    // Padding value product with remaining extents is representable
+    precondition_failed = false;
+    auto mapping = KokkosEx::layout_right_padded<
+        Kokkos::dynamic_extent>::mapping<Kokkos::dextents<std::int8_t, 2>>{
+        Kokkos::dextents<std::int8_t, 2>{50, 2}, 50};
+    ASSERT_TRUE(precondition_failed);
+    precondition_failed = false;
+  }
+  {
+    // Padding value product with remaining extents is representable
+    precondition_failed = false;
+    auto mapping = KokkosEx::layout_right_padded<50>::mapping<
+        Kokkos::dextents<std::int8_t, 2>>{
+        Kokkos::dextents<std::int8_t, 2>{50, 2}};
+    ASSERT_TRUE(precondition_failed);
+    precondition_failed = false;
+  }
 }
 #undef LAYOUT_RIGHT_COMPILE_ISSUE393_DEATH
