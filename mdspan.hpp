@@ -1,5 +1,5 @@
-#ifndef _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
-#define _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
+#ifndef MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
+#define MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
 
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/mdarray
 //@HEADER
@@ -737,7 +737,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 //==============================================================================
 // <editor-fold desc="fold expressions"> {{{1
 
-struct mdspan_enable_fold_comma { };
+struct enable_fold_comma { };
 
 #ifdef MDSPAN_IMPL_USE_FOLD_EXPRESSIONS
 #  define MDSPAN_IMPL_FOLD_AND(...) ((__VA_ARGS__) && ...)
@@ -1046,7 +1046,7 @@ fold_left_assign_impl(Args&&... args) {
 
 
 template <class... Args>
-constexpr mdspan_enable_fold_comma fold_comma_impl(Args&&...) noexcept { return { }; }
+constexpr enable_fold_comma fold_comma_impl(Args&&...) noexcept { return { }; }
 
 template <bool... Bs>
 struct fold_bools;
@@ -1233,19 +1233,19 @@ MDSPAN_IMPL_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 #if MDSPAN_IMPL_USE_VARIABLE_TEMPLATES
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
-#define _MDSPAN_BACKPORT_TRAIT(TRAIT) \
+#define MDSPAN_IMPL_BACKPORT_TRAIT(TRAIT) \
   template <class... Args> MDSPAN_IMPL_INLINE_VARIABLE constexpr auto TRAIT##_v = TRAIT<Args...>::value;
 
-_MDSPAN_BACKPORT_TRAIT(is_assignable)
-_MDSPAN_BACKPORT_TRAIT(is_constructible)
-_MDSPAN_BACKPORT_TRAIT(is_convertible)
-_MDSPAN_BACKPORT_TRAIT(is_default_constructible)
-_MDSPAN_BACKPORT_TRAIT(is_trivially_destructible)
-_MDSPAN_BACKPORT_TRAIT(is_same)
-_MDSPAN_BACKPORT_TRAIT(is_empty)
-_MDSPAN_BACKPORT_TRAIT(is_void)
+MDSPAN_IMPL_BACKPORT_TRAIT(is_assignable)
+MDSPAN_IMPL_BACKPORT_TRAIT(is_constructible)
+MDSPAN_IMPL_BACKPORT_TRAIT(is_convertible)
+MDSPAN_IMPL_BACKPORT_TRAIT(is_default_constructible)
+MDSPAN_IMPL_BACKPORT_TRAIT(is_trivially_destructible)
+MDSPAN_IMPL_BACKPORT_TRAIT(is_same)
+MDSPAN_IMPL_BACKPORT_TRAIT(is_empty)
+MDSPAN_IMPL_BACKPORT_TRAIT(is_void)
 
-#undef _MDSPAN_BACKPORT_TRAIT
+#undef MDSPAN_IMPL_BACKPORT_TRAIT
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
@@ -1314,16 +1314,16 @@ using index_sequence_for = make_index_sequence<sizeof...(T)>;
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
-#define _MDSPAN_BACKPORT_TRAIT_ALIAS(TRAIT) \
+#define MDSPAN_IMPL_BACKPORT_TRAIT_ALIAS(TRAIT) \
   template <class... Args> using TRAIT##_t = typename TRAIT<Args...>::type;
 
-_MDSPAN_BACKPORT_TRAIT_ALIAS(remove_cv)
-_MDSPAN_BACKPORT_TRAIT_ALIAS(remove_reference)
+MDSPAN_IMPL_BACKPORT_TRAIT_ALIAS(remove_cv)
+MDSPAN_IMPL_BACKPORT_TRAIT_ALIAS(remove_reference)
 
-template <bool _B, class _T=void>
-using enable_if_t = typename enable_if<_B, _T>::type;
+template <bool _B, class T=void>
+using enable_if_t = typename enable_if<_B, T>::type;
 
-#undef _MDSPAN_BACKPORT_TRAIT_ALIAS
+#undef MDSPAN_IMPL_BACKPORT_TRAIT_ALIAS
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
@@ -1576,7 +1576,7 @@ namespace detail {
 // can't be a private member function for some reason.
 template <size_t... Extents, size_t... OtherExtents>
 MDSPAN_INLINE_FUNCTION
-static constexpr std::integral_constant<bool, false> __check_compatible_extents(
+static constexpr std::integral_constant<bool, false> impl_check_compatible_extents(
     std::integral_constant<bool, false>,
     std::integer_sequence<size_t, Extents...>,
     std::integer_sequence<size_t, OtherExtents...>) noexcept {
@@ -1585,7 +1585,7 @@ static constexpr std::integral_constant<bool, false> __check_compatible_extents(
 
 // This helper prevents ICE's on MSVC.
 template <size_t Lhs, size_t Rhs>
-struct __compare_extent_compatible : std::integral_constant<bool,
+struct impl_compare_extent_compatible : std::integral_constant<bool,
      Lhs == dynamic_extent ||
      Rhs == dynamic_extent ||
      Lhs == Rhs>
@@ -1594,8 +1594,8 @@ struct __compare_extent_compatible : std::integral_constant<bool,
 template <size_t... Extents, size_t... OtherExtents>
 MDSPAN_INLINE_FUNCTION
 static constexpr std::integral_constant<
-    bool, MDSPAN_IMPL_FOLD_AND(__compare_extent_compatible<Extents, OtherExtents>::value)>
-__check_compatible_extents(
+    bool, MDSPAN_IMPL_FOLD_AND(impl_compare_extent_compatible<Extents, OtherExtents>::value)>
+impl_check_compatible_extents(
     std::integral_constant<bool, true>,
     std::integer_sequence<size_t, Extents...>,
     std::integer_sequence<size_t, OtherExtents...>) noexcept {
@@ -1836,7 +1836,7 @@ public:
         m_dyn_vals[dyn_map_t::get(r)] = values[r];
       }
 // Precondition check
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
       else {
         assert(values[r] == static_cast<TDynamic>(static_val));
       }
@@ -1851,7 +1851,7 @@ public:
   constexpr maybe_static_array(const std::array<T, N> &vals) {
     static_assert((N == m_size), "Invalid number of values.");
 // Precondition check
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
     assert(N == m_size);
 #endif
     for (size_t r = 0; r < m_size; r++) {
@@ -1860,7 +1860,7 @@ public:
         m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
       }
 // Precondition check
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
       else {
         assert(static_cast<TDynamic>(vals[r]) ==
                static_cast<TDynamic>(static_val));
@@ -1876,7 +1876,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr maybe_static_array(const std::span<T, N> &vals) {
     static_assert((N == m_size) || (m_size == dynamic_extent));
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
     assert(N == m_size);
 #endif
     for (size_t r = 0; r < m_size; r++) {
@@ -1884,7 +1884,7 @@ public:
       if (static_val == dyn_tag) {
         m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
       }
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
       else {
         assert(static_cast<TDynamic>(vals[r]) ==
                static_cast<TDynamic>(static_val));
@@ -2019,11 +2019,11 @@ private:
       /* requires */ ((R < m_rank) && (static_extent(R) == dynamic_extent)))
   MDSPAN_INLINE_FUNCTION
   constexpr
-  vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
+  vals_t impl_construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &exts,
                                        DynamicValues... dynamic_values) noexcept {
-    return __construct_vals_from_extents(
+    return impl_construct_vals_from_extents(
         std::integral_constant<size_t, DynCount + 1>(),
         std::integral_constant<size_t, R + 1>(), exts, dynamic_values...,
         exts.extent(R));
@@ -2034,11 +2034,11 @@ private:
       /* requires */ ((R < m_rank) && (static_extent(R) != dynamic_extent)))
   MDSPAN_INLINE_FUNCTION
   constexpr
-  vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
+  vals_t impl_construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &exts,
                                        DynamicValues... dynamic_values) noexcept {
-    return __construct_vals_from_extents(
+    return impl_construct_vals_from_extents(
         std::integral_constant<size_t, DynCount>(),
         std::integral_constant<size_t, R + 1>(), exts, dynamic_values...);
   }
@@ -2048,7 +2048,7 @@ private:
       /* requires */ ((R == m_rank) && (DynCount == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   constexpr
-  vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
+  vals_t impl_construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &,
                                        DynamicValues... dynamic_values) noexcept {
@@ -2064,7 +2064,7 @@ public:
         (
             /* multi-stage check to protect from invalid pack expansion when sizes
             don't match? */
-            decltype(detail::__check_compatible_extents(
+            decltype(detail::impl_check_compatible_extents(
               // using: sizeof...(Extents) == sizeof...(OtherExtents) as the second argument fails with MSVC+NVCC with some obscure expansion error
               // MSVC: 19.38.33133 NVCC: 12.0
               std::integral_constant<bool, extents<int, Extents...>::rank() == extents<int, OtherExtents...>::rank()>{},
@@ -2079,7 +2079,7 @@ public:
                               (std::numeric_limits<index_type>::max() <
                                std::numeric_limits<OtherIndexType>::max()))
   constexpr extents(const extents<OtherIndexType, OtherExtents...> &other) noexcept
-      : m_vals(__construct_vals_from_extents(
+      : m_vals(impl_construct_vals_from_extents(
             std::integral_constant<size_t, 0>(),
             std::integral_constant<size_t, 0>(), other)) {}
 
@@ -2108,13 +2108,13 @@ namespace detail {
 
 template <class IndexType, size_t Rank,
           class Extents = ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType>>
-struct __make_dextents;
+struct impl_make_dextents;
 
 template <class IndexType, size_t Rank, size_t... ExtentsPack>
-struct __make_dextents<
+struct impl_make_dextents<
     IndexType, Rank, ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
 {
-  using type = typename __make_dextents<
+  using type = typename impl_make_dextents<
       IndexType, Rank - 1,
       ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType,
                                                 ::MDSPAN_IMPL_STANDARD_NAMESPACE::dynamic_extent,
@@ -2122,7 +2122,7 @@ struct __make_dextents<
 };
 
 template <class IndexType, size_t... ExtentsPack>
-struct __make_dextents<
+struct impl_make_dextents<
     IndexType, 0, ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
 {
   using type = ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>;
@@ -2132,7 +2132,7 @@ struct __make_dextents<
 
 // [mdspan.extents.dextents], alias template
 template <class IndexType, size_t Rank>
-using dextents = typename detail::__make_dextents<IndexType, Rank>::type;
+using dextents = typename detail::impl_make_dextents<IndexType, Rank>::type;
 
 // Deduction guide for extents
 #if defined(MDSPAN_IMPL_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
@@ -2145,10 +2145,10 @@ extents(IndexTypes...)
 // Helper type traits for identifying a class as extents.
 namespace detail {
 
-template <class T> struct __is_extents : ::std::false_type {};
+template <class T> struct impl_is_extents : ::std::false_type {};
 
 template <class IndexType, size_t... ExtentsPack>
-struct __is_extents<::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
+struct impl_is_extents<::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
     : ::std::true_type {};
 
 template <class T>
@@ -2157,7 +2157,7 @@ inline
 #else
 static
 #endif
-constexpr bool __is_extents_v = __is_extents<T>::value;
+constexpr bool impl_is_extents_v = impl_is_extents<T>::value;
 
 template<class InputIndexType, class ExtentsIndexType>
 MDSPAN_INLINE_FUNCTION
@@ -2167,7 +2167,7 @@ check_lower_bound(InputIndexType user_index,
                   std::true_type /* is_signed */)
 {
   (void) user_index; // prevent unused variable warning
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
   assert(static_cast<ExtentsIndexType>(user_index) >= 0);
 #endif
 }
@@ -2188,7 +2188,7 @@ check_upper_bound(InputIndexType user_index,
 {
   (void) user_index; // prevent unused variable warnings
   (void) current_extent;
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
   assert(static_cast<ExtentsIndexType>(user_index) < current_extent);
 #endif
 }
@@ -2296,72 +2296,72 @@ namespace detail {
 
 //==============================================================================
 
-template <class _T, size_t _Disambiguator = 0, class _Enable = void>
-struct __no_unique_address_emulation {
-  using __stored_type = _T;
-  _T __v;
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__ref() const noexcept {
-    return __v;
+template <class T, size_t Disambiguator = 0, class Enable = void>
+struct no_unique_address_emulation {
+  using stored_type = T;
+  T m_v;
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T const &ref() const noexcept {
+    return m_v;
   }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T &__ref() noexcept {
-    return __v;
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T &ref() noexcept {
+    return m_v;
   }
 };
 
 // Empty case
-// This doesn't work if _T is final, of course, but we're not using anything
+// This doesn't work if T is final, of course, but we're not using anything
 // like that currently. That kind of thing could be added pretty easily though
-template <class _T, size_t _Disambiguator>
-struct __no_unique_address_emulation<
-    _T, _Disambiguator,
-    std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, _T) &&
+template <class T, size_t Disambiguator>
+struct no_unique_address_emulation<
+    T, Disambiguator,
+    std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, T) &&
                 // If the type isn't trivially destructible, its destructor
                 // won't be called at the right time, so don't use this
                 // specialization
-                MDSPAN_IMPL_TRAIT(std::is_trivially_destructible, _T)>> :
+                MDSPAN_IMPL_TRAIT(std::is_trivially_destructible, T)>> :
 #ifdef MDSPAN_IMPL_COMPILER_MSVC
     // MSVC doesn't allow you to access public static member functions of a type
     // when you *happen* to privately inherit from that type.
     protected
 #else
     // But we still want this to be private if possible so that we don't accidentally
-    // access members of _T directly rather than calling __ref() first, which wouldn't
-    // work if _T happens to be stateful and thus we're using the unspecialized definition
-    // of __no_unique_address_emulation above.
+    // access members of T directly rather than calling ref() first, which wouldn't
+    // work if T happens to be stateful and thus we're using the unspecialized definition
+    // of no_unique_address_emulation above.
     private
 #endif
-    _T {
-  using __stored_type = _T;
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T const &__ref() const noexcept {
-    return *static_cast<_T const *>(this);
+    T {
+  using stored_type = T;
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T const &ref() const noexcept {
+    return *static_cast<T const *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T &__ref() noexcept {
-    return *static_cast<_T *>(this);
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T &ref() noexcept {
+    return *static_cast<T *>(this);
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __no_unique_address_emulation() noexcept = default;
+  constexpr no_unique_address_emulation() noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __no_unique_address_emulation(
-      __no_unique_address_emulation const &) noexcept = default;
+  constexpr no_unique_address_emulation(
+      no_unique_address_emulation const &) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __no_unique_address_emulation(
-      __no_unique_address_emulation &&) noexcept = default;
+  constexpr no_unique_address_emulation(
+      no_unique_address_emulation &&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __no_unique_address_emulation &
-  operator=(__no_unique_address_emulation const &) noexcept = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED no_unique_address_emulation &
+  operator=(no_unique_address_emulation const &) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __no_unique_address_emulation &
-  operator=(__no_unique_address_emulation &&) noexcept = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED no_unique_address_emulation &
+  operator=(no_unique_address_emulation &&) noexcept = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~__no_unique_address_emulation() noexcept = default;
+  ~no_unique_address_emulation() noexcept = default;
 
   // Explicitly make this not a reference so that the copy or move
   // constructor still gets called.
   MDSPAN_INLINE_FUNCTION
-  explicit constexpr __no_unique_address_emulation(_T const& __v) noexcept : _T(__v) {}
+  explicit constexpr no_unique_address_emulation(T const& v) noexcept : T(v) {}
   MDSPAN_INLINE_FUNCTION
-  explicit constexpr __no_unique_address_emulation(_T&& __v) noexcept : _T(::std::move(__v)) {}
+  explicit constexpr no_unique_address_emulation(T&& v) noexcept : T(::std::move(v)) {}
 };
 
 //==============================================================================
@@ -2376,165 +2376,165 @@ namespace detail {
 
 // For no unique address emulation, this is the case taken when neither are empty.
 // For real `[[no_unique_address]]`, this case is always taken.
-template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
-  MDSPAN_IMPL_NO_UNIQUE_ADDRESS _T1 __t1_val{};
-  MDSPAN_IMPL_NO_UNIQUE_ADDRESS _T2 __t2_val{};
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
-    return __t1_val;
+template <class T1, class T2, class Enable = void> struct impl_compressed_pair {
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS T1 m_t1_val{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS T2 m_t2_val{};
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &first() noexcept { return m_t1_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &first() const noexcept {
+    return m_t1_val;
   }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T2 &__second() noexcept { return __t2_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T2 const &__second() const noexcept {
-    return __t2_val;
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &second() noexcept { return m_t2_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &second() const noexcept {
+    return m_t2_val;
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() = default;
+  constexpr impl_compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair const &) = default;
+  constexpr impl_compressed_pair(impl_compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair &&) = default;
+  constexpr impl_compressed_pair(impl_compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair const &) = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED impl_compressed_pair &
+  operator=(impl_compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair &&) = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED impl_compressed_pair &
+  operator=(impl_compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~__compressed_pair() = default;
-  template <class _T1Like, class _T2Like>
-  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2)
-      : __t1_val((_T1Like &&) __t1), __t2_val((_T2Like &&) __t2) {}
+  ~impl_compressed_pair() = default;
+  template <class T1Like, class T2Like>
+  MDSPAN_INLINE_FUNCTION constexpr impl_compressed_pair(T1Like &&t1, T2Like &&t2)
+      : m_t1_val((T1Like &&) t1), m_t2_val((T2Like &&) t2) {}
 };
 
 #if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 
 // First empty.
-template <class _T1, class _T2>
-struct __compressed_pair<
-    _T1, _T2,
-    std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, _T1) && !MDSPAN_IMPL_TRAIT(std::is_empty, _T2)>>
-    : private _T1 {
-  _T2 __t2_val{};
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T1 &__first() noexcept {
-    return *static_cast<_T1 *>(this);
+template <class T1, class T2>
+struct impl_compressed_pair<
+    T1, T2,
+    std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, T1) && !MDSPAN_IMPL_TRAIT(std::is_empty, T2)>>
+    : private T1 {
+  T2 m_t2_val{};
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &first() noexcept {
+    return *static_cast<T1 *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
-    return *static_cast<_T1 const *>(this);
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &first() const noexcept {
+    return *static_cast<T1 const *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T2 &__second() noexcept { return __t2_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T2 const &__second() const noexcept {
-    return __t2_val;
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &second() noexcept { return m_t2_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &second() const noexcept {
+    return m_t2_val;
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() = default;
+  constexpr impl_compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair const &) = default;
+  constexpr impl_compressed_pair(impl_compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair &&) = default;
+  constexpr impl_compressed_pair(impl_compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair const &) = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED impl_compressed_pair &
+  operator=(impl_compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair &&) = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED impl_compressed_pair &
+  operator=(impl_compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~__compressed_pair() = default;
-  template <class _T1Like, class _T2Like>
-  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2)
-      : _T1((_T1Like &&) __t1), __t2_val((_T2Like &&) __t2) {}
+  ~impl_compressed_pair() = default;
+  template <class T1Like, class T2Like>
+  MDSPAN_INLINE_FUNCTION constexpr impl_compressed_pair(T1Like &&t1, T2Like &&t2)
+      : T1((T1Like &&) t1), m_t2_val((T2Like &&) t2) {}
 };
 
 // Second empty.
-template <class _T1, class _T2>
-struct __compressed_pair<
-    _T1, _T2,
-    std::enable_if_t<!MDSPAN_IMPL_TRAIT(std::is_empty, _T1) && MDSPAN_IMPL_TRAIT(std::is_empty, _T2)>>
-    : private _T2 {
-  _T1 __t1_val{};
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T1 &__first() noexcept { return __t1_val; }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
-    return __t1_val;
+template <class T1, class T2>
+struct impl_compressed_pair<
+    T1, T2,
+    std::enable_if_t<!MDSPAN_IMPL_TRAIT(std::is_empty, T1) && MDSPAN_IMPL_TRAIT(std::is_empty, T2)>>
+    : private T2 {
+  T1 m_t1_val{};
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &first() noexcept { return m_t1_val; }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &first() const noexcept {
+    return m_t1_val;
   }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T2 &__second() noexcept {
-    return *static_cast<_T2 *>(this);
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &second() noexcept {
+    return *static_cast<T2 *>(this);
   }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T2 const &__second() const noexcept {
-    return *static_cast<_T2 const *>(this);
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &second() const noexcept {
+    return *static_cast<T2 const *>(this);
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() = default;
+  constexpr impl_compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair const &) = default;
+  constexpr impl_compressed_pair(impl_compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair &&) = default;
+  constexpr impl_compressed_pair(impl_compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair const &) = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED impl_compressed_pair &
+  operator=(impl_compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair &&) = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED impl_compressed_pair &
+  operator=(impl_compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~__compressed_pair() = default;
+  ~impl_compressed_pair() = default;
 
-  template <class _T1Like, class _T2Like>
-  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2)
-      : _T2((_T2Like &&) __t2), __t1_val((_T1Like &&) __t1) {}
+  template <class T1Like, class T2Like>
+  MDSPAN_INLINE_FUNCTION constexpr impl_compressed_pair(T1Like &&t1, T2Like &&t2)
+      : T2((T2Like &&) t2), m_t1_val((T1Like &&) t1) {}
 };
 
 // Both empty.
-template <class _T1, class _T2>
-struct __compressed_pair<
-    _T1, _T2,
-    std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, _T1) && MDSPAN_IMPL_TRAIT(std::is_empty, _T2)>>
-    // We need to use the __no_unique_address_emulation wrapper here to avoid
+template <class T1, class T2>
+struct impl_compressed_pair<
+    T1, T2,
+    std::enable_if_t<MDSPAN_IMPL_TRAIT(std::is_empty, T1) && MDSPAN_IMPL_TRAIT(std::is_empty, T2)>>
+    // We need to use the no_unique_address_emulation wrapper here to avoid
     // base class ambiguities.
 #ifdef MDSPAN_IMPL_COMPILER_MSVC
 // MSVC doesn't allow you to access public static member functions of a type
 // when you *happen* to privately inherit from that type.
-    : protected __no_unique_address_emulation<_T1, 0>,
-      protected __no_unique_address_emulation<_T2, 1>
+    : protected no_unique_address_emulation<T1, 0>,
+      protected no_unique_address_emulation<T2, 1>
 #else
-    : private __no_unique_address_emulation<_T1, 0>,
-      private __no_unique_address_emulation<_T2, 1>
+    : private no_unique_address_emulation<T1, 0>,
+      private no_unique_address_emulation<T2, 1>
 #endif
 {
-  using __first_base_t = __no_unique_address_emulation<_T1, 0>;
-  using __second_base_t = __no_unique_address_emulation<_T2, 1>;
+  using first_base_t = no_unique_address_emulation<T1, 0>;
+  using second_base_t = no_unique_address_emulation<T2, 1>;
 
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T1 &__first() noexcept {
-    return this->__first_base_t::__ref();
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T1 &first() noexcept {
+    return this->first_base_t::ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T1 const &__first() const noexcept {
-    return this->__first_base_t::__ref();
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T1 const &first() const noexcept {
+    return this->first_base_t::ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 _T2 &__second() noexcept {
-    return this->__second_base_t::__ref();
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 T2 &second() noexcept {
+    return this->second_base_t::ref();
   }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr _T2 const &__second() const noexcept {
-    return this->__second_base_t::__ref();
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr T2 const &second() const noexcept {
+    return this->second_base_t::ref();
   }
 
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair() = default;
+  constexpr impl_compressed_pair() = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair const &) = default;
+  constexpr impl_compressed_pair(impl_compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  constexpr __compressed_pair(__compressed_pair &&) = default;
+  constexpr impl_compressed_pair(impl_compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair const &) = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED impl_compressed_pair &
+  operator=(impl_compressed_pair const &) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED __compressed_pair &
-  operator=(__compressed_pair &&) = default;
+  MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED impl_compressed_pair &
+  operator=(impl_compressed_pair &&) = default;
   MDSPAN_INLINE_FUNCTION_DEFAULTED
-  ~__compressed_pair() = default;
-  template <class _T1Like, class _T2Like>
-  MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2) noexcept
-    : __first_base_t(_T1((_T1Like &&) __t1)),
-      __second_base_t(_T2((_T2Like &&) __t2))
+  ~impl_compressed_pair() = default;
+  template <class T1Like, class T2Like>
+  MDSPAN_INLINE_FUNCTION constexpr impl_compressed_pair(T1Like &&t1, T2Like &&t2) noexcept
+    : first_base_t(T1((T1Like &&) t1)),
+      second_base_t(T2((T2Like &&) t2))
   { }
 };
 
@@ -2571,32 +2571,32 @@ struct layout_right {
 
 namespace detail {
   template<class Layout, class Mapping>
-  constexpr bool __is_mapping_of =
+  constexpr bool is_mapping_of =
     std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
 
 #if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #  if !defined(__cpp_lib_concepts)
   namespace internal {
   namespace detail {
-  template <typename _Tp, typename _Up>
-  concept __same_as = std::is_same_v<_Tp, _Up>;
+  template <typename Tp, typename _Up>
+  concept same_as = std::is_same_v<Tp, _Up>;
   } // namespace detail
   template <class T, class U>
-  concept __same_as = detail::__same_as<T, U> && detail::__same_as<U, T>;
+  concept same_as = detail::same_as<T, U> && detail::same_as<U, T>;
   } // namespace internal
 #  endif
 
   template<class M>
-  concept __layout_mapping_alike = requires {
-    requires __is_extents<typename M::extents_type>::value;
+  concept layout_mapping_alike = requires {
+    requires impl_is_extents<typename M::extents_type>::value;
 #if defined(__cpp_lib_concepts)
     { M::is_always_strided() } -> std::same_as<bool>;
     { M::is_always_exhaustive() } -> std::same_as<bool>;
     { M::is_always_unique() } -> std::same_as<bool>;
 #else
-    { M::is_always_strided() } -> internal::__same_as<bool>;
-    { M::is_always_exhaustive() } -> internal::__same_as<bool>;
-    { M::is_always_unique() } -> internal::__same_as<bool>;
+    { M::is_always_strided() } -> internal::same_as<bool>;
+    { M::is_always_exhaustive() } -> internal::_ame_as<bool>;
+    { M::is_always_unique() } -> internal::same_as<bool>;
 #endif
     std::bool_constant<M::is_always_strided()>::value;
     std::bool_constant<M::is_always_exhaustive()>::value;
@@ -2610,8 +2610,8 @@ struct layout_stride {
   template <class Extents>
   class mapping
 #if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-    : private detail::__no_unique_address_emulation<
-        detail::__compressed_pair<
+    : private detail::no_unique_address_emulation<
+        detail::impl_compressed_pair<
           Extents,
           detail::possibly_empty_array<typename Extents::index_type, Extents::rank()>
         >
@@ -2626,7 +2626,7 @@ struct layout_stride {
     using layout_type = layout_stride;
 
     // This could be a `requires`, but I think it's better and clearer as a `static_assert`.
-    static_assert(detail::__is_extents_v<Extents>,
+    static_assert(detail::impl_is_extents_v<Extents>,
                   MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::layout_stride::mapping must be instantiated with a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
 
@@ -2634,35 +2634,35 @@ struct layout_stride {
 
     //----------------------------------------------------------------------------
 
-    using __strides_storage_t = detail::possibly_empty_array<index_type, extents_type::rank()>;
-    using __member_pair_t = detail::__compressed_pair<extents_type, __strides_storage_t>;
+    using strides_storage_t = detail::possibly_empty_array<index_type, extents_type::rank()>;
+    using member_pair_t = detail::impl_compressed_pair<extents_type, strides_storage_t>;
 
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-    MDSPAN_IMPL_NO_UNIQUE_ADDRESS __member_pair_t __members;
+    MDSPAN_IMPL_NO_UNIQUE_ADDRESS member_pair_t m_members;
 #else
-    using __base_t = detail::__no_unique_address_emulation<__member_pair_t>;
+    using base_t = detail::no_unique_address_emulation<member_pair_t>;
 #endif
 
-    MDSPAN_FORCE_INLINE_FUNCTION constexpr __strides_storage_t const&
-    __strides_storage() const noexcept {
+    MDSPAN_FORCE_INLINE_FUNCTION constexpr strides_storage_t const&
+    strides_storage() const noexcept {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      return __members.__second();
+      return m_members.second();
 #else
-      return this->__base_t::__ref().__second();
+      return this->base_t::ref().second();
 #endif
     }
-    MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 __strides_storage_t&
-    __strides_storage() noexcept {
+    MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 strides_storage_t&
+    strides_storage() noexcept {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      return __members.__second();
+      return m_members.second();
 #else
-      return this->__base_t::__ref().__second();
+      return this->base_t::ref().second();
 #endif
     }
 
     template<class SizeType, size_t ... Ep, size_t ... Idx>
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __get_size(::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, Ep...>,std::integer_sequence<size_t, Idx...>) const {
+    constexpr index_type get_size(::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, Ep...>,std::integer_sequence<size_t, Idx...>) const {
       return MDSPAN_IMPL_FOLD_TIMES_RIGHT( static_cast<index_type>(extents().extent(Idx)), 1 );
     }
 
@@ -2675,10 +2675,10 @@ struct layout_stride {
 
     // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
     template <class>
-    struct __deduction_workaround;
+    struct deduction_workaround;
 
     template <size_t... Idxs>
-    struct __deduction_workaround<std::index_sequence<Idxs...>>
+    struct deduction_workaround<std::index_sequence<Idxs...>>
     {
       template <class OtherExtents>
       MDSPAN_INLINE_FUNCTION
@@ -2704,23 +2704,23 @@ struct layout_stride {
       MDSPAN_INLINE_FUNCTION
       static constexpr size_t _req_span_size_impl(mapping const& self) noexcept {
         // assumes no negative strides; not sure if I'm allowed to assume that or not
-        return __impl::_call_op_impl(self, (self.extents().template __extent<Idxs>() - 1)...) + 1;
+        return deduction_workaround_impl::_call_op_impl(self, (self.extents().template extent<Idxs>() - 1)...) + 1;
       }
 
       template<class OtherMapping>
       MDSPAN_INLINE_FUNCTION
-      static constexpr const __strides_storage_t fill_strides(const OtherMapping& map) {
-        return __strides_storage_t{static_cast<index_type>(map.stride(Idxs))...};
+      static constexpr const strides_storage_t fill_strides(const OtherMapping& map) {
+        return strides_storage_t{static_cast<index_type>(map.stride(Idxs))...};
       }
 
       MDSPAN_INLINE_FUNCTION
-      static constexpr const __strides_storage_t& fill_strides(const __strides_storage_t& s) {
+      static constexpr const strides_storage_t& fill_strides(const strides_storage_t& s) {
         return s;
       }
 
       template<class IntegralType>
-      static constexpr const __strides_storage_t fill_strides(const std::array<IntegralType,extents_type::rank()>& s) {
-        return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
+      static constexpr const strides_storage_t fill_strides(const std::array<IntegralType,extents_type::rank()>& s) {
+        return strides_storage_t{static_cast<index_type>(s[Idxs])...};
       }
 
       MDSPAN_TEMPLATE_REQUIRES(
@@ -2729,44 +2729,44 @@ struct layout_stride {
       )
       MDSPAN_INLINE_FUNCTION
       // Need to avoid zero length c-array
-      static constexpr const __strides_storage_t fill_strides(mdspan_non_standard_tag, const IntegralType (&s)[extents_type::rank()>0?extents_type::rank():1]) {
-        return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
+      static constexpr const strides_storage_t fill_strides(mdspan_non_standard_tag, const IntegralType (&s)[extents_type::rank()>0?extents_type::rank():1]) {
+        return strides_storage_t{static_cast<index_type>(s[Idxs])...};
       }
 
 #ifdef __cpp_lib_span
       template<class IntegralType>
-      static constexpr const __strides_storage_t fill_strides(const std::span<IntegralType,extents_type::rank()>& s) {
-        return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
+      static constexpr const strides_storage_t fill_strides(const std::span<IntegralType,extents_type::rank()>& s) {
+        return strides_storage_t{static_cast<index_type>(s[Idxs])...};
       }
 #endif
 
       MDSPAN_INLINE_FUNCTION
-      static constexpr std::array<index_type, extents_type::rank()> return_strides(const __strides_storage_t& s) {
+      static constexpr std::array<index_type, extents_type::rank()> return_strides(const strides_storage_t& s) {
         return std::array<index_type, extents_type::rank()>{s[Idxs]...};
       }
 
       template<size_t K>
       MDSPAN_INLINE_FUNCTION
-      static constexpr size_t __return_zero() { return 0; }
+      static constexpr size_t return_zero() { return 0; }
 
       template<class Mapping>
       MDSPAN_INLINE_FUNCTION
       static constexpr typename Mapping::index_type
-        __OFFSET(const Mapping& m) { return m(__return_zero<Idxs>()...); }
+        offset(const Mapping& m) { return m(return_zero<Idxs>()...); }
     };
 
-    // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
-    using __impl = __deduction_workaround<std::make_index_sequence<Extents::rank()>>;
+    // Can't use defaulted parameter in the deduction_workaround template because of a bug in MSVC warning C4348.
+    using deduction_workaround_impl = deduction_workaround<std::make_index_sequence<Extents::rank()>>;
 
     MDSPAN_FUNCTION
-    static constexpr __strides_storage_t strides_storage(detail::with_rank<0>) {
+    static constexpr strides_storage_t strides_storage(detail::with_rank<0>) {
       return {};
     }
 
     template <std::size_t N>
     MDSPAN_FUNCTION
-    static constexpr __strides_storage_t strides_storage(detail::with_rank<N>) {
-      __strides_storage_t s{};
+    static constexpr strides_storage_t strides_storage(detail::with_rank<N>) {
+      strides_storage_t s{};
 
       extents_type e;
       index_type stride = 1;
@@ -2782,10 +2782,10 @@ struct layout_stride {
 
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
     MDSPAN_INLINE_FUNCTION constexpr explicit
-    mapping(__member_pair_t&& __m) : __members(::std::move(__m)) {}
+    mapping(member_pair_t&& m) : m_members(::std::move(m)) {}
 #else
     MDSPAN_INLINE_FUNCTION constexpr explicit
-    mapping(__base_t&& __b) : __base_t(::std::move(__b)) {}
+    mapping(base_t&& __b) : base_t(::std::move(__b)) {}
 #endif
 
   public:
@@ -2794,12 +2794,12 @@ struct layout_stride {
 
     MDSPAN_INLINE_FUNCTION constexpr mapping() noexcept
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      : __members{
+      : m_members{
 #else
-      : __base_t(__base_t{__member_pair_t(
+      : base_t(base_t{member_pair_t(
 #endif
           extents_type(),
-          __strides_storage_t(strides_storage(detail::with_rank<extents_type::rank()>{}))
+          strides_storage_t(strides_storage(detail::with_rank<extents_type::rank()>{}))
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
@@ -2824,11 +2824,11 @@ struct layout_stride {
       std::array<IntegralTypes, extents_type::rank()> const& s
     ) noexcept
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      : __members{
+      : m_members{
 #else
-      : __base_t(__base_t{__member_pair_t(
+      : base_t(base_t{member_pair_t(
 #endif
-          e, __strides_storage_t(__impl::fill_strides(s))
+          e, strides_storage_t(deduction_workaround_impl::fill_strides(s))
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
@@ -2863,11 +2863,11 @@ struct layout_stride {
       const IntegralTypes (&s)[extents_type::rank()>0?extents_type::rank():1]
     ) noexcept
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      : __members{
+      : m_members{
 #else
-      : __base_t(__base_t{__member_pair_t(
+      : base_t(base_t{member_pair_t(
 #endif
-          e, __strides_storage_t(__impl::fill_strides(mdspan_non_standard, s))
+          e, strides_storage_t(deduction_workaround_impl::fill_strides(mdspan_non_standard, s))
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
@@ -2900,11 +2900,11 @@ struct layout_stride {
       std::span<IntegralTypes, extents_type::rank()> const& s
     ) noexcept
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      : __members{
+      : m_members{
 #else
-      : __base_t(__base_t{__member_pair_t(
+      : base_t(base_t{member_pair_t(
 #endif
-          e, __strides_storage_t(__impl::fill_strides(s))
+          e, strides_storage_t(deduction_workaround_impl::fill_strides(s))
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
@@ -2927,7 +2927,7 @@ struct layout_stride {
       class StridedLayoutMapping,
       /* requires */ (
         MDSPAN_IMPL_TRAIT(std::is_constructible, extents_type, typename StridedLayoutMapping::extents_type) &&
-        detail::__is_mapping_of<typename StridedLayoutMapping::layout_type, StridedLayoutMapping> &&
+        detail::is_mapping_of<typename StridedLayoutMapping::layout_type, StridedLayoutMapping> &&
         StridedLayoutMapping::is_always_unique() &&
         StridedLayoutMapping::is_always_strided()
       )
@@ -2935,7 +2935,7 @@ struct layout_stride {
 #else
     template<class StridedLayoutMapping>
     requires(
-         detail::__layout_mapping_alike<StridedLayoutMapping> &&
+         detail::layout_mapping_alike<StridedLayoutMapping> &&
          MDSPAN_IMPL_TRAIT(std::is_constructible, extents_type, typename StridedLayoutMapping::extents_type) &&
          StridedLayoutMapping::is_always_unique() &&
          StridedLayoutMapping::is_always_strided()
@@ -2943,18 +2943,18 @@ struct layout_stride {
 #endif
     MDSPAN_CONDITIONAL_EXPLICIT(
       !(std::is_convertible<typename StridedLayoutMapping::extents_type, extents_type>::value &&
-       (detail::__is_mapping_of<layout_left, StridedLayoutMapping> ||
-        detail::__is_mapping_of<layout_right, StridedLayoutMapping> ||
-        detail::__is_mapping_of<layout_stride, StridedLayoutMapping>))
+       (detail::is_mapping_of<layout_left, StridedLayoutMapping> ||
+        detail::is_mapping_of<layout_right, StridedLayoutMapping> ||
+        detail::is_mapping_of<layout_stride, StridedLayoutMapping>))
     ) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(StridedLayoutMapping const& other) noexcept // NOLINT(google-explicit-constructor)
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      : __members{
+      : m_members{
 #else
-      : __base_t(__base_t{__member_pair_t(
+      : base_t(base_t{member_pair_t(
 #endif
-          other.extents(), __strides_storage_t(__impl::fill_strides(other))
+          other.extents(), strides_storage_t(deduction_workaround_impl::fill_strides(other))
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
         }
 #else
@@ -2976,15 +2976,15 @@ struct layout_stride {
 
     MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept {
 #if defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-      return __members.__first();
+      return m_members.first();
 #else
-      return this->__base_t::__ref().__first();
+      return this->base_t::ref().first();
 #endif
     };
 
     MDSPAN_INLINE_FUNCTION
     constexpr std::array< index_type, extents_type::rank() > strides() const noexcept {
-      return __impl::return_strides(__strides_storage());
+      return deduction_workaround_impl::return_strides(strides_storage());
     }
 
     MDSPAN_INLINE_FUNCTION
@@ -2994,7 +2994,7 @@ struct layout_stride {
       for(int r = 0; r < static_cast<int>(extents_type::rank()); r++) {
         // Return early if any of the extents are zero
         if(extents().extent(r)==0) return 0;
-        span_size += ( static_cast<index_type>(extents().extent(r) - 1 ) * __strides_storage()[r]);
+        span_size += ( static_cast<index_type>(extents().extent(r) - 1 ) * strides_storage()[r]);
       }
       return span_size;
     }
@@ -3012,7 +3012,7 @@ struct layout_stride {
 #if ! defined(NDEBUG)
       detail::check_all_indices(this->extents(), idxs...);
 #endif // ! NDEBUG
-      return static_cast<index_type>(__impl::_call_op_impl(*this, static_cast<index_type>(idxs)...));
+      return static_cast<index_type>(deduction_workaround_impl::_call_op_impl(*this, static_cast<index_type>(idxs)...));
     }
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
@@ -3027,7 +3027,7 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION
     constexpr bool exhaustive_for_nonzero_span_size() const
     {
-      return required_span_size() == __get_size(extents(), std::make_index_sequence<extents_type::rank()>());
+      return required_span_size() == get_size(extents(), std::make_index_sequence<extents_type::rank()>());
     }
 
     MDSPAN_INLINE_FUNCTION
@@ -3074,14 +3074,14 @@ struct layout_stride {
 
     MDSPAN_INLINE_FUNCTION
     constexpr index_type stride(rank_type r) const noexcept {
-      return __strides_storage()[r];
+      return strides_storage()[r];
     }
 
 #if !(defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
       /* requires */ (
-        detail::__is_mapping_of<typename StridedLayoutMapping::layout_type, StridedLayoutMapping> &&
+        detail::is_mapping_of<typename StridedLayoutMapping::layout_type, StridedLayoutMapping> &&
         (extents_type::rank() == StridedLayoutMapping::extents_type::rank()) &&
         StridedLayoutMapping::is_always_strided()
       )
@@ -3089,7 +3089,7 @@ struct layout_stride {
 #else
     template<class StridedLayoutMapping>
     requires(
-         detail::__layout_mapping_alike<StridedLayoutMapping> &&
+         detail::layout_mapping_alike<StridedLayoutMapping> &&
          (extents_type::rank() == StridedLayoutMapping::extents_type::rank()) &&
          StridedLayoutMapping::is_always_strided()
     )
@@ -3097,7 +3097,7 @@ struct layout_stride {
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator==(const mapping& x, const StridedLayoutMapping& y) noexcept {
       return (x.extents() == y.extents()) &&
-             (__impl::__OFFSET(y) == static_cast<typename StridedLayoutMapping::index_type>(0)) &&
+             (deduction_workaround_impl::offset(y) == static_cast<typename StridedLayoutMapping::index_type>(0)) &&
              detail::rankwise_equal(detail::with_rank<extents_type::rank()>{}, x, y, detail::stride);
     }
 
@@ -3110,14 +3110,14 @@ struct layout_stride {
     )
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator==(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
-      return __impl::_eq_impl(lhs, rhs);
+      return deduction_workaround_impl::_eq_impl(lhs, rhs);
     }
 
 #if !MDSPAN_HAS_CXX_20
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
       /* requires */ (
-        detail::__is_mapping_of<typename StridedLayoutMapping::layout_type, StridedLayoutMapping> &&
+        detail::is_mapping_of<typename StridedLayoutMapping::layout_type, StridedLayoutMapping> &&
         (extents_type::rank() == StridedLayoutMapping::extents_type::rank()) &&
         StridedLayoutMapping::is_always_strided()
       )
@@ -3135,7 +3135,7 @@ struct layout_stride {
     )
     MDSPAN_INLINE_FUNCTION
     friend constexpr bool operator!=(mapping const& lhs, mapping<OtherExtents> const& rhs) noexcept {
-      return __impl::_not_eq_impl(lhs, rhs);
+      return deduction_workaround_impl::_not_eq_impl(lhs, rhs);
     }
 #endif
 
@@ -3213,110 +3213,110 @@ namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 
 template <size_t padding_value = dynamic_extent>
 struct layout_left_padded {
-  template <class _Extents>
+  template <class Extents>
   class mapping;
 };
 
 template <size_t padding_value = dynamic_extent>
 struct layout_right_padded {
-  template <class _Extents>
+  template <class Extents>
   class mapping;
 };
 
 namespace detail {
 // The layout_padded_constants structs are only useful if rank > 1, otherwise they may wrap
-template <class _Layout, class _ExtentsType>
+template <class Layout, class ExtentsType>
 struct layout_padded_constants;
 
-template <class _ExtentsType, size_t _PaddingStride>
-struct layout_padded_constants<layout_left_padded<_PaddingStride>, _ExtentsType>
+template <class ExtentsType, size_t PaddingStride>
+struct layout_padded_constants<layout_left_padded<PaddingStride>, ExtentsType>
 {
-  using rank_type = typename _ExtentsType::rank_type;
+  using rank_type = typename ExtentsType::rank_type;
   static constexpr rank_type padded_stride_idx = 1;
   static constexpr rank_type extent_to_pad_idx = 0;
 };
 
-template <class _ExtentsType, size_t _PaddingStride>
-struct layout_padded_constants<layout_right_padded<_PaddingStride>, _ExtentsType>
+template <class ExtentsType, size_t PaddingStride>
+struct layout_padded_constants<layout_right_padded<PaddingStride>, ExtentsType>
 {
-  using rank_type = typename _ExtentsType::rank_type;
-  static constexpr rank_type padded_stride_idx = _ExtentsType::rank() - 2;
-  static constexpr rank_type extent_to_pad_idx = _ExtentsType::rank() - 1;
+  using rank_type = typename ExtentsType::rank_type;
+  static constexpr rank_type padded_stride_idx = ExtentsType::rank() - 2;
+  static constexpr rank_type extent_to_pad_idx = ExtentsType::rank() - 1;
 };
 
-template <class _Layout>
+template <class Layout>
 struct is_layout_left_padded : std::false_type {};
 
-template <size_t _PaddingStride>
-struct is_layout_left_padded<layout_left_padded<_PaddingStride>> : std::true_type {};
+template <size_t PaddingStride>
+struct is_layout_left_padded<layout_left_padded<PaddingStride>> : std::true_type {};
 
-template <class _Mapping, class _Enabled = void>
+template <class Mapping, class Enabled = void>
 struct is_layout_left_padded_mapping : std::false_type {};
 
-template <class _Mapping>
-struct is_layout_left_padded_mapping<_Mapping,
-  std::enable_if_t<std::is_same<_Mapping, typename layout_left_padded<_Mapping::padding_value>::template mapping<typename _Mapping::extents_type>>::value>>
+template <class Mapping>
+struct is_layout_left_padded_mapping<Mapping,
+  std::enable_if_t<std::is_same<Mapping, typename layout_left_padded<Mapping::padding_value>::template mapping<typename Mapping::extents_type>>::value>>
     : std::true_type {};
 
-template <class _Layout>
+template <class Layout>
 struct is_layout_right_padded : std::false_type {};
 
-template <size_t _PaddingStride>
-struct is_layout_right_padded<layout_right_padded<_PaddingStride>> : std::true_type {};
+template <size_t PaddingStride>
+struct is_layout_right_padded<layout_right_padded<PaddingStride>> : std::true_type {};
 
-template <class _Mapping, class _Enabled = void>
+template <class Mapping, class Enabled = void>
 struct is_layout_right_padded_mapping : std::false_type {};
 
-template <class _Mapping>
-struct is_layout_right_padded_mapping<_Mapping,
-  std::enable_if_t<std::is_same<_Mapping, typename layout_right_padded<_Mapping::padding_value>::template mapping<typename _Mapping::extents_type>>::value>>
+template <class Mapping>
+struct is_layout_right_padded_mapping<Mapping,
+  std::enable_if_t<std::is_same<Mapping, typename layout_right_padded<Mapping::padding_value>::template mapping<typename Mapping::extents_type>>::value>>
     : std::true_type {};
 
 
-template <class _LayoutExtentsType, class _PaddedLayoutMappingType>
+template <class LayoutExtentsType, class PaddedLayoutMappingType>
 MDSPAN_INLINE_FUNCTION
 constexpr void check_padded_layout_converting_constructor_mandates(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::with_rank<0>) {}
 
-template <class _LayoutExtentsType, class _PaddedLayoutMappingType>
+template <class LayoutExtentsType, class PaddedLayoutMappingType>
 MDSPAN_INLINE_FUNCTION
 constexpr void check_padded_layout_converting_constructor_mandates(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::with_rank<1>) {}
 
-template <class _LayoutExtentsType, class _PaddedLayoutMappingType, std::size_t N>
+template <class LayoutExtentsType, class PaddedLayoutMappingType, std::size_t N>
 MDSPAN_INLINE_FUNCTION
 constexpr void check_padded_layout_converting_constructor_mandates(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::with_rank<N>)
 {
-  using extents_type = typename _PaddedLayoutMappingType::extents_type;
-  constexpr auto padding_value = _PaddedLayoutMappingType::padding_value;
-  constexpr auto idx = layout_padded_constants<typename _PaddedLayoutMappingType::layout_type, _LayoutExtentsType >::extent_to_pad_idx;
+  using extents_type = typename PaddedLayoutMappingType::extents_type;
+  constexpr auto padding_value = PaddedLayoutMappingType::padding_value;
+  constexpr auto idx = layout_padded_constants<typename PaddedLayoutMappingType::layout_type, LayoutExtentsType >::extent_to_pad_idx;
 
   constexpr auto statically_determinable =
-    (_LayoutExtentsType::static_extent(idx) != dynamic_extent) &&
+    (LayoutExtentsType::static_extent(idx) != dynamic_extent) &&
     (extents_type::static_extent(idx) != dynamic_extent) &&
     (padding_value != dynamic_extent);
 
   static_assert(!statically_determinable ||
                 (padding_value == 0
-                 ? _LayoutExtentsType::static_extent(idx) == 0
-                 : _LayoutExtentsType::static_extent(idx) % padding_value == 0),
+                 ? LayoutExtentsType::static_extent(idx) == 0
+                 : LayoutExtentsType::static_extent(idx) % padding_value == 0),
                 "");
 }
 
-template <typename _ExtentsType, typename _OtherMapping>
+template <typename ExtentsType, typename OtherMapping>
 MDSPAN_INLINE_FUNCTION
 constexpr void check_padded_layout_converting_constructor_preconditions(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::with_rank<0>,
-                                                                        const _OtherMapping&) {}
-template <typename _ExtentsType, typename _OtherMapping>
+                                                                        const OtherMapping&) {}
+template <typename ExtentsType, typename OtherMapping>
 MDSPAN_INLINE_FUNCTION
 constexpr void check_padded_layout_converting_constructor_preconditions(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::with_rank<1>,
-                                                                        const _OtherMapping&) {}
-template <typename _ExtentsType, typename _OtherMapping, std::size_t N>
+                                                                        const OtherMapping&) {}
+template <typename ExtentsType, typename OtherMapping, std::size_t N>
 MDSPAN_INLINE_FUNCTION
 constexpr void check_padded_layout_converting_constructor_preconditions(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::with_rank<N>,
-                                                                        const _OtherMapping &other_mapping) {
+                                                                        const OtherMapping &other_mapping) {
   constexpr auto padded_stride_idx =
-    layout_padded_constants<typename _OtherMapping::layout_type,
-                            _ExtentsType>::padded_stride_idx;
-  constexpr auto extent_to_pad_idx = layout_padded_constants<typename _OtherMapping::layout_type, _ExtentsType>::extent_to_pad_idx;
+    layout_padded_constants<typename OtherMapping::layout_type,
+                            ExtentsType>::padded_stride_idx;
+  constexpr auto extent_to_pad_idx = layout_padded_constants<typename OtherMapping::layout_type, ExtentsType>::extent_to_pad_idx;
   MDSPAN_IMPL_PRECONDITION(other_mapping.stride(padded_stride_idx) == other_mapping.extents().extent(extent_to_pad_idx));
 }
 
@@ -3340,7 +3340,7 @@ class layout_right::mapping {
     using layout_type = layout_right;
   private:
 
-    static_assert(detail::__is_extents_v<extents_type>,
+    static_assert(detail::impl_is_extents_v<extents_type>,
                   MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::layout_right::mapping must be instantiated with a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
     template <class>
@@ -3348,29 +3348,29 @@ class layout_right::mapping {
 
     // i0+(i1 + E(1)*(i2 + E(2)*i3))
     template <size_t r, size_t Rank>
-    struct __rank_count {};
+    struct rank_count {};
 
     template <size_t r, size_t Rank, class I, class... Indices>
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(
-      index_type offset, __rank_count<r,Rank>, const I& i, Indices... idx) const {
-      return __compute_offset(offset * __extents.extent(r) + i,__rank_count<r+1,Rank>(),  idx...);
+    constexpr index_type compute_offset(
+      index_type offset, rank_count<r,Rank>, const I& i, Indices... idx) const {
+      return compute_offset(offset * m_extents.extent(r) + i,rank_count<r+1,Rank>(),  idx...);
     }
 
     template<class I, class ... Indices>
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(
-      __rank_count<0,extents_type::rank()>, const I& i, Indices... idx) const {
-      return __compute_offset(i,__rank_count<1,extents_type::rank()>(),idx...);
+    constexpr index_type compute_offset(
+      rank_count<0,extents_type::rank()>, const I& i, Indices... idx) const {
+      return compute_offset(i,rank_count<1,extents_type::rank()>(),idx...);
     }
 
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(size_t offset, __rank_count<extents_type::rank(), extents_type::rank()>) const {
+    constexpr index_type compute_offset(size_t offset, rank_count<extents_type::rank(), extents_type::rank()>) const {
       return static_cast<index_type>(offset);
     }
 
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(__rank_count<0,0>) const { return 0; }
+    constexpr index_type compute_offset(rank_count<0,0>) const { return 0; }
 
   public:
 
@@ -3380,8 +3380,8 @@ class layout_right::mapping {
     MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping const&) noexcept = default;
 
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr mapping(extents_type const& __exts) noexcept
-      :__extents(__exts)
+    constexpr mapping(extents_type const& exts) noexcept
+      :m_extents(exts)
     { }
 
     MDSPAN_TEMPLATE_REQUIRES(
@@ -3393,7 +3393,7 @@ class layout_right::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
@@ -3411,7 +3411,7 @@ class layout_right::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(layout_left::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
@@ -3422,29 +3422,29 @@ class layout_right::mapping {
     /**
      * Converting constructor from `layout_right_padded::mapping`.
      *
-     * This overload participates in overload resolution only if _Mapping is a layout_right_padded mapping and
-     * extents_type is constructible from _Mapping::extents_type.
+     * This overload participates in overload resolution only if Mapping is a layout_right_padded mapping and
+     * extents_type is constructible from Mapping::extents_type.
      *
      * \note There is currently a difference from p2642r2, where this function is specified as taking
      * `layout_right_padded< padding_value >::mapping< Extents>`. However, this makes `padding_value` non-deducible.
      */
 #if MDSPAN_HAS_CXX_17
     MDSPAN_TEMPLATE_REQUIRES(
-        class _Mapping,
+        class Mapping,
         /* requires */ (
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_right_padded_mapping<_Mapping>::value
-        && std::is_constructible_v<extents_type, typename _Mapping::extents_type>))
-    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_right_padded_mapping<Mapping>::value
+        && std::is_constructible_v<extents_type, typename Mapping::extents_type>))
+    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
     MDSPAN_INLINE_FUNCTION constexpr
-    mapping(const _Mapping &__other) noexcept
-        : __extents(__other.extents())
+    mapping(const Mapping &other) noexcept
+        : m_extents(other.extents())
     {
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_mandates<
-            extents_type, _Mapping>(detail::with_rank<extents_type::rank()>{});
+            extents_type, Mapping>(detail::with_rank<extents_type::rank()>{});
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_preconditions<
-            extents_type>(detail::with_rank<extents_type::rank()>{}, __other);
+            extents_type>(detail::with_rank<extents_type::rank()>{}, other);
     }
 #endif
 
@@ -3457,26 +3457,26 @@ class layout_right::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(layout_stride::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
         * other.required_span_size() is a representable value of type index_type
         */
-       detail::validate_strides(detail::with_rank<extents_type::rank()>{}, layout_right{}, __extents, other);
+       detail::validate_strides(detail::with_rank<extents_type::rank()>{}, layout_right{}, m_extents, other);
     }
 
     MDSPAN_INLINE_FUNCTION_DEFAULTED MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping const&) noexcept = default;
 
     MDSPAN_INLINE_FUNCTION
     constexpr const extents_type& extents() const noexcept {
-      return __extents;
+      return m_extents;
     }
 
     MDSPAN_INLINE_FUNCTION
     constexpr index_type required_span_size() const noexcept {
       index_type value = 1;
-      for(rank_type r=0; r != extents_type::rank(); ++r) value*=__extents.extent(r);
+      for(rank_type r=0; r != extents_type::rank(); ++r) value*=m_extents.extent(r);
       return value;
     }
 
@@ -3494,7 +3494,7 @@ class layout_right::mapping {
 #if ! defined(NDEBUG)
       detail::check_all_indices(this->extents(), idxs...);
 #endif // ! NDEBUG
-      return __compute_offset(__rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
+      return compute_offset(rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
     }
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
@@ -3511,7 +3511,7 @@ class layout_right::mapping {
 #endif
     {
       index_type value = 1;
-      for(rank_type r=extents_type::rank()-1; r>i; r--) value*=__extents.extent(r);
+      for(rank_type r=extents_type::rank()-1; r>i; r--) value*=m_extents.extent(r);
       return value;
     }
 
@@ -3539,17 +3539,17 @@ class layout_right::mapping {
     // Not really public, but currently needed to implement fully constexpr useable submdspan:
     template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type __get_stride(MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
-      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((Idx>N? __extents.template __extent<Idx>():1),1);
+    constexpr index_type impl_get_stride(MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
+      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((Idx>N? m_extents.template extent<Idx>():1),1);
     }
     template<size_t N>
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type __stride() const noexcept {
-      return __get_stride<N>(__extents, std::make_index_sequence<extents_type::rank()>());
+    constexpr index_type impl_stide() const noexcept {
+      return impl_get_stride<N>(m_extents, std::make_index_sequence<extents_type::rank()>());
     }
 
 private:
-   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type __extents{};
+   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type m_extents{};
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
@@ -3578,36 +3578,36 @@ template <
 class mdspan
 {
 private:
-  static_assert(detail::__is_extents_v<Extents>,
+  static_assert(detail::impl_is_extents_v<Extents>,
                 MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::mdspan's Extents template parameter must be a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
   static_assert(std::is_same<ElementType, typename AccessorPolicy::element_type>::value,
                 MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::mdspan's ElementType template parameter must be the same as its AccessorPolicy::element_type.");
 
   // Workaround for non-deducibility of the index sequence template parameter if it's given at the top level
   template <class>
-  struct __deduction_workaround;
+  struct deduction_workaround;
 
   template <size_t... Idxs>
-  struct __deduction_workaround<std::index_sequence<Idxs...>>
+  struct deduction_workaround<std::index_sequence<Idxs...>>
   {
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
-    size_t __size(mdspan const& __self) noexcept {
-      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((__self.__mapping_ref().extents().extent(Idxs)), /* * ... * */ size_t(1));
+    size_t size(mdspan const& self) noexcept {
+      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((self.mapping_ref().extents().extent(Idxs)), /* * ... * */ size_t(1));
     }
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
-    bool __empty(mdspan const& __self) noexcept {
-      return (__self.rank()>0) && MDSPAN_IMPL_FOLD_OR((__self.__mapping_ref().extents().extent(Idxs)==index_type(0)));
+    bool empty(mdspan const& self) noexcept {
+      return (self.rank()>0) && MDSPAN_IMPL_FOLD_OR((self.mapping_ref().extents().extent(Idxs)==index_type(0)));
     }
     template <class ReferenceType, class SizeType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
-    ReferenceType __callop(mdspan const& __self, const std::array<SizeType, N>& indices) noexcept {
-      return __self.__accessor_ref().access(__self.__ptr_ref(), __self.__mapping_ref()(indices[Idxs]...));
+    ReferenceType callop(mdspan const& self, const std::array<SizeType, N>& indices) noexcept {
+      return self.accessor_ref().access(self.ptr_ref(), self.mapping_ref()(indices[Idxs]...));
     }
 #ifdef __cpp_lib_span
     template <class ReferenceType, class SizeType, size_t N>
     MDSPAN_FORCE_INLINE_FUNCTION static constexpr
-    ReferenceType __callop(mdspan const& __self, const std::span<SizeType, N>& indices) noexcept {
-      return __self.__accessor_ref().access(__self.__ptr_ref(), __self.__mapping_ref()(indices[Idxs]...));
+    ReferenceType callop(mdspan const& self, const std::span<SizeType, N>& indices) noexcept {
+      return self.accessor_ref().access(self.ptr_ref(), self.mapping_ref()(indices[Idxs]...));
     }
 #endif
   };
@@ -3632,14 +3632,14 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr size_t rank() noexcept { return extents_type::rank(); }
   MDSPAN_INLINE_FUNCTION static constexpr size_t rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
   MDSPAN_INLINE_FUNCTION static constexpr size_t static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
-  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return __mapping_ref().extents().extent(r); };
+  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return mapping_ref().extents().extent(r); };
 
 private:
 
-  // Can't use defaulted parameter in the __deduction_workaround template because of a bug in MSVC warning C4348.
-  using __impl = __deduction_workaround<std::make_index_sequence<extents_type::rank()>>;
+  // Can't use defaulted parameter in the deduction_workaround template because of a bug in MSVC warning C4348.
+  using deduction_workaround_impl = deduction_workaround<std::make_index_sequence<extents_type::rank()>>;
 
-  using __map_acc_pair_t = detail::__compressed_pair<mapping_type, accessor_type>;
+  using map_acc_pair_t = detail::impl_compressed_pair<mapping_type, accessor_type>;
 
 public:
 
@@ -3673,7 +3673,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   explicit constexpr mdspan(data_handle_type p, SizeTypes... dynamic_extents)
     // TODO @proposal-bug shouldn't I be allowed to do `move(p)` here?
-    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(static_cast<index_type>(std::move(dynamic_extents))...)), accessor_type()))
+    : m_members(std::move(p), map_acc_pair_t(mapping_type(extents_type(static_cast<index_type>(std::move(dynamic_extents))...)), accessor_type()))
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -3689,7 +3689,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(data_handle_type p, const std::array<SizeType, N>& dynamic_extents)
-    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
+    : m_members(std::move(p), map_acc_pair_t(mapping_type(extents_type(dynamic_extents)), accessor_type()))
   { }
 
 #ifdef __cpp_lib_span
@@ -3706,7 +3706,7 @@ public:
   MDSPAN_CONDITIONAL_EXPLICIT(N != rank_dynamic())
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(data_handle_type p, std::span<SizeType, N> dynamic_extents)
-    : __members(std::move(p), __map_acc_pair_t(mapping_type(extents_type(as_const(dynamic_extents))), accessor_type()))
+    : m_members(std::move(p), map_acc_pair_t(mapping_type(extents_type(as_const(dynamic_extents))), accessor_type()))
   { }
 #endif
 
@@ -3715,19 +3715,19 @@ public:
     mdspan, (data_handle_type p, const extents_type& exts), ,
     /* requires */ (MDSPAN_IMPL_TRAIT(std::is_default_constructible, accessor_type) &&
                     MDSPAN_IMPL_TRAIT(std::is_constructible, mapping_type, const extents_type&))
-  ) : __members(std::move(p), __map_acc_pair_t(mapping_type(exts), accessor_type()))
+  ) : m_members(std::move(p), map_acc_pair_t(mapping_type(exts), accessor_type()))
   { }
 
   MDSPAN_FUNCTION_REQUIRES(
     (MDSPAN_INLINE_FUNCTION constexpr),
     mdspan, (data_handle_type p, const mapping_type& m), ,
     /* requires */ (MDSPAN_IMPL_TRAIT(std::is_default_constructible, accessor_type))
-  ) : __members(std::move(p), __map_acc_pair_t(m, accessor_type()))
+  ) : m_members(std::move(p), map_acc_pair_t(m, accessor_type()))
   { }
 
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(data_handle_type p, const mapping_type& m, const accessor_type& a)
-    : __members(std::move(p), __map_acc_pair_t(m, a))
+    : m_members(std::move(p), map_acc_pair_t(m, a))
   { }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -3743,7 +3743,7 @@ public:
   )
   MDSPAN_INLINE_FUNCTION
   constexpr mdspan(const mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other)
-    : __members(other.__ptr_ref(), __map_acc_pair_t(other.__mapping_ref(), other.__accessor_ref()))
+    : m_members(other.ptr_ref(), map_acc_pair_t(other.mapping_ref(), other.accessor_ref()))
   {
       static_assert(MDSPAN_IMPL_TRAIT(std::is_constructible, data_handle_type, typename OtherAccessor::data_handle_type),"Incompatible data_handle_type for mdspan construction");
       static_assert(MDSPAN_IMPL_TRAIT(std::is_constructible, extents_type, OtherExtents),"Incompatible extents for mdspan construction");
@@ -3777,7 +3777,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](SizeTypes... indices) const
   {
-    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(static_cast<index_type>(std::move(indices))...));
+    return accessor_ref().access(ptr_ref(), mapping_ref()(static_cast<index_type>(std::move(indices))...));
   }
   #endif
 
@@ -3791,7 +3791,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](const std::array< SizeType, rank()>& indices) const
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return deduction_workaround_impl::template callop<reference>(*this, indices);
   }
 
   #ifdef __cpp_lib_span
@@ -3805,7 +3805,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](std::span<SizeType, rank()> indices) const
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return deduction_workaround_impl::template callop<reference>(*this, indices);
   }
   #endif // __cpp_lib_span
 
@@ -3821,7 +3821,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](Index idx) const
   {
-    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(static_cast<index_type>(std::move(idx))));
+    return accessor_ref().access(ptr_ref(), mapping_ref()(static_cast<index_type>(std::move(idx))));
   }
   #endif
 
@@ -3836,7 +3836,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(SizeTypes... indices) const
   {
-    return __accessor_ref().access(__ptr_ref(), __mapping_ref()(static_cast<index_type>(std::move(indices))...));
+    return accessor_ref().access(ptr_ref(), mapping_ref()(static_cast<index_type>(std::move(indices))...));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -3849,7 +3849,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(const std::array<SizeType, rank()>& indices) const
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return deduction_workaround_impl::template callop<reference>(*this, indices);
   }
 
   #ifdef __cpp_lib_span
@@ -3863,17 +3863,17 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(std::span<SizeType, rank()> indices) const
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return deduction_workaround_impl::template callop<reference>(*this, indices);
   }
   #endif // __cpp_lib_span
   #endif // MDSPAN_USE_PAREN_OPERATOR
 
   MDSPAN_INLINE_FUNCTION constexpr size_type size() const noexcept {
-    return static_cast<size_type>(__impl::__size(*this));
+    return static_cast<size_type>(deduction_workaround_impl::size(*this));
   };
 
   MDSPAN_INLINE_FUNCTION constexpr bool empty() const noexcept {
-    return __impl::__empty(*this);
+    return deduction_workaround_impl::empty(*this);
   };
 
   MDSPAN_INLINE_FUNCTION
@@ -3881,9 +3881,9 @@ public:
     // can't call the std::swap inside on HIP
     #if !defined(MDSPAN_IMPL_HAS_HIP) && !defined(MDSPAN_IMPL_HAS_CUDA)
     using std::swap;
-    swap(x.__ptr_ref(), y.__ptr_ref());
-    swap(x.__mapping_ref(), y.__mapping_ref());
-    swap(x.__accessor_ref(), y.__accessor_ref());
+    swap(x.ptr_ref(), y.ptr_ref());
+    swap(x.mapping_ref(), y.mapping_ref());
+    swap(x.accessor_ref(), y.accessor_ref());
     #else
     mdspan tmp = y;
     y = x;
@@ -3895,10 +3895,10 @@ public:
   // [mdspan.basic.domobs], mdspan observers of the domain multidimensional index space
 
 
-  MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return __mapping_ref().extents(); };
-  MDSPAN_INLINE_FUNCTION constexpr const data_handle_type& data_handle() const noexcept { return __ptr_ref(); };
-  MDSPAN_INLINE_FUNCTION constexpr const mapping_type& mapping() const noexcept { return __mapping_ref(); };
-  MDSPAN_INLINE_FUNCTION constexpr const accessor_type& accessor() const noexcept { return __accessor_ref(); };
+  MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return mapping_ref().extents(); };
+  MDSPAN_INLINE_FUNCTION constexpr const data_handle_type& data_handle() const noexcept { return ptr_ref(); };
+  MDSPAN_INLINE_FUNCTION constexpr const mapping_type& mapping() const noexcept { return mapping_ref(); };
+  MDSPAN_INLINE_FUNCTION constexpr const accessor_type& accessor() const noexcept { return accessor_ref(); };
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.obs], mdspan observers of the mapping
@@ -3907,21 +3907,21 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() { return mapping_type::is_always_exhaustive(); };
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() { return mapping_type::is_always_strided(); };
 
-  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const { return __mapping_ref().is_unique(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const { return __mapping_ref().is_exhaustive(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const { return __mapping_ref().is_strided(); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return __mapping_ref().stride(r); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const { return mapping_ref().is_unique(); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const { return mapping_ref().is_exhaustive(); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const { return mapping_ref().is_strided(); };
+  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return mapping_ref().stride(r); };
 
 private:
 
-  detail::__compressed_pair<data_handle_type, __map_acc_pair_t> __members{};
+  detail::impl_compressed_pair<data_handle_type, map_acc_pair_t> m_members{};
 
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 data_handle_type& __ptr_ref() noexcept { return __members.__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr data_handle_type const& __ptr_ref() const noexcept { return __members.__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 mapping_type& __mapping_ref() noexcept { return __members.__second().__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr mapping_type const& __mapping_ref() const noexcept { return __members.__second().__first(); }
-  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 accessor_type& __accessor_ref() noexcept { return __members.__second().__second(); }
-  MDSPAN_FORCE_INLINE_FUNCTION constexpr accessor_type const& __accessor_ref() const noexcept { return __members.__second().__second(); }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 data_handle_type& ptr_ref() noexcept { return m_members.first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr data_handle_type const& ptr_ref() const noexcept { return m_members.first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 mapping_type& mapping_ref() noexcept { return m_members.second().first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr mapping_type const& mapping_ref() const noexcept { return m_members.second().first(); }
+  MDSPAN_FORCE_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14 accessor_type& accessor_ref() noexcept { return m_members.second().second(); }
+  MDSPAN_FORCE_INLINE_FUNCTION constexpr accessor_type const& accessor_ref() const noexcept { return m_members.second().second(); }
 
   template <class, class, class, class>
   friend class mdspan;
@@ -4012,7 +4012,7 @@ class layout_left::mapping {
     using layout_type = layout_left;
   private:
 
-    static_assert(detail::__is_extents_v<extents_type>,
+    static_assert(detail::impl_is_extents_v<extents_type>,
                   MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::layout_left::mapping must be instantiated with a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
     template <class>
@@ -4020,25 +4020,25 @@ class layout_left::mapping {
 
     // i0+(i1 + E(1)*(i2 + E(2)*i3))
     template <size_t r, size_t Rank>
-    struct __rank_count {};
+    struct rank_count {};
 
     template <size_t r, size_t Rank, class I, class... Indices>
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(
-      __rank_count<r,Rank>, const I& i, Indices... idx) const {
-      return __compute_offset(__rank_count<r+1,Rank>(), idx...) *
-                 __extents.extent(r) + i;
+    constexpr index_type compute_offset(
+      rank_count<r,Rank>, const I& i, Indices... idx) const {
+      return compute_offset(rank_count<r+1,Rank>(), idx...) *
+                 m_extents.extent(r) + i;
     }
 
     template<class I>
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(
-      __rank_count<extents_type::rank()-1,extents_type::rank()>, const I& i) const {
+    constexpr index_type compute_offset(
+      rank_count<extents_type::rank()-1,extents_type::rank()>, const I& i) const {
       return i;
     }
 
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr index_type __compute_offset(__rank_count<0,0>) const { return 0; }
+    constexpr index_type compute_offset(rank_count<0,0>) const { return 0; }
 
   public:
 
@@ -4048,8 +4048,8 @@ class layout_left::mapping {
     MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping const&) noexcept = default;
 
     MDSPAN_IMPL_HOST_DEVICE
-    constexpr mapping(extents_type const& __exts) noexcept
-      :__extents(__exts)
+    constexpr mapping(extents_type const& exts) noexcept
+      :m_extents(exts)
     { }
 
     MDSPAN_TEMPLATE_REQUIRES(
@@ -4061,7 +4061,7 @@ class layout_left::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
@@ -4079,7 +4079,7 @@ class layout_left::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(layout_right::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
@@ -4091,30 +4091,30 @@ class layout_left::mapping {
     /**
      * Converting constructor from `layout_left_padded::mapping`.
      *
-     * This overload participates in overload resolution only if _Mapping is a layout_left_padded mapping and
-     * extents_type is constructible from _Mapping::extents_type.
+     * This overload participates in overload resolution only if Mapping is a layout_left_padded mapping and
+     * extents_type is constructible from Mapping::extents_type.
      *
      * \note There is currently a difference from p2642r2, where this function is specified as taking
      * `layout_left_padded< padding_value >::mapping< Extents>`. However, this makes `padding_value` non-deducible.
      */
     MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
+      class Mapping,
       /* requires */ (
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<_Mapping>::value
-        && std::is_constructible_v<extents_type, typename _Mapping::extents_type>
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<Mapping>::value
+        && std::is_constructible_v<extents_type, typename Mapping::extents_type>
       )
     )
-    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
+    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
     MDSPAN_INLINE_FUNCTION constexpr
-    mapping(const _Mapping& __other) noexcept
-      : __extents(__other.extents())
+    mapping(const Mapping& other) noexcept
+      : m_extents(other.extents())
     {
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_mandates<
-            extents_type, _Mapping>(detail::with_rank<extents_type::rank()>{});
+            extents_type, Mapping>(detail::with_rank<extents_type::rank()>{});
       MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
           check_padded_layout_converting_constructor_preconditions<
-              extents_type>(detail::with_rank<extents_type::rank()>{}, __other);
+              extents_type>(detail::with_rank<extents_type::rank()>{}, other);
     }
 #endif
 
@@ -4127,26 +4127,26 @@ class layout_left::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(layout_stride::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
         * other.required_span_size() is a representable value of type index_type
         */
-       detail::validate_strides(detail::with_rank<extents_type::rank()>{}, layout_left{}, __extents, other);
+       detail::validate_strides(detail::with_rank<extents_type::rank()>{}, layout_left{}, m_extents, other);
     }
 
     MDSPAN_INLINE_FUNCTION_DEFAULTED MDSPAN_IMPL_CONSTEXPR_14_DEFAULTED mapping& operator=(mapping const&) noexcept = default;
 
     MDSPAN_INLINE_FUNCTION
     constexpr const extents_type& extents() const noexcept {
-      return __extents;
+      return m_extents;
     }
 
     MDSPAN_INLINE_FUNCTION
     constexpr index_type required_span_size() const noexcept {
       index_type value = 1;
-      for(rank_type r=0; r<extents_type::rank(); r++) value*=__extents.extent(r);
+      for(rank_type r=0; r<extents_type::rank(); r++) value*=m_extents.extent(r);
       return value;
     }
 
@@ -4164,7 +4164,7 @@ class layout_left::mapping {
 #if ! defined(NDEBUG)
       detail::check_all_indices(this->extents(), idxs...);
 #endif // ! NDEBUG
-      return __compute_offset(__rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
+      return compute_offset(rank_count<0, extents_type::rank()>(), static_cast<index_type>(idxs)...);
     }
 
 
@@ -4184,7 +4184,7 @@ class layout_left::mapping {
 #endif
     {
       index_type value = 1;
-      for(rank_type r=0; r<i; r++) value*=__extents.extent(r);
+      for(rank_type r=0; r<i; r++) value*=m_extents.extent(r);
       return value;
     }
 
@@ -4212,17 +4212,17 @@ class layout_left::mapping {
     // Not really public, but currently needed to implement fully constexpr useable submdspan:
     template<size_t N, class SizeType, size_t ... E, size_t ... Idx>
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type __get_stride(MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
-      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((Idx<N? __extents.template __extent<Idx>():1),1);
+    constexpr index_type impl_get_stride(MDSPAN_IMPL_STANDARD_NAMESPACE::extents<SizeType, E...>,std::integer_sequence<size_t, Idx...>) const {
+      return MDSPAN_IMPL_FOLD_TIMES_RIGHT((Idx<N? m_extents.template extent<Idx>():1),1);
     }
     template<size_t N>
     MDSPAN_INLINE_FUNCTION
-    constexpr index_type __stride() const noexcept {
-      return __get_stride<N>(__extents, std::make_index_sequence<extents_type::rank()>());
+    constexpr index_type impl_stide() const noexcept {
+      return impl_get_stride<N>(m_extents, std::make_index_sequence<extents_type::rank()>());
     }
 
 private:
-   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type __extents{};
+   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type m_extents{};
 
    // [mdspan.submdspan.mapping], submdspan mapping specialization
    template<class... SliceSpecifiers>
@@ -4265,34 +4265,34 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 
 namespace detail {
-template<class _T>
+template<class T>
 MDSPAN_INLINE_FUNCTION
-constexpr _T
-find_next_multiple(_T alignment, _T offset)
+constexpr T
+find_next_multiple(T alignment, T offset)
 {
   if ( alignment == 0 ) {
-    return _T(0);
+    return T(0);
   } else {
     return ( ( offset + alignment - 1 ) / alignment) * alignment;
   }
 }
 
-template <class _ExtentsType, size_t _PaddingValue, size_t _ExtentToPadIdx>
+template <class ExtentsType, size_t PaddingValue, size_t ExtentToPadIdx>
 MDSPAN_INLINE_FUNCTION constexpr size_t get_actual_static_padding_value() {
-  constexpr auto rank = _ExtentsType::rank();
+  constexpr auto rank = ExtentsType::rank();
 
-  if constexpr (rank <= typename _ExtentsType::rank_type(1)) {
+  if constexpr (rank <= typename ExtentsType::rank_type(1)) {
     return 0;
-  } else if constexpr (_PaddingValue != dynamic_extent &&
-                       _ExtentsType::static_extent(_ExtentToPadIdx) !=
+  } else if constexpr (PaddingValue != dynamic_extent &&
+                       ExtentsType::static_extent(ExtentToPadIdx) !=
                            dynamic_extent) {
     static_assert(
-        (_PaddingValue != 0) ||
-            (_ExtentsType::static_extent(_ExtentToPadIdx) == 0),
+        (PaddingValue != 0) ||
+            (ExtentsType::static_extent(ExtentToPadIdx) == 0),
         "padding stride can be 0 only if "
         "extents_type::static_extent(extent-to-pad) is 0 or dynamic_extent");
-    return find_next_multiple(_PaddingValue,
-                                _ExtentsType::static_extent(_ExtentToPadIdx));
+    return find_next_multiple(PaddingValue,
+                                ExtentsType::static_extent(ExtentToPadIdx));
   } else {
     return dynamic_extent;
   }
@@ -4302,44 +4302,44 @@ MDSPAN_INLINE_FUNCTION constexpr size_t get_actual_static_padding_value() {
 #endif
 }
 
-template <size_t _PaddingValue, typename _Extents, size_t _ExtentToPadIdx, size_t _Rank, typename Enabled = void>
+template <size_t PaddingValue, typename Extents, size_t ExtentToPadIdx, size_t Rank, typename Enabled = void>
 struct static_array_type_for_padded_extent
 {
-  static constexpr size_t padding_value = _PaddingValue;
-  using index_type = typename _Extents::index_type;
-  using extents_type = _Extents;
+  static constexpr size_t padding_value = PaddingValue;
+  using index_type = typename Extents::index_type;
+  using extents_type = Extents;
   using type = ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::maybe_static_array<
       index_type, size_t, dynamic_extent,
-      ::MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::get_actual_static_padding_value<extents_type, _PaddingValue,
-                                                _ExtentToPadIdx>()>;
+      ::MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::get_actual_static_padding_value<extents_type, PaddingValue,
+                                                ExtentToPadIdx>()>;
 };
 
-template <size_t _PaddingValue, typename _Extents, size_t _ExtentToPadIdx, size_t Rank>
-struct static_array_type_for_padded_extent<_PaddingValue, _Extents,
-                                             _ExtentToPadIdx, Rank, std::enable_if_t<Rank <= 1>> {
-  using index_type = typename _Extents::index_type;
-  using extents_type = _Extents;
+template <size_t PaddingValue, typename Extents, size_t ExtentToPadIdx, size_t Rank>
+struct static_array_type_for_padded_extent<PaddingValue, Extents,
+                                             ExtentToPadIdx, Rank, std::enable_if_t<Rank <= 1>> {
+  using index_type = typename Extents::index_type;
+  using extents_type = Extents;
   using type =
       ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::maybe_static_array<
           index_type, size_t, dynamic_extent, 0>;
 };
 
-template <size_t _PaddingValue, typename _Extents, size_t _ExtentToPadIdx>
+template <size_t PaddingValue, typename Extents, size_t ExtentToPadIdx>
 struct padded_extent {
-  static constexpr size_t padding_value = _PaddingValue;
-  using index_type = typename _Extents::index_type;
-  using extents_type = _Extents;
+  static constexpr size_t padding_value = PaddingValue;
+  using index_type = typename Extents::index_type;
+  using extents_type = Extents;
   using static_array_type = typename static_array_type_for_padded_extent<
-      padding_value, _Extents, _ExtentToPadIdx, _Extents::rank()>::type;
+      padding_value, Extents, ExtentToPadIdx, Extents::rank()>::type;
 
   MDSPAN_INLINE_FUNCTION
   static constexpr auto static_value() { return static_array_type::static_value(0); }
 
   MDSPAN_INLINE_FUNCTION
   static constexpr static_array_type
-  init_padding(const _Extents &exts) {
-    if constexpr ((_Extents::rank() > 1) && (padding_value == dynamic_extent)) {
-      return {exts.extent(_ExtentToPadIdx)};
+  init_padding(const Extents &exts) {
+    if constexpr ((Extents::rank() > 1) && (padding_value == dynamic_extent)) {
+      return {exts.extent(ExtentToPadIdx)};
     } else {
       return init_padding(exts, padding_value);
     }
@@ -4350,11 +4350,11 @@ struct padded_extent {
   }
 
   MDSPAN_INLINE_FUNCTION static constexpr static_array_type
-  init_padding([[maybe_unused]] const _Extents &exts,
+  init_padding([[maybe_unused]] const Extents &exts,
                [[maybe_unused]] index_type pv) {
-    if constexpr (_Extents::rank() > 1) {
+    if constexpr (Extents::rank() > 1) {
       return {find_next_multiple(pv,
-                                   exts.extent(_ExtentToPadIdx))};
+                                   exts.extent(ExtentToPadIdx))};
     } else {
       return {};
     }
@@ -4364,12 +4364,12 @@ struct padded_extent {
 #endif
   }
 
-  template <typename _Mapping, size_t _PaddingStrideIdx>
+  template <typename Mapping, size_t PaddingStrideIdx>
   MDSPAN_INLINE_FUNCTION static constexpr static_array_type
-  init_padding([[maybe_unused]] const _Mapping &other_mapping,
-                      std::integral_constant<size_t, _PaddingStrideIdx>) {
-    if constexpr (_Extents::rank() > 1) {
-      return {other_mapping.stride(_PaddingStrideIdx)};
+  init_padding([[maybe_unused]] const Mapping &other_mapping,
+                      std::integral_constant<size_t, PaddingStrideIdx>) {
+    if constexpr (Extents::rank() > 1) {
+      return {other_mapping.stride(PaddingStrideIdx)};
     } else {
       return {};
     }
@@ -4481,14 +4481,14 @@ public:
    * \param padding_value the padding value
    */
   MDSPAN_TEMPLATE_REQUIRES(
-    class _Size,
+    class Size,
     /* requires */ (
-      std::is_convertible_v<_Size, index_type>
-      && std::is_nothrow_constructible_v<index_type, _Size>
+      std::is_convertible_v<Size, index_type>
+      && std::is_nothrow_constructible_v<index_type, Size>
     )
   )
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const extents_type &ext, _Size dynamic_padding_value)
+  constexpr mapping(const extents_type &ext, Size dynamic_padding_value)
       : padded_stride(padded_stride_type::init_padding(ext, dynamic_padding_value)), exts(ext)
   {
     assert((padding_value == dynamic_extent) || (static_cast<index_type>(padding_value) == static_cast<index_type>(dynamic_padding_value)));
@@ -4505,22 +4505,22 @@ public:
    * `padding_value` greater than or equal to `extents_type::static_extent(0)`
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _OtherExtents,
-      /* requires */ (std::is_constructible_v<extents_type, _OtherExtents>))
+      class OtherExtents,
+      /* requires */ (std::is_constructible_v<extents_type, OtherExtents>))
   MDSPAN_CONDITIONAL_EXPLICIT(
-      (!std::is_convertible_v<_OtherExtents, extents_type>))
+      (!std::is_convertible_v<OtherExtents, extents_type>))
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const layout_left::mapping<_OtherExtents> &other_mapping)
+  constexpr mapping(const layout_left::mapping<OtherExtents> &other_mapping)
       : padded_stride(padded_stride_type::init_padding(
             other_mapping,
             std::integral_constant<size_t, padded_stride_idx>{})),
         exts(other_mapping.extents()) {
     static_assert(
-        (_OtherExtents::rank() > 1) ||
+        (OtherExtents::rank() > 1) ||
         (static_padding_stride != dynamic_extent) ||
-        (_OtherExtents::static_extent(extent_to_pad_idx) != dynamic_extent) ||
+        (OtherExtents::static_extent(extent_to_pad_idx) != dynamic_extent) ||
         (static_padding_stride ==
-         _OtherExtents::static_extent(extent_to_pad_idx)));
+         OtherExtents::static_extent(extent_to_pad_idx)));
   }
 
   /**
@@ -4530,11 +4530,11 @@ public:
    * `is_constructible_v<extents_type, OtherExtents>` is true
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _OtherExtents,
-      /* requires */ (std::is_constructible_v<extents_type, _OtherExtents>))
+      class OtherExtents,
+      /* requires */ (std::is_constructible_v<extents_type, OtherExtents>))
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const layout_stride::mapping<_OtherExtents> &other_mapping)
+  constexpr mapping(const layout_stride::mapping<OtherExtents> &other_mapping)
       : padded_stride(padded_stride_type::init_padding(
             other_mapping,
             std::integral_constant<size_t, padded_stride_idx>{})),
@@ -4549,22 +4549,22 @@ public:
    * `padding_value == OtherPaddingStride`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
-      /* requires */ (detail::is_layout_left_padded_mapping<_Mapping>::value
+      class Mapping,
+      /* requires */ (detail::is_layout_left_padded_mapping<Mapping>::value
                           &&std::is_constructible_v<
-                              extents_type, typename _Mapping::extents_type>))
+                              extents_type, typename Mapping::extents_type>))
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 &&
                                (padding_value == dynamic_extent ||
-                                _Mapping::padding_value == dynamic_extent)))
+                                Mapping::padding_value == dynamic_extent)))
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const _Mapping &other_mapping)
+  constexpr mapping(const Mapping &other_mapping)
       : padded_stride(padded_stride_type::init_padding(
             other_mapping,
             std::integral_constant<size_t, padded_stride_idx>{})),
         exts(other_mapping.extents()) {
     static_assert(padding_value == dynamic_extent ||
-                  _Mapping::padding_value == dynamic_extent ||
-                  padding_value == _Mapping::padding_value);
+                  Mapping::padding_value == dynamic_extent ||
+                  padding_value == Mapping::padding_value);
   }
 
   /**
@@ -4575,15 +4575,15 @@ public:
    * OtherExtents>` is `true`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
-      /* requires */ (detail::is_layout_right_padded_mapping<_Mapping>::value
+      class Mapping,
+      /* requires */ (detail::is_layout_right_padded_mapping<Mapping>::value
                               &&extents_type::rank() <= 1 &&
                       std::is_constructible_v<extents_type,
-                                              typename _Mapping::extents_type>))
+                                              typename Mapping::extents_type>))
   MDSPAN_CONDITIONAL_EXPLICIT(
-      (!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
+      (!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const _Mapping &other_mapping) noexcept
+  constexpr mapping(const Mapping &other_mapping) noexcept
       : padded_stride(padded_stride_type::init_padding(
             static_cast<extents_type>(other_mapping.extents()),
             other_mapping.extents().extent(extent_to_pad_idx))),
@@ -4639,17 +4639,17 @@ public:
    * - (is_nothrow_constructible_v<index_type, Indices> && ...) is true.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class... _Indices,
-      /* requires */ (sizeof...(_Indices) == extents_type::rank() &&
+      class... Indices,
+      /* requires */ (sizeof...(Indices) == extents_type::rank() &&
                       (::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::
-                           are_valid_indices<index_type, _Indices...>())))
+                           are_valid_indices<index_type, Indices...>())))
   MDSPAN_INLINE_FUNCTION constexpr size_t
-  operator()(_Indices... idxs) const noexcept {
+  operator()(Indices... idxs) const noexcept {
 #if !defined(NDEBUG)
     ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_all_indices(this->extents(),
                                                                 idxs...);
 #endif // ! NDEBUG
-    return compute_offset(std::index_sequence_for<_Indices...>{}, idxs...);
+    return compute_offset(std::index_sequence_for<Indices...>{}, idxs...);
   }
 
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept {
@@ -4700,11 +4700,11 @@ public:
    * Extents>`. However, this makes `padding_value` non-deducible.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
-      /* requires */ (detail::is_layout_left_padded_mapping<_Mapping>::value &&
-                      (_Mapping::extents_type::rank() == extents_type::rank())))
+      class Mapping,
+      /* requires */ (detail::is_layout_left_padded_mapping<Mapping>::value &&
+                      (Mapping::extents_type::rank() == extents_type::rank())))
   MDSPAN_INLINE_FUNCTION friend constexpr bool
-  operator==(const mapping &left, const _Mapping &right) noexcept {
+  operator==(const mapping &left, const Mapping &right) noexcept {
     // Workaround for some compilers not short-circuiting properly with
     // compile-time checks i.e. we can't access stride(_padding_stride_idx) of a
     // rank 0 mapping
@@ -4724,11 +4724,11 @@ public:
    * `OtherExtents::rank() == extents_type::rank()`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
-      /* requires */ (detail::is_layout_left_padded_mapping<_Mapping>::value &&
-                      (_Mapping::extents_type::rank() == extents_type::rank())))
+      class Mapping,
+      /* requires */ (detail::is_layout_left_padded_mapping<Mapping>::value &&
+                      (Mapping::extents_type::rank() == extents_type::rank())))
   MDSPAN_INLINE_FUNCTION friend constexpr bool
-  operator!=(const mapping &left, const _Mapping &right) noexcept {
+  operator!=(const mapping &left, const Mapping &right) noexcept {
     return !(left == right);
   }
 #endif
@@ -4843,14 +4843,14 @@ public:
    * \param padding_value the padding value
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _Size,
+      class Size,
       /* requires */ (
-          std::is_convertible_v<_Size, index_type>
-              && std::is_nothrow_constructible_v<index_type, _Size>
+          std::is_convertible_v<Size, index_type>
+              && std::is_nothrow_constructible_v<index_type, Size>
           )
       )
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const extents_type &ext, _Size dynamic_padding_value)
+  constexpr mapping(const extents_type &ext, Size dynamic_padding_value)
       : padded_stride(padded_stride_type::init_padding(ext, static_cast<index_type>(dynamic_padding_value))),
         exts(ext) {
     assert((padding_value == dynamic_extent) ||
@@ -4865,22 +4865,22 @@ public:
    * otherwise, `OtherExtents::static_extent(0)` must be equal to the least multiple of `padding_value` greater than or equal to `extents_type::static_extent(0)`
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _OtherExtents,
-      /* requires */ (std::is_constructible_v<extents_type, _OtherExtents>))
+      class OtherExtents,
+      /* requires */ (std::is_constructible_v<extents_type, OtherExtents>))
   MDSPAN_CONDITIONAL_EXPLICIT(
-      (!std::is_convertible_v<_OtherExtents, extents_type>))
+      (!std::is_convertible_v<OtherExtents, extents_type>))
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const layout_right::mapping<_OtherExtents> &other_mapping)
+  constexpr mapping(const layout_right::mapping<OtherExtents> &other_mapping)
       : padded_stride(padded_stride_type::init_padding(
             other_mapping,
             std::integral_constant<size_t, padded_stride_idx>{})),
         exts(other_mapping.extents()) {
     static_assert(
-        (_OtherExtents::rank() > 1) ||
+        (OtherExtents::rank() > 1) ||
         (padded_stride_type::static_value() != dynamic_extent) ||
-        (_OtherExtents::static_extent(extent_to_pad_idx) != dynamic_extent) ||
+        (OtherExtents::static_extent(extent_to_pad_idx) != dynamic_extent) ||
         (padded_stride_type::static_value() ==
-         _OtherExtents::static_extent(extent_to_pad_idx)));
+         OtherExtents::static_extent(extent_to_pad_idx)));
   }
 
   /**
@@ -4890,11 +4890,11 @@ public:
    * `is_constructible_v<extents_type, OtherExtents>` is true
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _OtherExtents,
-      /* requires */ (std::is_constructible_v<extents_type, _OtherExtents>))
+      class OtherExtents,
+      /* requires */ (std::is_constructible_v<extents_type, OtherExtents>))
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const layout_stride::mapping<_OtherExtents> &other_mapping)
+  constexpr mapping(const layout_stride::mapping<OtherExtents> &other_mapping)
       : padded_stride(padded_stride_type::init_padding(
             other_mapping,
             std::integral_constant<size_t, padded_stride_idx>{})),
@@ -4909,22 +4909,22 @@ public:
    * `padding_value == OtherPaddingStride`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
-      /* requires */ (detail::is_layout_right_padded_mapping<_Mapping>::value
+      class Mapping,
+      /* requires */ (detail::is_layout_right_padded_mapping<Mapping>::value
                           &&std::is_constructible_v<
-                              extents_type, typename _Mapping::extents_type>))
+                              extents_type, typename Mapping::extents_type>))
   MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 1 &&
                                (padding_value == dynamic_extent ||
-                                _Mapping::padding_value == dynamic_extent)))
+                                Mapping::padding_value == dynamic_extent)))
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const _Mapping &other_mapping)
+  constexpr mapping(const Mapping &other_mapping)
       : padded_stride(padded_stride_type::init_padding(
             other_mapping,
             std::integral_constant<size_t, padded_stride_idx>{})),
         exts(other_mapping.extents()) {
     static_assert(padding_value == dynamic_extent ||
-                  _Mapping::padding_value == dynamic_extent ||
-                  padding_value == _Mapping::padding_value);
+                  Mapping::padding_value == dynamic_extent ||
+                  padding_value == Mapping::padding_value);
   }
 
   /**
@@ -4935,15 +4935,15 @@ public:
    * OtherExtents>` is `true`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
-      /* requires */ (detail::is_layout_left_padded_mapping<_Mapping>::value
+      class Mapping,
+      /* requires */ (detail::is_layout_left_padded_mapping<Mapping>::value
                               &&extents_type::rank() <= 1 &&
                       std::is_constructible_v<extents_type,
-                                              typename _Mapping::extents_type>))
+                                              typename Mapping::extents_type>))
   MDSPAN_CONDITIONAL_EXPLICIT(
-      (!std::is_convertible_v<typename _Mapping::extents_type, extents_type>))
+      (!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
   MDSPAN_INLINE_FUNCTION
-  constexpr mapping(const _Mapping &other_mapping) noexcept
+  constexpr mapping(const Mapping &other_mapping) noexcept
       : padded_stride(padded_stride_type::init_padding(
             static_cast<extents_type>(other_mapping.extents()),
             other_mapping.extents().extent(extent_to_pad_idx))),
@@ -4998,13 +4998,13 @@ public:
    * - (is_nothrow_constructible_v<index_type, Indices> && ...) is true.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class... _Indices,
-      /* requires */ (sizeof...(_Indices) == extents_type::rank() &&
+      class... Indices,
+      /* requires */ (sizeof...(Indices) == extents_type::rank() &&
                       (::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::
-                           are_valid_indices<index_type, _Indices...>())))
+                           are_valid_indices<index_type, Indices...>())))
   MDSPAN_INLINE_FUNCTION constexpr size_t
-  operator()(_Indices... idxs) const noexcept {
-    return compute_offset(std::index_sequence_for<_Indices...>{}, idxs...);
+  operator()(Indices... idxs) const noexcept {
+    return compute_offset(std::index_sequence_for<Indices...>{}, idxs...);
   }
 
   MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept {
@@ -5055,11 +5055,11 @@ public:
    * Extents>`. However, this makes `padding_value` non-deducible.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
-      /* requires */ (detail::is_layout_right_padded_mapping<_Mapping>::value &&
-                      (_Mapping::extents_type::rank() == extents_type::rank())))
+      class Mapping,
+      /* requires */ (detail::is_layout_right_padded_mapping<Mapping>::value &&
+                      (Mapping::extents_type::rank() == extents_type::rank())))
   MDSPAN_INLINE_FUNCTION friend constexpr bool
-  operator==(const mapping &left, const _Mapping &right) noexcept {
+  operator==(const mapping &left, const Mapping &right) noexcept {
     // Workaround for some compilers not short-circuiting properly with
     // compile-time checks i.e. we can't access stride(_padding_stride_idx) of a
     // rank 0 mapping
@@ -5079,11 +5079,11 @@ public:
    * `OtherExtents::rank() == extents_type::rank()`.
    */
   MDSPAN_TEMPLATE_REQUIRES(
-      class _Mapping,
-      /* requires */ (detail::is_layout_right_padded_mapping<_Mapping>::value &&
-                      (_Mapping::extents_type::rank() == extents_type::rank())))
+      class Mapping,
+      /* requires */ (detail::is_layout_right_padded_mapping<Mapping>::value &&
+                      (Mapping::extents_type::rank() == extents_type::rank())))
   MDSPAN_INLINE_FUNCTION friend constexpr bool
-  operator!=(const mapping &left, const _Mapping &right) noexcept {
+  operator!=(const mapping &left, const Mapping &right) noexcept {
     return !(left == right);
   }
 #endif
@@ -5167,10 +5167,10 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 namespace {
   template<class T>
-  struct __mdspan_is_integral_constant: std::false_type {};
+  struct mdspan_is_integral_constant: std::false_type {};
 
   template<class T, T val>
-  struct __mdspan_is_integral_constant<std::integral_constant<T,val>>: std::true_type {};
+  struct mdspan_is_integral_constant<std::integral_constant<T,val>>: std::true_type {};
 }
 
 // Slice Specifier allowing for strides and compile time extent
@@ -5184,9 +5184,9 @@ struct strided_slice {
   MDSPAN_IMPL_NO_UNIQUE_ADDRESS ExtentType extent{};
   MDSPAN_IMPL_NO_UNIQUE_ADDRESS StrideType stride{};
 
-  static_assert(std::is_integral_v<OffsetType> || __mdspan_is_integral_constant<OffsetType>::value);
-  static_assert(std::is_integral_v<ExtentType> || __mdspan_is_integral_constant<ExtentType>::value);
-  static_assert(std::is_integral_v<StrideType> || __mdspan_is_integral_constant<StrideType>::value);
+  static_assert(std::is_integral_v<OffsetType> || mdspan_is_integral_constant<OffsetType>::value);
+  static_assert(std::is_integral_v<ExtentType> || mdspan_is_integral_constant<ExtentType>::value);
+  static_assert(std::is_integral_v<StrideType> || mdspan_is_integral_constant<StrideType>::value);
 };
 
 } // MDSPAN_IMPL_STANDARD_NAMESPACE
@@ -6373,7 +6373,7 @@ template <
 >
 class mdarray {
 private:
-  static_assert(::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::__is_extents_v<Extents>,
+  static_assert(::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::impl_is_extents_v<Extents>,
                 MDSPAN_IMPL_PROPOSED_NAMESPACE_STRING "::mdspan's Extents template parameter must be a specialization of " MDSPAN_IMPL_STANDARD_NAMESPACE_STRING "::extents.");
 
 public:
@@ -6604,7 +6604,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr const_reference operator[](const std::array<SizeType, N>& indices) const noexcept
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return impl::template callop<reference>(*this, indices);
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -6617,7 +6617,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator[](const std::array<SizeType, N>& indices) noexcept
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return impl::template callop<reference>(*this, indices);
   }
 #endif
 
@@ -6659,7 +6659,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr const_reference operator()(const std::array<SizeType, N>& indices) const noexcept
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return impl::template callop<reference>(*this, indices);
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -6672,7 +6672,7 @@ public:
   MDSPAN_FORCE_INLINE_FUNCTION
   constexpr reference operator()(const std::array<SizeType, N>& indices) noexcept
   {
-    return __impl::template __callop<reference>(*this, indices);
+    return impl::template callop<reference>(*this, indices);
   }
 #endif
   #endif
@@ -6692,7 +6692,7 @@ public:
   MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return map_.extents(); };
   MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return map_.extents().extent(r); };
   MDSPAN_INLINE_FUNCTION constexpr index_type size() const noexcept {
-//    return __impl::__size(*this);
+//    return impl::size(*this);
     return ctr_.size();
   };
 
@@ -6777,5 +6777,5 @@ private:
 #endif // MDARRAY_HPP_
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/mdarray.hpp
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/mdarray
-#endif // _MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
+#endif // MDSPAN_SINGLE_HEADER_INCLUDE_GUARD_
 
