@@ -86,3 +86,13 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
       run: make install
+    
+    - name: Test Target Export
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-src
+      run: bash ./scripts/test_install.sh . ${{github.workspace}}/mdspan-build
+    
+    - name: Test Target Install
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-src
+      run: bash ./scripts/test_install.sh .
