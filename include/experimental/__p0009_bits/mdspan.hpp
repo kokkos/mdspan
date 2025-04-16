@@ -227,9 +227,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
-      MDSPAN_IMPL_FOLD_AND(MDSPAN_IMPL_TRAIT(std::is_convertible, SizeTypes, index_type) /* && ... */) &&
-      MDSPAN_IMPL_FOLD_AND(MDSPAN_IMPL_TRAIT(std::is_nothrow_constructible, index_type, SizeTypes) /* && ... */) &&
-      (rank() == sizeof...(SizeTypes))
+      extents_type::rank() == sizeof...(SizeTypes) &&
+      (detail::are_valid_indices<index_type, SizeTypes...>())
     )
   )
   constexpr reference at(SizeTypes... indices) const
@@ -290,9 +289,8 @@ public:
   MDSPAN_TEMPLATE_REQUIRES(
     class... SizeTypes,
     /* requires */ (
-      MDSPAN_IMPL_FOLD_AND(MDSPAN_IMPL_TRAIT(std::is_convertible, SizeTypes, index_type) /* && ... */) &&
-      MDSPAN_IMPL_FOLD_AND(MDSPAN_IMPL_TRAIT(std::is_nothrow_constructible, index_type, SizeTypes) /* && ... */) &&
-      (rank() == sizeof...(SizeTypes))
+      extents_type::rank() == sizeof...(SizeTypes) &&
+      (detail::are_valid_indices<index_type, SizeTypes...>())
     )
   )
   MDSPAN_FORCE_INLINE_FUNCTION
