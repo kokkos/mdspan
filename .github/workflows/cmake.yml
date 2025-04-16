@@ -95,4 +95,4 @@ jobs:
     - name: Test Target Install
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-src
-      run: bash ./scripts/test_install.sh .
+      run: bash ./scripts/test_install.sh . ${{github.workspace}}/mdspan-install
