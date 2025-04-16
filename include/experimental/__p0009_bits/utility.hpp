@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <array>
 #include <utility>
+#include "macros.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {

@@ -46,13 +46,13 @@ struct TestExtents<
     size_t* result = allocate_array<size_t>(2);
 
     dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
-      extents_type _exts(DynamicSizes...);
+      extents_type exts(DynamicSizes...);
       // Silencing an unused warning in nvc++ the condition will never be true
-      size_t dyn_val = _exts.rank()>0?static_cast<size_t>(_exts.extent(0)):1;
-      result[0] = dyn_val > 1e9 ? dyn_val : _exts.rank();
-      result[1] = _exts.rank_dynamic();
-      // Some compilers warn about unused _exts since the functions are all static constexpr
-      (void) _exts;
+      size_t dyn_val = exts.rank()>0?static_cast<size_t>(exts.extent(0)):1;
+      result[0] = dyn_val > 1e9 ? dyn_val : exts.rank();
+      result[1] = exts.rank_dynamic();
+      // Some compilers warn about unused exts since the functions are all static constexpr
+      (void) exts;
     });
     EXPECT_EQ(result[0], static_sizes.size());
     EXPECT_EQ(result[1], dyn_sizes.size());
@@ -64,14 +64,14 @@ struct TestExtents<
     size_t* result = allocate_array<size_t>(extents_type::rank());
 
     dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
-      extents_type _exts(DynamicSizes...);
-      for(size_t r=0; r<_exts.rank(); r++) {
+      extents_type exts(DynamicSizes...);
+      for(size_t r=0; r<exts.rank(); r++) {
         // Silencing an unused warning in nvc++ the condition will never be true
-        size_t dyn_val = static_cast<size_t>(_exts.extent(r));
-        result[r] = dyn_val > 1e9 ? dyn_val : _exts.static_extent(r);
+        size_t dyn_val = static_cast<size_t>(exts.extent(r));
+        result[r] = dyn_val > 1e9 ? dyn_val : exts.static_extent(r);
       }
-      // Some compilers warn about unused _exts since the functions are all static constexpr
-      (void) _exts;
+      // Some compilers warn about unused exts since the functions are all static constexpr
+      (void) exts;
     });
     for(size_t r=0; r<extents_type::rank(); r++) {
       EXPECT_EQ(result[r], static_sizes[r]);
@@ -84,11 +84,11 @@ struct TestExtents<
     size_t* result = allocate_array<size_t>(extents_type::rank());
 
     dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
-      extents_type _exts(DynamicSizes...);
-      for(size_t r=0; r<_exts.rank(); r++ )
-        result[r] = _exts.extent(r);
+      extents_type exts(DynamicSizes...);
+      for(size_t r=0; r<exts.rank(); r++ )
+        result[r] = exts.extent(r);
       // Some compilers warn about unused _exts since the functions are all static constexpr
-      (void) _exts;
+      (void) exts;
     });
     int dyn_count = 0;
     for(size_t r=0; r<extents_type::rank(); r++) {
@@ -102,32 +102,32 @@ struct TestExtents<
 };
 
 template <size_t... Ds>
-using _sizes = std::integer_sequence<size_t, Ds...>;
+using sizes = std::integer_sequence<size_t, Ds...>;
 template <size_t... Ds>
-using _exts = Kokkos::extents<size_t,Ds...>;
+using exts = Kokkos::extents<size_t,Ds...>;
 
 using extents_test_types =
   ::testing::Types<
-    std::tuple<_exts<10>, _sizes<>>,
-    std::tuple<_exts<Kokkos::dynamic_extent>, _sizes<10>>,
-    std::tuple<_exts<10, 3>, _sizes<>>,
-    std::tuple<_exts<Kokkos::dynamic_extent, 3>, _sizes<10>>,
-    std::tuple<_exts<10, Kokkos::dynamic_extent>, _sizes<3>>,
-    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<10, 3>>
+    std::tuple<exts<10>, sizes<>>,
+    std::tuple<exts<Kokkos::dynamic_extent>, sizes<10>>,
+    std::tuple<exts<10, 3>, sizes<>>,
+    std::tuple<exts<Kokkos::dynamic_extent, 3>, sizes<10>>,
+    std::tuple<exts<10, Kokkos::dynamic_extent>, sizes<3>>,
+    std::tuple<exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, sizes<10, 3>>
   >;
 
 TYPED_TEST_SUITE(TestExtents, extents_test_types);
 
 TYPED_TEST(TestExtents, rank) {
-  __MDSPAN_TESTS_RUN_TEST(this->test_rank())
+  MDSPAN_IMPL_TESTS_RUN_TEST(this->test_rank())
 }
 
 TYPED_TEST(TestExtents, static_extent) {
-  __MDSPAN_TESTS_RUN_TEST(this->test_static_extent())
+  MDSPAN_IMPL_TESTS_RUN_TEST(this->test_static_extent())
 }
 
 TYPED_TEST(TestExtents, extent) {
-  __MDSPAN_TESTS_RUN_TEST(this->test_extent())
+  MDSPAN_IMPL_TESTS_RUN_TEST(this->test_extent())
 }
 
 TYPED_TEST(TestExtents, default_ctor) {
@@ -159,7 +159,7 @@ TYPED_TEST(TestExtents, copy_assign) {
 // Only types can be part of the gtest type iteration
 // so i need this wrapper to wrap around true/false values
 template<bool Val1, bool Val2>
-struct _BoolPairDeducer {
+struct BoolPairDeducer {
   static constexpr bool val1 = Val1;
   static constexpr bool val2 = Val2;
 };
@@ -172,7 +172,7 @@ struct TestExtentsCompatCtors<std::tuple<
   std::integer_sequence<size_t, DynamicSizes...>,
   Kokkos::extents<size_t,Extents2...>,
   std::integer_sequence<size_t, DynamicSizes2...>,
-  _BoolPairDeducer<ImplicitExts1ToExts2,ImplicitExts2ToExts1>
+  BoolPairDeducer<ImplicitExts1ToExts2,ImplicitExts2ToExts1>
 >> : public ::testing::Test {
   using extents_type1 = Kokkos::extents<size_t,Extents...>;
   using extents_type2 = Kokkos::extents<size_t,Extents2...>;
@@ -232,19 +232,19 @@ struct TestExtentsCompatCtors<std::tuple<
 
 using compatible_extents_test_types =
   ::testing::Types<
-    std::tuple<_exts<Kokkos::dynamic_extent>, _sizes<5>, _exts<5>, _sizes<>, _BoolPairDeducer<false,true>>,
-    std::tuple<_exts<5>, _sizes<>, _exts<Kokkos::dynamic_extent>, _sizes<5>, _BoolPairDeducer<true,false>>,
+    std::tuple<exts<Kokkos::dynamic_extent>, sizes<5>, exts<5>, sizes<>, BoolPairDeducer<false,true>>,
+    std::tuple<exts<5>, sizes<>, exts<Kokkos::dynamic_extent>, sizes<5>, BoolPairDeducer<true,false>>,
     //--------------------
-    std::tuple<_exts<Kokkos::dynamic_extent, 10>, _sizes<5>, _exts<5, Kokkos::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, false>>,
-    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<5, 10>, _exts<5, Kokkos::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<false, true>>,
-    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<5, 10>, _exts<Kokkos::dynamic_extent, 10>, _sizes<5>,  _BoolPairDeducer<false, true>>,
-    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<5, 10>, _exts<5, 10>, _sizes<>,  _BoolPairDeducer<false, true>>,
-    std::tuple<_exts<5, 10>, _sizes<>, _exts<5, Kokkos::dynamic_extent>, _sizes<10>,  _BoolPairDeducer<true, false>>,
-    std::tuple<_exts<5, 10>, _sizes<>, _exts<Kokkos::dynamic_extent, 10>, _sizes<5>,  _BoolPairDeducer<true, false>>,
+    std::tuple<exts<Kokkos::dynamic_extent, 10>, sizes<5>, exts<5, Kokkos::dynamic_extent>, sizes<10>,  BoolPairDeducer<false, false>>,
+    std::tuple<exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, sizes<5, 10>, exts<5, Kokkos::dynamic_extent>, sizes<10>,  BoolPairDeducer<false, true>>,
+    std::tuple<exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, sizes<5, 10>, exts<Kokkos::dynamic_extent, 10>, sizes<5>,  BoolPairDeducer<false, true>>,
+    std::tuple<exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent>, sizes<5, 10>, exts<5, 10>, sizes<>,  BoolPairDeducer<false, true>>,
+    std::tuple<exts<5, 10>, sizes<>, exts<5, Kokkos::dynamic_extent>, sizes<10>,  BoolPairDeducer<true, false>>,
+    std::tuple<exts<5, 10>, sizes<>, exts<Kokkos::dynamic_extent, 10>, sizes<5>,  BoolPairDeducer<true, false>>,
     //--------------------
-    std::tuple<_exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent, 15>, _sizes<5, 10>, _exts<5, Kokkos::dynamic_extent, 15>, _sizes<10>,  _BoolPairDeducer<false, true>>,
-    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<5, Kokkos::dynamic_extent, 15>, _sizes<10>,  _BoolPairDeducer<true, false>>,
-    std::tuple<_exts<5, 10, 15>, _sizes<>, _exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent, Kokkos::dynamic_extent>, _sizes<5, 10, 15>,  _BoolPairDeducer<true, false>>
+    std::tuple<exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent, 15>, sizes<5, 10>, exts<5, Kokkos::dynamic_extent, 15>, sizes<10>,  BoolPairDeducer<false, true>>,
+    std::tuple<exts<5, 10, 15>, sizes<>, exts<5, Kokkos::dynamic_extent, 15>, sizes<10>,  BoolPairDeducer<true, false>>,
+    std::tuple<exts<5, 10, 15>, sizes<>, exts<Kokkos::dynamic_extent, Kokkos::dynamic_extent, Kokkos::dynamic_extent>, sizes<5, 10, 15>,  BoolPairDeducer<true, false>>
   >;
 
 TYPED_TEST_SUITE(TestExtentsCompatCtors, compatible_extents_test_types);
@@ -306,7 +306,7 @@ struct ImplicitConversionToExts<Extents,false> {
 };
 
 
-#ifdef _MDSPAN_USE_CONDITIONAL_EXPLICIT
+#if MDSPAN_HAS_CXX_20
 TYPED_TEST(TestExtentsCompatCtors, implicit_construct_1) {
   bool exts1_convertible_exts2 =
     std::is_convertible<typename TestFixture::extents_type1,

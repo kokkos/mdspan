@@ -174,22 +174,22 @@ void test_mdarray_ctor_data_carray() {
 
   dispatch([=] MDSPAN_IMPL_HOST_DEVICE () {
     KokkosEx::mdarray<int, Kokkos::extents<size_t,1>, Kokkos::layout_right, std::array<int, 1>> m(Kokkos::extents<int,1>{});
-    __MDSPAN_DEVICE_ASSERT_EQ(m.rank(), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.extent(0), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.static_extent(0), 1);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.stride(0), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.rank(), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.rank_dynamic(), 0);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.extent(0), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.static_extent(0), 1);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.stride(0), 1);
     m.data()[0] = {42};
     auto val = MDSPAN_IMPL_OP(m,0);
-    __MDSPAN_DEVICE_ASSERT_EQ(val, 42);
-    __MDSPAN_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(val, 42);
+    MDSPAN_IMPL_DEVICE_ASSERT_EQ(m.is_exhaustive(), true);
   });
   ASSERT_EQ(errors[0], 0);
   free_array(errors);
 }
 
 TEST(TestMdarrayCtorDataCArray, test_mdarray_ctor_data_carray) {
-  __MDSPAN_TESTS_RUN_TEST(test_mdarray_ctor_data_carray())
+  MDSPAN_IMPL_TESTS_RUN_TEST(test_mdarray_ctor_data_carray())
 }
 
 // Construct from extents only
@@ -589,16 +589,8 @@ TEST(TestMdarrayCTAD, ctad_carray) {
   KokkosEx::mdarray m(data);
   static_assert(std::is_same<decltype(m)::element_type,int>::value);
   ASSERT_EQ(m.data(), &data[0]);
-  #ifdef  _MDSPAN_USE_P2554
-  ASSERT_EQ(m.rank(), 1);
-  ASSERT_EQ(m.rank_dynamic(), 0);
-  ASSERT_EQ(m.static_extent(0), 5);
-  ASSERT_EQ(m.extent(0), 5);
-  ASSERT_EQ(MDSPAN_IMPL_OP(m, 2), 3);
-  #else
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
-  #endif
   ASSERT_TRUE(m.is_exhaustive());
 
 
@@ -617,16 +609,8 @@ TEST(TestMdarrayCTAD, ctad_const_carray) {
   KokkosEx::mdarray m(data);
   static_assert(std::is_same<decltype(m)::element_type,const int>::value);
   ASSERT_EQ(m.data(), &data[0]);
-  #ifdef  _MDSPAN_USE_P2554
-  ASSERT_EQ(m.rank(), 1);
-  ASSERT_EQ(m.rank_dynamic(), 0);
-  ASSERT_EQ(m.static_extent(0), 5);
-  ASSERT_EQ(m.extent(0), 5);
-  ASSERT_EQ(MDSPAN_IMPL_OP(m, 2), 3);
-  #else
   ASSERT_EQ(m.rank(), 0);
   ASSERT_EQ(m.rank_dynamic(), 0);
-  #endif
   ASSERT_TRUE(m.is_exhaustive());
 }
 

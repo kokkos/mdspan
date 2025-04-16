@@ -50,7 +50,7 @@ void test() {
 }
 
 template <class T, class U>
-using CP = Kokkos::detail::__compressed_pair<T, U>;
+using CP = Kokkos::detail::impl_compressed_pair<T, U>;
 
 struct E0 {};
 struct E1 {};

@@ -80,7 +80,7 @@ class layout_foo::mapping {
     using layout_type = layout_foo;
   private:
 
-    static_assert(Kokkos::detail::__is_extents_v<extents_type>,
+    static_assert(Kokkos::detail::impl_is_extents_v<extents_type>,
                   "layout_foo::mapping must be instantiated with a specialization of Kokkos::extents.");
     static_assert(extents_type::rank() < 3, "layout_foo only supports 0D, 1D and 2D");
 
@@ -94,8 +94,8 @@ class layout_foo::mapping {
     MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping() noexcept = default;
     MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mapping(mapping const&) noexcept = default;
 
-    constexpr mapping(extents_type const& __exts) noexcept
-      :__extents(__exts)
+    constexpr mapping(extents_type const& exts) noexcept
+      :m_extents(exts)
     { }
 
     MDSPAN_TEMPLATE_REQUIRES(
@@ -107,7 +107,7 @@ class layout_foo::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
@@ -124,7 +124,7 @@ class layout_foo::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(Kokkos::layout_right::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {}
 
     MDSPAN_TEMPLATE_REQUIRES(
@@ -137,7 +137,7 @@ class layout_foo::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible<OtherExtents, extents_type>::value)) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(Kokkos::layout_left::mapping<OtherExtents> const& other) noexcept // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {}
 
     MDSPAN_TEMPLATE_REQUIRES(
@@ -149,7 +149,7 @@ class layout_foo::mapping {
     MDSPAN_CONDITIONAL_EXPLICIT((extents_type::rank() > 0))
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(Kokkos::layout_stride::mapping<OtherExtents> const& other) // NOLINT(google-explicit-constructor)
-      :__extents(other.extents())
+      :m_extents(other.extents())
     {
        /*
         * TODO: check precondition
@@ -157,10 +157,10 @@ class layout_foo::mapping {
         */
        #ifndef __CUDA_ARCH__
        size_t stride = 1;
-       for(rank_type r=__extents.rank(); r>0; r--) {
+       for(rank_type r=m_extents.rank(); r>0; r--) {
          if(stride != other.stride(r-1))
            throw std::runtime_error("Assigning layout_stride to layout_foo with invalid strides.");
-         stride *= __extents.extent(r-1);
+         stride *= m_extents.extent(r-1);
        }
        #endif
     }
@@ -169,13 +169,13 @@ class layout_foo::mapping {
 
     MDSPAN_INLINE_FUNCTION
     constexpr const extents_type& extents() const noexcept {
-      return __extents;
+      return m_extents;
     }
 
     MDSPAN_INLINE_FUNCTION
     constexpr index_type required_span_size() const noexcept {
       index_type value = 1;
-      for(rank_type r=0; r != extents_type::rank(); ++r) value*=__extents.extent(r);
+      for(rank_type r=0; r != extents_type::rank(); ++r) value*=m_extents.extent(r);
       return value;
     }
 
@@ -193,7 +193,7 @@ class layout_foo::mapping {
     template<class Indx0, class Indx1>
     MDSPAN_INLINE_FUNCTION
     constexpr index_type operator()(Indx0 idx0, Indx1 idx1) const noexcept {
-      return static_cast<index_type>(idx0 * __extents.extent(1) + idx1);
+      return static_cast<index_type>(idx0 * m_extents.extent(1) + idx1);
     }
 
     MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return true; }
@@ -206,7 +206,7 @@ class layout_foo::mapping {
     MDSPAN_INLINE_FUNCTION
     constexpr index_type stride(rank_type i) const noexcept {
       index_type value = 1;
-      for(rank_type r=extents_type::rank()-1; r>i; r--) value*=__extents.extent(r);
+      for(rank_type r=extents_type::rank()-1; r>i; r--) value*=m_extents.extent(r);
       return value;
     }
 
@@ -245,7 +245,7 @@ class layout_foo::mapping {
 #endif
 
 private:
-   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type __extents{};
+   MDSPAN_IMPL_NO_UNIQUE_ADDRESS extents_type m_extents{};
 
 };
 

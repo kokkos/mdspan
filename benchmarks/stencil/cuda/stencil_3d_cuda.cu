@@ -50,9 +50,9 @@
 
 // Whether to let mapping convert index calculation to the type used
 // to index into the mdspan
-//#define _MDSPAN_USE_MAPPING_ARG_CAST
+//#define MDSPAN_IMPL_USE_MAPPING_ARG_CAST
 // Overwrite what extents.extent() returns and what the actual storage type is
-//#define _MDSPAN_OVERWRITE_EXTENTS_SIZE_TYPE int
+//#define MDSPAN_IMPL_OVERWRITE_EXTENTS_SIZE_TYPE int
 // Choose the index type used by the code
 using idx_t = size_t;
 
