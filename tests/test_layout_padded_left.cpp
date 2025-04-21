@@ -2,17 +2,6 @@
 #define MDSPAN_DEBUG
 #include <cassert>
 #include <gtest/gtest.h>
-
-namespace {
-static bool precondition_failed = false;
-void handle_test_precondition_failure(const char *, const char *, unsigned) {
-  precondition_failed = true;
-}
-} // namespace
-
-#define MDSPAN_IMPL_PRECONDITION_VIOLATION_HANDLER(cond, file, line) \
-  handle_test_precondition_failure(cond, file, line)
-
 #include <mdspan/mdspan.hpp>
 
 namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
@@ -535,50 +524,46 @@ TEST(LayoutLeftTests, issue393) {
   }
 
   // Test runtime
-  {
-    // extents not representable
-    precondition_failed = false;
-    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<2>::mapping<
-        Kokkos::dextents<std::int8_t, 2>>{
-        Kokkos::dextents<std::int8_t, 2>{50, 50}};
-    ASSERT_TRUE(precondition_failed);
-    precondition_failed = false;
-  }
-  {
+  // Note GTest deathtest macros are a bit annoying so we just declare the tests
+  // in lambdas separately
+  auto test_extents_not_representable = []{
+      // extents not representable
+      [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<2>::mapping<
+          Kokkos::dextents<std::int8_t, 2>>{
+          Kokkos::dextents<std::int8_t, 2>{50, 50}};
+  };
+  EXPECT_DEATH(test_extents_not_representable(), "" );
+
+  auto test_padding_value_not_representable = []{
     // Padding value not representable
-    precondition_failed = false;
     [[maybe_unused]] auto mapping =
         KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<
             Kokkos::extents<std::int8_t, 2, 2>>{{}, 500};
-    ASSERT_TRUE(precondition_failed);
-    precondition_failed = false;
-  }
-  {
+  };
+  EXPECT_DEATH(test_padding_value_not_representable(), "" );
+
+  auto test_padding_value_product_not_representable = []{
     // Padding value product with remaining extents is representable
-    precondition_failed = false;
     [[maybe_unused]] auto mapping =
         KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<
             Kokkos::extents<std::int8_t, 2, 50>>{{}, 50};
-    ASSERT_TRUE(precondition_failed);
-    precondition_failed = false;
-  }
-  {
+  };
+  EXPECT_DEATH(test_padding_value_product_not_representable(), "" );
+
+  auto test_padding_value_product_not_representable2 = []{
     // Padding value product with remaining extents is representable
-    precondition_failed = false;
     [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<
         Kokkos::dynamic_extent>::mapping<Kokkos::dextents<std::int8_t, 2>>{
         Kokkos::dextents<std::int8_t, 2>{2, 50}, 50};
-    ASSERT_TRUE(precondition_failed);
-    precondition_failed = false;
-  }
-  {
+  };
+  EXPECT_DEATH(test_padding_value_product_not_representable2(), "" );
+
+  auto test_padding_value_product_not_representable3 = []{
     // Padding value product with remaining extents is representable
-    precondition_failed = false;
     [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<50>::mapping<
         Kokkos::dextents<std::int8_t, 2>>{
         Kokkos::dextents<std::int8_t, 2>{2, 50}};
-    ASSERT_TRUE(precondition_failed);
-    precondition_failed = false;
-  }
+  };
+  EXPECT_DEATH(test_padding_value_product_not_representable3(), "" );
 }
 #undef LAYOUT_LEFT_COMPILE_ISSUE393_DEATH
