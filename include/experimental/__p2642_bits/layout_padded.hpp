@@ -234,7 +234,7 @@ check_static_extents_and_left_padding_representability() {
 template <typename CheckType, typename Extents>
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_extents_and_left_padding_representability(const Extents &exts,
-                                                size_t dynamic_padding_value) {
+                                                [[maybe_unused]] size_t dynamic_padding_value) {
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_representable;
 
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
@@ -282,7 +282,7 @@ check_static_extents_and_right_padding_representability() {
 template <typename CheckType, typename Extents>
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_extents_and_right_padding_representability(const Extents &exts,
-                                                 size_t dynamic_padding_value) {
+                                                 [[maybe_unused]] size_t dynamic_padding_value) {
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_representable;
 
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
