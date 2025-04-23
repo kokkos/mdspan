@@ -166,6 +166,7 @@ template<class ... Elements>
 tuple(Elements ...) -> tuple<Elements...>;
 #endif
 
+#if MDSPAN_HAS_CXX_17
 // std::in_range and friends, tagged for device execution
 // Backport from https://en.cppreference.com/w/cpp/utility/intcmp
 // and https://en.cppreference.com/w/cpp/utility/in_range
@@ -220,6 +221,7 @@ check_mul_result_is_representable(T a, T b) {
   }
   return true;
 }
+#endif
 } // namespace detail
 
 constexpr struct mdspan_non_standard_tag {
