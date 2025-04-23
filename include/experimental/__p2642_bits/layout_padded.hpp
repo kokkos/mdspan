@@ -16,8 +16,6 @@
 #pragma once
 
 #include <cassert>
-#include <utility>
-#include <type_traits>
 #include "layout_padded_fwd.hpp"
 #include "../__p0009_bits/dynamic_extent.hpp"
 #include "../__p0009_bits/extents.hpp"
