@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "../__p0009_bits/macros.hpp"
+
 #include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {

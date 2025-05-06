@@ -1,0 +1,72 @@
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
+//
+// Under the terms of Contract DE-NA0003525 with NTESS,
+// the U.S. Government retains certain rights in this software.
+//
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//@HEADER
+#include <mdspan/mdspan.hpp>
+#include <type_traits>
+#include <gtest/gtest.h>
+
+#if defined(MDSPAN_ENABLE_P3663)
+#  include "../include/experimental/__p2630_bits/constant_wrapper.hpp"
+#else
+#  error "This test requires that the CMake option MDSPAN_ENABLE_P3663 be ON."
+#endif
+
+namespace { // (anonymous)
+
+template<class Integral, Integral Value>
+using IC = std::integral_constant<Integral, Value>;
+
+template<class Integral, Integral Value>
+constexpr void test_integral_constant_wrapper(IC<Integral, Value> ic) {
+  constexpr auto c = std::cw<Value>;
+
+  static_assert(std::is_same_v<
+    decltype(std::cw<Value>),
+    std::constant_wrapper<Value>>);
+  static_assert(decltype(c)::value == Value);
+  static_assert(std::is_same_v<
+    typename decltype(c)::type,
+    std::constant_wrapper<Value>>);
+  static_assert(std::is_same_v<
+    typename decltype(c)::value_type,
+    Integral>);
+
+  constexpr auto c2 = std::cw<Value>;
+  // Casting the arithmetic result back to Integral undoes
+  // any integer promotions (e.g., short + short -> int).
+  constexpr auto val_plus_1 = Integral(Value + Integral(1));
+  constexpr auto c_assigned = (c2 = IC<Integral, val_plus_1>{});
+  static_assert(c_assigned() == val_plus_1);
+}
+
+TEST(TestConstantWrapper, Construction) {
+  test_integral_constant_wrapper(IC<signed char, -3>{});
+  test_integral_constant_wrapper(IC<signed char, 3>{});
+  test_integral_constant_wrapper(IC<unsigned char, 3u>{});
+  test_integral_constant_wrapper(IC<short, -3>{});
+  test_integral_constant_wrapper(IC<short, 3>{});
+  test_integral_constant_wrapper(IC<unsigned short, 3u>{});
+  test_integral_constant_wrapper(IC<int, -5>{});
+  test_integral_constant_wrapper(IC<int, 5>{});
+  test_integral_constant_wrapper(IC<unsigned, 5u>{});
+  test_integral_constant_wrapper(IC<long, -7>{});
+  test_integral_constant_wrapper(IC<long, 7>{});
+  test_integral_constant_wrapper(IC<unsigned long, 7u>{});
+  test_integral_constant_wrapper(IC<long long, -11>{});
+  test_integral_constant_wrapper(IC<long long, 11>{});
+  test_integral_constant_wrapper(IC<unsigned long long, 11u>{});
+}
+
+} // namespace (anonymous)
