@@ -17,6 +17,7 @@
 #pragma once
 
 #include <complex>
+#include <tuple>
 
 #include "strided_slice.hpp"
 #include "../__p0009_bits/utility.hpp"
@@ -403,6 +404,15 @@ struct extents_constructor<0, Extents, NewStaticExtents...> {
 };
 
 } // namespace detail
+
+template<class IndexType, size_t... Extents, class... Slices>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan_canonicalize_slices(const extents<IndexType, Extents...>&, Slices...)
+{
+  static_assert(sizeof...(Slices) == 0, "sizeof...(Slices) > 0 not implemented yet");
+  return std::tuple{};
+}
 
 // submdspan_extents creates new extents given src extents and submdspan slice
 // specifiers
