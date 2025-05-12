@@ -47,7 +47,7 @@ constexpr bool rankwise_equal(with_rank<N>, const T1& x, const T2& y, F func)
   return match;
 }
 
-constexpr struct
+inline constexpr struct
 {
   template <class T, class I>
   MDSPAN_INLINE_FUNCTION
@@ -57,7 +57,7 @@ constexpr struct
   }
 } extent;
 
-constexpr struct
+inline constexpr struct
 {
   template <class T, class I>
   MDSPAN_INLINE_FUNCTION
@@ -167,7 +167,7 @@ tuple(Elements ...) -> tuple<Elements...>;
 #endif
 } // namespace detail
 
-constexpr struct mdspan_non_standard_tag {
+inline constexpr struct mdspan_non_standard_tag {
 } mdspan_non_standard;
 
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
