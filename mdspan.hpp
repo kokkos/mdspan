@@ -1434,6 +1434,9 @@ constexpr bool rankwise_equal(with_rank<N>, const T1& x, const T2& y, F func)
   return match;
 }
 
+#if MDSPAN_HAS_CXX_17
+inline
+#endif
 constexpr struct
 {
   template <class T, class I>
@@ -1444,6 +1447,9 @@ constexpr struct
   }
 } extent;
 
+#if MDSPAN_HAS_CXX_17
+inline
+#endif
 constexpr struct
 {
   template <class T, class I>
@@ -1554,6 +1560,9 @@ tuple(Elements ...) -> tuple<Elements...>;
 #endif
 } // namespace detail
 
+#if MDSPAN_HAS_CXX_17
+inline
+#endif
 constexpr struct mdspan_non_standard_tag {
 } mdspan_non_standard;
 
@@ -1576,7 +1585,7 @@ namespace detail {
 // can't be a private member function for some reason.
 template <size_t... Extents, size_t... OtherExtents>
 MDSPAN_INLINE_FUNCTION
-static constexpr std::integral_constant<bool, false> impl_check_compatible_extents(
+constexpr std::integral_constant<bool, false> impl_check_compatible_extents(
     std::integral_constant<bool, false>,
     std::integer_sequence<size_t, Extents...>,
     std::integer_sequence<size_t, OtherExtents...>) noexcept {
@@ -1593,7 +1602,7 @@ struct impl_compare_extent_compatible : std::integral_constant<bool,
 
 template <size_t... Extents, size_t... OtherExtents>
 MDSPAN_INLINE_FUNCTION
-static constexpr std::integral_constant<
+constexpr std::integral_constant<
     bool, MDSPAN_IMPL_FOLD_AND(impl_compare_extent_compatible<Extents, OtherExtents>::value)>
 impl_check_compatible_extents(
     std::integral_constant<bool, true>,
@@ -1604,7 +1613,7 @@ impl_check_compatible_extents(
 
 template<class IndexType, class ... Arguments>
 MDSPAN_INLINE_FUNCTION
-static constexpr bool are_valid_indices() {
+constexpr bool are_valid_indices() {
     return
       MDSPAN_IMPL_FOLD_AND(std::is_convertible<Arguments, IndexType>::value) &&
       MDSPAN_IMPL_FOLD_AND(std::is_nothrow_constructible<IndexType, Arguments>::value);
