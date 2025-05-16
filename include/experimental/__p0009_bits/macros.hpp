@@ -703,3 +703,9 @@ struct fold_bools;
 
 // </editor-fold> end Pre-C++14 constexpr }}}1
 //==============================================================================
+
+#if MDSPAN_IMPL_USE_IF_CONSTEXPR_17
+#  define MDSPAN_IMPL_IF_CONSTEXPR_17 constexpr
+#else
+#  define MDSPAN_IMPL_IF_CONSTEXPR_17
+#endif
