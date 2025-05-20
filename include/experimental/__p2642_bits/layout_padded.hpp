@@ -158,7 +158,7 @@ struct padded_extent {
 template <typename Extents>
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_static_extents_representability() {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_representable;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_positive_and_representable;
   // We cannot check statically for sure if the extents are representable
   // if we have dynamic values -- this can only be checked by a precondition
   // We can check if the product of only the static extents is representable though...
@@ -170,7 +170,7 @@ check_static_extents_representability() {
     for (size_t i = 0; i < Extents::rank(); ++i) {
       if (Extents::static_extent(i) == dynamic_extent)
         continue;
-      if (!check_mul_result_is_representable(
+      if (!check_mul_result_is_positive_and_representable(
               prod, static_cast<index_type>(Extents::static_extent(i))))
         return false;
       prod *= Extents::static_extent(i);
@@ -183,14 +183,14 @@ check_static_extents_representability() {
 template <typename Extents>
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_extents_representability(const Extents &exts) {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_representable;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_positive_and_representable;
   using index_type = typename Extents::index_type;
 
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
   if constexpr ( Extents::rank() > 0 ) {
     auto prod = index_type(1);
     for (size_t i = 0; i < Extents::rank(); ++i) {
-      if (!check_mul_result_is_representable(
+      if (!check_mul_result_is_positive_and_representable(
               prod, static_cast<index_type>(exts.extent(i))))
         return false;
       prod *= exts.extent(i);
@@ -203,7 +203,7 @@ check_extents_representability(const Extents &exts) {
 template <typename CheckType, size_t StaticPaddingValue, typename Extents>
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_static_extents_and_left_padding_representability() {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_representable;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_positive_and_representable;
   if constexpr (Extents::rank() < 2) {
     return true;
   }
@@ -220,7 +220,7 @@ check_static_extents_and_left_padding_representability() {
     for (size_t i = 1; i < Extents::rank(); ++i) {
       if (Extents::static_extent(i) == dynamic_extent)
         continue;
-      if (!check_mul_result_is_representable(prod, static_cast< CheckType >(Extents::static_extent(i))))
+      if (!check_mul_result_is_positive_and_representable(prod, static_cast< CheckType >(Extents::static_extent(i))))
         return false;
       prod *= Extents::static_extent(i);
     }
@@ -233,14 +233,14 @@ template <typename CheckType, typename Extents>
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_extents_and_left_padding_representability(const Extents &exts,
                                                 [[maybe_unused]] size_t dynamic_padding_value) {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_representable;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_positive_and_representable;
 
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
   // And also a rank 1 layout cannot overflow
   if constexpr ( Extents::rank() > 1 ) {
     auto prod = static_cast<CheckType>(dynamic_padding_value);
     for (size_t i = 1; i < Extents::rank(); ++i) {
-      if (!check_mul_result_is_representable(
+      if (!check_mul_result_is_positive_and_representable(
               prod, static_cast<CheckType>(exts.extent(i))))
         return false;
       prod *= exts.extent(i);
@@ -253,7 +253,7 @@ check_extents_and_left_padding_representability(const Extents &exts,
 template <typename CheckType, size_t StaticPaddingValue, typename Extents>
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_static_extents_and_right_padding_representability() {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_representable;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_positive_and_representable;
 
   // We cannot check statically for sure if the product of the extents and padding value
   // are representable if we have dynamic values -- this can only be checked by a precondition
@@ -268,7 +268,7 @@ check_static_extents_and_right_padding_representability() {
     for (size_t i = 0; i < Extents::rank() - 1; ++i) {
       if (Extents::static_extent(i) == dynamic_extent)
         continue;
-      if (!check_mul_result_is_representable(prod, static_cast< CheckType >(Extents::static_extent(i))))
+      if (!check_mul_result_is_positive_and_representable(prod, static_cast< CheckType >(Extents::static_extent(i))))
         return false;
       prod *= Extents::static_extent(i);
     }
@@ -281,14 +281,14 @@ template <typename CheckType, typename Extents>
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_extents_and_right_padding_representability(const Extents &exts,
                                                  [[maybe_unused]] size_t dynamic_padding_value) {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_representable;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_mul_result_is_positive_and_representable;
 
   // get rid of NVCC warning "pointless comparison of unsigned integer with zero"
   // And also a rank 1 layout cannot overflow
   if constexpr ( Extents::rank() > 1 ) {
     auto prod = static_cast<CheckType>(dynamic_padding_value);
     for (size_t i = 0; i < Extents::rank() - 1; ++i) {
-      if (!check_mul_result_is_representable(prod, static_cast< CheckType >(exts.extent(i))))
+      if (!check_mul_result_is_positive_and_representable(prod, static_cast< CheckType >(exts.extent(i))))
         return false;
       prod *= exts.extent(i);
     }

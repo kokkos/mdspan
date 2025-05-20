@@ -198,27 +198,14 @@ MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
 
 template <typename T >
 MDSPAN_INLINE_FUNCTION constexpr bool
-check_mul_result_is_representable(T a, T b) {
+check_mul_result_is_positive_and_representable(T a, T b) {
   if (b == 0 || a == 0)
     return true;
 
-  // FIXME NVCC 11 Separate branch for this or nvcc complains about comparison of unsigned to 0
-  if constexpr (!std::is_signed_v<T>) {
-    return a <= std::numeric_limits<T>::max() / b;
-  } else {
-    // check overflow for positive a, b
-    if (b > 0 && a > std::numeric_limits<T>::max() / b)
-      return false;
-    // check overflow for negative a, b
-    if (b < 0 && a < std::numeric_limits<T>::max() / b)
-      return false;
-    // check underflow for positive b, negative a
-    if (b > 0 && a < std::numeric_limits<T>::min() / b)
-      return false;
-    // check underflow for negative b, positive a
-    if (b < 0 && a > std::numeric_limits<T>::min() / b)
-      return false;
+  if constexpr (std::is_signed_v<T>) {
+    if ( a < 0 || b < 0 ) return false;
   }
+  return a <= std::numeric_limits<T>::max() / b;
   return true;
 }
 #endif
