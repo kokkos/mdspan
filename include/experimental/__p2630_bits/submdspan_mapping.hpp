@@ -42,6 +42,7 @@
 #endif
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+
 //******************************************
 // Return type of submdspan_mapping overloads
 //******************************************
@@ -51,6 +52,36 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 };
 
 namespace detail {
+
+#if defined(MDSPAN_ENABLE_P3663)
+template<layout_mapping_alike LayoutMapping>
+constexpr auto
+submdspan_mapping_with_full_extents(const LayoutMapping& mapping) {
+  using extents_type = typename LayoutMapping::extents_type;
+  return [&] <size_t... Inds> (std::index_sequence<Inds...>) {   
+    return submdspan_mapping(mapping, ((void) Inds, full_extent)...);
+  } (std::make_index_sequence<extents_type::rank()>{});
+}
+
+template<class T>
+constexpr bool is_submdspan_mapping_result = false;
+
+template<class LayoutMapping>
+constexpr bool is_submdspan_mapping_result<
+  submdspan_mapping_result<LayoutMapping>> = true;
+
+template<class LayoutMapping>
+concept submdspan_mapping_result =
+  is_submdspan_mapping_result<LayoutMapping>;
+
+template<class LayoutMapping>
+concept mapping_sliceable_with_full_extents =
+  requires(const LayoutMapping& mapping) {
+    {
+      submdspan_mapping_with_full_extents(mapping)
+    } -> submdspan_mapping_result;
+  };
+#endif // MDSPAN_ENABLE_P3663
 
 // We use const Slice& and not Slice&& because the various
 // submdspan_mapping_impl overloads use their slices arguments

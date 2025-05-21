@@ -24,6 +24,12 @@
 
 namespace {
 
+template<class T>
+constexpr bool slice_equal(const T& left, const T& right) {
+  return left == right;
+}
+
+// full_extent_t lacks operator==
 constexpr bool slice_equal(Kokkos::full_extent_t, Kokkos::full_extent_t) {
   return true;
 }
@@ -36,12 +42,6 @@ constexpr bool slice_equal(Kokkos::full_extent_t, const Right&) {
 template<class Left>
 constexpr bool slice_equal(const Left&, Kokkos::full_extent_t) {
   return std::is_convertible_v<Left, Kokkos::full_extent_t>;  
-}
-
-template<class Left, class Right>
-constexpr bool slice_equal(const Left&, const Right&) {
-  static_assert(false, "slice_equal not implemented for this case");
-  return false;
 }
 
 template<class ExpectedResult, class InputExtents, class... Slices>
@@ -76,6 +76,20 @@ TEST(CanonicalizeSlices, Rank1_full) {
   constexpr auto expected_result = std::tuple{full};
   test_canonicalize_slices(expected_result, Kokkos::extents<int, 10>{}, full);
   test_canonicalize_slices(expected_result, Kokkos::extents<size_t, Kokkos::dynamic_extent>{}, full);
+}
+
+TEST(CanonicalizeSlices, Rank1_integer_dynamic) {
+  constexpr auto slice0 = int(7u);
+  constexpr auto expected_slices = std::tuple{size_t(7u)};
+  constexpr auto exts = Kokkos::extents<size_t, 10>{};
+  test_canonicalize_slices(expected_slices, exts, slice0);
+}
+
+TEST(CanonicalizeSlices, Rank1_integer_static) {
+  constexpr auto slice0 = std::integral_constant<int, 7>{};
+  constexpr auto expected_slices = std::tuple{std::cw<size_t(7u)>};
+  constexpr auto exts = Kokkos::extents<size_t, 10>{};
+  test_canonicalize_slices(expected_slices, exts, slice0);
 }
 
 } // namespace (anonymous)
