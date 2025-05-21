@@ -198,7 +198,7 @@ MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
 
 template <typename T >
 MDSPAN_INLINE_FUNCTION constexpr bool
-check_mul_result_is_positive_and_representable(T a, T b) {
+check_mul_result_is_nonnegative_and_representable(T a, T b) {
   if (b == 0 || a == 0)
     return true;
 
