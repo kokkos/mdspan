@@ -448,7 +448,7 @@ constexpr auto canonical_ice(S s) {
 
 template<class IndexType, class X, class Y>
 constexpr auto subtract_ice(X x, Y y) {
-  return canonical_ice<IndexType>(x) - canonical_ice<IndexType>(y);
+  return canonical_ice<IndexType>(y) - canonical_ice<IndexType>(x);
 }
 
 template<class T>
@@ -560,10 +560,19 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
     // well-formed if it didn't fall into one of the above cases
     // and if it can't be destructured into two elements.
 
-    // We can't use s_k here, because it's not a constant expression.
-    auto [s_k0, s_k1] = S_k{};
-    using S_k0 = decltype(s_k0);
-    using S_k1 = decltype(s_k1);
+    // We can't use s_k on the right-hand side here, because it's not a constant expression.
+    // We can't use S_k{} here either, because that presumes that it's default constructible.
+    // We can only use std::declval<S_k>() in an unevaluated context.
+    auto get_first = [] (S_k s_k) {
+      auto [s_k0, _] = s_k;
+      return s_k0;
+    };
+    auto get_second = [] (S_k s_k) {
+      auto [_, s_k1] = s_k;
+      return s_k1;
+    };
+    using S_k0 = decltype(get_first(std::declval<S_k>()));
+    using S_k1 = decltype(get_second(std::declval<S_k>()));
     if constexpr (__mdspan_integral_constant_like<S_k0>) {
       if constexpr (de_ice(S_k0{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.4.1

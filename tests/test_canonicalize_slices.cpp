@@ -22,6 +22,61 @@
 #  error "This file requires MDSPAN_ENABLE_P3663=ON"
 #endif
 
+namespace my_test {
+
+template<class First, class Second>
+struct my_aggregate_pair {
+  First first;
+  Second second;
+};
+
+// Not an aggregate, to force use of the tuple protocol.
+template<class First, class Second>
+class my_nonaggregate_pair {
+public:
+  constexpr my_nonaggregate_pair(First first, Second second)
+    : first_(first), second_(second)
+  {}
+
+  template<std::size_t Index, class Self>
+  constexpr decltype(auto) get(this Self&& self) {
+    if constexpr (Index == 0) {
+      return self.first_;
+    }
+    else if constexpr (Index == 1) {
+      return self.second_;
+    }
+    else {
+      static_assert(false, "Invalid index");
+    }
+  }
+
+private:
+  First first_;
+  Second second_;
+};
+
+} // namespace my_test
+
+template<class First, class Second>
+struct std::tuple_size<my_test::my_nonaggregate_pair<First, Second>>
+  : std::integral_constant<std::size_t, 2> {};
+
+template<std::size_t Index, class First, class Second>
+struct std::tuple_element<Index, my_test::my_nonaggregate_pair<First, Second>> {
+  static_assert(false, "Invalid index");
+};
+
+template<class First, class Second>
+struct std::tuple_element<0, my_test::my_nonaggregate_pair<First, Second>> {
+  using type = First;
+};
+
+template<class First, class Second>
+struct std::tuple_element<1, my_test::my_nonaggregate_pair<First, Second>> {
+  using type = Second;
+};
+
 namespace {
 
 template<class T>
@@ -42,6 +97,14 @@ constexpr bool slice_equal(Kokkos::full_extent_t, const Right&) {
 template<class Left>
 constexpr bool slice_equal(const Left&, Kokkos::full_extent_t) {
   return std::is_convertible_v<Left, Kokkos::full_extent_t>;  
+}
+
+template<class OffsetType, class ExtentType, class StrideType>
+constexpr bool slice_equal(
+  const Kokkos::strided_slice<OffsetType, ExtentType, StrideType>& left,
+  const Kokkos::strided_slice<OffsetType, ExtentType, StrideType>& right)
+{
+  return left.offset == right.offset && left.extent == right.extent && left.stride == right.stride;
 }
 
 template<class ExpectedResult, class InputExtents, class... Slices>
@@ -89,6 +152,39 @@ TEST(CanonicalizeSlices, Rank1_integer_static) {
   constexpr auto slice0 = std::integral_constant<int, 7>{};
   constexpr auto expected_slices = std::tuple{std::cw<size_t(7u)>};
   constexpr auto exts = Kokkos::extents<size_t, 10>{};
+  test_canonicalize_slices(expected_slices, exts, slice0);
+}
+
+TEST(CanonicalizeSlices, Rank1_pair) {
+  constexpr auto slice0 = std::pair{std::integral_constant<int, 7>{}, 11};
+  constexpr auto expected_slices = std::tuple{Kokkos::strided_slice{
+    .offset = std::cw<size_t(7u)>,
+    .extent = size_t(4u), // 11 - 7
+    .stride = std::cw<size_t(1u)>
+  }};
+  constexpr auto exts = Kokkos::extents<size_t, 13>{};
+  test_canonicalize_slices(expected_slices, exts, slice0);
+}
+
+TEST(CanonicalizeSlices, Rank1_aggregate_pair) {
+  constexpr auto slice0 = my_test::my_aggregate_pair<int, int>{7, 11};
+  constexpr auto expected_slices = std::tuple{Kokkos::strided_slice{
+    .offset = size_t(7u),
+    .extent = (size_t(11u) - size_t(7u)),
+    .stride = std::cw<size_t(1u)>
+  }};
+  constexpr auto exts = Kokkos::extents<size_t, 13>{};
+  test_canonicalize_slices(expected_slices, exts, slice0);
+}
+
+TEST(CanonicalizeSlices, Rank1_nonaggregate_pair) {
+  constexpr auto slice0 = my_test::my_nonaggregate_pair<int, int>(7, 11);
+  constexpr auto expected_slices = std::tuple{Kokkos::strided_slice{
+    .offset = size_t(7u),
+    .extent = (size_t(11u) - size_t(7u)),
+    .stride = std::cw<size_t(1u)>
+  }};
+  constexpr auto exts = Kokkos::extents<size_t, 13>{};
   test_canonicalize_slices(expected_slices, exts, slice0);
 }
 
