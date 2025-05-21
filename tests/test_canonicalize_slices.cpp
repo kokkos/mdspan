@@ -188,4 +188,11 @@ TEST(CanonicalizeSlices, Rank1_nonaggregate_pair) {
   test_canonicalize_slices(expected_slices, exts, slice0);
 }
 
+TEST(CanonicalizeSlices, Rank2_full) {
+  constexpr auto full = Kokkos::full_extent;
+  constexpr auto expected_result = std::tuple{full, full};
+  test_canonicalize_slices(expected_result, Kokkos::extents<int, 11, 13>{}, full, full);
+  test_canonicalize_slices(expected_result, Kokkos::dims<2>{11u, 13u}, full, full);
+}
+
 } // namespace (anonymous)
