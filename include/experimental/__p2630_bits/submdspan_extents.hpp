@@ -55,6 +55,8 @@ template <class OffsetType, class ExtentType, class StrideType>
 struct is_strided_slice<
     strided_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
 
+// TODO We won't even need index_pair_like when we're done.
+
 // Helper for identifying valid pair like things
 template <class T, class IndexType> struct index_pair_like : std::false_type {};
 
@@ -86,6 +88,7 @@ struct index_pair_like<std::array<IdxT, 2>, IndexType> {
   static constexpr bool value = std::is_convertible_v<IdxT, IndexType>;
 };
 
+
 // first_of(slice): getting begin of slice specifier range
 MDSPAN_TEMPLATE_REQUIRES(
   class Integral,
@@ -96,11 +99,21 @@ constexpr Integral first_of(const Integral &i) {
   return i;
 }
 
+// FIXME Pre-P3663, first_of should work on any integral-constant-like.
+
 template<class Integral, Integral v>
 MDSPAN_INLINE_FUNCTION
 constexpr Integral first_of(const std::integral_constant<Integral, v>&) {
   return integral_constant<Integral, v>();
 }
+
+#if defined(MDSPAN_ENABLE_P3663)
+template<class Integral, Integral Value>
+MDSPAN_INLINE_FUNCTION
+constexpr Integral first_of(const std::constant_wrapper<Value, Integral>&) {
+  return Value;
+}
+#endif
 
 MDSPAN_INLINE_FUNCTION
 constexpr integral_constant<size_t, 0>
@@ -467,6 +480,17 @@ enum class check_static_bounds_result {
   unknown
 };
 
+// Clang 21.0.0 does not define __cpp_lib_tuple_like, so it does not
+// support the tuple protocol for std::complex.  Interestingly, it permits
+// structured binding, but decomposes it into one element, not two.
+// We work around with a special canonicalization case.
+#if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
+template<class T>
+constexpr bool is_std_complex = false;
+template<class T>
+constexpr bool is_std_complex<std::complex<T>> = true;
+#endif
+
 // TODO It's impossible to write an "if constexpr" check for
 // "structured binding into two elements is well-formed."  Thus, we
 // must assume that the input Slices are all valid slice types.
@@ -555,6 +579,13 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
       return check_static_bounds_result::unknown; // 14.5
     }
   }
+#if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
+  else if constexpr (is_std_complex<S_k>) {
+    // std::complex only has run-time slice values, so we can't
+    // check at compile time whether they are in bounds.
+    return check_static_bounds_result::unknown;
+  }
+#endif
   else { // 14.4
     // NOTE: This case means that check_static_bounds cannot be
     // well-formed if it didn't fall into one of the above cases
@@ -706,6 +737,15 @@ submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Sli
       .stride = canonical_ice<IndexType>(s.stride)
     };
   }
+#if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
+  else if constexpr (detail::is_std_complex<Slice>) {
+    return strided_slice{
+      .offset = canonical_ice<IndexType>(s.real()),
+      .extent = canonical_ice<IndexType>(s.imag()),
+      .stride = std::cw<IndexType(1)>
+    };
+  }
+#endif
   else { // 11.4
     auto [s_k0, s_k1] = s;
     using S_k0 = decltype(s_k0);

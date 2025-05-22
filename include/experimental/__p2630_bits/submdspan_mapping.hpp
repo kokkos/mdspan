@@ -92,8 +92,8 @@ template <class IndexType, class Slice>
 MDSPAN_INLINE_FUNCTION constexpr bool
 one_slice_out_of_bounds(const IndexType &ext, const Slice &slice) {
   using common_t =
-      std::common_type_t<decltype(detail::first_of(slice)), IndexType>;
-  return static_cast<common_t>(detail::first_of(slice)) ==
+      std::common_type_t<decltype(first_of(slice)), IndexType>;
+  return static_cast<common_t>(first_of(slice)) ==
          static_cast<common_t>(ext);
 }
 
