@@ -101,6 +101,8 @@ constexpr Integral first_of(const Integral &i) {
 
 // FIXME Pre-P3663, first_of should work on any integral-constant-like.
 
+// NOTE This is technically not conforming.
+// Pre-P3663, first_of should work on any integral-constant-like type.
 template<class Integral, Integral v>
 MDSPAN_INLINE_FUNCTION
 constexpr Integral first_of(const std::integral_constant<Integral, v>&) {
@@ -108,10 +110,16 @@ constexpr Integral first_of(const std::integral_constant<Integral, v>&) {
 }
 
 #if defined(MDSPAN_ENABLE_P3663)
-template<class Integral, Integral Value>
+// NOTE (mfh 2025/03/07) Canonicalize integral-constant-like
+// to std::integral_constant, just to get things working for now.
+// Later, go back and replace all use of std::integral_constant
+// in the various mappings' submdspan_mapping_impl functions with
+// std::constant_wrapper.
+template<__mdspan_integral_constant_like T>
 MDSPAN_INLINE_FUNCTION
-constexpr Integral first_of(const std::constant_wrapper<Value, Integral>&) {
-  return Value;
+constexpr std::integral_constant<std::remove_cvref_t<decltype(T::value)>, T::value>
+first_of(const T&) {
+  return {};
 }
 #endif
 
@@ -121,6 +129,8 @@ first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
   return integral_constant<size_t, 0>();
 }
 
+// TODO P3663 won't need this overload,
+// because first_of should never see pair-like types.
 MDSPAN_TEMPLATE_REQUIRES(
   class Slice,
   /* requires */(index_pair_like<Slice, size_t>::value)
@@ -174,6 +184,16 @@ constexpr Integral
   return i;
 }
 
+#if defined(MDSPAN_ENABLE_P3663)
+// NOTE (mfh 2025/03/07) This should probably replace the above overload.
+template<__mdspan_integral_constant_like T, class Extents, class Integral>
+  requires(std::is_convertible_v<Integral, size_t>)
+MDSPAN_INLINE_FUNCTION
+constexpr Integral last_of(T, const Extents&, const Integral& i) {
+  return i;
+}
+#endif // MDSPAN_ENABLE_P3663
+
 MDSPAN_TEMPLATE_REQUIRES(
   size_t k, class Extents, class Slice,
   /* requires */(index_pair_like<Slice, size_t>::value)
@@ -184,6 +204,21 @@ constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &,
   return get<1>(i);
 }
 
+// NOTE P3663 should not need this overload,
+// because last_of should never see a pair-like type.
+#if defined(MDSPAN_ENABLE_P3663)
+MDSPAN_TEMPLATE_REQUIRES(
+  __mdspan_integral_constant_like T, class Extents, class Slice,
+  /* requires */(index_pair_like<Slice, size_t>::value)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr auto last_of(T, const Extents &,
+                       const Slice &i) {
+  using std::get;
+  return get<1>(i);
+}
+#endif
+
 MDSPAN_TEMPLATE_REQUIRES(
   size_t k, class Extents, class IdxT1, class IdxT2,
   /* requires */ (index_pair_like<std::tuple<IdxT1, IdxT2>, size_t>::value)
@@ -191,6 +226,16 @@ MDSPAN_TEMPLATE_REQUIRES(
 constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const std::tuple<IdxT1, IdxT2>& i) {
   return get<1>(i);
 }
+
+#if defined(MDSPAN_ENABLE_P3663)
+MDSPAN_TEMPLATE_REQUIRES(
+  __mdspan_integral_constant_like T, class Extents, class IdxT1, class IdxT2,
+  /* requires */ (index_pair_like<std::tuple<IdxT1, IdxT2>, size_t>::value)
+  )
+constexpr auto last_of(T, const Extents &, const std::tuple<IdxT1, IdxT2>& i) {
+  return get<1>(i);
+}
+#endif
 
 MDSPAN_TEMPLATE_REQUIRES(
   size_t k, class Extents, class IdxT1, class IdxT2,
@@ -201,11 +246,30 @@ constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const
   return i.second;
 }
 
+#if defined(MDSPAN_ENABLE_P3663)
+MDSPAN_TEMPLATE_REQUIRES(
+  __mdspan_integral_constant_like T, class Extents, class IdxT1, class IdxT2,
+  /* requires */ (index_pair_like<std::pair<IdxT1, IdxT2>, size_t>::value)
+  )
+MDSPAN_INLINE_FUNCTION
+constexpr auto last_of(T, const Extents &, const std::pair<IdxT1, IdxT2>& i) {
+  return i.second;
+}
+#endif
+
 template<size_t k, class Extents, class T>
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const std::complex<T> &i) {
   return i.imag();
 }
+
+#if defined(MDSPAN_ENABLE_P3663)
+template<__mdspan_integral_constant_like ICL, class Extents, class T>
+MDSPAN_INLINE_FUNCTION
+constexpr auto last_of(ICL, const Extents &, const std::complex<T> &i) {
+  return i.imag();
+}
+#endif
 
 // Suppress spurious warning with NVCC about no return statement.
 // This is a known issue in NVCC and NVC++
@@ -252,6 +316,19 @@ constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &ext,
     #pragma    diagnostic pop
 #endif
 
+#if defined(MDSPAN_ENABLE_P3663)
+template<__mdspan_integral_constant_like T, class Extents>
+MDSPAN_INLINE_FUNCTION
+constexpr auto last_of(T, const Extents &ext,
+                       ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t) {
+  if constexpr (Extents::static_extent(T::value) == dynamic_extent) {
+    return ext.extent(T::value);
+  } else {
+    return integral_constant<size_t, Extents::static_extent(T::value)>();
+  }
+}
+#endif
+
 template <size_t k, class Extents, class OffsetType, class ExtentType,
           class StrideType>
 MDSPAN_INLINE_FUNCTION
@@ -260,6 +337,17 @@ last_of(std::integral_constant<size_t, k>, const Extents &,
         const strided_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.extent;
 }
+
+#if defined(MDSPAN_ENABLE_P3663)
+template <__mdspan_integral_constant_like ICL, class Extents, class OffsetType, class ExtentType,
+          class StrideType>
+MDSPAN_INLINE_FUNCTION
+constexpr OffsetType
+last_of(ICL, const Extents &,
+        const strided_slice<OffsetType, ExtentType, StrideType> &r) {
+  return r.extent;
+}
+#endif
 
 // get stride of slices
 template <class T>
@@ -290,6 +378,19 @@ constexpr auto divide(const std::integral_constant<T0, v0> &,
   // this is used for strided_slice with zero extent/stride
   return integral_constant<IndexT, v0 == 0 ? 0 : v0 / v1>();
 }
+
+#if defined(MDSPAN_ENABLE_P3663)
+template <class IndexType, auto v0, auto v1>
+MDSPAN_INLINE_FUNCTION
+constexpr auto divide(const std::constant_wrapper<v0> &,
+                      const std::constant_wrapper<v1> &) {
+  // cutting short division by zero
+  // this is used for strided_slice with zero extent/stride
+  //
+  // NOTE For now, use integral_constant internally. 
+  return integral_constant<IndexType, v0 == 0 ? 0 : v0 / v1>();
+}
+#endif
 
 // multiply which can deal with integral constant preservation
 template <class IndexT, class T0, class T1>
@@ -322,6 +423,13 @@ struct StaticExtentFromRange<integral_constant<Integral0, val0>,
   constexpr static size_t value = val1 - val0;
 };
 
+#if defined(MDSPAN_ENABLE_P3663)
+template <__mdspan_integral_constant_like A, __mdspan_integral_constant_like B>
+struct StaticExtentFromRange<A, B> {
+  constexpr static size_t value = B::value - A::value;
+};
+#endif
+
 // compute new static extent from strided_slice, preserving static
 // knowledge
 template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
@@ -339,6 +447,13 @@ struct StaticExtentFromStridedRange<integral_constant<Integral0, val0>,
                                     integral_constant<Integral1, val1>> {
   constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
 };
+
+#if defined(MDSPAN_ENABLE_P3663)
+template <__mdspan_integral_constant_like A, __mdspan_integral_constant_like B>
+struct StaticExtentFromStridedRange<A, B> {
+  constexpr static size_t value = A::value > 0 ? 1 + (A::value - 1) / B::value : 0;
+};
+#endif
 
 // creates new extents through recursive calls to next_extent member function
 // next_extent has different overloads for different types of stride specifiers
