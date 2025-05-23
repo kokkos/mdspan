@@ -265,6 +265,7 @@ MDSPAN_INLINE_FUNCTION constexpr auto
 layout_left::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
 
+  // TODO We actually need to check that Slices...[k] is a canonical k-th submdspan slice type for all k.
 #if defined(MDSPAN_ENABLE_P3663)
   static_assert((detail::is_canonical_slice_type<typename Extents::index_type, std::remove_cvref_t<SliceSpecifiers>>() && ...));
 #endif // MDSPAN_ENABLE_P3663
@@ -331,6 +332,16 @@ template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
 MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
+
+  // TODO We actually need to check that Slices...[k] is a canonical k-th submdspan slice type for all k.
+#if defined(MDSPAN_ENABLE_P3663)
+  {
+    using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::is_canonical_slice_type;
+    static_assert((is_canonical_slice_type<
+      typename Extents::index_type,
+      std::remove_cvref_t<SliceSpecifiers>>() && ...));
+  }
+#endif // MDSPAN_ENABLE_P3663
 
   // compute sub extents
   using src_ext_t = Extents;
@@ -500,6 +511,11 @@ MDSPAN_INLINE_FUNCTION constexpr auto
 layout_right::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
 
+  // TODO We actually need to check that Slices...[k] is a canonical k-th submdspan slice type for all k.
+#if defined(MDSPAN_ENABLE_P3663)
+  static_assert((detail::is_canonical_slice_type<typename Extents::index_type, std::remove_cvref_t<SliceSpecifiers>>() && ...));
+#endif // MDSPAN_ENABLE_P3663
+
   // compute sub extents
   using src_ext_t = Extents;
   auto dst_ext = submdspan_extents(extents(), slices...);
@@ -564,6 +580,16 @@ template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
 MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
+
+  // TODO We actually need to check that Slices...[k] is a canonical k-th submdspan slice type for all k.
+#if defined(MDSPAN_ENABLE_P3663)
+  {
+    using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::is_canonical_slice_type;
+    static_assert((is_canonical_slice_type<
+      typename Extents::index_type,
+      std::remove_cvref_t<SliceSpecifiers>>() && ...));
+  }
+#endif // MDSPAN_ENABLE_P3663
 
   // compute sub extents
   using src_ext_t = Extents;
@@ -640,6 +666,12 @@ template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
 layout_stride::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
+
+  // TODO We actually need to check that Slices...[k] is a canonical k-th submdspan slice type for all k.
+#if defined(MDSPAN_ENABLE_P3663)
+  static_assert((detail::is_canonical_slice_type<typename Extents::index_type, std::remove_cvref_t<SliceSpecifiers>>() && ...));
+#endif // MDSPAN_ENABLE_P3663
+
   auto dst_ext = submdspan_extents(extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
   auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
