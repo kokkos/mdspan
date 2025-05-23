@@ -857,17 +857,29 @@ constexpr bool is_canonical_slice_type() {
 }
 
 // [mdspan.sub.slices] 3
+
 template<size_t k, class IndexType, size_t... Extents, class Slice>
 MDSPAN_INLINE_FUNCTION
-constexpr auto
-is_canonical_kth_submdspan_slice_type(const extents<IndexType, Extents...>& exts, Slice slice)
+constexpr void
+check_canonical_kth_submdspan_slice_type(const extents<IndexType, Extents...>& exts, Slice slice)
 {
   if constexpr (! is_canonical_slice_type<IndexType, Slice>()) {
-    return false; // 3.1
+    static_assert(false);
   }
   else { // 3.2
-    return check_static_bounds<k, decltype(slice)>(exts) != check_static_bounds_result::out_of_bounds;
+    static_assert(check_static_bounds<k, decltype(slice)>(exts) != check_static_bounds_result::out_of_bounds);
   }
+}
+
+template<class IndexType, size_t... Extents, class ... Slices>
+MDSPAN_INLINE_FUNCTION
+constexpr void
+check_canonical_kth_subdmspan_slice_types(
+  const extents<IndexType, Extents...>& exts, Slices... slices)
+{ 
+  [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
+    (check_canonical_kth_submdspan_slice_type<Inds>(exts, slices...[Inds]), ...);
+  } (std::make_index_sequence<sizeof...(Slices)>{});
 }
 
 // [mdspan.sub.slices] 11
@@ -877,8 +889,6 @@ constexpr auto
 submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Slice s) {
   // Part of [mdspan.sub.slices] 9.
   // This could be combined with the if constexpr branches below.
-  //
-  // NOTE This is not a constant expression (because it takes exts).
   static_assert(check_static_bounds<k, decltype(s)>(exts) != check_static_bounds_result::out_of_bounds);
 
   // TODO Check Precondition that s is a valid k-th submdspan slice for exts.
