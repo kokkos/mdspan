@@ -896,7 +896,7 @@ submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Sli
   else if constexpr (detail::is_std_complex<Slice>) {
     return strided_slice{
       .offset = canonical_ice<IndexType>(s.real()),
-      .extent = canonical_ice<IndexType>(s.imag()),
+      .extent = canonical_ice<IndexType>(s.imag() - s.real()),
       .stride = std::cw<IndexType(1)>
     };
   }
