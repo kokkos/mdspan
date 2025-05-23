@@ -30,6 +30,7 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
 #if defined(MDSPAN_ENABLE_P3663)
   [[maybe_unused]] auto [...canonical_slices] = submdspan_canonicalize_slices(src.extents(), slices...);
   static_assert(sizeof...(canonical_slices) == sizeof...(slices));
+  [[maybe_unused]] auto sub_map_result = submdspan_mapping(src.mapping(), canonical_slices...);
 
 #if 0
   // TODO FIX IN PROPOSAL: [canonical_]slices (incorrect formatting).

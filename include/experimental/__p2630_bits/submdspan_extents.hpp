@@ -90,6 +90,18 @@ struct index_pair_like<std::array<IdxT, 2>, IndexType> {
 
 
 // first_of(slice): getting begin of slice specifier range
+
+#if defined(MDSPAN_ENABLE_P3663)
+
+template<class Integral>
+  requires (std::is_signed_v<Integral> || std::is_unsigned_v<Integral>)
+MDSPAN_INLINE_FUNCTION
+constexpr Integral first_of(Integral i) {
+  return i;
+}
+
+#else
+
 MDSPAN_TEMPLATE_REQUIRES(
   class Integral,
   /* requires */(std::is_convertible_v<Integral, size_t>)
@@ -99,15 +111,7 @@ constexpr Integral first_of(const Integral &i) {
   return i;
 }
 
-// FIXME Pre-P3663, first_of should work on any integral-constant-like.
-
-// NOTE This is technically not conforming.
-// Pre-P3663, first_of should work on any integral-constant-like type.
-template<class Integral, Integral v>
-MDSPAN_INLINE_FUNCTION
-constexpr Integral first_of(const std::integral_constant<Integral, v>&) {
-  return integral_constant<Integral, v>();
-}
+#endif // MDSPAN_ENABLE_P3663
 
 #if defined(MDSPAN_ENABLE_P3663)
 // NOTE (mfh 2025/03/07) Canonicalize integral-constant-like
@@ -117,9 +121,18 @@ constexpr Integral first_of(const std::integral_constant<Integral, v>&) {
 // std::constant_wrapper.
 template<__mdspan_integral_constant_like T>
 MDSPAN_INLINE_FUNCTION
-constexpr std::integral_constant<std::remove_cvref_t<decltype(T::value)>, T::value>
+constexpr auto
 first_of(const T&) {
-  return {};
+  return std::integral_constant<typename T::value_type, T{}()>{};
+}
+#else
+
+// NOTE This is technically not conforming.
+// Pre-P3663, first_of should work on any integral-constant-like type.
+template<class Integral, Integral v>
+MDSPAN_INLINE_FUNCTION
+constexpr Integral first_of(const std::integral_constant<Integral, v>&) {
+  return integral_constant<Integral, v>();
 }
 #endif
 
@@ -374,6 +387,11 @@ template <class IndexT, class T0, T0 v0, class T1, T1 v1>
 MDSPAN_INLINE_FUNCTION
 constexpr auto divide(const std::integral_constant<T0, v0> &,
                       const std::integral_constant<T1, v1> &) {
+#if defined(MDSPAN_ENABLE_P3663)
+  static_assert(std::is_signed_v<T0> || std::is_unsigned_v<T0>);
+  static_assert(std::is_signed_v<T1> || std::is_unsigned_v<T1>);
+#endif
+
   // cutting short division by zero
   // this is used for strided_slice with zero extent/stride
   return integral_constant<IndexT, v0 == 0 ? 0 : v0 / v1>();
@@ -382,13 +400,18 @@ constexpr auto divide(const std::integral_constant<T0, v0> &,
 #if defined(MDSPAN_ENABLE_P3663)
 template <class IndexType, auto v0, auto v1>
 MDSPAN_INLINE_FUNCTION
-constexpr auto divide(const std::constant_wrapper<v0> &,
-                      const std::constant_wrapper<v1> &) {
+constexpr auto divide(std::constant_wrapper<v0> i0,
+                      std::constant_wrapper<v1> i1) {
+  using I0 = typename std::constant_wrapper<v0>::value_type;
+  using I1 = typename std::constant_wrapper<v1>::value_type;
+  static_assert(std::is_signed_v<I0> || std::is_unsigned_v<I0>);
+  static_assert(std::is_signed_v<I1> || std::is_unsigned_v<I1>);
+
   // cutting short division by zero
   // this is used for strided_slice with zero extent/stride
   //
   // NOTE For now, use integral_constant internally. 
-  return integral_constant<IndexType, v0 == 0 ? 0 : v0 / v1>();
+  return integral_constant<IndexType, i0() == 0 ? 0 : i0() / i1()>();
 }
 #endif
 
@@ -405,6 +428,20 @@ constexpr auto multiply(const std::integral_constant<T0, v0> &,
                         const std::integral_constant<T1, v1> &) {
   return integral_constant<IndexT, v0 * v1>();
 }
+
+#if defined(MDSPAN_ENABLE_P3663)
+template <class IndexType, auto v0, auto v1>
+MDSPAN_INLINE_FUNCTION
+constexpr auto multiply(std::constant_wrapper<v0> i0,
+                        std::constant_wrapper<v1> i1) {
+  using I0 = typename std::constant_wrapper<v0>::value_type;
+  using I1 = typename std::constant_wrapper<v1>::value_type;
+  static_assert(std::is_signed_v<I0> || std::is_unsigned_v<I0>);
+  static_assert(std::is_signed_v<I1> || std::is_unsigned_v<I1>);
+
+  return integral_constant<IndexType, i0() * i1()>();
+}
+#endif
 
 // compute new static extent from range, preserving static knowledge
 template <class Arg0, class Arg1> struct StaticExtentFromRange {
@@ -566,8 +603,11 @@ constexpr auto canonical_ice(S s) {
   // cast again to IndexType, so that we don't get a weird
   // constant_wrapper whose value has a different type
   // than the second template argument.
+
+  // TODO NOT IN PROPOSAL? Make sure constant_wrapper only has one template argument.
+  // The first template argument is a value of an exposition-only type, NOT the actual value!
   if constexpr (__mdspan_integral_constant_like<S>) {
-    return std::constant_wrapper<static_cast<IndexType>(index_cast<IndexType>(S::value)), IndexType>{};
+    return std::constant_wrapper<static_cast<IndexType>(index_cast<IndexType>(S::value))>{};
   }
   else {
     return static_cast<IndexType>(index_cast<IndexType>(s));
@@ -764,8 +804,8 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
 template<class T>
 constexpr bool is_constant_wrapper = false;
 
-template<class IndexType, IndexType Value>
-constexpr bool is_constant_wrapper<std::constant_wrapper<Value, IndexType>> = true;
+template<auto Value>
+constexpr bool is_constant_wrapper<std::constant_wrapper<Value>> = true;
 
 // [mdspan.sub.slices] 1
 template<class IndexType, class T>
