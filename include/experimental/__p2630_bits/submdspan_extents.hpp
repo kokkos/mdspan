@@ -804,32 +804,36 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
 template<class T>
 constexpr bool is_constant_wrapper = false;
 
-template<auto Value>
-constexpr bool is_constant_wrapper<std::constant_wrapper<Value>> = true;
+template<auto Value, class Type>
+constexpr bool is_constant_wrapper<std::constant_wrapper<Value, Type>> = true;
 
 // [mdspan.sub.slices] 1
 template<class IndexType, class T>
-constexpr bool is_canonical_submdspan_index_type =
-  std::is_same_v<T, IndexType> || (
-    is_constant_wrapper<T> &&
-    std::is_same_v<typename T::value_type, IndexType>
-  );
+constexpr bool is_canonical_submdspan_index_type() {
+  if constexpr (is_constant_wrapper<T>) {
+    using value_type = typename T::value_type;
+    return std::is_same_v<value_type, IndexType>;
+  }
+  else {
+    return std::is_same_v<T, IndexType>;
+  }
+}
 
 // [mdspan.sub.slices] 2
 template<class IndexType, class Slice>
 MDSPAN_INLINE_FUNCTION
 constexpr bool is_canonical_slice_type() {
-  if constexpr (
-    std::is_same_v<Slice, full_extent_t> || // 2.1
-    is_canonical_submdspan_index_type<IndexType, Slice>) // 2.2
-  {
+  if constexpr (std::is_same_v<Slice, full_extent_t>) { // 2.1
+    return true;
+  }
+  else if constexpr (is_canonical_submdspan_index_type<IndexType, Slice>()) { // 2.2
     return true;
   }
   else if constexpr (is_strided_slice<Slice>::value) { // 2.3
     if constexpr ( // 2.3.1
-      is_canonical_submdspan_index_type<IndexType, typename Slice::offset_type> &&
-      is_canonical_submdspan_index_type<IndexType, typename Slice::extent_type> &&
-      is_canonical_submdspan_index_type<IndexType, typename Slice::stride_type>)
+      is_canonical_submdspan_index_type<IndexType, typename Slice::offset_type>() &&
+      is_canonical_submdspan_index_type<IndexType, typename Slice::extent_type>() &&
+      is_canonical_submdspan_index_type<IndexType, typename Slice::stride_type>())
     {
       if constexpr (
         is_constant_wrapper<typename Slice::stride_type> &&
@@ -840,7 +844,7 @@ constexpr bool is_canonical_slice_type() {
         return Extent == 0 || Stride > 0; // 2.3.2
       }
       else {
-        return false;
+        return true;
       }
     }
     else {

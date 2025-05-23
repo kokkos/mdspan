@@ -265,6 +265,10 @@ MDSPAN_INLINE_FUNCTION constexpr auto
 layout_left::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
 
+#if defined(MDSPAN_ENABLE_P3663)
+  static_assert((detail::is_canonical_slice_type<typename Extents::index_type, std::remove_cvref_t<SliceSpecifiers>>() && ...));
+#endif // MDSPAN_ENABLE_P3663
+
   // compute sub extents
   using src_ext_t = Extents;
   auto dst_ext = submdspan_extents(extents(), slices...);
