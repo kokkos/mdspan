@@ -28,11 +28,8 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
           SliceSpecifiers... slices) {
 
 #if defined(MDSPAN_ENABLE_P3663)
-  [[maybe_unused]] auto [...canonical_slices] = submdspan_canonicalize_slices(src.extents(), slices...);
+  auto [...canonical_slices] = submdspan_canonicalize_slices(src.extents(), slices...);
   static_assert(sizeof...(canonical_slices) == sizeof...(slices));
-  [[maybe_unused]] auto sub_map_result = submdspan_mapping(src.mapping(), canonical_slices...);
-
-#if 0
   // TODO FIX IN PROPOSAL: [canonical_]slices (incorrect formatting).
   auto sub_map_result = submdspan_mapping(src.mapping(), canonical_slices...);
   // TODO FIX IN PROPOSAL: It's src.data_handle(), not src.data().
@@ -40,10 +37,7 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
   return mdspan(src.accessor().offset(src.data_handle(), sub_map_result.offset),
                 sub_map_result.mapping,
                 typename AccessorPolicy::offset_policy(src.accessor()));  
-#endif // 0
-#endif
-
-//#else
+#else
   const auto sub_submdspan_mapping_result = submdspan_mapping(src.mapping(), slices...);
   // NVCC has a problem with the deduction so lets figure out the type
   using sub_mapping_t = std::remove_cv_t<decltype(sub_submdspan_mapping_result.mapping)>;
@@ -54,6 +48,6 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
       src.accessor().offset(src.data_handle(), sub_submdspan_mapping_result.offset),
       sub_submdspan_mapping_result.mapping,
       sub_accessor_t(src.accessor()));
-//#endif
+#endif
 }
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
