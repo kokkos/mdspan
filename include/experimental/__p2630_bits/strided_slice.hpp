@@ -45,6 +45,7 @@ namespace { // (anonymous)
   template<__mdspan_integral_constant_like T>
   struct mdspan_is_integral_constant<T> : std::true_type {};
 #else
+  // NOTE Does this mean existing code is not conforming?
   template<class T, T val>
   struct mdspan_is_integral_constant<std::integral_constant<T,val>>: std::true_type {};
 #endif
@@ -52,7 +53,11 @@ namespace { // (anonymous)
   template<class T>
   constexpr bool __mdspan_is_index_like_v =
     (std::is_integral_v<T> && ! std::is_same_v<bool, T>) ||
+#if defined(MDSPAN_ENABLE_P3663)
+    __mdspan_integral_constant_like<T>;
+#else
     mdspan_is_integral_constant<T>::value;
+#endif
     ;
 } // namespace (anonymous)
 

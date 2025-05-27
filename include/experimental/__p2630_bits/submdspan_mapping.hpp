@@ -146,7 +146,13 @@ template<class IndexType>
 struct is_range_slice<full_extent_t, IndexType> : std::true_type {};
 
 template<class OffsetType, class ExtentType, auto Stride, class IndexType>
-struct is_range_slice<strided_slice<OffsetType, ExtentType, std::constant_wrapper<Stride>>, IndexType> {
+struct is_range_slice<
+  strided_slice<
+    OffsetType,
+    ExtentType,
+    std::constant_wrapper<Stride>>,
+  IndexType>
+{
   static constexpr bool value = (std::constant_wrapper<Stride>{}() == IndexType(1));
 };
 
@@ -304,8 +310,13 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
   } else {
     // layout_stride case
     using dst_mapping_t = typename layout_stride::mapping<dst_ext_t>;
-    auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                        std::index_sequence<>(), slices...);
+    auto inv_map = detail::inv_map_rank(
+#if defined(MDSPAN_ENABLE_P3663)
+      std::cw<size_t(0)>,
+#else
+      std::integral_constant<size_t, 0>(),
+#endif
+      std::index_sequence<>(), slices...);
     return submdspan_mapping_result<dst_mapping_t> {
       dst_mapping_t(mdspan_non_standard, dst_ext,
                     detail::construct_sub_strides(
@@ -388,8 +399,13 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::mapping<Extent
         return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext, stride(1 + deduce_layout::gap_len)), offset};
       } else { // layout_stride
-    auto inv_map = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                        std::index_sequence<>(), slices...);
+    auto inv_map = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::inv_map_rank(
+#if defined(MDSPAN_ENABLE_P3663)
+      std::cw<size_t(0)>,
+#else
+      std::integral_constant<size_t, 0>(),
+#endif
+      std::index_sequence<>(), slices...);
       using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
     return submdspan_mapping_result<dst_mapping_t> {
       dst_mapping_t(mdspan_non_standard, dst_ext,
@@ -551,8 +567,13 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
   } else {
     // layout_stride case
     using dst_mapping_t = typename layout_stride::mapping<dst_ext_t>;
-    auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                        std::index_sequence<>(), slices...);
+    auto inv_map = detail::inv_map_rank(
+#if defined(MDSPAN_ENABLE_P3663)
+      std::cw<size_t(0)>,
+#else
+      std::integral_constant<size_t, 0>(),
+#endif
+      std::index_sequence<>(), slices...);
     return submdspan_mapping_result<dst_mapping_t> {
       dst_mapping_t(mdspan_non_standard, dst_ext,
                     detail::construct_sub_strides(
@@ -627,8 +648,13 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::mapping<Exten
         return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext, stride(Extents::rank() - 2 - deduce_layout::gap_len)), offset};
       } else { // layout_stride
-    auto inv_map = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                        std::index_sequence<>(), slices...);
+    auto inv_map = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::inv_map_rank(
+#if defined(MDSPAN_ENABLE_P3663)
+      std::cw<size_t(0)>,
+#else
+      std::integral_constant<size_t, 0>(),
+#endif
+      std::index_sequence<>(), slices...);
       using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
     return submdspan_mapping_result<dst_mapping_t> {
       dst_mapping_t(mdspan_non_standard, dst_ext,
@@ -674,8 +700,13 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
 
   auto dst_ext = submdspan_extents(extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
-  auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                      std::index_sequence<>(), slices...);
+  auto inv_map = detail::inv_map_rank(
+#if defined(MDSPAN_ENABLE_P3663)
+    std::cw<size_t(0)>,
+#else
+    std::integral_constant<size_t, 0>(),
+#endif
+    std::index_sequence<>(), slices...);
   using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
 
   // Figure out if any slice's lower bound equals the corresponding extent.
