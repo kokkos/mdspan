@@ -586,9 +586,13 @@ template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
 };
 
 #if defined(MDSPAN_ENABLE_P3663)
-template <__mdspan_integral_constant_like A, __mdspan_integral_constant_like B>
-struct StaticExtentFromStridedRange<A, B> {
-  constexpr static size_t value = A::value > 0 ? 1 + (A::value - 1) / B::value : 0;
+template <auto A, auto B>
+struct StaticExtentFromStridedRange<std::constant_wrapper<A>, std::constant_wrapper<B>> {
+private:
+  static constexpr auto A_value = std::constant_wrapper<A>{}();
+  static constexpr auto B_value = std::constant_wrapper<B>{}();
+public:
+  constexpr static size_t value = A_value > 0 ? 1 + (A_value - 1) / B_value : 0;
 };
 #else
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
