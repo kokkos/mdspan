@@ -140,35 +140,28 @@ MDSPAN_INLINE_FUNCTION constexpr auto construct_sub_strides(
 #if defined(MDSPAN_ENABLE_P3663)
 
 template<class SliceSpecifier, class IndexType>
-struct is_range_slice : std::false_type {};
+constexpr bool is_range_slice_v = false;
 
 template<class IndexType>
-struct is_range_slice<full_extent_t, IndexType> : std::true_type {};
+constexpr bool is_range_slice_v<full_extent_t, IndexType> = true;
 
 template<class OffsetType, class ExtentType, auto Stride, class IndexType>
-struct is_range_slice<
-  strided_slice<
-    OffsetType,
-    ExtentType,
-    std::constant_wrapper<Stride>>,
-  IndexType>
-{
-  static constexpr bool value = (std::constant_wrapper<Stride>{}() == IndexType(1));
-};
+constexpr bool is_range_slice_v<
+    strided_slice<
+      OffsetType,
+      ExtentType,
+      std::constant_wrapper<Stride>>,
+    IndexType
+  > = (std::constant_wrapper<Stride>{}() == IndexType(1));
 
 #else
 
 template<class SliceSpecifier, class IndexType>
-struct is_range_slice {
-  constexpr static bool value =
-    std::is_same_v<SliceSpecifier, full_extent_t> ||
-    index_pair_like<SliceSpecifier, IndexType>::value;
-};
+constexpr bool is_range_slice_v = 
+  std::is_same_v<SliceSpecifier, full_extent_t> ||
+  index_pair_like<SliceSpecifier, IndexType>::value;
 
 #endif // MDSPAN_ENABLE_P3663
-
-template<class SliceSpecifier, class IndexType>
-constexpr bool is_range_slice_v = is_range_slice<SliceSpecifier, IndexType>::value;
 
 template<class SliceSpecifier, class IndexType>
 struct is_index_slice {
