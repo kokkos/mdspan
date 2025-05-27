@@ -749,13 +749,12 @@ constexpr auto canonical_ice(S s) {
   // TODO Preconditions: If S is a signed or unsigned integer type,
   // then s is representable as a value of type IndexType.
   //
-  // TODO NOT IN PROPOSAL: index-cast result needs to be
-  // cast again to IndexType, so that we don't get a weird
-  // constant_wrapper whose value has a different type
-  // than the second template argument.
-
-  // TODO NOT IN PROPOSAL? Make sure constant_wrapper only has one template argument.
-  // The first template argument is a value of an exposition-only type, NOT the actual value!
+  // NOTE Added to P3663R2: Use cw instead of constant_wrapper.
+  //
+  // NOTE Added to P3663R2: Specify that index-cast result is
+  // cast to IndexType before being used as the template argument
+  // of `cw`, so we don't get a weird constant_wrapper whose value
+  // has a different type than the second template argument.
   if constexpr (__mdspan_integral_constant_like<S>) {
     return std::cw<static_cast<IndexType>(index_cast<IndexType>(S::value))>;
   }
@@ -796,7 +795,7 @@ template<class T>
 constexpr bool is_std_complex<std::complex<T>> = true;
 #endif
 
-// TODO It's impossible to write an "if constexpr" check for
+// NOTE It's impossible to write an "if constexpr" check for
 // "structured binding into two elements is well-formed."  Thus, we
 // must assume that the input Slices are all valid slice types.
 // One way to do that is to invoke this only post-canonicalization.
@@ -806,18 +805,22 @@ constexpr bool is_std_complex<std::complex<T>> = true;
 // possible categories of valid slice types in if constexpr, with
 // the final else attempting the structured binding into two elements.
 
-// TODO NOT IN PROPOSAL: Consider rewriting to use only $S_k$
+// DONE Added to P3663R2: Rewrite wording to use only $S_k$
 // and not $s_k$ in check-static-bounds, since we can't use
 // the actual function parameter in a function that we want
 // to work in a constant expression.
 
-// TODO NOT IN PROPOSAL: Taking slices parameter(s) makes use
-// of check_static_bounds not a constant expression.
-// Instead, make Slices... a template parameter pack.
+// DONE Added to P3663R2: Implementation takes k and one slice
+// only (S_k) as explicit template parameters, rather than
+// passing in the whole parameter pack of slices.  This makes
+// sense because the function only tests one slice (the k-th one).
+// Also, taking slices parameter(s) makes use of check_static_bounds
+// not a constant expression.
 
-// TODO NOT IN PROPOSAL: It's easier to have a single Slice
-// as a template parameter pack.  This makes sense because
-// the function only tests one slice (the k-th one) anyway.
+// DONE Added to P3663R2: Check wording of check-static-bounds
+// so that it only assumes that types are default constructible
+// in constant expressions if they are integral-constant-like.
+
 template<size_t k, class S_k, class IndexType, size_t... Exts>
   constexpr check_static_bounds_result check_static_bounds(
     const extents<IndexType, Exts...>&)
@@ -827,6 +830,10 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
   }
   else if constexpr (std::is_convertible_v<S_k, IndexType>) {
     if constexpr (__mdspan_integral_constant_like<S_k>) {
+      // integral-constant-like types are default constructible
+      // in constant expressions, so it's OK to use S_k{} here
+      // instead of std::declval.  Also, expressions like
+      // de_ice(std::declval<S_k>()) are not constant expressions.
       if constexpr (de_ice(S_k{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.3.1
       }
@@ -845,39 +852,43 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
     }
   }
   else if constexpr (is_strided_slice<S_k>::value) {
-    if constexpr (__mdspan_integral_constant_like<typename S_k::offset_type>) {
-      if constexpr (de_ice(S_k{}.offset) < 0) {
+    using offset_type = typename S_k::offset_type;
+
+    if constexpr (__mdspan_integral_constant_like<offset_type>) {
+      if constexpr (de_ice(offset_type{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.3.1
       }
       else if constexpr (
-        Exts...[k] != dynamic_extent && Exts...[k] < de_ice(S_k{}.offset))
+        Exts...[k] != dynamic_extent && Exts...[k] < de_ice(offset_type{}))
       {
         return check_static_bounds_result::out_of_bounds; // 14.3.2
       }
-      else if constexpr (
-        __mdspan_integral_constant_like<typename S_k::extent_type> &&
-        de_ice(S_k{}.offset) + de_ice(S_k{}.extent) < 0)
-      {
-        return check_static_bounds_result::out_of_bounds; // 14.3.3
-      }
-      else if constexpr (
-        Exts...[k] != dynamic_extent &&
-        __mdspan_integral_constant_like<typename S_k::extent_type> &&
-        Exts...[k] < de_ice(S_k{}.offset) + de_ice(S_k{}.extent))
-      {
-        return check_static_bounds_result::out_of_bounds; // 14.3.4
-      }
-      else if constexpr (
-        Exts...[k] != dynamic_extent &&
-        __mdspan_integral_constant_like<typename S_k::extent_type> &&
-        0 <= de_ice(S_k{}.offset) &&
-        de_ice(S_k{}.offset) <= de_ice(S_k{}.offset) + de_ice(S_k{}.extent) &&
-        de_ice(S_k{}.offset) + de_ice(S_k{}.extent) <= Exts...[k])
-      {
-        return check_static_bounds_result::in_bounds; // 14.3.5
+      else if constexpr (__mdspan_integral_constant_like<typename S_k::extent_type>) {
+        using extent_type = typename S_k::extent_type;
+
+        if constexpr (de_ice(offset_type{}) + de_ice(extent_type{}) < 0) {
+          return check_static_bounds_result::out_of_bounds; // 14.3.3
+        }
+        else if constexpr (
+          Exts...[k] != dynamic_extent &&
+          Exts...[k] < de_ice(offset_type{}) + de_ice(extent_type{}))
+        {
+          return check_static_bounds_result::out_of_bounds; // 14.3.4
+        }
+        else if constexpr (
+          Exts...[k] != dynamic_extent &&
+          0 <= de_ice(offset_type{}) &&
+          de_ice(offset_type{}) <= de_ice(offset_type{}) + de_ice(extent_type{}) &&
+          de_ice(offset_type{}) + de_ice(extent_type{}) <= Exts...[k])
+        {
+          return check_static_bounds_result::in_bounds; // 14.3.5
+        }
+        else {
+          return check_static_bounds_result::unknown; // 14.3.6
+        }
       }
       else {
-        return check_static_bounds_result::unknown; // 14.3.6
+        return check_static_bounds_result::unknown; // 14.5
       }
     }
     else { // strided_slice but offset_type isn't integral-constant-like
@@ -895,10 +906,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
     // NOTE: This case means that check_static_bounds cannot be
     // well-formed if it didn't fall into one of the above cases
     // and if it can't be destructured into two elements.
-
-    // We can't use s_k on the right-hand side here, because it's not a constant expression.
-    // We can't use S_k{} here either, because that presumes that it's default constructible.
-    // We can only use std::declval<S_k>() in an unevaluated context.
+    // That implements the Mandates clause.
     auto get_first = [] (S_k s_k) {
       auto [s_k0, _] = s_k;
       return s_k0;
@@ -919,27 +927,29 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
       {
         return check_static_bounds_result::out_of_bounds; // 14.4.2
       }
-      else if constexpr (
-        __mdspan_integral_constant_like<S_k1> &&
-        de_ice(S_k1{}) < de_ice(S_k0{}))
-      {
-        return check_static_bounds_result::out_of_bounds; // 14.4.3
-      }
-      else if constexpr (
-        Exts...[k] != dynamic_extent &&
-        __mdspan_integral_constant_like<S_k1> &&
-        Exts...[k] < de_ice(S_k1{}))
-      {
-        return check_static_bounds_result::out_of_bounds; // 14.4.4
-      }
-      else if constexpr (
-        Exts...[k] != dynamic_extent &&
-        __mdspan_integral_constant_like<S_k1> &&
-        0 <= de_ice(S_k0{}) &&
-        de_ice(S_k0{}) <= de_ice(S_k1{}) &&
-        de_ice(S_k1{}) <= Exts...[k])
-      {
-        return check_static_bounds_result::in_bounds; // 14.4.5
+      else if constexpr (__mdspan_integral_constant_like<S_k1>) {
+        if constexpr (
+          de_ice(S_k1{}) < de_ice(S_k0{}))
+        {
+          return check_static_bounds_result::out_of_bounds; // 14.4.3
+        }
+        else if constexpr (
+          Exts...[k] != dynamic_extent &&
+          Exts...[k] < de_ice(S_k1{}))
+        {
+          return check_static_bounds_result::out_of_bounds; // 14.4.4
+        }
+        else if constexpr (
+          Exts...[k] != dynamic_extent &&
+          0 <= de_ice(S_k0{}) &&
+          de_ice(S_k0{}) <= de_ice(S_k1{}) &&
+          de_ice(S_k1{}) <= Exts...[k])
+        {
+          return check_static_bounds_result::in_bounds; // 14.4.5
+        }
+        else {
+          return check_static_bounds_result::unknown; // 14.4.6
+        }
       }
       else {
         return check_static_bounds_result::unknown; // 14.4.6

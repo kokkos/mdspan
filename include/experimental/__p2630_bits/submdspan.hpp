@@ -28,15 +28,17 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
           SliceSpecifiers... slices) {
 
 #if defined(MDSPAN_ENABLE_P3663)
-  auto [...canonical_slices] = submdspan_canonicalize_slices(src.extents(), slices...);
-  static_assert(sizeof...(canonical_slices) == sizeof...(slices));
-  // TODO FIX IN PROPOSAL: [canonical_]slices (incorrect formatting).
-  auto sub_map_result = submdspan_mapping(src.mapping(), canonical_slices...);
-  // TODO FIX IN PROPOSAL: It's src.data_handle(), not src.data().
-  // Missing "typename" before AccessorPolicy::offset_policy.
-  return mdspan(src.accessor().offset(src.data_handle(), sub_map_result.offset),
-                sub_map_result.mapping,
-                typename AccessorPolicy::offset_policy(src.accessor()));  
+  auto [...canonical_slices] =
+    submdspan_canonicalize_slices(src.extents(), slices...);
+  // NOTE Added to P3663R2: [canonical_]slices (incorrect formatting).
+  auto sub_map_result =
+    submdspan_mapping(src.mapping(), canonical_slices...);
+  // NOTE Added to P3663R2: It's src.data_handle(), not src.data().
+  // NOTE Added to P3663R2: Missing "typename" before AccessorPolicy::offset_policy.
+  return mdspan(
+    src.accessor().offset(src.data_handle(), sub_map_result.offset),
+    sub_map_result.mapping,
+    typename AccessorPolicy::offset_policy(src.accessor()));
 #else
   const auto sub_submdspan_mapping_result = submdspan_mapping(src.mapping(), slices...);
   // NVCC has a problem with the deduction so lets figure out the type
