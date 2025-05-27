@@ -108,7 +108,10 @@ template <class OffsetType, class ExtentType, class StrideType>
 struct is_strided_slice<
     strided_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
 
-// TODO We won't even need index_pair_like when we're done.
+// P3663 does not need index_pair_like.  In fact, it's impossible
+// to define a concept for the set of types that P3663 accepts
+// as a pair of indices.
+#if ! defined(MDSPAN_ENABLE_P3663)
 
 // Helper for identifying valid pair like things
 template <class T, class IndexType> struct index_pair_like : std::false_type {};
@@ -141,6 +144,7 @@ struct index_pair_like<std::array<IdxT, 2>, IndexType> {
   static constexpr bool value = std::is_convertible_v<IdxT, IndexType>;
 };
 
+#endif // ! defined(MDSPAN_ENABLE_P3663)
 
 // first_of(slice): getting begin of slice specifier range
 
