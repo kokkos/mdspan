@@ -218,8 +218,6 @@ first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
 // full_extent_t and strided_slice with compile-time unit stride.)
 #if ! defined(MDSPAN_ENABLE_P3663)
 
-// TODO P3663 won't need this overload,
-// because first_of should never see pair-like types.
 MDSPAN_TEMPLATE_REQUIRES(
   class Slice,
   /* requires */(index_pair_like<Slice, size_t>::value)
