@@ -200,6 +200,12 @@ first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
 #endif
 }
 
+// P3663 doesn't need any of these overloads,
+// because its version of first_of will never see pair-like types.
+// (The only "contiguous range of indices" slice types it sees are
+// full_extent_t and strided_slice with compile-time unit stride.)
+#if ! defined(MDSPAN_ENABLE_P3663)
+
 // TODO P3663 won't need this overload,
 // because first_of should never see pair-like types.
 MDSPAN_TEMPLATE_REQUIRES(
@@ -233,6 +239,8 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto first_of(const std::complex<T> &i) {
   return i.real();
 }
+
+#endif
 
 template <class OffsetType, class ExtentType, class StrideType>
 MDSPAN_INLINE_FUNCTION
@@ -269,7 +277,9 @@ constexpr Integral last_of(
   return i;
 }
 
-// NOTE P3663 should not need this overload,
+#if ! defined(MDSPAN_ENABLE_P3663)
+
+// P3663 does not need these index_pair_like overloads,
 // because last_of should never see a pair-like type.
 MDSPAN_TEMPLATE_REQUIRES(
 #if defined(MDSPAN_ENABLE_P3663)
@@ -365,6 +375,8 @@ constexpr auto last_of(
 {
   return i.imag();
 }
+
+#endif // ! defined(MDSPAN_ENABLE_P3663)
 
 // Suppress spurious warning with NVCC about no return statement.
 // This is a known issue in NVCC and NVC++
