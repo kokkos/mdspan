@@ -25,6 +25,14 @@
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
+#if defined(MDSPAN_ENABLE_P3663)
+template<class T>
+constexpr bool is_constant_wrapper = false;
+
+template<auto Value, class Type>
+constexpr bool is_constant_wrapper<std::constant_wrapper<Value, Type>> = true;
+#endif
+
 // Mapping from submapping ranks to srcmapping ranks
 // InvMapRank is an index_sequence, which we build recursively
 // to contain the mapped indices.
@@ -612,14 +620,32 @@ struct StaticExtentFromStridedRange<integral_constant<Integral0, val0>,
 // next_extent has different overloads for different types of stride specifiers
 template <size_t K, class Extents, size_t... NewExtents>
 struct extents_constructor {
+
+  // This covers both the full_extent_t and index-pair-like cases.
+  // P3663 only needs the full_extent_t case.
+#if defined(MDSPAN_ENABLE_P3663)
+  template<class... SlicesAndExtents>
+#else
   MDSPAN_TEMPLATE_REQUIRES(
     class Slice, class... SlicesAndExtents,
     /* requires */(!std::is_convertible_v<Slice, size_t> &&
                    !is_strided_slice<Slice>::value)
   )
+#endif
   MDSPAN_INLINE_FUNCTION
-  constexpr static auto next_extent(const Extents &ext, const Slice &sl,
-                                    SlicesAndExtents... slices_and_extents) {
+  constexpr static auto next_extent(
+    const Extents &ext,
+#if defined(MDSPAN_ENABLE_P3663)
+    full_extent_t sl,
+#else
+    const Slice &sl,
+#endif
+    SlicesAndExtents... slices_and_extents)
+  {
+#if defined(MDSPAN_ENABLE_P3663)
+    using Slice = full_extent_t;
+#endif
+
     constexpr size_t new_static_extent = StaticExtentFromRange<
         decltype(first_of(std::declval<Slice>())),
         decltype(last_of(
@@ -926,12 +952,6 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
     }
   }
 }
-
-template<class T>
-constexpr bool is_constant_wrapper = false;
-
-template<auto Value, class Type>
-constexpr bool is_constant_wrapper<std::constant_wrapper<Value, Type>> = true;
 
 // [mdspan.sub.slices] 1
 template<class IndexType, class T>
