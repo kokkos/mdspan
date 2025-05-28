@@ -171,6 +171,50 @@ constexpr const auto& get(const tuple<Args...>& vals) { return vals.template get
 template<class ... Elements>
 tuple(Elements ...) -> tuple<Elements...>;
 #endif
+
+#if MDSPAN_HAS_CXX_17
+// std::in_range and friends, tagged for device execution
+// Backport from https://en.cppreference.com/w/cpp/utility/intcmp
+// and https://en.cppreference.com/w/cpp/utility/in_range
+template <class T, class U>
+MDSPAN_INLINE_FUNCTION constexpr bool cmp_less(T t, U u) noexcept {
+  if constexpr (std::is_signed_v<T> == std::is_signed_v<U>)
+    return t < u;
+  else if constexpr (std::is_signed_v<T>)
+    return t < 0 || std::make_unsigned_t<T>(t) < u;
+  else
+    return u >= 0 && t < std::make_unsigned_t<U>(u);
+}
+
+template <class T, class U>
+MDSPAN_INLINE_FUNCTION constexpr bool cmp_less_equal(T t, U u) noexcept {
+  return !cmp_less(u, t);
+}
+
+template <class T, class U>
+MDSPAN_INLINE_FUNCTION constexpr bool cmp_greater_equal(T t, U u) noexcept {
+  return !cmp_less(t, u);
+}
+
+template <class R, class T>
+MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
+  return cmp_greater_equal(t, std::numeric_limits<R>::min()) &&
+          cmp_less_equal(t, std::numeric_limits<R>::max());
+}
+
+template <typename T >
+MDSPAN_INLINE_FUNCTION constexpr bool
+check_mul_result_is_nonnegative_and_representable(T a, T b) {
+  if (b == 0 || a == 0)
+    return true;
+
+  if constexpr (std::is_signed_v<T>) {
+    if ( a < 0 || b < 0 ) return false;
+  }
+  return a <= std::numeric_limits<T>::max() / b;
+  return true;
+}
+#endif
 } // namespace detail
 
 #if MDSPAN_HAS_CXX_17
