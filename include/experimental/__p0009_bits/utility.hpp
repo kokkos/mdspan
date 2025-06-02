@@ -202,6 +202,52 @@ MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
           cmp_less_equal(t, std::numeric_limits<R>::max());
 }
 
+template <class R, class T>
+MDSPAN_INLINE_FUNCTION constexpr bool is_nonnegative_and_representable(T t) noexcept {
+  if constexpr (std::is_signed_v<T>) {
+    if (t < 0)
+      return false;
+  }
+
+  return in_range<R>(t);
+}
+
+template<class R, class... Values>
+MDSPAN_INLINE_FUNCTION constexpr bool
+all_values_are_representable(Values... values) noexcept {
+  return ( in_range<R>( values ) && ... && true );
+}
+
+template<class R, class... Values>
+MDSPAN_INLINE_FUNCTION constexpr bool
+all_values_are_nonnegative_and_representable(Values... values) noexcept {
+  return ( is_nonnegative_and_representable<R>( values ) && ... && true );
+}
+
+template<class R, class ContiguousIterator>
+MDSPAN_INLINE_FUNCTION constexpr bool
+range_is_nonnegative_and_representable(ContiguousIterator begin, ContiguousIterator end) noexcept {
+  for ( auto it = begin; it != end; ++it )
+  {
+    if ( !is_nonnegative_and_representable<R>( *it ) )
+      return false;
+  }
+
+  return true;
+}
+
+template<class R, class Extents>
+MDSPAN_INLINE_FUNCTION constexpr bool
+extent_is_representable(const Extents &exts) noexcept {
+  for ( std::size_t r = 0; r < Extents::rank(); ++r )
+  {
+    if ( !is_nonnegative_and_representable<R>( exts.extent(r) ) )
+      return false;
+  }
+
+  return true;
+}
+
 template <typename T >
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_mul_result_is_nonnegative_and_representable(T a, T b) {

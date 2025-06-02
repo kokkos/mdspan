@@ -481,3 +481,51 @@ TEST(TestExtentsCTADStdArray, test_extents_ctad_std_array) {
 }
 */
 #endif
+
+TEST(TestExtentsConstructorPreconditions, test_extents_construct_indices) {
+  auto test_precondition_indices_not_representable = [] {
+    [[maybe_unused]] auto exts = Kokkos::dextents< std::int8_t, 2 >{ 500, 500 };
+  };
+  EXPECT_DEATH(test_precondition_indices_not_representable(), "");
+
+  auto test_precondition_indices_are_negative = [] {
+    [[maybe_unused]] auto exts = Kokkos::dextents< int, 2 >{ 500, -500 };
+  };
+  EXPECT_DEATH(test_precondition_indices_are_negative(), "");
+}
+
+TEST(TestExtentsConstructorPreconditions, test_extents_construct_array) {
+  auto test_precondition_array_elements_not_representable = [] {
+    [[maybe_unused]] auto exts = Kokkos::dextents< std::int8_t, 2 >{ std::array{ 500, 500 } };
+  };
+  EXPECT_DEATH(test_precondition_array_elements_not_representable(), "");
+
+  auto test_precondition_array_elements_are_negative = [] {
+    [[maybe_unused]] auto exts = Kokkos::dextents< int, 2 >{ std::array{ 500, -500 } };
+  };
+  EXPECT_DEATH(test_precondition_array_elements_are_negative(), "");
+}
+
+#ifdef __cpp_lib_span
+TEST(TestExtentsConstructorPreconditions, test_extents_construct_span) {
+  auto test_precondition_span_elements_not_representable = [] {
+    auto indices = std::array{ 500, 500 };
+    [[maybe_unused]] auto exts = Kokkos::dextents< std::int8_t, 2 >{ std::span{ indices } };
+  };
+  EXPECT_DEATH(test_precondition_span_elements_not_representable(), "");
+
+  auto test_precondition_span_elements_are_negative = [] {
+    auto indices = std::array{ 500, -500 };
+    [[maybe_unused]] auto exts = Kokkos::dextents< int, 2 >{ std::span{ indices } };
+  };
+  EXPECT_DEATH(test_precondition_span_elements_are_negative(), "");
+}
+#endif
+
+TEST(TestExtentsConstructorPreconditions, test_extents_construct_other_extents) {
+  auto test_precondition_extent_ranks_not_representable = [] {
+    auto first = Kokkos::dextents< int, 2 >{ 500, 500 };
+    [[maybe_unused]] auto exts = Kokkos::dextents< std::int8_t, 2 >{ first };
+  };
+  EXPECT_DEATH(test_precondition_extent_ranks_not_representable(), "");
+}
