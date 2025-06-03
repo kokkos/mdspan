@@ -22,6 +22,12 @@
 
 namespace {
 
+struct convertible_to_full_extent_t {
+  constexpr operator Kokkos::full_extent_t() const {
+    return Kokkos::full_extent;
+  }
+};
+
 template<size_t k, class Slice, class IndexType, size_t ... Exts>
 void test_check_static_bounds(
   Kokkos::extents<IndexType, Exts...> extents,
@@ -39,10 +45,14 @@ template<class IndexType, size_t ... Exts>
 void test_full_extent(
   Kokkos::extents<IndexType, Exts...> extents)
 {
-  [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
-    using Kokkos::detail::check_static_bounds_result;
+  using Kokkos::detail::check_static_bounds_result;
 
+  [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
     (test_check_static_bounds<Inds, Kokkos::full_extent_t>(extents, check_static_bounds_result::in_bounds), ...);
+  } (std::make_index_sequence<sizeof...(Exts)>());
+
+  [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
+    (test_check_static_bounds<Inds, convertible_to_full_extent_t>(extents, check_static_bounds_result::in_bounds), ...);
   } (std::make_index_sequence<sizeof...(Exts)>());
 }
 
