@@ -62,6 +62,7 @@ using IC = std::integral_constant<int, Value>;
 TEST(Submdspan, CheckStaticBounds) {
   using Kokkos::detail::check_static_bounds;
   using Kokkos::detail::check_static_bounds_result;
+  using Kokkos::strided_slice;
 
   {
     auto exts = Kokkos::extents<int, 5, 7, 11>{5, 7, 11};
@@ -86,6 +87,125 @@ TEST(Submdspan, CheckStaticBounds) {
     test_check_static_bounds<0, int>(exts, check_static_bounds_result::unknown);
     test_check_static_bounds<1, int>(exts, check_static_bounds_result::unknown);
     test_check_static_bounds<2, int>(exts, check_static_bounds_result::unknown);
+
+    test_check_static_bounds<0, unsigned short>(exts, check_static_bounds_result::unknown);
+    test_check_static_bounds<1, unsigned short>(exts, check_static_bounds_result::unknown);
+    test_check_static_bounds<2, unsigned short>(exts, check_static_bounds_result::unknown);
+
+    // 14.3.1.1
+    {
+      using offset_type = IC<-1>;
+      using extent_type = int;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    {
+      using offset_type = IC<-1>;
+      using extent_type = IC<1>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    // 14.3.1.2
+    {
+      using offset_type = IC<13>;
+      using extent_type = int;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }  
+    {
+      using offset_type = IC<13>;
+      using extent_type = IC<1>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    // 14.3.1.3
+    {
+      using offset_type = IC<1>;
+      using extent_type = IC<-2>;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }  
+    {
+      using offset_type = IC<1>;
+      using extent_type = IC<-2>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    // 14.3.1.4
+    {
+      using offset_type = IC<4>; // in bounds
+      using extent_type = IC<8>; // out of bounds
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    {
+      using offset_type = IC<4>; // in bounds
+      using extent_type = IC<8>; // out of bounds
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }  
+    // 14.3.1.5
+    {
+      using offset_type = IC<1>; // in bounds
+      using extent_type = IC<2>; // in bounds
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::in_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::in_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::in_bounds);
+    }
+    {
+      using offset_type = IC<1>; // in bounds
+      using extent_type = IC<2>; // in bounds
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::in_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::in_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::in_bounds);
+    }
+    // 14.3.1.6
+    {
+      using offset_type = int;
+      using extent_type = int;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
+    {
+      using offset_type = int;
+      using extent_type = IC<1>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
   }
   {
     auto exts = Kokkos::dims<3>{5, 7, 11};
@@ -110,6 +230,125 @@ TEST(Submdspan, CheckStaticBounds) {
     test_check_static_bounds<0, int>(exts, check_static_bounds_result::unknown);
     test_check_static_bounds<1, int>(exts, check_static_bounds_result::unknown);
     test_check_static_bounds<2, int>(exts, check_static_bounds_result::unknown);
+
+    test_check_static_bounds<0, unsigned short>(exts, check_static_bounds_result::unknown);
+    test_check_static_bounds<1, unsigned short>(exts, check_static_bounds_result::unknown);
+    test_check_static_bounds<2, unsigned short>(exts, check_static_bounds_result::unknown);
+
+    // 14.3.1.1
+    {
+      using offset_type = IC<-1>;
+      using extent_type = int;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    {
+      using offset_type = IC<-1>;
+      using extent_type = IC<1>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    // 14.3.1.2
+    {
+      using offset_type = IC<13>;
+      using extent_type = int;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }  
+    {
+      using offset_type = IC<13>;
+      using extent_type = IC<1>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
+    // 14.3.1.3
+    {
+      using offset_type = IC<1>;
+      using extent_type = IC<-2>;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }  
+    {
+      using offset_type = IC<1>;
+      using extent_type = IC<-2>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    // 14.3.1.4
+    {
+      using offset_type = IC<4>; // in bounds
+      using extent_type = IC<8>; // out of bounds
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
+    {
+      using offset_type = IC<4>; // in bounds
+      using extent_type = IC<8>; // out of bounds
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }  
+    // 14.3.1.5
+    {
+      using offset_type = IC<1>; // in bounds
+      using extent_type = IC<2>; // in bounds
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
+    {
+      using offset_type = IC<1>; // in bounds
+      using extent_type = IC<2>; // in bounds
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
+    // 14.3.1.6
+    {
+      using offset_type = int;
+      using extent_type = int;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
+    {
+      using offset_type = int;
+      using extent_type = IC<1>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
   }
   {
     auto exts = Kokkos::extents<int, 5, Kokkos::dynamic_extent, 11>{5, 7, 11};
@@ -134,6 +373,125 @@ TEST(Submdspan, CheckStaticBounds) {
     test_check_static_bounds<0, int>(exts, check_static_bounds_result::unknown);
     test_check_static_bounds<1, int>(exts, check_static_bounds_result::unknown);
     test_check_static_bounds<2, int>(exts, check_static_bounds_result::unknown);
+
+    test_check_static_bounds<0, unsigned short>(exts, check_static_bounds_result::unknown);
+    test_check_static_bounds<1, unsigned short>(exts, check_static_bounds_result::unknown);
+    test_check_static_bounds<2, unsigned short>(exts, check_static_bounds_result::unknown);
+
+    // 14.3.1.1
+    {
+      using offset_type = IC<-1>;
+      using extent_type = int;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    {
+      using offset_type = IC<-1>;
+      using extent_type = IC<1>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    // 14.3.1.2
+    {
+      using offset_type = IC<13>;
+      using extent_type = int;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }  
+    {
+      using offset_type = IC<13>;
+      using extent_type = IC<1>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    // 14.3.1.3
+    {
+      using offset_type = IC<1>;
+      using extent_type = IC<-2>;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }  
+    {
+      using offset_type = IC<1>;
+      using extent_type = IC<-2>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    // 14.3.1.4
+    {
+      using offset_type = IC<4>; // in bounds
+      using extent_type = IC<8>; // out of bounds
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }
+    {
+      using offset_type = IC<4>; // in bounds
+      using extent_type = IC<8>; // out of bounds
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::out_of_bounds);
+    }  
+    // 14.3.1.5
+    {
+      using offset_type = IC<1>; // in bounds
+      using extent_type = IC<2>; // in bounds
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::in_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::in_bounds);
+    }
+    {
+      using offset_type = IC<1>; // in bounds
+      using extent_type = IC<2>; // in bounds
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::in_bounds);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::in_bounds);
+    }
+    // 14.3.1.6
+    {
+      using offset_type = int;
+      using extent_type = int;
+      using stride_type = int;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
+    {
+      using offset_type = int;
+      using extent_type = IC<1>;
+      using stride_type = IC<1>;
+      using slice_type = strided_slice<offset_type, extent_type, stride_type>;
+      test_check_static_bounds<0, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<1, slice_type>(exts, check_static_bounds_result::unknown);
+      test_check_static_bounds<2, slice_type>(exts, check_static_bounds_result::unknown);
+    }
   }
 }
 
