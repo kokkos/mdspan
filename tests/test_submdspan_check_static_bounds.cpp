@@ -757,6 +757,95 @@ TEST(Submdspan, CheckStaticBounds) {
       test_check_static_bounds<1, slice_type>(exts, UNK);
       test_check_static_bounds<2, slice_type>(exts, UNK);
     }
+
+    // General 14.4 (just to show well-formedness
+    // for a variety of types that smell like pair)
+    {
+      using slice_type = decltype(test::non_aggregate_pair{0, 1});
+      test_check_static_bounds<0, slice_type>(exts, UNK);
+      test_check_static_bounds<1, slice_type>(exts, UNK);
+      test_check_static_bounds<2, slice_type>(exts, UNK);
+    }
+    {
+      using slice_type = decltype(std::pair{0, 1});
+      test_check_static_bounds<0, slice_type>(exts, UNK);
+      test_check_static_bounds<1, slice_type>(exts, UNK);
+      test_check_static_bounds<2, slice_type>(exts, UNK);
+    }
+    {
+      using slice_type = decltype(std::tuple{0, 1});
+      test_check_static_bounds<0, slice_type>(exts, UNK);
+      test_check_static_bounds<1, slice_type>(exts, UNK);
+      test_check_static_bounds<2, slice_type>(exts, UNK);
+    }
+
+    // 14.4.1.1
+    {
+      using slice_type = decltype(aggregate_pair{IC<-1>{}, IC<0>{}});
+      test_check_static_bounds<0, slice_type>(exts, OOB);
+      test_check_static_bounds<1, slice_type>(exts, OOB);
+      test_check_static_bounds<2, slice_type>(exts, OOB);
+    }
+    {
+      using slice_type = decltype(aggregate_pair{IC<-1>{}, int{0}});
+      test_check_static_bounds<0, slice_type>(exts, OOB);
+      test_check_static_bounds<1, slice_type>(exts, OOB);
+      test_check_static_bounds<2, slice_type>(exts, OOB);
+    }
+    // 14.4.1.2 (and 14.4.1.6)
+    {
+      using slice_type = decltype(aggregate_pair{IC<13>{}, IC<14>{}});
+      test_check_static_bounds<0, slice_type>(exts, OOB);
+      test_check_static_bounds<1, slice_type>(exts, UNK); // 14.4.1.6
+      test_check_static_bounds<2, slice_type>(exts, OOB);
+    }
+    {
+      using slice_type = decltype(aggregate_pair{IC<13>{}, int{14}});
+      test_check_static_bounds<0, slice_type>(exts, OOB);
+      test_check_static_bounds<1, slice_type>(exts, UNK); // 14.4.1.6
+      test_check_static_bounds<2, slice_type>(exts, OOB);
+    }
+    // 14.4.1.3
+    {
+      using slice_type = decltype(aggregate_pair{IC<1>{}, IC<0>{}});
+      test_check_static_bounds<0, slice_type>(exts, OOB);
+      test_check_static_bounds<1, slice_type>(exts, OOB);
+      test_check_static_bounds<2, slice_type>(exts, OOB);
+    }
+    // 14.4.1.4 (and 14.4.1.6)
+    {
+      using slice_type = decltype(aggregate_pair{IC<0>{}, IC<13>{}});
+      test_check_static_bounds<0, slice_type>(exts, OOB);
+      test_check_static_bounds<1, slice_type>(exts, UNK); // 14.4.1.6
+      test_check_static_bounds<2, slice_type>(exts, OOB);
+    }
+    // 14.4.1.5 (and 14.4.1.6)
+    {
+      using slice_type = decltype(aggregate_pair{IC<1>{}, IC<3>{}});
+      test_check_static_bounds<0, slice_type>(exts, INB);
+      test_check_static_bounds<1, slice_type>(exts, UNK); // 14.4.1.6
+      test_check_static_bounds<2, slice_type>(exts, INB);
+    }
+    // 14.4.1.6
+    {
+      using slice_type = decltype(aggregate_pair{IC<1>{}, int{3}});
+      test_check_static_bounds<0, slice_type>(exts, UNK);
+      test_check_static_bounds<1, slice_type>(exts, UNK);
+      test_check_static_bounds<2, slice_type>(exts, UNK);
+    }
+    // 14.4.2
+    {
+      using slice_type = decltype(aggregate_pair{int{1}, IC<3>{}});
+      test_check_static_bounds<0, slice_type>(exts, UNK);
+      test_check_static_bounds<1, slice_type>(exts, UNK);
+      test_check_static_bounds<2, slice_type>(exts, UNK);
+    }
+    {
+      using slice_type = decltype(aggregate_pair{int{1}, int{3}});
+      test_check_static_bounds<0, slice_type>(exts, UNK);
+      test_check_static_bounds<1, slice_type>(exts, UNK);
+      test_check_static_bounds<2, slice_type>(exts, UNK);
+    }
   }
 }
 
