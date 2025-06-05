@@ -36,23 +36,33 @@
 // We do want to exercise a Standard layout mapping, though.
 //
 // The mdspan's value type doesn't matter either,
-// so we can use char to minimize storage.
+// so we can use a char-sized type to minimize storage.
+// Using unsigned char makes overflow defined behavior.
 
 template<class IndexType, size_t... Exts>
-using nonconst_test_mdspan = Kokkos::mdspan<char, Kokkos::extents<IndexType, Exts...>>;
+using nonconst_test_mdspan =
+  Kokkos::mdspan<unsigned char, Kokkos::extents<IndexType, Exts...>>;
 
 template<class IndexType, size_t... Exts>
-using const_test_mdspan = Kokkos::mdspan<const char, Kokkos::extents<IndexType, Exts...>>;
+using const_test_mdspan =
+  Kokkos::mdspan<const unsigned char, Kokkos::extents<IndexType, Exts...>>;
 
 template<class IndexType, size_t... Exts>
-size_t submdspan_benchmark(benchmark::State& state, const_test_mdspan<IndexType, Exts...> x) {
+size_t submdspan_benchmark(benchmark::State& state,
+  std::ostream& output,
+  nonconst_test_mdspan<IndexType, Exts...> out)
+{
+  output << "buf_0s_before = " << static_cast<unsigned int>(out[((void) Exts, 0)...]) << '\n';
+
   size_t count_not_same = 0;
   for (auto _ : state) {
-    const auto p = std::pair{IndexType(0), IndexType(1)};  
-    auto x_sub = Kokkos::submdspan(x, ((void) Exts, p)...);
-    if (x_sub[((void) Exts, 0)...] != x[((void) Exts, p.first)...]) {
+    const auto p = std::pair{IndexType(0), IndexType(1)};
+    auto out_sub = Kokkos::submdspan(out, ((void) Exts, p)...);
+    if (out_sub[((void) Exts, 0)...] != out[((void) Exts, p.first)...]) {
       ++count_not_same;
     }
+    out_sub[((void) Exts, 0)...] += static_cast<unsigned char>(1u);
+
     benchmark::DoNotOptimize(count_not_same);
   }
   return count_not_same;
@@ -61,9 +71,11 @@ size_t submdspan_benchmark(benchmark::State& state, const_test_mdspan<IndexType,
 template<class IndexType, size_t... Exts>
 class benchmark_buffer {
 public:
+  using value_type = unsigned char;
+
   benchmark_buffer(Kokkos::extents<IndexType, Exts...> exts) :
     mapping_{exts},
-    buffer_{std::make_unique<char[]>(mapping_.required_span_size())}
+    buffer_{std::make_unique<value_type[]>(mapping_.required_span_size())}
   {}
 
   nonconst_test_mdspan<IndexType, Exts...> get_mdspan() {
@@ -71,22 +83,30 @@ public:
   }
 
   const_test_mdspan<IndexType, Exts...> get_mdspan() const {
-    return {static_cast<const char*>(buffer_.get()), mapping_};
+    return {static_cast<const value_type*>(buffer_.get()), mapping_};
   }
 
 private:
   Kokkos::layout_right::template mapping<Kokkos::extents<IndexType, Exts...>> mapping_;
-  std::unique_ptr<char[]> buffer_;
+  std::unique_ptr<value_type[]> buffer_;
 };
 
 template<class IndexType, size_t... Exts>
-void submdspan_run_benchmark(benchmark::State& state, Kokkos::extents<IndexType, Exts...> exts) {
-  auto buffer = benchmark_buffer{exts};
-  mdspan_benchmark::fill_random(buffer.get_mdspan());
-  size_t count_not_same = submdspan_benchmark(state, std::as_const(buffer).get_mdspan());
+void submdspan_run_benchmark(benchmark::State& state,
+  Kokkos::extents<IndexType, Exts...> exts)
+{
+  auto buf = benchmark_buffer{exts};
+  mdspan_benchmark::fill_random(buf.get_mdspan());
+
+  size_t count_not_same = submdspan_benchmark(state, std::cerr, buf.get_mdspan());
   if (count_not_same != 0) {
     std::cerr << "submdspan_benchmark failed: count not same = " << count_not_same << std::endl;
+    std::terminate();
   }
+
+  auto get_0th_element = [] (auto x) { return x[((void) Exts, 0)...]; };
+  const auto buf_0s_after = get_0th_element(buf.get_mdspan());
+  std::cerr << "buf_0s_after = " << static_cast<unsigned int>(buf_0s_after) << '\n';
 }
 
 BENCHMARK_CAPTURE(submdspan_run_benchmark, int_6d, (Kokkos::extents<int, 2, 2, 2, 2, 2, 2>{}));
