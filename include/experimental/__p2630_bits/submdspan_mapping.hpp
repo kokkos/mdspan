@@ -91,10 +91,40 @@ concept mapping_sliceable_with_full_extents =
 template <class IndexType, class Slice>
 MDSPAN_INLINE_FUNCTION constexpr bool
 one_slice_out_of_bounds(const IndexType &ext, const Slice &slice) {
+#if defined(MDSPAN_ENABLE_P3663)
   using common_t =
       std::common_type_t<decltype(first_of(slice)), IndexType>;
   return static_cast<common_t>(first_of(slice)) ==
          static_cast<common_t>(ext);
+#else
+  // NOTE (mfh 2025/06/06) The original implementation was not conforming.
+  // For index types that are not integral but are nevertheless convertible
+  // to integral, it would result in build errors when attempting to find
+  // a common type between first_of(slice) and IndexType.  This is because
+  // first_of(slice) in that case would return the origina slice type,
+  // which might not necessarily be convertible to IndexType.  The problem
+  // is really in first_of: the analogous function in the Standard,
+  // _`first`_`_`, is aware of IndexType and casts slices whose types
+  // are "integral not bool" to IndexType (even before P3663).  However,
+  // first_of doesn't know IndexType and so it can only return the original
+  // slice in the case where it's convertible to integral-not-bool.
+  //
+  // The easy fix is P3663.  However, for fair benchmarking between the
+  // P3663 and no-P3663 cases, we don't want to copy the slice if not needed.
+  // Thus, we introduce a special case.
+  if constexpr (std::is_convertible_v<Slice, IndexType> &&
+    ! std::is_signed_v<std::remove_cvref_t<Slice>> &&
+    ! std::is_unsigned_v<std::remove_cvref_t<Slice>>)
+  {
+    return first_of(static_cast<IndexType>(slice)) == ext; 
+  }
+  else {
+    using common_t =
+        std::common_type_t<decltype(first_of(slice)), IndexType>;
+    return static_cast<common_t>(first_of(slice)) ==
+          static_cast<common_t>(ext);
+  }
+#endif // MDSPAN_ENABLE_P3663
 }
 
 template <size_t... RankIndices, class IndexType, size_t... Exts,

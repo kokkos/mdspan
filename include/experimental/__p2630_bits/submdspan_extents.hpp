@@ -167,9 +167,33 @@ constexpr Integral first_of(Integral i) {
 
 #else
 
+// NOTE (mfh 2025/06/06) The original "return i;" was not conforming,
+// in particular for index types that were not integral-not-bool
+// but were convertible to index_type.
+
 MDSPAN_TEMPLATE_REQUIRES(
   class Integral,
-  /* requires */(std::is_convertible_v<Integral, size_t>)
+  /* requires */(
+    ! std::is_signed_v<Integral> &&
+    ! std::is_unsigned_v<Integral> &&
+    (
+      std::is_convertible_v<Integral, size_t> ||
+      std::is_convertible_v<Integral, int>
+    )
+  )
+)
+MDSPAN_INLINE_FUNCTION
+constexpr Integral first_of(const Integral &i) {
+  // FIXME (mfh 2025/06/06) This is broken, but it's better than it was.
+  return size_t(i);
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Integral,
+  /* requires */(
+    std::is_signed_v<Integral> ||
+    std::is_unsigned_v<Integral>
+  )
 )
 MDSPAN_INLINE_FUNCTION
 constexpr Integral first_of(const Integral &i) {
@@ -197,20 +221,28 @@ first_of(const std::integral_constant<Integral, v>&) {
 }
 #endif
 
+
+
+#if defined(MDSPAN_ENABLE_P3663)
+
 MDSPAN_INLINE_FUNCTION
 constexpr
-#if defined(MDSPAN_ENABLE_P3663)
 auto
-#else
-integral_constant<size_t, 0>
-#endif
 first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
-#if defined(MDSPAN_ENABLE_P3663)
   return std::cw<size_t(0)>;
-#else
-  return {};
-#endif
 }
+
+#else
+
+MDSPAN_INLINE_FUNCTION
+constexpr
+integral_constant<size_t, 0>
+first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
+  return {};
+}
+
+#endif // MDSPAN_ENABLE_P3663
+
 
 // P3663 doesn't need any of these overloads,
 // because its version of first_of will never see pair-like types.
