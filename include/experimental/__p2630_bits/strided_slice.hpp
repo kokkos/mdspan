@@ -21,13 +21,11 @@
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
-namespace {
   template<class T>
   struct mdspan_is_integral_constant: std::false_type {};
 
   template<class T, T val>
   struct mdspan_is_integral_constant<std::integral_constant<T,val>>: std::true_type {};
-}
 
 // Slice Specifier allowing for strides and compile time extent
 template <class OffsetType, class ExtentType, class StrideType>

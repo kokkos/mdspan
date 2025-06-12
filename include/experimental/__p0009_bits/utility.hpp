@@ -50,7 +50,7 @@ constexpr bool rankwise_equal(with_rank<N>, const T1& x, const T2& y, F func)
 #if MDSPAN_HAS_CXX_17
 inline
 #endif
-constexpr struct
+constexpr struct extent_struct
 {
   template <class T, class I>
   MDSPAN_INLINE_FUNCTION
@@ -63,7 +63,7 @@ constexpr struct
 #if MDSPAN_HAS_CXX_17
 inline
 #endif
-constexpr struct
+constexpr struct stride_struct
 {
   template <class T, class I>
   MDSPAN_INLINE_FUNCTION
