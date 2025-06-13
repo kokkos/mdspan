@@ -517,7 +517,7 @@ namespace detail {
 #if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP)
 MDSPAN_FUNCTION inline void default_precondition_violation_handler(const char* cond, const char* file, unsigned line)
 {
-  printf("%s:%u: precondition failure: `%s`\n", file, line, cond);
+  ::printf("%s:%u: precondition failure: `%s`\n", file, line, cond);
   assert(0);
 }
 #elif defined(MDSPAN_IMPL_HAS_SYCL)
