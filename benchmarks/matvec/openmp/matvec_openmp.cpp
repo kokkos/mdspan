@@ -95,9 +95,12 @@ void BM_MDSpan_OpenMP_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... 
 
   int R = 10;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(A.data_handle());
-    benchmark::DoNotOptimize(y.data_handle());
-    benchmark::DoNotOptimize(x.data_handle());
+    auto ah = A.data_handle();
+    auto yh = y.data_handle();
+    auto xh = x.data_handle();
+    benchmark::DoNotOptimize(ah);
+    benchmark::DoNotOptimize(yh);
+    benchmark::DoNotOptimize(xh);
     for(int r=0; r<R; r++) {
     #pragma omp parallel for
     for(index_type i = 0; i < A.extent(0); i ++) {
@@ -161,9 +164,12 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Left(benchmark::State& state, MDSpanMatrix, Dyn
 
   int R = 10;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(A.data_handle());
-    benchmark::DoNotOptimize(y.data_handle());
-    benchmark::DoNotOptimize(x.data_handle());
+    auto ah = A.data_handle();
+    auto yh = y.data_handle();
+    auto xh = x.data_handle();
+    benchmark::DoNotOptimize(ah);
+    benchmark::DoNotOptimize(yh);
+    benchmark::DoNotOptimize(xh);
     for(int r=0; r<R; r++) {
     #pragma omp parallel for
     for(index_type i = 0; i < A.extent(0); i ++) {
@@ -225,9 +231,12 @@ void BM_MDSpan_OpenMP_MatVec_Raw_Right(benchmark::State& state, MDSpanMatrix, Dy
 
   int R = 10;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(A.data_handle());
-    benchmark::DoNotOptimize(y.data_handle());
-    benchmark::DoNotOptimize(x.data_handle());
+    auto ah = A.data_handle();
+    auto yh = y.data_handle();
+    auto xh = x.data_handle();
+    benchmark::DoNotOptimize(ah);
+    benchmark::DoNotOptimize(yh);
+    benchmark::DoNotOptimize(xh);
     for(int r=0; r<R; r++) {
     #pragma omp parallel for
     for(index_type i = 0; i < A.extent(0); i ++) {
