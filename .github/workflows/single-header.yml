@@ -16,7 +16,7 @@ jobs:
         with:
           ref: single-header
       - run: mv /tmp/mdspan.hpp mdspan.hpp
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: stefanzweifel/git-auto-commit-action@v6
         with:
           branch: single-header
           commit_message: Update single header build.
