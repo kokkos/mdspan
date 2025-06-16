@@ -458,7 +458,7 @@ struct layout_stride {
 #else
       return this->base_t::ref().first();
 #endif
-    };
+    }
 
     MDSPAN_INLINE_FUNCTION
     constexpr std::array< index_type, extents_type::rank() > strides() const noexcept {
