@@ -482,6 +482,7 @@ TEST(TestExtentsCTADStdArray, test_extents_ctad_std_array) {
 */
 #endif
 
+#if MDSPAN_HAS_CXX_17
 TEST(TestExtentsConstructorPreconditions, test_extents_construct_indices) {
   auto test_precondition_indices_not_representable = [] {
     [[maybe_unused]] auto exts = Kokkos::dextents< std::int8_t, 2 >{ 500, 500 };
@@ -529,3 +530,4 @@ TEST(TestExtentsConstructorPreconditions, test_extents_construct_other_extents) 
   };
   EXPECT_DEATH(test_precondition_extent_ranks_not_representable(), "");
 }
+#endif
