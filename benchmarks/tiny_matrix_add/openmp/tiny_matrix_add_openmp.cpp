@@ -74,8 +74,10 @@ void BM_MDSpan_OpenMP_noloop_TinyMatrixSum(benchmark::State& state, MDSpan, DynS
 
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(o.data_handle());
-    benchmark::DoNotOptimize(s.data_handle());
+    auto oh = o.data_handle();
+    auto sh = s.data_handle();
+    benchmark::DoNotOptimize(oh);
+    benchmark::DoNotOptimize(sh);
 #pragma omp parallel
     {
       auto chunk_size = s.extent(0) / omp_get_num_threads();
@@ -138,8 +140,10 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
   }
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(o.data_handle());
-    benchmark::DoNotOptimize(s.data_handle());
+    auto oh = o.data_handle();
+    auto sh = s.data_handle();
+    benchmark::DoNotOptimize(oh);
+    benchmark::DoNotOptimize(sh);
     #pragma omp parallel for
     for(index_type i = 0; i < s.extent(0); i ++) {
       for(int r = 0; r<global_repeat; r++) {
