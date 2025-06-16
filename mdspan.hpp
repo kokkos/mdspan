@@ -1488,7 +1488,7 @@ struct integral_constant {
   // These interop functions work, because other than the value_type operator
   // everything of std::integral_constant works on device (defaulted functions)
   MDSPAN_FUNCTION
-  constexpr integral_constant(std::integral_constant<T,v>) {};
+  constexpr integral_constant(std::integral_constant<T,v>) {}
 
   MDSPAN_FUNCTION constexpr operator std::integral_constant<T,v>() const noexcept {
     return std::integral_constant<T,v>{};
@@ -3046,7 +3046,7 @@ struct layout_stride {
 #else
       return this->base_t::ref().first();
 #endif
-    };
+    }
 
     MDSPAN_INLINE_FUNCTION
     constexpr std::array< index_type, extents_type::rank() > strides() const noexcept {
@@ -3702,7 +3702,7 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr size_t rank() noexcept { return extents_type::rank(); }
   MDSPAN_INLINE_FUNCTION static constexpr size_t rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
   MDSPAN_INLINE_FUNCTION static constexpr size_t static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
-  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return mapping_ref().extents().extent(r); };
+  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return mapping_ref().extents().extent(r); }
 
 private:
 
@@ -4000,11 +4000,11 @@ public:
 
   MDSPAN_INLINE_FUNCTION constexpr size_type size() const noexcept {
     return static_cast<size_type>(deduction_workaround_impl::size(*this));
-  };
+  }
 
   MDSPAN_INLINE_FUNCTION constexpr bool empty() const noexcept {
     return deduction_workaround_impl::empty(*this);
-  };
+  }
 
   MDSPAN_INLINE_FUNCTION
   friend constexpr void swap(mdspan& x, mdspan& y) noexcept {
@@ -4025,22 +4025,22 @@ public:
   // [mdspan.basic.domobs], mdspan observers of the domain multidimensional index space
 
 
-  MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return mapping_ref().extents(); };
-  MDSPAN_INLINE_FUNCTION constexpr const data_handle_type& data_handle() const noexcept { return ptr_ref(); };
-  MDSPAN_INLINE_FUNCTION constexpr const mapping_type& mapping() const noexcept { return mapping_ref(); };
-  MDSPAN_INLINE_FUNCTION constexpr const accessor_type& accessor() const noexcept { return accessor_ref(); };
+  MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return mapping_ref().extents(); }
+  MDSPAN_INLINE_FUNCTION constexpr const data_handle_type& data_handle() const noexcept { return ptr_ref(); }
+  MDSPAN_INLINE_FUNCTION constexpr const mapping_type& mapping() const noexcept { return mapping_ref(); }
+  MDSPAN_INLINE_FUNCTION constexpr const accessor_type& accessor() const noexcept { return accessor_ref(); }
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.obs], mdspan observers of the mapping
 
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() { return mapping_type::is_always_unique(); };
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() { return mapping_type::is_always_exhaustive(); };
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() { return mapping_type::is_always_strided(); };
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() { return mapping_type::is_always_unique(); }
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() { return mapping_type::is_always_exhaustive(); }
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() { return mapping_type::is_always_strided(); }
 
-  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const { return mapping_ref().is_unique(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const { return mapping_ref().is_exhaustive(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const { return mapping_ref().is_strided(); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return mapping_ref().stride(r); };
+  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const { return mapping_ref().is_unique(); }
+  MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const { return mapping_ref().is_exhaustive(); }
+  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const { return mapping_ref().is_strided(); }
+  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return mapping_ref().stride(r); }
 
 private:
 
@@ -7044,10 +7044,10 @@ public:
 #endif
   #endif
 
-  MDSPAN_INLINE_FUNCTION constexpr pointer data() noexcept { return ctr_.data(); };
-  MDSPAN_INLINE_FUNCTION constexpr const_pointer data() const noexcept { return ctr_.data(); };
-  MDSPAN_INLINE_FUNCTION constexpr container_type& container() noexcept { return ctr_; };
-  MDSPAN_INLINE_FUNCTION constexpr const container_type& container() const noexcept { return ctr_; };
+  MDSPAN_INLINE_FUNCTION constexpr pointer data() noexcept { return ctr_.data(); }
+  MDSPAN_INLINE_FUNCTION constexpr const_pointer data() const noexcept { return ctr_.data(); }
+  MDSPAN_INLINE_FUNCTION constexpr container_type& container() noexcept { return ctr_; }
+  MDSPAN_INLINE_FUNCTION constexpr const container_type& container() const noexcept { return ctr_; }
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.domobs], mdspan observers of the domain multidimensional index space
@@ -7056,26 +7056,26 @@ public:
   MDSPAN_INLINE_FUNCTION static constexpr rank_type rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
   MDSPAN_INLINE_FUNCTION static constexpr size_t static_extent(size_t r) noexcept { return extents_type::static_extent(r); }
 
-  MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return map_.extents(); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return map_.extents().extent(r); };
+  MDSPAN_INLINE_FUNCTION constexpr const extents_type& extents() const noexcept { return map_.extents(); }
+  MDSPAN_INLINE_FUNCTION constexpr index_type extent(size_t r) const noexcept { return map_.extents().extent(r); }
   MDSPAN_INLINE_FUNCTION constexpr index_type size() const noexcept {
 //    return impl::size(*this);
     return ctr_.size();
-  };
+  }
 
 
   //--------------------------------------------------------------------------------
   // [mdspan.basic.obs], mdspan observers of the mapping
 
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return mapping_type::is_always_unique(); };
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() noexcept { return mapping_type::is_always_exhaustive(); };
-  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return mapping_type::is_always_strided(); };
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_unique() noexcept { return mapping_type::is_always_unique(); }
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_exhaustive() noexcept { return mapping_type::is_always_exhaustive(); }
+  MDSPAN_INLINE_FUNCTION static constexpr bool is_always_strided() noexcept { return mapping_type::is_always_strided(); }
 
-  MDSPAN_INLINE_FUNCTION constexpr const mapping_type& mapping() const noexcept { return map_; };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return map_.is_unique(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const noexcept { return map_.is_exhaustive(); };
-  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return map_.is_strided(); };
-  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return map_.stride(r); };
+  MDSPAN_INLINE_FUNCTION constexpr const mapping_type& mapping() const noexcept { return map_; }
+  MDSPAN_INLINE_FUNCTION constexpr bool is_unique() const noexcept { return map_.is_unique(); }
+  MDSPAN_INLINE_FUNCTION constexpr bool is_exhaustive() const noexcept { return map_.is_exhaustive(); }
+  MDSPAN_INLINE_FUNCTION constexpr bool is_strided() const noexcept { return map_.is_strided(); }
+  MDSPAN_INLINE_FUNCTION constexpr index_type stride(size_t r) const { return map_.stride(r); }
 
   // Converstion to mdspan
   MDSPAN_TEMPLATE_REQUIRES(
