@@ -49,8 +49,11 @@ constexpr bool check_operator_constraints(Mapping, Indices...) {
 }
 
 template <class M, class... Args>
-constexpr void iterate_stride(M m, const std::array<int, M::extents_type::rank()>& strides, Args... args) {
-  constexpr int r = static_cast<int>(M::extents_type::rank()) - 1 - static_cast<int>(sizeof...(Args));
+constexpr void iterate_stride(
+    M m, const std::array<int, M::extents_type::rank()>& strides,
+    Args... args) {
+  constexpr int r = static_cast<int>(M::extents_type::rank()) - 1 -
+                    static_cast<int>(sizeof...(Args));
   if constexpr (-1 == r) {
     ASSERT_NOEXCEPT(m(args...));
     size_t expected_val = [&]<size_t... Pos>(std::index_sequence<Pos...>) {
@@ -65,7 +68,8 @@ constexpr void iterate_stride(M m, const std::array<int, M::extents_type::rank()
 }
 
 template <class E, class... Args>
-constexpr void test_iteration(std::array<int, E::rank()> strides, Args... args) {
+constexpr void test_iteration(std::array<int, E::rank()> strides,
+                              Args... args) {
   using M = std::layout_stride::mapping<E>;
   M m(E(args...), strides);
 
@@ -79,23 +83,34 @@ constexpr bool test() {
   test_iteration<std::extents<unsigned, D>>(std::array<int, 1>{3}, 7);
   test_iteration<std::extents<unsigned, 7>>(std::array<int, 1>{4});
   test_iteration<std::extents<unsigned, 7, 8>>(std::array<int, 2>{25, 3});
-  test_iteration<std::extents<char, D, D, D, D>>(std::array<int, 4>{1, 1, 1, 1}, 1, 1, 1, 1);
+  test_iteration<std::extents<char, D, D, D, D>>(std::array<int, 4>{1, 1, 1, 1},
+                                                 1, 1, 1, 1);
 
   // Check operator constraint for number of arguments
   static_assert(check_operator_constraints(
-      std::layout_stride::mapping<std::extents<int, D>>(std::extents<int, D>(1), std::array{1}), 0));
+      std::layout_stride::mapping<std::extents<int, D>>(std::extents<int, D>(1),
+                                                        std::array{1}),
+      0));
   static_assert(!check_operator_constraints(
-      std::layout_stride::mapping<std::extents<int, D>>(std::extents<int, D>(1), std::array{1}), 0, 0));
+      std::layout_stride::mapping<std::extents<int, D>>(std::extents<int, D>(1),
+                                                        std::array{1}),
+      0, 0));
 
   // Check operator constraint for convertibility of arguments to index_type
   static_assert(check_operator_constraints(
-      std::layout_stride::mapping<std::extents<int, D>>(std::extents<int, D>(1), std::array{1}), IntType(0)));
+      std::layout_stride::mapping<std::extents<int, D>>(std::extents<int, D>(1),
+                                                        std::array{1}),
+      IntType(0)));
   static_assert(!check_operator_constraints(
-      std::layout_stride::mapping<std::extents<unsigned, D>>(std::extents<unsigned, D>(1), std::array{1}), IntType(0)));
+      std::layout_stride::mapping<std::extents<unsigned, D>>(
+          std::extents<unsigned, D>(1), std::array{1}),
+      IntType(0)));
 
-  // Check operator constraint for no-throw-constructibility of index_type from arguments
+  // Check operator constraint for no-throw-constructibility of index_type from
+  // arguments
   static_assert(!check_operator_constraints(
-      std::layout_stride::mapping<std::extents<unsigned char, D>>(std::extents<unsigned char, D>(1), std::array{1}),
+      std::layout_stride::mapping<std::extents<unsigned char, D>>(
+          std::extents<unsigned char, D>(1), std::array{1}),
       IntType(0)));
 
   return true;
@@ -103,8 +118,10 @@ constexpr bool test() {
 
 constexpr bool test_large() {
   constexpr size_t D = std::dynamic_extent;
-  test_iteration<std::extents<int64_t, D, 8, D, D>>(std::array<int, 4>{2000, 2, 20, 200}, 7, 9, 10);
-  test_iteration<std::extents<int64_t, D, 8, 1, D>>(std::array<int, 4>{2000, 20, 20, 200}, 7, 10);
+  test_iteration<std::extents<int64_t, D, 8, D, D>>(
+      std::array<int, 4>{2000, 2, 20, 200}, 7, 9, 10);
+  test_iteration<std::extents<int64_t, D, 8, 1, D>>(
+      std::array<int, 4>{2000, 20, 20, 200}, 7, 10);
   return true;
 }
 

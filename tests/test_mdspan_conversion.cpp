@@ -14,11 +14,9 @@
 //
 //@HEADER
 
-
 #include <mdspan/mdspan.hpp>
 
 #include <gtest/gtest.h>
-
 
 TEST(TestMdspanConversionConst, test_mdspan_conversion_const) {
   std::array<double, 6> a{};

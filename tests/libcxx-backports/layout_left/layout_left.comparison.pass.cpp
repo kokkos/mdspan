@@ -11,7 +11,8 @@
 // <mdspan/mdspan.hpp>
 
 // template<class OtherExtents>
-//   friend constexpr bool operator==(const mapping& x, const mapping<OtherExtents>& y) noexcept;
+//   friend constexpr bool operator==(const mapping& x, const
+//   mapping<OtherExtents>& y) noexcept;
 //                                      `
 // Constraints: extents_type::rank() == OtherExtents::rank() is true.
 
@@ -39,7 +40,8 @@ constexpr X compare_layout_mappings(...) { return {}; }
 
 template <class E1, class E2>
 constexpr auto compare_layout_mappings(E1 e1, E2 e2)
-    -> decltype(std::layout_left::mapping<E1>(e1) == std::layout_left::mapping<E2>(e2)) {
+    -> decltype(std::layout_left::mapping<E1>(e1) ==
+                std::layout_left::mapping<E2>(e2)) {
   return true;
 }
 
@@ -48,25 +50,49 @@ constexpr void test_comparison_different_rank() {
   constexpr size_t D = std::dynamic_extent;
 
   // sanity check same rank
-  static_assert(compare_layout_mappings(std::extents<T1, D>(5), std::extents<T2, D>(5)));
-  static_assert(compare_layout_mappings(std::extents<T1, 5>(), std::extents<T2, D>(5)));
-  static_assert(compare_layout_mappings(std::extents<T1, D>(5), std::extents<T2, 5>()));
-  static_assert(compare_layout_mappings(std::extents<T1, 5>(), std::extents<T2, 5>()));
+  static_assert(
+      compare_layout_mappings(std::extents<T1, D>(5), std::extents<T2, D>(5)));
+  static_assert(
+      compare_layout_mappings(std::extents<T1, 5>(), std::extents<T2, D>(5)));
+  static_assert(
+      compare_layout_mappings(std::extents<T1, D>(5), std::extents<T2, 5>()));
+  static_assert(
+      compare_layout_mappings(std::extents<T1, 5>(), std::extents<T2, 5>()));
 
   // not equality comparable when rank is not the same
-  static_assert(compare_layout_mappings(std::extents<T1>(), std::extents<T2, D>(1)).does_not_match());
-  static_assert(compare_layout_mappings(std::extents<T1>(), std::extents<T2, 1>()).does_not_match());
+  static_assert(
+      compare_layout_mappings(std::extents<T1>(), std::extents<T2, D>(1))
+          .does_not_match());
+  static_assert(
+      compare_layout_mappings(std::extents<T1>(), std::extents<T2, 1>())
+          .does_not_match());
 
-  static_assert(compare_layout_mappings(std::extents<T1, D>(1), std::extents<T2>()).does_not_match());
-  static_assert(compare_layout_mappings(std::extents<T1, 1>(), std::extents<T2>()).does_not_match());
+  static_assert(
+      compare_layout_mappings(std::extents<T1, D>(1), std::extents<T2>())
+          .does_not_match());
+  static_assert(
+      compare_layout_mappings(std::extents<T1, 1>(), std::extents<T2>())
+          .does_not_match());
 
-  static_assert(compare_layout_mappings(std::extents<T1, D>(5), std::extents<T2, D, D>(5, 5)).does_not_match());
-  static_assert(compare_layout_mappings(std::extents<T1, 5>(), std::extents<T2, 5, D>(5)).does_not_match());
-  static_assert(compare_layout_mappings(std::extents<T1, 5>(), std::extents<T2, 5, 1>()).does_not_match());
+  static_assert(compare_layout_mappings(std::extents<T1, D>(5),
+                                        std::extents<T2, D, D>(5, 5))
+                    .does_not_match());
+  static_assert(
+      compare_layout_mappings(std::extents<T1, 5>(), std::extents<T2, 5, D>(5))
+          .does_not_match());
+  static_assert(
+      compare_layout_mappings(std::extents<T1, 5>(), std::extents<T2, 5, 1>())
+          .does_not_match());
 
-  static_assert(compare_layout_mappings(std::extents<T1, D, D>(5, 5), std::extents<T2, D>(5)).does_not_match());
-  static_assert(compare_layout_mappings(std::extents<T1, 5, D>(5), std::extents<T2, D>(5)).does_not_match());
-  static_assert(compare_layout_mappings(std::extents<T1, 5, 5>(), std::extents<T2, 5>()).does_not_match());
+  static_assert(compare_layout_mappings(std::extents<T1, D, D>(5, 5),
+                                        std::extents<T2, D>(5))
+                    .does_not_match());
+  static_assert(
+      compare_layout_mappings(std::extents<T1, 5, D>(5), std::extents<T2, D>(5))
+          .does_not_match());
+  static_assert(
+      compare_layout_mappings(std::extents<T1, 5, 5>(), std::extents<T2, 5>())
+          .does_not_match());
 }
 
 template <class T1, class T2>
@@ -78,19 +104,24 @@ constexpr void test_comparison_same_rank() {
   test_comparison(true, std::extents<T1, D>(5), std::extents<T2, D>(5));
   test_comparison(true, std::extents<T1, 5>(), std::extents<T2, D>(5));
   test_comparison(true, std::extents<T1, D>(5), std::extents<T2, 5>());
-  test_comparison(true, std::extents<T1, 5>(), std::extents< T2, 5>());
+  test_comparison(true, std::extents<T1, 5>(), std::extents<T2, 5>());
   test_comparison(false, std::extents<T1, D>(5), std::extents<T2, D>(7));
   test_comparison(false, std::extents<T1, 5>(), std::extents<T2, D>(7));
   test_comparison(false, std::extents<T1, D>(5), std::extents<T2, 7>());
   test_comparison(false, std::extents<T1, 5>(), std::extents<T2, 7>());
 
-  test_comparison(true, std::extents<T1, D, D, D, D, D>(5, 6, 7, 8, 9), std::extents<T2, D, D, D, D, D>(5, 6, 7, 8, 9));
-  test_comparison(true, std::extents<T1, D, 6, D, 8, D>(5, 7, 9), std::extents<T2, 5, D, D, 8, 9>(6, 7));
-  test_comparison(true, std::extents<T1, 5, 6, 7, 8, 9>(5, 6, 7, 8, 9), std::extents<T2, 5, 6, 7, 8, 9>());
-  test_comparison(
-      false, std::extents<T1, D, D, D, D, D>(5, 6, 7, 8, 9), std::extents<T2, D, D, D, D, D>(5, 6, 3, 8, 9));
-  test_comparison(false, std::extents<T1, D, 6, D, 8, D>(5, 7, 9), std::extents<T2, 5, D, D, 3, 9>(6, 7));
-  test_comparison(false, std::extents<T1, 5, 6, 7, 8, 9>(5, 6, 7, 8, 9), std::extents<T2, 5, 6, 7, 3, 9>());
+  test_comparison(true, std::extents<T1, D, D, D, D, D>(5, 6, 7, 8, 9),
+                  std::extents<T2, D, D, D, D, D>(5, 6, 7, 8, 9));
+  test_comparison(true, std::extents<T1, D, 6, D, 8, D>(5, 7, 9),
+                  std::extents<T2, 5, D, D, 8, 9>(6, 7));
+  test_comparison(true, std::extents<T1, 5, 6, 7, 8, 9>(5, 6, 7, 8, 9),
+                  std::extents<T2, 5, 6, 7, 8, 9>());
+  test_comparison(false, std::extents<T1, D, D, D, D, D>(5, 6, 7, 8, 9),
+                  std::extents<T2, D, D, D, D, D>(5, 6, 3, 8, 9));
+  test_comparison(false, std::extents<T1, D, 6, D, 8, D>(5, 7, 9),
+                  std::extents<T2, 5, D, D, 3, 9>(6, 7));
+  test_comparison(false, std::extents<T1, 5, 6, 7, 8, 9>(5, 6, 7, 8, 9),
+                  std::extents<T2, 5, 6, 7, 3, 9>());
 }
 
 template <class T1, class T2>

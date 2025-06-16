@@ -11,7 +11,8 @@
 // <mdspan/mdspan.hpp>
 
 // template<class OtherIndexType>
-//  constexpr mapping(const extents_type& e, span<OtherIndexType, rank_> s) noexcept;
+//  constexpr mapping(const extents_type& e, span<OtherIndexType, rank_> s)
+//  noexcept;
 //
 // Constraints:
 //    - is_convertible_v<const OtherIndexType&, index_type> is true, and
@@ -19,12 +20,17 @@
 //
 // Preconditions:
 //    - s[i] > 0 is true for all i in the range [0, rank_).
-//    - REQUIRED-SPAN-SIZE(e, s) is representable as a value of type index_type ([basic.fundamental]).
-//    - If rank_ is greater than 0, then there exists a permutation P of the integers in the range [0, rank_),
-//      such that s[pi] >= s[pi_1] * e.extent(pi_1) is true for all i in the range [1, rank_), where pi is the ith element of P.
-//     Note 1: For layout_stride, this condition is necessary and sufficient for is_unique() to be true.
+//    - REQUIRED-SPAN-SIZE(e, s) is representable as a value of type index_type
+//    ([basic.fundamental]).
+//    - If rank_ is greater than 0, then there exists a permutation P of the
+//    integers in the range [0, rank_),
+//      such that s[pi] >= s[pi_1] * e.extent(pi_1) is true for all i in the
+//      range [1, rank_), where pi is the ith element of P.
+//     Note 1: For layout_stride, this condition is necessary and sufficient for
+//     is_unique() to be true.
 //
-// Effects: Direct-non-list-initializes extents_ with e, and for all d in the range [0, rank_),
+// Effects: Direct-non-list-initializes extents_ with e, and for all d in the
+// range [0, rank_),
 //         direct-non-list-initializes strides_[d] with as_const(s[d]).
 
 #include <mdspan/mdspan.hpp>
@@ -51,11 +57,13 @@ constexpr void test_construction(E e, S s) {
       expected_size = 0;
       break;
     }
-    expected_size += (e.extent(r) - 1) * static_cast<typename E::index_type>(s[r]);
+    expected_size +=
+        (e.extent(r) - 1) * static_cast<typename E::index_type>(s[r]);
   }
   assert(m.required_span_size() == expected_size);
 
-  // check strides: node stride function is constrained on rank>0, e.extent(r) is not
+  // check strides: node stride function is constrained on rank>0, e.extent(r)
+  // is not
   auto strides = m.strides();
   ASSERT_NOEXCEPT(m.strides());
   if constexpr (E::rank() > 0) {
@@ -94,42 +102,60 @@ constexpr bool test() {
   }
   {
     std::array<int, 4> s{20, 2, 200, 2000};
-    test_construction(std::extents<int64_t, D, 8, D, D>(7, 9, 10), std::span(s));
+    test_construction(std::extents<int64_t, D, 8, D, D>(7, 9, 10),
+                      std::span(s));
   }
   {
     std::array<int, 4> s{20, 2, 200, 2000};
-    test_construction(std::extents<int64_t, D, 8, D, D>(7, 0, 10), std::span(s));
-    test_construction(std::extents<int64_t, D, 8, D, D>(0, 9, 10), std::span(s));
+    test_construction(std::extents<int64_t, D, 8, D, D>(7, 0, 10),
+                      std::span(s));
+    test_construction(std::extents<int64_t, D, 8, D, D>(0, 9, 10),
+                      std::span(s));
     test_construction(std::extents<int64_t, D, 8, D, D>(0, 8, 0), std::span(s));
   }
   {
     std::array<int, 4> s{200, 20, 20, 2000};
-    test_construction(std::extents<int64_t, D, D, D, D>(7, 0, 8, 9), std::span(s));
-    test_construction(std::extents<int64_t, D, D, D, D>(7, 8, 0, 9), std::span(s));
-    test_construction(std::extents<int64_t, D, D, D, D>(7, 1, 8, 9), std::span(s));
-    test_construction(std::extents<int64_t, D, D, D, D>(7, 8, 1, 9), std::span(s));
-    test_construction(std::extents<int64_t, D, D, D, D>(7, 1, 1, 9), std::span(s));
-    test_construction(std::extents<int64_t, D, D, D, D>(7, 0, 0, 9), std::span(s));
-    test_construction(std::extents<int64_t, D, D, D, D>(7, 1, 1, 9), std::span(s));
-    test_construction(std::extents<int64_t, D, D, D, D>(7, 1, 0, 9), std::span(s));
-    test_construction(std::extents<int64_t, D, D, D, D>(7, 0, 1, 9), std::span(s));
+    test_construction(std::extents<int64_t, D, D, D, D>(7, 0, 8, 9),
+                      std::span(s));
+    test_construction(std::extents<int64_t, D, D, D, D>(7, 8, 0, 9),
+                      std::span(s));
+    test_construction(std::extents<int64_t, D, D, D, D>(7, 1, 8, 9),
+                      std::span(s));
+    test_construction(std::extents<int64_t, D, D, D, D>(7, 8, 1, 9),
+                      std::span(s));
+    test_construction(std::extents<int64_t, D, D, D, D>(7, 1, 1, 9),
+                      std::span(s));
+    test_construction(std::extents<int64_t, D, D, D, D>(7, 0, 0, 9),
+                      std::span(s));
+    test_construction(std::extents<int64_t, D, D, D, D>(7, 1, 1, 9),
+                      std::span(s));
+    test_construction(std::extents<int64_t, D, D, D, D>(7, 1, 0, 9),
+                      std::span(s));
+    test_construction(std::extents<int64_t, D, D, D, D>(7, 0, 1, 9),
+                      std::span(s));
   }
 
   {
     using mapping_t = std::layout_stride::mapping<std::dextents<unsigned, 2>>;
     // wrong strides size
-    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 2>, std::span<int, 3>>);
-    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 2>, std::span<int, 1>>);
+    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 2>,
+                                           std::span<int, 3>>);
+    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 2>,
+                                           std::span<int, 1>>);
     // wrong extents rank
-    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 3>, std::span<int, 2>>);
+    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 3>,
+                                           std::span<int, 2>>);
     // none-convertible strides
-    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 2>, std::span<IntType, 2>>);
+    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 2>,
+                                           std::span<IntType, 2>>);
   }
   {
     // not no-throw constructible index_type from stride
-    using mapping_t = std::layout_stride::mapping<std::dextents<unsigned char, 2>>;
+    using mapping_t =
+        std::layout_stride::mapping<std::dextents<unsigned char, 2>>;
     static_assert(std::is_convertible_v<IntType, unsigned char>);
-    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 2>, std::span<IntType, 2>>);
+    static_assert(!std::is_constructible_v<mapping_t, std::dextents<int, 2>,
+                                           std::span<IntType, 2>>);
   }
   return true;
 }

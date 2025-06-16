@@ -21,5 +21,5 @@
 #include "ctest_common.hpp"
 
 using test_extents_type = std::extents<int, std::dynamic_extent>;
-using test_mdspan_type = std::mdspan<double, test_extents_type>;
+using test_mdspan_type  = std::mdspan<double, test_extents_type>;
 using test_mdarray_type = std::experimental::mdarray<double, test_extents_type>;
