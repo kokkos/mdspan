@@ -198,18 +198,32 @@ MDSPAN_INLINE_FUNCTION constexpr bool cmp_greater_equal(T t, U u) noexcept {
 
 template <class R, class T>
 MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
+  static_assert(std::is_integral_v<R> && std::is_integral_v<T>);
   return cmp_greater_equal(t, std::numeric_limits<R>::min()) &&
           cmp_less_equal(t, std::numeric_limits<R>::max());
 }
 
 template <class R, class T>
 MDSPAN_INLINE_FUNCTION constexpr bool is_nonnegative_and_representable(T t) noexcept {
-  if constexpr (std::is_signed_v<T>) {
-    if (t < 0)
-      return false;
-  }
+  // T might not be integral and thus invalid to pass to in_range
+  // Only check this if we can actually call in_range
+  if constexpr (std::is_integral_v<T>)
+  {
+    if constexpr (std::is_signed_v<T>) {
+      if (t < 0)
+        return false;
+    }
 
-  return in_range<R>(t);
+    return in_range<R>(t);
+  } else
+  {
+    if constexpr (std::is_signed_v<T>) {
+      if (static_cast<R>(t) < 0)
+        return false;
+    }
+
+    return true;
+  }
 }
 
 template<class R, class... Values>
