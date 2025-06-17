@@ -9,7 +9,7 @@ TEST(mdspan_macros, precondition_violation)
   constexpr auto msg = "hello, world!";
 #endif
 
-  ASSERT_DEATH(MDSPAN_IMPL_PRECONDITION(false and "hello, world!"), msg);
+  ASSERT_DEATH(MDSPAN_IMPL_PRECONDITION((false && "hello, world!")), msg);
 }
 
 TEST(mdspan_macros, precondition_check_constexpr_invocable)
