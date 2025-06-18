@@ -217,7 +217,7 @@ MDSPAN_INLINE_FUNCTION constexpr bool is_nonnegative_and_representable(T t) noex
     return in_range<R>(t);
   } else
   {
-    if constexpr (std::is_signed_v<T>) {
+    if constexpr (std::is_signed_v<R>) {
       if (static_cast<R>(t) < 0)
         return false;
     }
@@ -229,13 +229,13 @@ MDSPAN_INLINE_FUNCTION constexpr bool is_nonnegative_and_representable(T t) noex
 template<class R, class... Values>
 MDSPAN_INLINE_FUNCTION constexpr bool
 all_values_are_representable(Values... values) noexcept {
-  return ( in_range<R>( values ) && ... && true );
+  return ( in_range<R>( values ) && ... );
 }
 
 template<class R, class... Values>
 MDSPAN_INLINE_FUNCTION constexpr bool
 all_values_are_nonnegative_and_representable(Values... values) noexcept {
-  return ( is_nonnegative_and_representable<R>( values ) && ... && true );
+  return ( is_nonnegative_and_representable<R>( values ) && ... );
 }
 
 template<class R, class ContiguousIterator>
