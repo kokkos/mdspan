@@ -7,6 +7,7 @@ function(mdspan_add_benchmark EXENAME)
   )
   # Set flag to build with parenthesis enabled
   target_compile_definitions(${EXENAME} PRIVATE MDSPAN_USE_PAREN_OPERATOR=1)
+  target_compile_features(${EXENAME} PRIVATE cxx_std_17)
 endfunction()
 
 if(MDSPAN_USE_SYSTEM_BENCHMARK)
@@ -81,6 +82,7 @@ function(mdspan_add_openmp_benchmark EXENAME)
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/benchmarks>
       )
       target_compile_definitions(${EXENAME} PRIVATE MDSPAN_USE_PAREN_OPERATOR=1)
+      target_compile_features(${EXENAME} PRIVATE cxx_std_17)
     else()
       message(WARNING "Not adding target ${EXENAME} because OpenMP was not found")
     endif()
