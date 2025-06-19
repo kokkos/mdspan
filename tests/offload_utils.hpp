@@ -23,158 +23,160 @@
 #include <hip/hip_runtime_api.h>
 #endif
 
-#include<cstdio>
+#include <cstdio>
 
 namespace {
 bool dispatch_host = true;
 
 #ifdef MDSPAN_IMPL_HAS_SYCL
-#define MDSPAN_IMPL_DEVICE_ASSERT_EQ(LHS, RHS) \
-if (!(LHS == RHS)) { \
-  sycl::ext::oneapi::experimental::printf("expected equality of %s and %s\n", #LHS, #RHS); \
-  errors[0]++; \
-}
+#define MDSPAN_IMPL_DEVICE_ASSERT_EQ(LHS, RHS)           \
+  if (!(LHS == RHS)) {                                   \
+    sycl::ext::oneapi::experimental::printf(             \
+        "expected equality of %s and %s\n", #LHS, #RHS); \
+    errors[0]++;                                         \
+  }
 #else
- #define MDSPAN_IMPL_DEVICE_ASSERT_EQ(LHS, RHS) \
- if (!(LHS == RHS)) { \
-  printf("expected equality of %s and %s\n", #LHS, #RHS); \
-  errors[0]++; \
-}
+#define MDSPAN_IMPL_DEVICE_ASSERT_EQ(LHS, RHS)              \
+  if (!(LHS == RHS)) {                                      \
+    printf("expected equality of %s and %s\n", #LHS, #RHS); \
+    errors[0]++;                                            \
+  }
 #endif
 
 #if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP)
 
 #if defined(MDSPAN_IMPL_HAS_CUDA)
-void deviceSynchronize() { (void) cudaDeviceSynchronize(); }
-template<class T>
-void mallocManaged(T** ptr, size_t size) { (void) cudaMallocManaged(ptr, size); }
-template<class T>
-void freeManaged(T* ptr) { (void) cudaFree(ptr); }
+void deviceSynchronize() { (void)cudaDeviceSynchronize(); }
+template <class T>
+void mallocManaged(T** ptr, size_t size) {
+  (void)cudaMallocManaged(ptr, size);
+}
+template <class T>
+void freeManaged(T* ptr) {
+  (void)cudaFree(ptr);
+}
 #endif
 
 #if defined(MDSPAN_IMPL_HAS_HIP)
-void deviceSynchronize() { (void) hipDeviceSynchronize(); }
-template<class T>
-void mallocManaged(T** ptr, size_t size) { (void) hipMallocManaged(ptr, size); }
-template<class T>
-void freeManaged(T* ptr) { (void) hipFree(ptr); }
+void deviceSynchronize() { (void)hipDeviceSynchronize(); }
+template <class T>
+void mallocManaged(T** ptr, size_t size) {
+  (void)hipMallocManaged(ptr, size);
+}
+template <class T>
+void freeManaged(T* ptr) {
+  (void)hipFree(ptr);
+}
 #endif
 
-template<class LAMBDA>
+template <class LAMBDA>
 __global__ void dispatch_kernel(const LAMBDA f) {
   f();
 }
 
-template<class LAMBDA>
+template <class LAMBDA>
 void dispatch(LAMBDA&& f) {
-  if(dispatch_host) {
+  if (dispatch_host) {
     static_cast<LAMBDA&&>(f)();
   } else {
-    dispatch_kernel<<<1,1>>>(static_cast<LAMBDA&&>(f));
+    dispatch_kernel<<<1, 1>>>(static_cast<LAMBDA&&>(f));
     deviceSynchronize();
   }
 }
 
-template<class T>
+template <class T>
 T* allocate_array(size_t size) {
   T* ptr = nullptr;
-  if(dispatch_host == true)
+  if (dispatch_host == true)
     ptr = new T[size];
   else
-    mallocManaged(&ptr, sizeof(T)*size);
+    mallocManaged(&ptr, sizeof(T) * size);
   return ptr;
 }
 
-template<class T>
+template <class T>
 void free_array(T* ptr) {
-  if(dispatch_host == true)
-    delete [] ptr;
+  if (dispatch_host == true)
+    delete[] ptr;
   else
     freeManaged(ptr);
 }
 
 #define MDSPAN_IMPL_TESTS_RUN_TEST(A) \
- dispatch_host = true; \
- A; \
- dispatch_host = false; \
- A;
+  dispatch_host = true;               \
+  A;                                  \
+  dispatch_host = false;              \
+  A;
 
 #define MDSPAN_IMPL_TESTS_DISPATCH_DEFINED
-#endif // MDSPAN_IMPL_HAS_CUDA
+#endif  // MDSPAN_IMPL_HAS_CUDA
 
 #ifdef MDSPAN_IMPL_HAS_SYCL
 
-sycl::queue get_test_queue()
-{
+sycl::queue get_test_queue() {
   static sycl::queue q;
   return q;
 }
 
-template<class LAMBDA>
+template <class LAMBDA>
 void dispatch(LAMBDA&& f) {
-  if(dispatch_host) {
+  if (dispatch_host) {
     static_cast<LAMBDA&&>(f)();
   } else {
     sycl::queue q = get_test_queue();
-    q.submit([&](sycl::handler &cgh) {
-      cgh.single_task([=]() {
-        f();
-      });
-    });
+    q.submit([&](sycl::handler& cgh) { cgh.single_task([=]() { f(); }); });
     q.wait_and_throw();
   }
 }
 
-template<class T>
+template <class T>
 T* allocate_array(size_t size) {
-  if(dispatch_host == true)
+  if (dispatch_host == true)
     return new T[size];
-  else
-  {
+  else {
     sycl::queue q = get_test_queue();
     return sycl::malloc_shared<T>(size, q);
   }
 }
 
-template<class T>
+template <class T>
 void free_array(T* ptr) {
-  if(dispatch_host == true)
-    delete [] ptr;
-  else
-  {
+  if (dispatch_host == true)
+    delete[] ptr;
+  else {
     sycl::queue q = get_test_queue();
     sycl::free(ptr, q);
   }
 }
 
 #define MDSPAN_IMPL_TESTS_RUN_TEST(A) \
- dispatch_host = true; \
- A; \
- dispatch_host = false; \
- A;
+  dispatch_host = true;               \
+  A;                                  \
+  dispatch_host = false;              \
+  A;
 
 #define MDSPAN_IMPL_TESTS_DISPATCH_DEFINED
-#endif // MDSPAN_IMPL_HAS_SYCL
+#endif  // MDSPAN_IMPL_HAS_SYCL
 
 #ifndef MDSPAN_IMPL_TESTS_DISPATCH_DEFINED
-template<class LAMBDA>
+template <class LAMBDA>
 void dispatch(LAMBDA&& f) {
   static_cast<LAMBDA&&>(f)();
 }
-template<class T>
+template <class T>
 T* allocate_array(size_t size) {
   T* ptr = nullptr;
-  ptr = new T[size];
+  ptr    = new T[size];
   return ptr;
 }
 
-template<class T>
+template <class T>
 void free_array(T* ptr) {
-  delete [] ptr;
+  delete[] ptr;
 }
 
 #define MDSPAN_IMPL_TESTS_RUN_TEST(A) \
- dispatch_host = true; \
- A;
+  dispatch_host = true;               \
+  A;
 #endif
-} // namespace
+}  // namespace

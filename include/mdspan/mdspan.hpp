@@ -18,11 +18,11 @@
 #define MDSPAN_HPP_
 
 #ifndef MDSPAN_IMPL_STANDARD_NAMESPACE
-  #define MDSPAN_IMPL_STANDARD_NAMESPACE Kokkos
+#define MDSPAN_IMPL_STANDARD_NAMESPACE Kokkos
 #endif
 
 #ifndef MDSPAN_IMPL_PROPOSED_NAMESPACE
-  #define MDSPAN_IMPL_PROPOSED_NAMESPACE Experimental
+#define MDSPAN_IMPL_PROPOSED_NAMESPACE Experimental
 #endif
 
 #include "../experimental/__p0009_bits/default_accessor.hpp"
@@ -40,4 +40,4 @@
 #endif
 #include "../experimental/__p2389_bits/dims.hpp"
 
-#endif // MDSPAN_HPP_
+#endif  // MDSPAN_HPP_

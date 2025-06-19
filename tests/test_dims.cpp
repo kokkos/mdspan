@@ -20,36 +20,40 @@
 
 namespace test {
 
-template<class Extents>
+template <class Extents>
 static constexpr bool is_extents_v = false;
 
-template<class IndexType, std::size_t ... Exts>
+template <class IndexType, std::size_t... Exts>
 static constexpr bool is_extents_v<
-  MDSPAN_IMPL_STANDARD_NAMESPACE :: extents<IndexType, Exts...>
-> = true;
+    MDSPAN_IMPL_STANDARD_NAMESPACE ::extents<IndexType, Exts...> > = true;
 
-template<std::size_t Rank>
-void test_dims_with_one_template_argument()
-{
-  using d = MDSPAN_IMPL_STANDARD_NAMESPACE :: MDSPAN_IMPL_PROPOSED_NAMESPACE :: dims<Rank>;
-  static_assert(test::is_extents_v<d>, "dims<Rank> is not an extents specialization");
-  static_assert(std::is_same<typename d::index_type, std::size_t>::value, "dims::index_type is wrong");
+template <std::size_t Rank>
+void test_dims_with_one_template_argument() {
+  using d =
+      MDSPAN_IMPL_STANDARD_NAMESPACE ::MDSPAN_IMPL_PROPOSED_NAMESPACE ::dims<
+          Rank>;
+  static_assert(test::is_extents_v<d>,
+                "dims<Rank> is not an extents specialization");
+  static_assert(std::is_same<typename d::index_type, std::size_t>::value,
+                "dims::index_type is wrong");
   static_assert(d::rank() == Rank, "dims::rank() is wrong");
 }
 
-template<std::size_t Rank, class ExpectedIndexType>
-void test_dims_with_two_template_arguments()
-{
-  using d = MDSPAN_IMPL_STANDARD_NAMESPACE :: MDSPAN_IMPL_PROPOSED_NAMESPACE :: dims<Rank, ExpectedIndexType>;
-  static_assert(test::is_extents_v<d>, "dims<Rank,T> is not an extents specialization");
-  static_assert(std::is_same<typename d::index_type, ExpectedIndexType>::value, "dims::index_type is wrong");
+template <std::size_t Rank, class ExpectedIndexType>
+void test_dims_with_two_template_arguments() {
+  using d =
+      MDSPAN_IMPL_STANDARD_NAMESPACE ::MDSPAN_IMPL_PROPOSED_NAMESPACE ::dims<
+          Rank, ExpectedIndexType>;
+  static_assert(test::is_extents_v<d>,
+                "dims<Rank,T> is not an extents specialization");
+  static_assert(std::is_same<typename d::index_type, ExpectedIndexType>::value,
+                "dims::index_type is wrong");
   static_assert(d::rank() == Rank, "dims::rank() is wrong");
 }
-  
-} // namespace test
 
-TEST(TestDims, Test0)
-{
+}  // namespace test
+
+TEST(TestDims, Test0) {
   using test::test_dims_with_one_template_argument;
   using test::test_dims_with_two_template_arguments;
 

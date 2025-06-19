@@ -19,8 +19,8 @@
 #include <iomanip>
 #include <memory>
 
-
-#if !(defined(__cpp_lib_make_unique) && __cpp_lib_make_unique >= 201304) && !MDSPAN_HAS_CXX_14
+#if !(defined(__cpp_lib_make_unique) && __cpp_lib_make_unique >= 201304) && \
+    !MDSPAN_HAS_CXX_14
 // Not actually conforming, but it works for the purposes of this file
 namespace std {
 template <class T>
@@ -32,33 +32,28 @@ struct __unique_ptr_new_impl {
 };
 template <class T>
 struct __unique_ptr_new_impl<T[]> {
-  static T* __impl(size_t size) {
-    return new T[size];
-  }
+  static T* __impl(size_t size) { return new T[size]; }
 };
 template <class T, class... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {
   return std::unique_ptr<T>(__unique_ptr_new_impl<T>::__impl((Args&&)args...));
 }
-} // end namespace std
+}  // end namespace std
 #endif
 
 //================================================================================
 
-template <
-  class T,
-  class ExtsA, class LayA, class AccA,
-  class ExtsB, class LayB, class AccB
->
+template <class T, class ExtsA, class LayA, class AccA, class ExtsB, class LayB,
+          class AccB>
 T dot_product(
-  Kokkos::mdspan<T, ExtsA, LayA, AccA> a,
-  Kokkos::mdspan<T, ExtsB, LayB, AccB> b
-) //requires ExtsA::rank() == ExtsB::rank() && ExtsA::rank() == 2
+    Kokkos::mdspan<T, ExtsA, LayA, AccA> a,
+    Kokkos::mdspan<T, ExtsB, LayB, AccB>
+        b)  // requires ExtsA::rank() == ExtsB::rank() && ExtsA::rank() == 2
 {
   using int_t = typename ExtsA::index_type;
-  T result = 0;
-  for(int_t i = 0; i < a.extent(0); ++i) {
-    for(int_t j = 0; j < a.extent(1); ++j) {
+  T result    = 0;
+  for (int_t i = 0; i < a.extent(0); ++i) {
+    for (int_t j = 0; j < a.extent(1); ++j) {
 #if MDSPAN_USE_BRACKET_OPERATOR
       result += a[i, j] * b[i, j];
 #else
@@ -71,18 +66,14 @@ T dot_product(
 
 //================================================================================
 
-template <
-  class T,
-  class ExtsA, class LayA, class AccA
->
+template <class T, class ExtsA, class LayA, class AccA>
 void fill_in_order(
-  Kokkos::mdspan<T, ExtsA, LayA, AccA> a
-) // requires ExtsA::rank() == 2
+    Kokkos::mdspan<T, ExtsA, LayA, AccA> a)  // requires ExtsA::rank() == 2
 {
   using int_t = typename ExtsA::index_type;
-  T count = 0;
-  for(int_t i = 0; i < a.extent(0); ++i) {
-    for(int_t j = 0; j < a.extent(1); ++j) {
+  T count     = 0;
+  for (int_t i = 0; i < a.extent(0); ++i) {
+    for (int_t j = 0; j < a.extent(1); ++j) {
 #if MDSPAN_USE_BRACKET_OPERATOR
       a[i, j] = count++;
 #else
@@ -101,8 +92,10 @@ constexpr int cols = 3;
 
 int main() {
   {
-    using span_2d_dynamic = Kokkos::mdspan<int, Kokkos::dextents<size_t, 2>, Kokkos::layout_right>;
-    using span_2d_dynamic_left = Kokkos::mdspan<int, Kokkos::dextents<size_t, 2>, Kokkos::layout_left>;
+    using span_2d_dynamic =
+        Kokkos::mdspan<int, Kokkos::dextents<size_t, 2>, Kokkos::layout_right>;
+    using span_2d_dynamic_left =
+        Kokkos::mdspan<int, Kokkos::dextents<size_t, 2>, Kokkos::layout_left>;
 
     auto data_a = std::make_unique<int[]>(rows * cols);
     auto data_b = std::make_unique<int[]>(rows * cols);
@@ -116,8 +109,12 @@ int main() {
   }
 
   {
-    using span_2d_10_10 = Kokkos::mdspan<int, Kokkos::extents<size_t, rows, cols>, Kokkos::layout_right>;
-    using span_2d_10_10_left = Kokkos::mdspan<int, Kokkos::extents<size_t, rows, cols>, Kokkos::layout_right>;
+    using span_2d_10_10 =
+        Kokkos::mdspan<int, Kokkos::extents<size_t, rows, cols>,
+                       Kokkos::layout_right>;
+    using span_2d_10_10_left =
+        Kokkos::mdspan<int, Kokkos::extents<size_t, rows, cols>,
+                       Kokkos::layout_right>;
 
     auto data_a = std::make_unique<int[]>(100);
     auto data_b = std::make_unique<int[]>(100);
@@ -129,5 +126,4 @@ int main() {
 
     std::cout << dot_product(a, b) << std::endl;
   }
-
 }

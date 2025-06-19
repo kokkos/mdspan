@@ -15,7 +15,8 @@
 // template<class OtherElementType>
 //   constexpr default_accessor(default_accessor<OtherElementType>) noexcept {}
 //
-// Constraints: is_convertible_v<OtherElementType(*)[], element_type(*)[]> is true.
+// Constraints: is_convertible_v<OtherElementType(*)[], element_type(*)[]> is
+// true.
 
 #include <mdspan/mdspan.hpp>
 #include <cassert>
@@ -27,7 +28,7 @@
 #include "../MinimalElementType.h"
 
 struct Base {};
-struct Derived: public Base {};
+struct Derived : public Base {};
 
 template <class FromT, class ToT>
 constexpr void test_conversion() {
@@ -46,17 +47,26 @@ constexpr bool test() {
   test_conversion<const MinimalElementType, const MinimalElementType>();
 
   // char is convertible to int, but accessors are not
-  static_assert(!std::is_constructible_v<std::default_accessor<int>, std::default_accessor<char>>);
+  static_assert(!std::is_constructible_v<std::default_accessor<int>,
+                                         std::default_accessor<char>>);
   // don't allow conversion from const elements to non-const
-  static_assert(!std::is_constructible_v<std::default_accessor<int>, std::default_accessor<const int>>);
-  // MinimalElementType is constructible from int, but accessors should not be convertible
-  static_assert(!std::is_constructible_v<std::default_accessor<MinimalElementType>, std::default_accessor<int>>);
+  static_assert(!std::is_constructible_v<std::default_accessor<int>,
+                                         std::default_accessor<const int>>);
+  // MinimalElementType is constructible from int, but accessors should not be
+  // convertible
+  static_assert(
+      !std::is_constructible_v<std::default_accessor<MinimalElementType>,
+                               std::default_accessor<int>>);
   // don't allow conversion from const elements to non-const
-  static_assert(!std::is_constructible_v<std::default_accessor<MinimalElementType>, std::default_accessor<const MinimalElementType>>);
+  static_assert(!std::is_constructible_v<
+                std::default_accessor<MinimalElementType>,
+                std::default_accessor<const MinimalElementType>>);
   // don't allow conversion from Base to Derived
-  static_assert(!std::is_constructible_v<std::default_accessor<Derived>, std::default_accessor<Base>>);
+  static_assert(!std::is_constructible_v<std::default_accessor<Derived>,
+                                         std::default_accessor<Base>>);
   // don't allow conversion from Derived to Base
-  static_assert(!std::is_constructible_v<std::default_accessor<Base>, std::default_accessor<Derived>>);
+  static_assert(!std::is_constructible_v<std::default_accessor<Base>,
+                                         std::default_accessor<Derived>>);
 
   return true;
 }

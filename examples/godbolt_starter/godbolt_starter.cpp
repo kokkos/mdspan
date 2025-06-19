@@ -19,12 +19,9 @@
 #include <mdspan/mdspan.hpp>
 #include <iostream>
 
-
 int main() {
   std::array d{
-    0, 5, 1,
-    3, 8, 4,
-    2, 7, 6,
+      0, 5, 1, 3, 8, 4, 2, 7, 6,
   };
 
   Kokkos::mdspan m{d.data(), Kokkos::extents{3, 3}};
