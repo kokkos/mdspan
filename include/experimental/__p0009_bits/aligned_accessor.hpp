@@ -58,13 +58,14 @@
 #include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 
 // Prefer std::assume_aligned if available, as it is in the C++ Standard.
 // Otherwise, use a compiler-specific equivalent if available.
 
 // NOTE (mfh 2022/08/08) BYTE_ALIGNMENT must be unsigned and a power of 2.
 #if defined(__cpp_lib_assume_aligned)
-#  define _MDSPAN_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) (std::assume_aligned< BYTE_ALIGNMENT >( POINTER ))
+#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) (std::assume_aligned< BYTE_ALIGNMENT >( POINTER ))
   constexpr char assume_aligned_method[] = "std::assume_aligned";
 #elif defined(__ICL)
 #  define _MDSPAN_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) POINTER
@@ -154,8 +155,8 @@ struct aligned_accessor {
 
   MDSPAN_TEMPLATE_REQUIRES(
     class OtherElementType,
-    std::size_t other_byte_alignment,
-    /* requires */ (std::is_convertible<OtherElementType(*)[], element_type(*)[]>::value && other_byte_alignment == byte_alignment)
+    std::size_t OtherByteAlignment,
+    /* requires */ (std::is_convertible<OtherElementType(*)[], element_type(*)[]>::value && OtherByteAlignment >= byte_alignment)
     )
   constexpr aligned_accessor(aligned_accessor<OtherElementType, other_byte_alignment>) noexcept {}
 
@@ -171,16 +172,6 @@ struct aligned_accessor {
   }
 };
 
-template<class ElementType>
-struct delete_raw {
-  void operator()(ElementType* p) const {
-    if (p != nullptr) {
-      // All the aligned allocation methods below go with std::free.
-      // If we implement a new method that uses a different
-      // deallocation function, that function would go here.
-      std::free(p);
-    }
-  }
-};
 
-}  // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
+}  // namespace MDSPAN_IMPL_PROPOSED_NAMESPACE
+}  // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
