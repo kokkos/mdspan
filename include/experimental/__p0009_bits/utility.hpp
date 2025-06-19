@@ -240,8 +240,8 @@ all_values_are_nonnegative_and_representable(Values... values) noexcept {
 
 template<class R, class ContiguousIterator>
 MDSPAN_INLINE_FUNCTION constexpr bool
-range_is_nonnegative_and_representable(ContiguousIterator begin, ContiguousIterator end) noexcept {
-  for ( auto it = begin; it != end; ++it )
+  range_is_nonnegative_and_representable(ContiguousIterator begin, ContiguousIterator end) noexcept {
+  for ( auto it = begin; it < end; ++it )
   {
     if ( !is_nonnegative_and_representable<R>( *it ) )
       return false;
