@@ -35,7 +35,7 @@ MDSPAN_TEMPLATE_REQUIRES(
 )
 class index_holder {
 public:
-  index_holder(IndexType i) : i_{i} {}
+  constexpr index_holder(IndexType i) : i_{i} {}
   constexpr operator IndexType() const noexcept { return i_; }
   constexpr index_holder& operator++() noexcept {
     ++i_;
@@ -66,7 +66,6 @@ struct full_extent_wrapper_t {
     return Kokkos::full_extent;
   }
 };
-
 
 template<class Layout, class IndexType, size_t... Exts>
 void test_mapping_call_operator(Layout, Kokkos::extents<IndexType, Exts...> exts) {

@@ -13,64 +13,212 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <memory>
-#include <random>
-#include <sstream>
-#include <stdexcept>
-#include <iostream>
 
-// Whether to let mapping convert index calculation to the type used
-// to index into the mdspan
-//#define MDSPAN_IMPL_USE_MAPPING_ARG_CAST
-// Overwrite what extents.extent() returns and what the actual storage type is
-//#define MDSPAN_IMPL_OVERWRITE_EXTENTS_SIZE_TYPE int
-// Choose the index type used by the code
-using idx_t = size_t;
+#include "submdspan_generic.hpp"
 
-#include "fill.hpp"
-#include <mdspan/mdspan.hpp>
-//================================================================================
-
-static constexpr int global_delta = 1;
-static constexpr int global_repeat = 16;
-
-//================================================================================
-
-template <class T, size_t... Es>
-using lmdspan = Kokkos::mdspan<T, Kokkos::extents<int, Es...>, Kokkos::layout_left>;
-template <class T, size_t... Es>
-using rmdspan = Kokkos::mdspan<T, Kokkos::extents<int, Es...>, Kokkos::layout_right>;
-
-
-void throw_runtime_exception(const std::string &msg) {
-  std::ostringstream o;
-  o << msg;
-  throw std::runtime_error(o.str());
-}
-
-void cuda_internal_error_throw(cudaError e, const char* name,
-  const char* file = NULL, const int line = 0) {
-  std::ostringstream out;
-  out << name << " error( " << cudaGetErrorName(e)
-      << "): " << cudaGetErrorString(e);
-  if (file) {
-    out << " " << file << ":" << line;
-  }
-  throw_runtime_exception(out.str());
-}
-
-inline void cuda_internal_safe_call(cudaError e, const char* name,
-       const char* file = NULL,
-       const int line   = 0) {
-  if (cudaSuccess != e) {
-    cuda_internal_error_throw(e, name, file, line);
-  }
-}
+// This benchmark measures the overhead of submdspan slice
+// canonicalization as proposed by P3663R2.
+//
+// Slice canonicalization happens in the submdspan function,
+// before slices reach the layout mapping's submdspan_mapping
+// customization.  Thus, we need to call submdspan itself,
+// but the layout mapping type does not matter.
+// We do want to exercise a Standard layout mapping, though.
+//
+// The mdspan's value type doesn't matter either,
+// so we can use a char-sized type to minimize storage.
+// Using unsigned char makes overflow defined behavior.
 
 #define CUDA_SAFE_CALL(call) \
   cuda_internal_safe_call(call, #call, __FILE__, __LINE__)
 
-//================================================================================
+namespace submdspan_benchmark {
+
+inline void
+cuda_internal_safe_call(cudaError e, const char* name,
+  const char* file, int line_number)
+{
+  if (cudaSuccess != e) {
+    std::ostringstream out;
+    out << name << " error( " << cudaGetErrorName(e)
+        << "): " << cudaGetErrorString(e);
+    if (file) {
+      out << " " << file << ":" << line_number;
+    }
+    throw std::runtime_error(out.str());
+  }
+}
+
+struct cuda_execution_space {};
+
+template<class ValueType>
+struct cuda_array_deleter {
+  void operator() (ValueType* ptr) const {
+    CUDA_SAFE_CALL(cudaFree(ptr));
+  }
+};
+
+template<class ValueType>
+struct array_deleter<cuda_execution_space, ValueType> {
+  using type = cuda_array_deleter<ValueType>;
+};
+
+template<class ValueType>
+std::unique_ptr<ValueType[], cuda_array_deleter<ValueType>>
+allocate_buffer(cuda_execution_space, size_t num_elements) {
+  ValueType* buf = nullptr;
+  CUDA_SAFE_CALL(cudaMalloc(&buf, num_elements * sizeof(ValueType)));
+  return std::unique_ptr<ValueType[], cuda_array_deleter<ValueType>>{buf, {}};
+}
+
+template <class IndexType, size_t... Exts>
+void fill_with_random_values(
+  cuda_execution_space,
+  random_state_t& state,
+  nonconst_test_mdspan<IndexType, Exts...> x_dev)
+{
+  benchmark_buffer buf_host{host_execution_space{}, x_dev.extents()};
+  auto x_host = buf_host.get_mdspan();
+  fill_with_random_values(host_execution_space{}, state, x_host);
+
+  const size_t num_bytes = x_host.required_span_size() * sizeof(value_type);
+  CUDA_SAFE_CALL(cudaMemcpy(
+    x_dev.get(), x_host.get(), num_bytes, cudaMemcpyHostToDevice
+  ));
+}
+
+} // namespace submdspan_benchmark
+
+// FIXME this should launch a device kernel
+template<class ExecutionSpace, class IndexType, size_t... Exts>
+size_t submdspan_benchmark(ExecutionSpace&& /* exec_space */,
+  benchmark::State& state,
+  nonconst_test_mdspan<IndexType, Exts...> out)
+{
+  size_t count_not_same = 0;
+  for (auto _ : state) {
+    const auto p = std::pair{IndexType(0), IndexType(1)};
+    auto out_sub = Kokkos::submdspan(out, ((void) Exts, p)...);
+    if (out_sub[((void) Exts, 0)...] != out[((void) Exts, p.first)...]) {
+      ++count_not_same;
+    }
+    out_sub[((void) Exts, 0)...] += static_cast<std::uint8_t>(1u);
+
+    benchmark::DoNotOptimize(count_not_same);
+  }
+  return count_not_same;
+}
+
+template<class ExecutionSpace, class IndexType, size_t... Exts>
+void submdspan_run_benchmark(ExecutionSpace exec_space,
+  benchmark::State& state,
+  Kokkos::extents<IndexType, Exts...> exts)
+{
+  random_state_t random_state{};
+  auto buf = benchmark_buffer{exec_space, exts};
+  fill_with_random_values(exec_space, random_state, buf.get_mdspan());
+
+  size_t count_not_same = submdspan_benchmark(state, buf.get_mdspan());
+  if (count_not_same != 0) {
+    std::cerr << "submdspan_benchmark failed: count not same = " << count_not_same << std::endl;
+    std::terminate();
+  }
+
+  auto get_0th_element = [] (auto x) { return x[((void) Exts, 0)...]; };
+  auto buf_0s_after = get_0th_element(buf.get_mdspan());
+  benchmark::DoNotOptimize(buf_0s_after);
+}
+
+BENCHMARK_CAPTURE(submdspan_run_benchmark, int_6d, (cuda_execution_space{}, Kokkos::extents<int, 2, 2, 2, 2, 2, 2>{}));
+BENCHMARK_CAPTURE(submdspan_run_benchmark, int_6d, (cuda_execution_space{}, Kokkos::dextents<int, 6>{2, 2, 2, 2, 2, 2}));
+BENCHMARK_CAPTURE(submdspan_run_benchmark, size_t_6d, (cuda_execution_space{}, Kokkos::extents<size_t, 2, 2, 2, 2, 2, 2>{}));
+BENCHMARK_CAPTURE(submdspan_run_benchmark, size_t_6d, (cuda_execution_space{}, Kokkos::dextents<size_t, 6>{2, 2, 2, 2, 2, 2}));
+
+// Multiply elements by 3, using 1-D slices.
+template<class ExecutionSpace, class OutMdspan>
+MDSPAN_FUNCTION void
+submdspan_benchmark2_loop(ExecutionSpace exec_space, const OutMdspan& out)
+{
+  using index_type = typename OutMdspan::index_type;
+
+  if constexpr (OutMdspan::rank() == 0) {
+    return;
+  }
+  else if constexpr (OutMdspan::rank() == 1) {
+    const auto ext0 = out.extent(0);
+    for (index_type k = 0; k < ext0; ++k) {
+      out[k] *= 3u;
+    }
+  }
+  else {
+    const auto ext0 = index_holder{index_type(out.extent(0))};
+    for (auto k = index_holder{index_type(0)}; k < ext0; ++k) {
+      submdspan_benchmark2_loop(exec_space, slice_one_extent(out, k));
+    }
+  }
+}
+
+// FIXME this should launch a device kernel, perhaps
+template<class IndexType, size_t... Exts>
+size_t submdspan_benchmark2(cuda_execution_space exec_space,
+  benchmark::State& state,
+  nonconst_test_mdspan<IndexType, Exts...> out)
+{
+  size_t count = 0;
+  for (auto _ : state) {
+    submdspan_benchmark2_loop(exec_space, out);
+    ++count;
+  }
+  benchmark::DoNotOptimize(count);
+  return count;
+}
+
+template<class IndexType, size_t... Exts>
+void submdspan_run_benchmark2(cuda_execution_space exec_space,
+  benchmark::State& state,
+  Kokkos::extents<IndexType, Exts...> exts)
+{
+  auto in_buf = benchmark_buffer{exec_space, exts};
+  auto out_buf = benchmark_buffer{exec_space, exts};
+  random_state_t random_state{};
+  fill_with_random_values(exec_space, random_state, in_buf.get_mdspan());
+
+  // We're using layout_right, so we don't need the layout mapping to iterate over the elements.
+  const size_t num_elements = out_buf.size();
+  {
+    auto in = in_buf.get_mdspan().data_handle();
+    auto out = out_buf.get_mdspan().data_handle();
+    for (size_t i = 0; i < num_elements; ++i) {
+      out[i] = in[i];
+    }
+  }
+  const size_t count = submdspan_benchmark2(exec_space, state, out_buf.get_mdspan());
+  {
+    auto in = in_buf.get_mdspan().data_handle();
+    auto out = out_buf.get_mdspan().data_handle();
+    for (size_t i = 0; i < num_elements; ++i) {
+      const auto original = in[i];
+      const auto expected = expected_element(original, count);
+      if (out[i] != expected) {
+        std::cerr << "submdspan_benchmark2 failed: out[" << i << "] = "
+          << out[i] << " != " << expected << std::endl;
+        std::terminate();
+      }
+    }
+  }
+}
+
+BENCHMARK_CAPTURE(submdspan_run_benchmark2, int_6d, (Kokkos::extents<int, 2, 2, 2, 2, 2, 2>{}));
+BENCHMARK_CAPTURE(submdspan_run_benchmark2, int_6d, (Kokkos::dextents<int, 6>{2, 2, 2, 2, 2, 2}));
+BENCHMARK_CAPTURE(submdspan_run_benchmark2, size_t_6d, (Kokkos::extents<size_t, 2, 2, 2, 2, 2, 2>{}));
+BENCHMARK_CAPTURE(submdspan_run_benchmark2, size_t_6d, (Kokkos::dextents<size_t, 6>{2, 2, 2, 2, 2, 2}));
+
+BENCHMARK_MAIN();
+
+
+
+
+namespace test {
 
 dim3 get_bench_thread_block(size_t y,size_t z) {
   cudaDeviceProp cudaProp;
@@ -104,25 +252,6 @@ float run_kernel_timed(size_t N, size_t M, size_t K, F&& f, Args&&... args) {
   float milliseconds = 0;
   CUDA_SAFE_CALL(cudaEventElapsedTime(&milliseconds, start, stop));
   return milliseconds;
-}
-
-template <class MDSpan, class... DynSizes>
-MDSpan fill_device_mdspan(MDSpan, DynSizes... dyn) {
-
-  using value_type = typename MDSpan::value_type;
-  auto buffer_size = MDSpan{nullptr, dyn...}.mapping().required_span_size();
-  auto host_buffer = std::make_unique<value_type[]>(
-    MDSpan{nullptr, dyn...}.mapping().required_span_size()
-  );
-  auto host_mdspan = MDSpan{host_buffer.get(), dyn...};
-  mdspan_benchmark::fill_random(host_mdspan);
-
-  value_type* device_buffer = nullptr;
-  CUDA_SAFE_CALL(cudaMalloc(&device_buffer, buffer_size * sizeof(value_type)));
-  CUDA_SAFE_CALL(cudaMemcpy(
-    device_buffer, host_buffer.get(), buffer_size * sizeof(value_type), cudaMemcpyHostToDevice
-  ));
-  return MDSpan{device_buffer, dyn...};
 }
 
 //================================================================================
@@ -300,7 +429,3 @@ void BM_Raw_Cuda_Stencil_3D_left(benchmark::State& state, T, SizeX x_, SizeY y_,
 }
 BENCHMARK_CAPTURE(BM_Raw_Cuda_Stencil_3D_left, size_80_80_80, int(), 80, 80, 80);
 //BENCHMARK_CAPTURE(BM_Raw_Cuda_Stencil_3D_left, size_400_400_400, int(), 400, 400, 400);
-
-//================================================================================
-
-BENCHMARK_MAIN();
