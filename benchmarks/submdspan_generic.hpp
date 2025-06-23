@@ -110,6 +110,32 @@ private:
   std::unique_ptr<value_type[], array_deleter_t<ExecutionSpace, value_type>> buffer_;
 };
 
+template<class ExecutionSpace, class IndexType, size_t... Exts>
+size_t benchmark1_impl(ExecutionSpace /* exec_space */,
+  benchmark::State& state,
+  nonconst_test_mdspan<IndexType, Exts...> out);
+
+// This works for host_execution_space and cuda_execution_space.
+template<class ExecutionSpace, class IndexType, size_t... Exts>
+void benchmark1(ExecutionSpace exec_space,
+  benchmark::State& state,
+  Kokkos::extents<IndexType, Exts...> exts)
+{
+  random_state_t random_state{};
+  auto buf = benchmark_buffer{exec_space, exts};
+  fill_with_random_values(exec_space, random_state, buf.get_mdspan());
+
+  size_t count_not_same = benchmark1_impl(exec_space, state, buf.get_mdspan());
+  if (count_not_same != 0) {
+    std::cerr << "benchmark1 failed: count not same = " << count_not_same << std::endl;
+    std::terminate();
+  }
+
+  auto get_0th_element = [] (auto x) { return x[((void) Exts, 0)...]; };
+  auto buf_0s_after = get_0th_element(buf.get_mdspan());
+  benchmark::DoNotOptimize(buf_0s_after);
+}
+
 // Index or slice type that's convertible to IndexType,
 // but neither integral nor integral-constant-like.
 MDSPAN_TEMPLATE_REQUIRES(

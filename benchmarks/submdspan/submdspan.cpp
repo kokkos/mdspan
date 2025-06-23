@@ -31,8 +31,8 @@
 
 namespace submdspan_benchmark {
 
-template<class ExecutionSpace, class IndexType, size_t... Exts>
-size_t benchmark1_impl(ExecutionSpace&& /* exec_space */,
+template<class IndexType, size_t... Exts>
+size_t benchmark1_impl(host_execution_space /* exec_space */,
   benchmark::State& state,
   nonconst_test_mdspan<IndexType, Exts...> out)
 {
@@ -48,26 +48,6 @@ size_t benchmark1_impl(ExecutionSpace&& /* exec_space */,
     benchmark::DoNotOptimize(count_not_same);
   }
   return count_not_same;
-}
-
-template<class ExecutionSpace, class IndexType, size_t... Exts>
-void benchmark1(ExecutionSpace exec_space,
-  benchmark::State& state,
-  Kokkos::extents<IndexType, Exts...> exts)
-{
-  random_state_t random_state{};
-  auto buf = benchmark_buffer{exec_space, exts};
-  fill_with_random_values(exec_space, random_state, buf.get_mdspan());
-
-  size_t count_not_same = benchmark1_impl(exec_space, state, buf.get_mdspan());
-  if (count_not_same != 0) {
-    std::cerr << "benchmark1 failed: count not same = " << count_not_same << std::endl;
-    std::terminate();
-  }
-
-  auto get_0th_element = [] (auto x) { return x[((void) Exts, 0)...]; };
-  auto buf_0s_after = get_0th_element(buf.get_mdspan());
-  benchmark::DoNotOptimize(buf_0s_after);
 }
 
 } // namespace submdspan_benchmark
