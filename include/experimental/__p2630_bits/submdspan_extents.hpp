@@ -857,6 +857,17 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
   constexpr check_static_bounds_result check_static_bounds(
     const extents<IndexType, Exts...>&)
 {
+#if defined(__cpp_pack_indexing)
+  constexpr size_t Exts_k = Exts...[k];
+#else
+  constexpr size_t Exts_k = [] () {
+    size_t result = 0;
+    size_t i = 0;
+    (void) ((i++ == k ? (result = Exts, true) : false) || ...);
+    return result;
+  } ();
+#endif
+
   if constexpr (std::is_convertible_v<S_k, full_extent_t>) {
     return check_static_bounds_result::in_bounds;
   }
@@ -869,10 +880,10 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
       if constexpr (de_ice(S_k{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.3.1
       }
-      else if constexpr (Exts...[k] != dynamic_extent && Exts...[k] <= de_ice(S_k{})) {
+      else if constexpr (Exts_k != dynamic_extent && Exts_k <= de_ice(S_k{})) {
         return check_static_bounds_result::out_of_bounds;
       }
-      else if constexpr (Exts...[k] != dynamic_extent && de_ice(S_k{}) < Exts...[k]) {
+      else if constexpr (Exts_k != dynamic_extent && de_ice(S_k{}) < Exts_k) {
         return check_static_bounds_result::in_bounds;
       }
       else {
@@ -891,7 +902,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
         return check_static_bounds_result::out_of_bounds; // 14.3.1
       }
       else if constexpr (
-        Exts...[k] != dynamic_extent && Exts...[k] < de_ice(offset_type{}))
+        Exts_k != dynamic_extent && Exts_k < de_ice(offset_type{}))
       {
         return check_static_bounds_result::out_of_bounds; // 14.3.2
       }
@@ -902,16 +913,16 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
           return check_static_bounds_result::out_of_bounds; // 14.3.3
         }
         else if constexpr (
-          Exts...[k] != dynamic_extent &&
-          Exts...[k] < de_ice(offset_type{}) + de_ice(extent_type{}))
+          Exts_k != dynamic_extent &&
+          Exts_k < de_ice(offset_type{}) + de_ice(extent_type{}))
         {
           return check_static_bounds_result::out_of_bounds; // 14.3.4
         }
         else if constexpr (
-          Exts...[k] != dynamic_extent &&
+          Exts_k != dynamic_extent &&
           0 <= de_ice(offset_type{}) &&
           de_ice(offset_type{}) <= de_ice(offset_type{}) + de_ice(extent_type{}) &&
-          de_ice(offset_type{}) + de_ice(extent_type{}) <= Exts...[k])
+          de_ice(offset_type{}) + de_ice(extent_type{}) <= Exts_k)
         {
           return check_static_bounds_result::in_bounds; // 14.3.5
         }
@@ -954,8 +965,8 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
         return check_static_bounds_result::out_of_bounds; // 14.4.1
       }
       else if constexpr (
-        Exts...[k] != dynamic_extent &&
-        Exts...[k] < de_ice(S_k0{}))
+        Exts_k != dynamic_extent &&
+        Exts_k < de_ice(S_k0{}))
       {
         return check_static_bounds_result::out_of_bounds; // 14.4.2
       }
@@ -966,16 +977,16 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
           return check_static_bounds_result::out_of_bounds; // 14.4.3
         }
         else if constexpr (
-          Exts...[k] != dynamic_extent &&
-          Exts...[k] < de_ice(S_k1{}))
+          Exts_k != dynamic_extent &&
+          Exts_k < de_ice(S_k1{}))
         {
           return check_static_bounds_result::out_of_bounds; // 14.4.4
         }
         else if constexpr (
-          Exts...[k] != dynamic_extent &&
+          Exts_k != dynamic_extent &&
           0 <= de_ice(S_k0{}) &&
           de_ice(S_k0{}) <= de_ice(S_k1{}) &&
-          de_ice(S_k1{}) <= Exts...[k])
+          de_ice(S_k1{}) <= Exts_k)
         {
           return check_static_bounds_result::in_bounds; // 14.4.5
         }
@@ -1050,21 +1061,50 @@ constexpr void
 check_canonical_kth_submdspan_slice_type(const extents<IndexType, Extents...>& exts, Slice slice)
 {
   if constexpr (! is_canonical_slice_type<IndexType, Slice>()) {
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
     static_assert(false);
+#endif
   }
   else { // 3.2
+#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+    static_assert(check_static_bounds<k, decltype(slice)>(extents<IndexType, Extents...>{}) != check_static_bounds_result::out_of_bounds);
+#else
     static_assert(check_static_bounds<k, decltype(slice)>(exts) != check_static_bounds_result::out_of_bounds);
+#endif
   }
 }
+
+#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+template<size_t k, class First, class... Rest>
+constexpr decltype(auto) get_kth_in_pack(First&& first, Rest&&... rest) {
+  static_assert(k <= sizeof...(Rest));
+  if constexpr (k == 0) {
+    return std::forward<First>(first);
+  }
+  else {
+    return get_kth_in_pack<k - 1>(std::forward<Rest>(rest)...);
+  }
+}
+#endif
 
 template<class IndexType, size_t... Extents, class ... Slices>
 MDSPAN_INLINE_FUNCTION
 constexpr void
 check_canonical_kth_subdmspan_slice_types(
   const extents<IndexType, Extents...>& exts, Slices... slices)
-{ 
+{
   [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
-    (check_canonical_kth_submdspan_slice_type<Inds>(exts, slices...[Inds]), ...);
+    (check_canonical_kth_submdspan_slice_type<Inds>(
+      exts,
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#  if ! defined(__cpp_pack_indexing)
+#    error "This branch requires the C++26 'parameter pack indexing' language feature."
+#  endif
+      slices...[Inds]
+#else
+      get_kth_in_pack<Inds>(slices...)
+#endif
+    ), ...);
   } (std::make_index_sequence<sizeof...(Slices)>{});
 }
 
@@ -1075,7 +1115,11 @@ constexpr auto
 submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Slice s) {
   // Part of [mdspan.sub.slices] 9.
   // This could be combined with the if constexpr branches below.
+#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+  static_assert(check_static_bounds<k, decltype(s)>(extents<IndexType, Extents...>{}) != check_static_bounds_result::out_of_bounds);
+#else
   static_assert(check_static_bounds<k, decltype(s)>(exts) != check_static_bounds_result::out_of_bounds);
+#endif
 
   // TODO Check Precondition that s is a valid k-th submdspan slice for exts.
 
@@ -1127,7 +1171,17 @@ submdspan_canonicalize_slices(const extents<IndexType, Extents...>& exts, Slices
     return std::tuple{
       // This is ill-formed if slices...[Inds] is not a valid slice type.
       // That implements the Mandates clause of [mdspan.sub.slices] 9.
-      detail::submdspan_canonicalize_one_slice<Inds>(exts, slices...[Inds])...
+      detail::submdspan_canonicalize_one_slice<Inds>(
+        exts,
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#  if ! defined(__cpp_pack_indexing)
+#    error "This branch requires the C++26 'parameter pack indexing' language feature."
+#  endif
+        slices...[Inds]
+#else
+        detail::get_kth_in_pack<Inds>(slices...)
+#endif
+      )...
     };
   } (std::make_index_sequence<sizeof...(Slices)>{});
 }

@@ -202,8 +202,18 @@ struct constant_wrapper: exposition_only::cw_operators {
   using value_type = typename decltype(X)::type;
 
   template<constexpr_param R>
-    constexpr auto operator=(R) const noexcept requires requires(value_type x) { x = R::value; }
-      { return constant_wrapper<[] { auto v = value; return v = R::value; }()>{}; }
+#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+    requires(std::is_assignable_v<value_type&, typename R::value_type>)
+#endif
+    constexpr auto operator=(R) const noexcept
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+    requires requires(value_type x) { x = R::value; }
+#endif
+  {
+    return constant_wrapper<
+      [] { auto v = value; return v = R::value; }()
+    >{};
+  }
 
   constexpr operator decltype(auto)() const noexcept { return value; }
   constexpr decltype(auto) operator()() const noexcept requires (!std::invocable<value_type>) { return value; }
