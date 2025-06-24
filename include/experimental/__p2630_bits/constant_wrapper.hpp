@@ -28,9 +28,21 @@ namespace exposition_only {
 //   template<auto X>
 //   using unspecified_t = typename decltype(cw_fixed_value(X))::type;
 // }
+//
+// Moving the definitions of the various specializations of cw_fixed_value
+// above this point doesn't help either.
 
-template<exposition_only::cw_fixed_value X,
-         typename unspecified = typename decltype(exposition_only::cw_fixed_value(X))::type> // exposition only
+// This generally works fine even with Clang 21.
+#define MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND 1
+
+template<
+  exposition_only::cw_fixed_value X,
+#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+  typename unspecified = typename decltype(X)::type // exposition only
+#else
+  typename unspecified = typename decltype(exposition_only::cw_fixed_value(X))::type // exposition only
+#endif
+>
 struct constant_wrapper;
 
 template<class T>

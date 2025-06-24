@@ -111,9 +111,9 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR ((CMAKE_CXX_COMPILER_ID STREQUAL GN
 endif()
 endif()
 
-if(MDSPAN_ENABLE_P3663 AND (CMAKE_CXX_STANDARD GREATER_EQUAL 20))
+#if(MDSPAN_ENABLE_P3663 AND (CMAKE_CXX_STANDARD GREATER_EQUAL 20))
   mdspan_add_test(test_constant_wrapper)
-endif()
+#endif()
 if(MDSPAN_ENABLE_P3663 AND (CMAKE_CXX_STANDARD GREATER_EQUAL 17))
   mdspan_add_test(test_strided_slice)
 endif()

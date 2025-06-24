@@ -13,7 +13,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //@HEADER
-#include <mdspan/mdspan.hpp>
 #include <type_traits>
 #include <gtest/gtest.h>
 
