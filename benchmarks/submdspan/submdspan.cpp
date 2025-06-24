@@ -40,10 +40,10 @@ size_t benchmark1_impl(host_execution_space /* exec_space */,
   for (auto _ : state) {
     const auto p = std::pair{IndexType(0), IndexType(1)};
     auto out_sub = Kokkos::submdspan(out, ((void) Exts, p)...);
-    if (out_sub[((void) Exts, 0)...] != out[((void) Exts, p.first)...]) {
+    if (get_broadcast_element(out_sub, 0) != get_broadcast_element(out, p.first)) {
       ++count_not_same;
     }
-    out_sub[((void) Exts, 0)...] += static_cast<std::uint8_t>(1u);
+    get_broadcast_element(out_sub, 0) += static_cast<std::uint8_t>(1u);
 
     benchmark::DoNotOptimize(count_not_same);
   }

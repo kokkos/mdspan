@@ -29,6 +29,44 @@
 
 namespace submdspan_benchmark {
 
+#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+
+template<class ElementType, class Extents, class Layout, class Accessor, size_t... Indices>
+constexpr typename Kokkos::mdspan<ElementType, Extents, Layout, Accessor>::reference
+get_broadcast_element_impl(
+  const Kokkos::mdspan<ElementType, Extents, Layout, Accessor>& x,
+  typename Extents::index_type broadcast_index,
+  std::index_sequence<Indices...>)
+{
+#if defined(MDSPAN_USE_BRACKET_OPERATOR) && (MDSPAN_USE_BRACKET_OPERATOR != 0)
+  return x[((void) Indices, 0)...];
+#else
+  return x(((void) Indices, 0)...);
+#endif
+}
+
+template<class ElementType, class Extents, class Layout, class Accessor>
+constexpr typename Kokkos::mdspan<ElementType, Extents, Layout, Accessor>::reference
+get_broadcast_element(
+  const Kokkos::mdspan<ElementType, Extents, Layout, Accessor>& x,
+  typename Extents::index_type broadcast_index)
+{
+  return get_broadcast_element_impl(x, broadcast_index, std::make_index_sequence<Extents::rank()>());
+}
+
+#else
+
+template<class ElementType, class IndexType, size_t... Exts, class Layout, class Accessor>
+constexpr typename Kokkos::mdspan<ElementType, Kokkos::extents<IndexType, Exts...>, Layout, Accessor>::reference
+get_broadcast_element(
+  const Kokkos::mdspan<ElementType, Kokkos::extents<IndexType, Exts...>, Layout, Accessor>& x,
+  typename Kokkos::extents<IndexType, Exts...>::index_type broadcast_index)
+{
+  return x[((void) Exts, broadcast_index)...];
+}
+
+#endif
+
 template<class IndexType, size_t... Exts>
 using nonconst_test_mdspan =
   Kokkos::mdspan<std::uint8_t, Kokkos::extents<IndexType, Exts...>>;
@@ -41,8 +79,8 @@ class random_state_t {
 public:
   using seed_type = std::mt19937::result_type;
 
-  constexpr random_state_t() : gen_(default_seed) {}
-  constexpr random_state_t(seed_type seed) : gen_(seed) {}
+  random_state_t() : gen_(default_seed) {}
+  random_state_t(seed_type seed) : gen_(seed) {}
 
   std::mt19937& generator() noexcept { return gen_; }
 
@@ -131,8 +169,7 @@ void benchmark1(ExecutionSpace exec_space,
     std::terminate();
   }
 
-  auto get_0th_element = [] (auto x) { return x[((void) Exts, 0)...]; };
-  auto buf_0s_after = get_0th_element(buf.get_mdspan());
+  auto buf_0s_after = get_broadcast_element(buf.get_mdspan(), 0);
   benchmark::DoNotOptimize(buf_0s_after);
 }
 
@@ -183,7 +220,11 @@ constexpr MDSPAN_FUNCTION auto slice_one_extent(
   Kokkos::mdspan<ElementType, Kokkos::extents<IndexType, Exts...>, Layout, Accessor> x, Slice slice)
 {
   if constexpr (sizeof...(Exts) == 0) {
+#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+    static_assert(sizeof...(Exts) != 0, "slice_one_extent called with no extents");
+#else
     static_assert(false, "slice_one_extent called with no extents");
+#endif
   }
   else if constexpr (sizeof...(Exts) == 1) {
     return Kokkos::submdspan(x, slice);

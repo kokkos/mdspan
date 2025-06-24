@@ -38,13 +38,14 @@ constexpr bool is_constant_wrapper<std::constant_wrapper<Value, Type>> = true;
 // to contain the mapped indices.
 // end of recursion specialization containing the final index_sequence
 
-template <
+template<
 #if defined(MDSPAN_ENABLE_P3663)
-  auto
+  auto Counter,
 #else
-  size_t
+  size_t Counter,
 #endif
-  Counter, size_t... MapIdxs>
+  size_t... MapIdxs
+>
 MDSPAN_INLINE_FUNCTION
 constexpr auto inv_map_rank(
 #if defined(MDSPAN_ENABLE_P3663)
@@ -60,11 +61,10 @@ constexpr auto inv_map_rank(
 // specialization reducing rank by one (i.e., integral slice specifier)
 template<
 #if defined(MDSPAN_ENABLE_P3663)
-  auto
+  auto Counter,
 #else
-  size_t
+  size_t Counter,
 #endif
-  Counter,
   class Slice,
   class... SliceSpecifiers,
   size_t... MapIdxs>
@@ -92,7 +92,7 @@ constexpr auto inv_map_rank(
       std::index_sequence<MapIdxs..., counter_value>
     >;
 
-#if defined(MDSPAN_ENABLE_P3663)
+#if defined(MDSPAN_ENABLE_P3663) && ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
   static_assert(std::is_same_v<
       decltype(counter + std::cw<size_t(1)>),
       std::constant_wrapper<counter_value + size_t(1)>
@@ -205,9 +205,9 @@ constexpr Integral first_of(const Integral &i) {
 #if defined(MDSPAN_ENABLE_P3663)
 template<auto Value>
 MDSPAN_INLINE_FUNCTION
-constexpr auto
-first_of(std::constant_wrapper<Value> i) {
-  return i;
+constexpr std::constant_wrapper<Value>
+first_of(std::constant_wrapper<Value>) {
+  return {};
 }
 #else
 // NOTE This is technically not conforming.
@@ -297,11 +297,10 @@ first_of(const strided_slice<OffsetType, ExtentType, StrideType> &r) {
 // This is needed in the case of slice being full_extent_t.
 MDSPAN_TEMPLATE_REQUIRES(
 #if defined(MDSPAN_ENABLE_P3663)
-  auto
+  auto k,
 #else
-  size_t
-#endif  
-  k,
+  size_t k,
+#endif
   class Extents,
   class Integral,
   /* requires */(std::is_convertible_v<Integral, size_t>)
@@ -324,94 +323,52 @@ constexpr Integral last_of(
 // P3663 does not need these index_pair_like overloads,
 // because last_of should never see a pair-like type.
 MDSPAN_TEMPLATE_REQUIRES(
-#if defined(MDSPAN_ENABLE_P3663)
-  auto
-#else
-  size_t
-#endif  
-  k,
+  size_t k,
   class Extents, class Slice,
   /* requires */(index_pair_like<Slice, size_t>::value)
 )
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(
-#if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<k>,
-#else
   std::integral_constant<size_t, k>,
-#endif
   const Extents &,
   const Slice &i)
 {
-#if defined(MDSPAN_ENABLE_P3663)
   using std::get;
-#endif
   return get<1>(i);
 }
 
 MDSPAN_TEMPLATE_REQUIRES(
-#if defined(MDSPAN_ENABLE_P3663)
-  auto
-#else
-  size_t
-#endif  
-  k,
+  size_t k,
   class Extents, class IdxT1, class IdxT2,
   /* requires */ (index_pair_like<std::tuple<IdxT1, IdxT2>, size_t>::value)
   )
 constexpr auto last_of(
-#if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<k>,
-#else
   std::integral_constant<size_t, k>,
-#endif
   const Extents &,
   const std::tuple<IdxT1, IdxT2>& i)
 {
-#if defined(MDSPAN_ENABLE_P3663)
   using std::get;
-#endif
   return get<1>(i);
 }
 
 MDSPAN_TEMPLATE_REQUIRES(
-#if defined(MDSPAN_ENABLE_P3663)
-  auto
-#else
-  size_t
-#endif  
-  k,
+  size_t k,
   class Extents, class IdxT1, class IdxT2,
   /* requires */ (index_pair_like<std::pair<IdxT1, IdxT2>, size_t>::value)
   )
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(
-#if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<k>,
-#else
   std::integral_constant<size_t, k>,
-#endif
   const Extents &,
   const std::pair<IdxT1, IdxT2>& i)
 {
   return i.second;
 }
 
-template<
-#if defined(MDSPAN_ENABLE_P3663)
-  auto
-#else
-  size_t
-#endif  
-  k,
-  class Extents, class T>
+template<size_t k, class Extents, class T>
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(
-#if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<k>,
-#else
   std::integral_constant<size_t, k>,
-#endif
   const Extents &,
   const std::complex<T> &i)
 {
@@ -797,7 +754,20 @@ constexpr auto canonical_ice(S s) {
 
 template<class IndexType, class X, class Y>
 constexpr auto subtract_ice(X x, Y y) {
+#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+  // Key to the work-around is acknowledging that GCC 11.4.0 can't find
+  // constant_wrapper's overloaded arithmetic operators.
+  if constexpr (__mdspan_integral_constant_like<std::remove_cvref_t<X>> &&
+    __mdspan_integral_constant_like<std::remove_cvref_t<Y>>)
+  {
+    return std::cw<IndexType(canonical_ice<IndexType>(Y::value) - canonical_ice<IndexType>(X::value))>;
+  }
+  else {
+    return canonical_ice<IndexType>(y) - canonical_ice<IndexType>(x);
+  }
+#else
   return canonical_ice<IndexType>(y) - canonical_ice<IndexType>(x);
+#endif
 }
 
 template<class T>
@@ -1074,7 +1044,7 @@ check_canonical_kth_submdspan_slice_type(const extents<IndexType, Extents...>& e
   }
 }
 
-#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if ! defined(__cpp_pack_indexing)
 template<size_t k, class First, class... Rest>
 constexpr decltype(auto) get_kth_in_pack(First&& first, Rest&&... rest) {
   static_assert(k <= sizeof...(Rest));
@@ -1096,10 +1066,7 @@ check_canonical_kth_subdmspan_slice_types(
   [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
     (check_canonical_kth_submdspan_slice_type<Inds>(
       exts,
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
-#  if ! defined(__cpp_pack_indexing)
-#    error "This branch requires the C++26 'parameter pack indexing' language feature."
-#  endif
+#if defined(__cpp_pack_indexing)
       slices...[Inds]
 #else
       get_kth_in_pack<Inds>(slices...)
@@ -1173,10 +1140,7 @@ submdspan_canonicalize_slices(const extents<IndexType, Extents...>& exts, Slices
       // That implements the Mandates clause of [mdspan.sub.slices] 9.
       detail::submdspan_canonicalize_one_slice<Inds>(
         exts,
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
-#  if ! defined(__cpp_pack_indexing)
-#    error "This branch requires the C++26 'parameter pack indexing' language feature."
-#  endif
+#if defined(__cpp_pack_indexing)
         slices...[Inds]
 #else
         detail::get_kth_in_pack<Inds>(slices...)

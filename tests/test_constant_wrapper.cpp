@@ -24,6 +24,8 @@
 
 namespace { // (anonymous)
 
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+
 template<class Integral, Integral Value>
 using IC = std::integral_constant<Integral, Value>;
 
@@ -66,6 +68,39 @@ TEST(TestConstantWrapper, Construction) {
   test_integral_constant_wrapper(IC<long long, -11>{});
   test_integral_constant_wrapper(IC<long long, 11>{});
   test_integral_constant_wrapper(IC<unsigned long long, 11u>{});
+}
+#endif
+
+TEST(TestConstantWrapper, IntegerPlus) {
+  std::constant_wrapper<size_t(11)> cw_11;
+  constexpr size_t value = cw_11;
+  constexpr size_t value2 = cw_11();
+  static_assert(value == value2);
+  constexpr size_t value3 = decltype(cw_11)();
+  static_assert(value == value3);
+
+  static_assert(std::is_same_v<
+    decltype(cw_11),
+    decltype(std::cw<size_t(11)>)>);
+
+  [[maybe_unused]] auto expected_result = std::cw<size_t(12)>;
+  using expected_type = std::constant_wrapper<size_t(12)>;
+  static_assert(std::is_same_v<decltype(expected_result), expected_type>);
+
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+  [[maybe_unused]] auto cw_11_plus_one = cw_11 + std::cw<size_t(1)>;
+  [[maybe_unused]] auto one_plus_cw_11 = std::cw<size_t(1)> + cw_11;
+
+  static_assert(! std::is_same_v<
+    decltype(cw_11 + std::cw<size_t(1)>),
+    size_t>);
+  static_assert(std::is_same_v<
+    decltype(cw_11 + std::cw<size_t(1)>),
+    std::constant_wrapper<value + size_t(1)>>);
+  static_assert(std::is_same_v<
+    decltype(std::cw<size_t(1)> + cw_11),
+    std::constant_wrapper<value + size_t(1)>>);
+#endif
 }
 
 } // namespace (anonymous)

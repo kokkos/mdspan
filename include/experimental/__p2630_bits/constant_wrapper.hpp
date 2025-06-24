@@ -1,15 +1,18 @@
 #pragma once
 
+#include <type_traits>
+#include <utility>
+
+// This generally works fine even with Clang 21.
+#define MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND 1
+
 // Implementation borrowed from
 // https://github.com/tzlaine/constexpr/blob/master/include/constant_wrapper.hpp
 // to which P2781 links.  Provisionally assume that the feature test
 // macro will be called __cpp_lib_constant_wrapper and that the
 // features in P2781 will go in <type_traits>.
-
-#include <type_traits>
-#include <utility>
-
 #if ! defined(__cpp_lib_constant_wrapper)
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
 
 namespace std {
 
@@ -31,17 +34,17 @@ namespace exposition_only {
 //
 // Moving the definitions of the various specializations of cw_fixed_value
 // above this point doesn't help either.
-
-// This generally works fine even with Clang 21.
-#define MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND 1
+//
+// Replacing the offending expression with
+//
+//   typename unspecified = typename decltype(X)::type // exposition only
+//
+// gets us only part of the way there.
 
 template<
   exposition_only::cw_fixed_value X,
-#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
-  typename unspecified = typename decltype(X)::type // exposition only
-#else
-  typename unspecified = typename decltype(exposition_only::cw_fixed_value(X))::type // exposition only
-#endif
+  typename unspecified =
+    typename decltype(exposition_only::cw_fixed_value(X))::type // exposition only
 >
 struct constant_wrapper;
 
@@ -201,6 +204,7 @@ struct constant_wrapper: exposition_only::cw_operators {
   using type = constant_wrapper;
   using value_type = typename decltype(X)::type;
 
+  // Leaving the work-around path in place, in case we need it later.
   template<constexpr_param R>
 #if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
     requires(std::is_assignable_v<value_type&, typename R::value_type>)
@@ -218,7 +222,7 @@ struct constant_wrapper: exposition_only::cw_operators {
   constexpr operator decltype(auto)() const noexcept { return value; }
   constexpr decltype(auto) operator()() const noexcept requires (!std::invocable<value_type>) { return value; }
 
-#if defined(__cpp_explicit_this_parameter)  
+#if defined(__cpp_explicit_this_parameter)
   using exposition_only::cw_operators::operator();
 #endif  
 };
@@ -228,4 +232,139 @@ template<exposition_only::cw_fixed_value X>
 
 } // namespace std
 
+#else
+
+namespace std {
+
+namespace exposition_only {
+  template<typename T>
+  struct cw_fixed_value; // exposition only
+
+  template<class T>
+  constexpr bool is_cw_fixed_value_v = false;
+
+  template<class T>
+  constexpr bool is_cw_fixed_value_v<cw_fixed_value<T>> = true;
+}
+
+// GCC 11.4 has ICE with
+// "typename unspecified = typename decltype(exposition_only::cw_fixed_value(X))::type"
+// as second template parameter of constant_wrapper below.
+//
+// Replacing that expression with use of the following alias doesn't help.
+//
+// namespace exposition_only {
+//   template<auto X>
+//   using unspecified_t = typename decltype(cw_fixed_value(X))::type;
+// }
+//
+// Moving the definitions of the various specializations of cw_fixed_value
+// above this point doesn't help either.
+//
+// Replacing the offending expression with
+//
+//   typename unspecified = typename decltype(X)::type // exposition only
+//
+// gets us only part of the way there.
+
+template<
+  exposition_only::cw_fixed_value X,
+  typename unspecified =
+    // typename decltype(exposition_only::cw_fixed_value(X))::type // exposition only
+    typename decltype(X)::type // exposition only
+>
+struct constant_wrapper;
+
+template<class T>
+concept constexpr_param = requires { typename constant_wrapper<T::value>; }; // exposition only
+
+namespace exposition_only {
+  template<typename T>
+  struct cw_fixed_value { // exposition only
+
+    static_assert(! std::is_array_v<T>, "Not implemented for array types");
+    static_assert(! is_cw_fixed_value_v<T>, "cw_fixed_value recursion is forbidden");
+
+    using type = T;
+    constexpr cw_fixed_value(type v) noexcept: data(v) { }
+    T data;
+  };
+
+  template<typename T>
+  cw_fixed_value(T) -> cw_fixed_value<T>;                     // exposition only
+
+  namespace cw_operators { // exposition only
+    template<class...>
+    struct adl {
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM)
+//#define MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM constexpr_param
+#define MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM class
+#endif
+
+      // unary operators
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM T>
+      friend constexpr auto operator+(T) noexcept -> constant_wrapper<(+T::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM T>
+      friend constexpr auto operator-(T) noexcept -> constant_wrapper<(-T::value)> { return {}; }
+
+      // binary operators
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator+(L, R) noexcept -> constant_wrapper<(L::value + R::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator-(L, R) noexcept -> constant_wrapper<(L::value - R::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator*(L, R) noexcept -> constant_wrapper<(L::value * R::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator/(L, R) noexcept -> constant_wrapper<(L::value / R::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator%(L, R) noexcept -> constant_wrapper<(L::value % R::value)> { return {}; }
+
+      // comparisons
+
+#if defined(__cpp_impl_three_way_comparison)
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator<=>(L, R) noexcept -> constant_wrapper<(L::value <=> R::value)> { return {}; }
+#endif
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator<(L, R) noexcept -> constant_wrapper<(L::value < R::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator<=(L, R) noexcept -> constant_wrapper<(L::value <= R::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator==(L, R) noexcept -> constant_wrapper<(L::value == R::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator!=(L, R) noexcept -> constant_wrapper<(L::value != R::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator>(L, R) noexcept -> constant_wrapper<(L::value > R::value)> { return {}; }
+      template<MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM L, MDSPAN_CONSTANT_WRAPPER_OPERATOR_TEMPLATE_PARAM R>
+      friend constexpr auto operator>=(L, R) noexcept -> constant_wrapper<(L::value >= R::value)> { return {}; }
+    };
+  } // namespace cw_operators
+} // namespace exposition_only
+
+template<exposition_only::cw_fixed_value X, typename>
+struct constant_wrapper : exposition_only::cw_operators::adl<> {
+  static constexpr const auto & value = X.data;
+  using type = constant_wrapper;
+  using value_type = typename decltype(X)::type;
+
+  // Leaving the work-around path in place, in case we need it later.
+  template<constexpr_param R>
+    requires(std::is_assignable_v<value_type&, typename R::value_type>)
+    constexpr auto operator=(R) const noexcept
+  {
+    return constant_wrapper<
+      [] { auto v = value; return v = R::value; }()
+    >{};
+  }
+
+  constexpr operator decltype(auto)() const noexcept { return value; }
+  constexpr decltype(auto) operator()() const noexcept requires (!std::invocable<value_type>) { return value; }
+};
+
+template<exposition_only::cw_fixed_value X>
+  constinit auto cw = constant_wrapper<X>{};
+
+} // namespace std
+
+#endif // ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
 #endif // ! defined(__cpp_lib_constant_wrapper)
