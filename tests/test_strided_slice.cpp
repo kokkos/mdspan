@@ -23,7 +23,12 @@ namespace {
 template<class OffsetType, class ExtentType, class StrideType>
 void test_strided_slice(OffsetType offset, ExtentType extent, StrideType stride)
 {
+  // Clang 14 is bad at CTAD for aggregates.
+#if defined(__clang__) && (__clang_major__ < 15)
+  Kokkos::strided_slice<OffsetType, ExtentType, StrideType> s{offset, extent, stride};
+#else
   Kokkos::strided_slice s{offset, extent, stride};
+#endif
   static_assert(std::is_same_v<decltype(s), Kokkos::strided_slice<OffsetType, ExtentType, StrideType>>);
   auto offset2 = s.offset;
   static_assert(std::is_same_v<OffsetType, decltype(offset2)>);

@@ -1097,19 +1097,47 @@ submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Sli
     return canonical_ice<IndexType>(s); // 11.2
   }
   else if constexpr (is_strided_slice<Slice>::value) { // 11.3
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+    // GCC 11.4.0 (C++20) accepts this code, but Clang 14 does not.
     return strided_slice{
       .offset = canonical_ice<IndexType>(s.offset),
       .extent = canonical_ice<IndexType>(s.extent),
       .stride = canonical_ice<IndexType>(s.stride)
     };
+#else
+    auto offset = canonical_ice<IndexType>(s.offset);
+    auto extent = canonical_ice<IndexType>(s.extent);
+    auto stride = canonical_ice<IndexType>(s.stride);
+    return strided_slice<decltype(offset),
+                         decltype(extent),
+                         decltype(stride)> {
+      .offset = offset,
+      .extent = extent,
+      .stride = stride
+    };
+#endif
   }
 #if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
   else if constexpr (detail::is_std_complex<Slice>) {
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+    // GCC 11.4.0 (C++20) accepts this code, but Clang 14 does not.
     return strided_slice{
       .offset = canonical_ice<IndexType>(s.real()),
       .extent = canonical_ice<IndexType>(s.imag() - s.real()),
       .stride = std::cw<IndexType(1)>
     };
+#else
+    auto offset = canonical_ice<IndexType>(s.real());
+    auto extent = canonical_ice<IndexType>(s.imag() - s.real());
+    auto stride = std::cw<IndexType(1)>;
+    return strided_slice<decltype(offset),
+                         decltype(extent),
+                         decltype(stride)> {
+      .offset = offset,
+      .extent = extent,
+      .stride = stride
+    };
+#endif
   }
 #endif
   else { // 11.4
@@ -1118,11 +1146,25 @@ submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Sli
     using S_k1 = decltype(s_k1);
     static_assert(std::is_convertible_v<S_k0, IndexType>);
     static_assert(std::is_convertible_v<S_k1, IndexType>);
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+    // GCC 11.4.0 (C++20) accepts this code, but Clang 14 does not.
     return strided_slice{
       .offset = canonical_ice<IndexType>(s_k0),
       .extent = subtract_ice<IndexType>(s_k0, s_k1),
       .stride = std::cw<IndexType(1)>
     };
+#else
+    auto offset = canonical_ice<IndexType>(s_k0);
+    auto extent = subtract_ice<IndexType>(s_k0, s_k1);
+    auto stride = std::cw<IndexType(1)>;
+    return strided_slice<decltype(offset),
+                         decltype(extent),
+                         decltype(stride)> {
+      .offset = offset,
+      .extent = extent,
+      .stride = stride
+    };
+#endif
   }
 }
 

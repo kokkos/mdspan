@@ -116,10 +116,17 @@ constexpr bool slice_equal(const Left&, Kokkos::full_extent_t) {
   return std::is_convertible_v<Left, Kokkos::full_extent_t>;  
 }
 
+#if defined(__clang__) && (__clang_major__ < 15)
+template<class O1, class E1, class S1, class O2, class E2, class S2>
+constexpr bool slice_equal(
+  const Kokkos::strided_slice<O1, E1, S1>& left,
+  const Kokkos::strided_slice<O2, E2, S2>& right)
+#else
 template<class OffsetType, class ExtentType, class StrideType>
 constexpr bool slice_equal(
   const Kokkos::strided_slice<OffsetType, ExtentType, StrideType>& left,
   const Kokkos::strided_slice<OffsetType, ExtentType, StrideType>& right)
+#endif
 {
   return left.offset == right.offset && left.extent == right.extent && left.stride == right.stride;
 }
@@ -174,33 +181,87 @@ TEST(CanonicalizeSlices, Rank1_integer_static) {
 
 TEST(CanonicalizeSlices, Rank1_pair) {
   constexpr auto slice0 = std::pair{std::integral_constant<int, 7>{}, 11};
+
+  constexpr auto offset = std::cw<size_t(7u)>;
+  constexpr auto extent = size_t(4u); // 11 - 7
+  constexpr auto stride = std::cw<size_t(1u)>;
+#if defined(__clang__) && (__clang_major__ < 15)
+  const auto expected_slices = std::tuple{
+    Kokkos::strided_slice<
+      decltype(offset),
+      decltype(extent),
+      decltype(stride)
+    > {
+      offset,
+      extent,
+      stride
+    }
+  };
+#else
   constexpr auto expected_slices = std::tuple{Kokkos::strided_slice{
-    .offset = std::cw<size_t(7u)>,
-    .extent = size_t(4u), // 11 - 7
-    .stride = std::cw<size_t(1u)>
+    .offset = offset,
+    .extent = extent,
+    .stride = stride
   }};
+#endif
   constexpr auto exts = Kokkos::extents<size_t, 13>{};
   test_canonicalize_slices(expected_slices, exts, slice0);
 }
 
 TEST(CanonicalizeSlices, Rank1_aggregate_pair) {
   constexpr auto slice0 = my_test::my_aggregate_pair<int, int>{7, 11};
+
+  constexpr auto offset = size_t(7u);
+  constexpr auto extent = (size_t(11u) - size_t(7u));
+  constexpr auto stride = std::cw<size_t(1u)>;
+#if defined(__clang__) && (__clang_major__ < 15)
+  const auto expected_slices = std::tuple{
+    Kokkos::strided_slice<
+      decltype(offset),
+      decltype(extent),
+      decltype(stride)
+    > {
+      offset,
+      extent,
+      stride
+    }
+  };
+#else
   constexpr auto expected_slices = std::tuple{Kokkos::strided_slice{
-    .offset = size_t(7u),
-    .extent = (size_t(11u) - size_t(7u)),
-    .stride = std::cw<size_t(1u)>
+    .offset = offset,
+    .extent = extent,
+    .stride = stride
   }};
+#endif
   constexpr auto exts = Kokkos::extents<size_t, 13>{};
   test_canonicalize_slices(expected_slices, exts, slice0);
 }
 
 TEST(CanonicalizeSlices, Rank1_nonaggregate_pair) {
   constexpr auto slice0 = my_test::my_nonaggregate_pair<int, int>(7, 11);
+
+  constexpr auto offset = size_t(7u);
+  constexpr auto extent = (size_t(11u) - size_t(7u));
+  constexpr auto stride = std::cw<size_t(1u)>;
+#if defined(__clang__) && (__clang_major__ < 15)
+  const auto expected_slices = std::tuple{
+    Kokkos::strided_slice<
+      decltype(offset),
+      decltype(extent),
+      decltype(stride)
+    > {
+      offset,
+      extent,
+      stride
+    }
+  };
+#else
   constexpr auto expected_slices = std::tuple{Kokkos::strided_slice{
-    .offset = size_t(7u),
-    .extent = (size_t(11u) - size_t(7u)),
-    .stride = std::cw<size_t(1u)>
+    .offset = offset,
+    .extent = extent,
+    .stride = stride
   }};
+#endif
   constexpr auto exts = Kokkos::extents<size_t, 13>{};
   test_canonicalize_slices(expected_slices, exts, slice0);
 }

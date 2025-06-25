@@ -244,14 +244,9 @@ namespace exposition_only {
 // Our P3663 implementation doesn't depend on them, so we don't need
 // the operators at all.
 
-template<
-  exposition_only::cw_fixed_value X,
-  typename unspecified = typename decltype(X)::type // exposition only
->
-struct constant_wrapper;
-
-template<class T>
-concept constexpr_param = requires { typename constant_wrapper<T::value>; }; // exposition only
+// Clang 14 doesn't like the forward declaration of constant_wrapper,
+// because it claims that the non-type template parameter X has a different
+// type in the definition versus in the declaration.
 
 namespace exposition_only {
   template<typename T>
@@ -269,7 +264,10 @@ namespace exposition_only {
   cw_fixed_value(T) -> cw_fixed_value<T>;                     // exposition only
 } // namespace exposition_only
 
-template<exposition_only::cw_fixed_value X, typename>
+template<
+  exposition_only::cw_fixed_value X,
+  typename unspecified = typename decltype(X)::type // exposition only
+>
 struct constant_wrapper {
   static constexpr const auto & value = X.data;
   using type = constant_wrapper;
