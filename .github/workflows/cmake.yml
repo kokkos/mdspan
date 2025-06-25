@@ -86,13 +86,19 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
       run: make install
-    
+
     - name: Test Target Export
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-src
-      run: bash ./scripts/test_install.sh . ${{github.workspace}}/mdspan-build
-    
+      run: |
+        cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=${{github.workspace}}/mdspan-build
+        cmake --build /tmp/build-mdspan-examples
+        rm -rf /tmp/build-mdspan-examples
+
     - name: Test Target Install
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-src
-      run: bash ./scripts/test_install.sh . ${{github.workspace}}/mdspan-install
+      run: |
+        cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=${{github.workspace}}/mdspan-install
+        cmake --build /tmp/build-mdspan-examples
+        rm -rf /tmp/build-mdspan-examples
