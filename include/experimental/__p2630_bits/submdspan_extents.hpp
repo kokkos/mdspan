@@ -1028,19 +1028,19 @@ constexpr bool is_canonical_slice_type() {
 template<size_t k, class IndexType, size_t... Extents, class Slice>
 MDSPAN_INLINE_FUNCTION
 constexpr void
-check_canonical_kth_submdspan_slice_type(const extents<IndexType, Extents...>& exts, Slice slice)
+check_canonical_kth_submdspan_slice_type(
+  const extents<IndexType, Extents...>&,
+  [[maybe_unused]] Slice slice)
 {
   if constexpr (! is_canonical_slice_type<IndexType, Slice>()) {
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+    static_assert(is_canonical_slice_type<IndexType, Slice>());
+#else
     static_assert(false);
 #endif
   }
   else { // 3.2
-#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
     static_assert(check_static_bounds<k, decltype(slice)>(extents<IndexType, Extents...>{}) != check_static_bounds_result::out_of_bounds);
-#else
-    static_assert(check_static_bounds<k, decltype(slice)>(exts) != check_static_bounds_result::out_of_bounds);
-#endif
   }
 }
 

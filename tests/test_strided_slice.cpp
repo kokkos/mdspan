@@ -46,7 +46,7 @@ template<std::integral T, T Value>
 struct my_integral_constant {
   static constexpr T value = Value;
   constexpr operator T () const { return value; }
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if defined(__cpp_static_call_operator)
   static constexpr T operator() () { return value; }
 #endif
 };
