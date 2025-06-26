@@ -1044,7 +1044,10 @@ check_canonical_kth_submdspan_slice_type(
   }
 }
 
-#if ! defined(__cpp_pack_indexing)
+
+#if defined(__cpp_pack_indexing) && (! (defined(__GNUC__) && (__GNUC__ < 16)))
+// nothing
+#else
 template<size_t k, class First, class... Rest>
 constexpr decltype(auto) get_kth_in_pack(First&& first, Rest&&... rest) {
   static_assert(k <= sizeof...(Rest));
@@ -1066,7 +1069,7 @@ check_canonical_kth_subdmspan_slice_types(
   [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
     (check_canonical_kth_submdspan_slice_type<Inds>(
       exts,
-#if defined(__cpp_pack_indexing)
+#if defined(__cpp_pack_indexing) && (! (defined(__GNUC__) && (__GNUC__ < 16)))
       slices...[Inds]
 #else
       get_kth_in_pack<Inds>(slices...)
@@ -1182,7 +1185,9 @@ submdspan_canonicalize_slices(const extents<IndexType, Extents...>& exts, Slices
       // That implements the Mandates clause of [mdspan.sub.slices] 9.
       detail::submdspan_canonicalize_one_slice<Inds>(
         exts,
-#if defined(__cpp_pack_indexing)
+      // Clang 21 accepts this code.
+      // GCC 15.1.0 emits an error: "cannot index an empty pack."
+#if defined(__cpp_pack_indexing) && (! (defined(__GNUC__) && (__GNUC__ < 16)))
         slices...[Inds]
 #else
         detail::get_kth_in_pack<Inds>(slices...)

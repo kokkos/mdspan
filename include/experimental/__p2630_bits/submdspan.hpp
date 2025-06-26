@@ -29,7 +29,17 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
 
 #if defined(MDSPAN_ENABLE_P3663)
 
-#  if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+#  if defined(__cpp_structured_bindings) && (__cpp_structured_bindings >= 202411L)
+  // Rely on P1061R10, "Structured bindings can introduce a pack."
+  // Clang 21 implements this, but GCC 15 does not.
+
+  auto [...canonical_slices] =
+    submdspan_canonicalize_slices(src.extents(), slices...);
+  // NOTE Added to P3663R2: [canonical_]slices (incorrect formatting).
+  auto sub_map_result =
+    submdspan_mapping(src.mapping(), canonical_slices...);
+
+#  else
 
   auto canonical_slices_tuple =
     submdspan_canonicalize_slices(src.extents(), slices...);
@@ -37,14 +47,6 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
     [&] <class... TheSlices> (TheSlices&&... the_slices) {
       return submdspan_mapping(src.mapping(), std::forward<TheSlices>(the_slices)...);
     }, canonical_slices_tuple);
-
-#  else
-
-  auto [...canonical_slices] =
-    submdspan_canonicalize_slices(src.extents(), slices...);
-  // NOTE Added to P3663R2: [canonical_]slices (incorrect formatting).
-  auto sub_map_result =
-    submdspan_mapping(src.mapping(), canonical_slices...);
 
 #  endif
 
