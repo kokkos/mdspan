@@ -24,7 +24,7 @@
 
 namespace { // (anonymous)
 
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
 
 template<class Integral, Integral Value>
 using IC = std::integral_constant<Integral, Value>;
@@ -87,7 +87,7 @@ TEST(TestConstantWrapper, IntegerPlus) {
   using expected_type = std::constant_wrapper<size_t(12)>;
   static_assert(std::is_same_v<decltype(expected_result), expected_type>);
 
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
   [[maybe_unused]] auto cw_11_plus_one = cw_11 + std::cw<size_t(1)>;
   [[maybe_unused]] auto one_plus_cw_11 = std::cw<size_t(1)> + cw_11;
 

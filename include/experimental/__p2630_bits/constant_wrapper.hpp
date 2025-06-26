@@ -3,16 +3,13 @@
 #include <type_traits>
 #include <utility>
 
-// This generally works fine even with Clang 21.
-#define MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND 1
-
 // Implementation borrowed from
 // https://github.com/tzlaine/constexpr/blob/master/include/constant_wrapper.hpp
 // to which P2781 links.  Provisionally assume that the feature test
 // macro will be called __cpp_lib_constant_wrapper and that the
 // features in P2781 will go in <type_traits>.
 #if ! defined(__cpp_lib_constant_wrapper)
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
 
 namespace std {
 
@@ -282,5 +279,5 @@ template<exposition_only::cw_fixed_value X>
 
 } // namespace std
 
-#endif // ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#endif // ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
 #endif // ! defined(__cpp_lib_constant_wrapper)

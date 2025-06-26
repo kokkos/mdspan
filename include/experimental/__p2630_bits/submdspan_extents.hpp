@@ -92,7 +92,7 @@ constexpr auto inv_map_rank(
       std::index_sequence<MapIdxs..., counter_value>
     >;
 
-#if defined(MDSPAN_ENABLE_P3663) && ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if defined(MDSPAN_ENABLE_P3663) && ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
   static_assert(std::is_same_v<
       decltype(counter + std::cw<size_t(1)>),
       std::constant_wrapper<counter_value + size_t(1)>
@@ -754,7 +754,7 @@ constexpr auto canonical_ice(S s) {
 
 template<class IndexType, class X, class Y>
 constexpr auto subtract_ice(X x, Y y) {
-#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
   // Key to the work-around is acknowledging that GCC 11.4.0 can't find
   // constant_wrapper's overloaded arithmetic operators.
   if constexpr (__mdspan_integral_constant_like<std::remove_cvref_t<X>> &&
@@ -1033,7 +1033,7 @@ check_canonical_kth_submdspan_slice_type(
   [[maybe_unused]] Slice slice)
 {
   if constexpr (! is_canonical_slice_type<IndexType, Slice>()) {
-#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
     static_assert(is_canonical_slice_type<IndexType, Slice>());
 #else
     static_assert(false);
@@ -1082,7 +1082,7 @@ constexpr auto
 submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Slice s) {
   // Part of [mdspan.sub.slices] 9.
   // This could be combined with the if constexpr branches below.
-#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
   static_assert(check_static_bounds<k, decltype(s)>(extents<IndexType, Extents...>{}) != check_static_bounds_result::out_of_bounds);
 #else
   static_assert(check_static_bounds<k, decltype(s)>(exts) != check_static_bounds_result::out_of_bounds);
@@ -1097,7 +1097,7 @@ submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Sli
     return canonical_ice<IndexType>(s); // 11.2
   }
   else if constexpr (is_strided_slice<Slice>::value) { // 11.3
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
     // GCC 11.4.0 (C++20) accepts this code, but Clang 14 does not.
     return strided_slice{
       .offset = canonical_ice<IndexType>(s.offset),
@@ -1119,7 +1119,7 @@ submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Sli
   }
 #if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
   else if constexpr (detail::is_std_complex<Slice>) {
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
     // GCC 11.4.0 (C++20) accepts this code, but Clang 14 does not.
     return strided_slice{
       .offset = canonical_ice<IndexType>(s.real()),
@@ -1146,7 +1146,7 @@ submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Sli
     using S_k1 = decltype(s_k1);
     static_assert(std::is_convertible_v<S_k0, IndexType>);
     static_assert(std::is_convertible_v<S_k1, IndexType>);
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
     // GCC 11.4.0 (C++20) accepts this code, but Clang 14 does not.
     return strided_slice{
       .offset = canonical_ice<IndexType>(s_k0),

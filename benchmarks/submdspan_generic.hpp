@@ -29,7 +29,7 @@
 
 namespace submdspan_benchmark {
 
-#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
 
 template<class ElementType, class Extents, class Layout, class Accessor, size_t... Indices>
 constexpr typename Kokkos::mdspan<ElementType, Extents, Layout, Accessor>::reference
@@ -220,7 +220,7 @@ constexpr MDSPAN_FUNCTION auto slice_one_extent(
   Kokkos::mdspan<ElementType, Kokkos::extents<IndexType, Exts...>, Layout, Accessor> x, Slice slice)
 {
   if constexpr (sizeof...(Exts) == 0) {
-#if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
     static_assert(sizeof...(Exts) != 0, "slice_one_extent called with no extents");
 #else
     static_assert(false, "slice_one_extent called with no extents");

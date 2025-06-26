@@ -29,7 +29,7 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
 
 #if defined(MDSPAN_ENABLE_P3663)
 
-#  if defined(MDSPAN_CONSTANT_WRAPPER_GCC_WORKAROUND)
+#  if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
 
   auto canonical_slices_tuple =
     submdspan_canonicalize_slices(src.extents(), slices...);

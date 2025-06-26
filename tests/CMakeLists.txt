@@ -31,7 +31,13 @@ function(mdspan_add_test name)
     target_compile_definitions(${name}
       PUBLIC
       MDSPAN_ENABLE_P3663=1
-      )
+    )
+  endif()
+  if(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+    target_compile_definitions(${name}
+      PUBLIC
+      MDSPAN_CONSTANT_WRAPPER_WORKAROUND=1
+    )
   endif()
 endfunction()
 
@@ -111,13 +117,9 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR ((CMAKE_CXX_COMPILER_ID STREQUAL GN
 endif()
 endif()
 
-#if(MDSPAN_ENABLE_P3663 AND (CMAKE_CXX_STANDARD GREATER_EQUAL 20))
-  mdspan_add_test(test_constant_wrapper)
-#endif()
-if(MDSPAN_ENABLE_P3663 AND (CMAKE_CXX_STANDARD GREATER_EQUAL 17))
-  mdspan_add_test(test_strided_slice)
-endif()
 if(MDSPAN_ENABLE_P3663)
+  mdspan_add_test(test_constant_wrapper)
+  mdspan_add_test(test_strided_slice)
   mdspan_add_test(test_canonicalize_slices)
   mdspan_add_test(test_submdspan_check_static_bounds)
 endif()
