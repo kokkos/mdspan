@@ -67,11 +67,14 @@ BENCHMARK_CAPTURE(host_benchmark1, size_t_6d, (Kokkos::dextents<size_t, 6>{2, 2,
 namespace submdspan_benchmark {
 
 // Multiply elements by 3, using 1-D slices.
-template<class ExecutionSpace, class IndexType, size_t... Exts>
+template<class ExecutionSpace,
+  class IndexType, size_t... Exts,
+  class Layout>
 void benchmark2_loop(ExecutionSpace exec_space,
-  nonconst_test_mdspan<IndexType, Exts...> out)
+  Kokkos::mdspan<std::uint8_t, Kokkos::extents<IndexType, Exts...>, Layout> out)
 {
-  using mdspan_type = nonconst_test_mdspan<IndexType, Exts...>;
+  using mdspan_type = Kokkos::mdspan<std::uint8_t,
+    Kokkos::extents<IndexType, Exts...>, Layout>;
 
   if constexpr (mdspan_type::rank() == 0) {
     return;
