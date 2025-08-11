@@ -48,9 +48,26 @@ struct layout_right {
 };
 
 namespace detail {
+  // FIXME GCC <= 12: workaround gcc-12 bug that shows up in Kokkos; compilation fails when Mapping doesn't have
+  // extents_type. Normally this should just be a substititon failure, but causes an error with GCC <= 12
+  template<class, class Enabled = void>
+  struct is_mapping_of_impl {
+    template<class>
+    static constexpr bool value_for_layout = false;
+  };
+
+  template<class Mapping>
+  struct is_mapping_of_impl<Mapping, std::void_t<typename Mapping::extents_type>>
+  {
+    // FIXME GCC <= 12: We can't just do a conjunction of the two conditions, because the affected GCC versions seem to not
+    // short-circuit when resolving the substition of Mapping
+    template<class Layout>
+    static constexpr bool value_for_layout = std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
+  };
+
   template<class Layout, class Mapping>
   constexpr bool is_mapping_of =
-    std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
+    is_mapping_of_impl<Mapping>::template value_for_layout<Layout>;
 
 #if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #  if !defined(__cpp_lib_concepts)
