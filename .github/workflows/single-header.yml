@@ -9,10 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: sudo apt-get install python3
       - run: ./make_single_header.py ./include/experimental/mdarray > /tmp/mdspan.hpp
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: single-header
       - run: mv /tmp/mdspan.hpp mdspan.hpp
