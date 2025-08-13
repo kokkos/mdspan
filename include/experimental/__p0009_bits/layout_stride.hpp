@@ -55,24 +55,20 @@ namespace detail {
 #endif
   // FIXME GCC <= 12: workaround gcc-12 bug that shows up in Kokkos; compilation fails when Mapping doesn't have
   // extents_type. Normally this should just be a substitution failure, but causes an error with GCC <= 12
-  template<class, class Enabled = void>
-  struct is_mapping_of_impl {
-    template<class>
-    static constexpr bool value_for_layout = false;
-  };
+  // FIXME MSVC: I guess MSVC has a similar issue when it hits Layout::template mapping
+  template<class, class, class = void, class = void>
+  struct is_mapping_of_impl : std::false_type {};
 
-  template<class Mapping>
-  struct is_mapping_of_impl<Mapping, void_t<typename Mapping::extents_type>>
-  {
-    // FIXME GCC <= 12: We can't just do a conjunction of the two conditions, because the affected GCC versions seem to not
-    // short-circuit when resolving the substitution of Mapping
-    template<class Layout>
-    static constexpr bool value_for_layout = std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
-  };
+  // FIXME GCC <= 12: We can't just do a conjunction of the two conditions, because the affected GCC versions seem to not
+  // short-circuit when resolving the substitution of Mapping
+  template<class Mapping, class Layout>
+  struct is_mapping_of_impl<Mapping, Layout, void_t<typename Mapping::extents_type>, void_t< typename Layout::template mapping<typename Mapping::extents_type> >>
+    : std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>
+  {};
 
   template<class Layout, class Mapping>
   constexpr bool is_mapping_of =
-    is_mapping_of_impl<Mapping>::template value_for_layout<Layout>;
+    is_mapping_of_impl<Mapping, Layout>::value;
 
 #if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #  if !defined(__cpp_lib_concepts)
