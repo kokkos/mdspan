@@ -500,6 +500,19 @@ TEST(LayoutRightTests, issue362) {
   ASSERT_EQ(mapping.required_span_size(), mapping(1, 1) + 1);
 }
 
+TEST(LayoutRightTests, empty_span) {
+  {
+    auto mapping = KokkosEx::layout_left_padded<16>::mapping<
+        Kokkos::extents<std::size_t, 0, 15>>();
+    ASSERT_EQ(mapping.required_span_size(), 0);
+  }
+  {
+    auto mapping = KokkosEx::layout_left_padded<16>::mapping<
+        Kokkos::extents<std::size_t, 15, 0>>();
+    ASSERT_EQ(mapping.required_span_size(), 0);
+  }
+}
+
 // https://github.com/kokkos/mdspan/issues/393
 #define LAYOUT_RIGHT_COMPILE_ISSUE393_DEATH 0
 TEST(LayoutRightTests, issue393) {
