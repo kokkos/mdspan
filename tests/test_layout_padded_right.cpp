@@ -20,7 +20,7 @@ static_assert(Kokkos::Experimental::detail::is_layout_right_padded_mapping<
               Kokkos::Experimental::layout_right_padded<4>::mapping<
                   Kokkos::extents<size_t, 7, 4>>>::value);
 
-// layout_left_padded must be trivial
+// layout_right_padded must be trivial
 static_assert(std::is_trivial_v<KokkosEx::layout_right_padded<0>>);
 static_assert(std::is_trivial_v<KokkosEx::layout_right_padded<4>>);
 static_assert(std::is_trivial_v<KokkosEx::layout_right_padded<Kokkos::dynamic_extent>>);
@@ -502,12 +502,12 @@ TEST(LayoutRightTests, issue362) {
 
 TEST(LayoutRightTests, empty_span) {
   {
-    auto mapping = KokkosEx::layout_left_padded<16>::mapping<
+    auto mapping = KokkosEx::layout_right_padded<16>::mapping<
         Kokkos::extents<std::size_t, 0, 15>>();
     ASSERT_EQ(mapping.required_span_size(), 0);
   }
   {
-    auto mapping = KokkosEx::layout_left_padded<16>::mapping<
+    auto mapping = KokkosEx::layout_right_padded<16>::mapping<
         Kokkos::extents<std::size_t, 15, 0>>();
     ASSERT_EQ(mapping.required_span_size(), 0);
   }
