@@ -109,7 +109,10 @@ struct is_strided_slice<
 
 // Traits for pair like things
 template <class T>
-struct pair_like_traits : std::false_type {};
+struct pair_like_traits : std::false_type {
+    using first_type = void;
+    using second_type = void;
+};
 
 template <class T1, class T2>
 struct pair_like_traits<std::pair<T1, T2>> {
@@ -160,35 +163,15 @@ struct integral_constant_pair_like<
 };
 
 // Helper for identifying valid pair like things
-template <class T, class IndexType> struct index_pair_like : std::false_type {};
-
-template <class IdxT1, class IdxT2, class IndexType>
-struct index_pair_like<std::pair<IdxT1, IdxT2>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT1, IndexType> &&
-                                std::is_convertible_v<IdxT2, IndexType>;
-};
-
-template <class IdxT1, class IdxT2, class IndexType>
-struct index_pair_like<std::tuple<IdxT1, IdxT2>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT1, IndexType> &&
-                                std::is_convertible_v<IdxT2, IndexType>;
-};
-
-template <class IdxT1, class IdxT2, class IndexType>
-struct index_pair_like<tuple<IdxT1, IdxT2>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT1, IndexType> &&
-                                std::is_convertible_v<IdxT2, IndexType>;
-};
-
-template <class IdxT, class IndexType>
-struct index_pair_like<std::complex<IdxT>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT, IndexType>;
-};
-
-template <class IdxT, class IndexType>
-struct index_pair_like<std::array<IdxT, 2>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT, IndexType>;
-};
+template <class T, class IndexType>
+struct index_pair_like : std::conditional_t<
+    pair_like_traits<T>::value,
+    std::integral_constant<bool,
+        std::is_convertible_v<typename pair_like_traits<T>::first_type, IndexType> &&
+        std::is_convertible_v<typename pair_like_traits<T>::second_type, IndexType>
+    >,
+    std::false_type
+> {};
 
 // first_of(slice): getting begin of slice specifier range
 MDSPAN_TEMPLATE_REQUIRES(
