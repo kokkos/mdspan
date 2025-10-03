@@ -24,6 +24,63 @@
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
+MDSPAN_TEMPLATE_REQUIRES(
+  class Unsigned,
+  /* requires */ (std::is_unsigned_v<Unsigned>)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr Unsigned myabs(const Unsigned &val) {
+  return val;
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Unsigned, Unsigned val,
+  /* requires */ (std::is_unsigned_v<Unsigned>)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr Unsigned myabs(const std::integral_constant<Unsigned, val>&) {
+  return val;
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Signed,
+  /* requires */ (std::is_signed_v<Signed>)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr Signed myabs(const Signed &val) {
+  return val < 0 ? -val : val;
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Signed, Signed val,
+  /* requires */ (std::is_signed_v<Signed>)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr Signed myabs(const std::integral_constant<Signed, val>&) {
+  return val < 0 ? -val : val;
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Integral0, class Integral1,
+  /* requires */ (std::is_integral_v<Integral0> &&
+                  std::is_integral_v<Integral1>)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr size_t absminus(Integral0 val0, Integral1 val1) {
+  return (val0 > val1) ? val0 - val1 : val1 - val0;
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Integral0, Integral0 val0, class Integral1, Integral1 val1,
+  /* requires */ (std::is_integral_v<Integral0> &&
+                  std::is_integral_v<Integral1>)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr size_t absminus(const std::integral_constant<Integral0, val0>&,
+                          const std::integral_constant<Integral1, val1>&) {
+  return (val0 > val1) ? val0 - val1 : val1 - val0;
+}
+
 // Mapping from submapping ranks to srcmapping ranks
 // InvMapRank is an index_sequence, which we build recursively
 // to contain the mapped indices.
@@ -299,13 +356,13 @@ template <class Arg0, class Arg1> struct StaticExtentFromRange {
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
                              std::integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val1 - val0;
+  constexpr static size_t value = absminus(val1, val0);
 };
 
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromRange<integral_constant<Integral0, val0>,
                              integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val1 - val0;
+  constexpr static size_t value = absminus(val1, val0);
 };
 
 // compute new static extent from strided_slice, preserving static
@@ -317,13 +374,13 @@ template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
                                     std::integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
+  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / myabs(val1) : 0;
 };
 
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromStridedRange<integral_constant<Integral0, val0>,
                                     integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
+  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / myabs(val1) : 0;
 };
 
 // creates new extents through recursive calls to next_extent member function
@@ -349,9 +406,9 @@ struct extents_constructor {
     using index_t = typename Extents::index_type;
     return next_t::next_extent(
         ext, slices_and_extents...,
-        index_t(last_of(std::integral_constant<size_t, Extents::rank() - K>(), ext,
-                        sl)) -
-            index_t(first_of(sl)));
+        index_t(absminus(
+                last_of(std::integral_constant<size_t, Extents::rank() - K>(), ext, sl),
+                first_of(sl))));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -380,7 +437,7 @@ struct extents_constructor {
           extents_constructor<K - 1, Extents, NewExtents..., dynamic_extent>;
       return next_t::next_extent(
           ext, slices_and_extents...,
-          r.extent > 0 ? 1 + divide<index_t>(r.extent - 1, r.stride) : 0);
+           r.extent > 0 ? 1 + divide<index_t>(r.extent - 1, myabs(r.stride)) : 0);
     } else {
       constexpr size_t new_static_extent = new_static_extent_t::value;
       using next_t =

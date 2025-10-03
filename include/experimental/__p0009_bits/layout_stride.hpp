@@ -193,7 +193,7 @@ struct layout_stride {
 
       template <class... Integral>
       MDSPAN_FORCE_INLINE_FUNCTION
-      static constexpr size_t _call_op_impl(mapping const& self, Integral... idxs) noexcept {
+      static constexpr index_type _call_op_impl(mapping const& self, Integral... idxs) noexcept {
         return MDSPAN_IMPL_FOLD_PLUS_RIGHT((idxs * self.stride(Idxs)), /* + ... + */ 0);
       }
 

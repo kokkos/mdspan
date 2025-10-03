@@ -30,7 +30,7 @@ namespace detail {
 }
 
 // Slice Specifier allowing for strides and compile time extent
-template <class OffsetType, class ExtentType, class StrideType>
+template <class OffsetType, class ExtentType, class StrideType = std::integral_constant<size_t,1>>
 struct strided_slice {
   using offset_type = OffsetType;
   using extent_type = ExtentType;

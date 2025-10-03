@@ -42,12 +42,12 @@ struct default_accessor {
 
   MDSPAN_INLINE_FUNCTION
   constexpr data_handle_type
-  offset(data_handle_type p, size_t i) const noexcept {
+  offset(data_handle_type p, ptrdiff_t i) const noexcept {
     return p + i;
   }
 
   MDSPAN_FORCE_INLINE_FUNCTION
-  constexpr reference access(data_handle_type p, size_t i) const noexcept {
+  constexpr reference access(data_handle_type p, ptrdiff_t i) const noexcept {
     return p[i];
   }
 
