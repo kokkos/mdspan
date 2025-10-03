@@ -107,6 +107,58 @@ template <class OffsetType, class ExtentType, class StrideType>
 struct is_strided_slice<
     strided_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
 
+// Traits for pair like things
+template <class T>
+struct pair_like_traits : std::false_type {};
+
+template <class T1, class T2>
+struct pair_like_traits<std::pair<T1, T2>> {
+  using first_type = T1;
+  using second_type = T2;
+  static constexpr bool value = true;
+};
+
+template <class T1, class T2>
+struct pair_like_traits<std::tuple<T1, T2>> {
+  using first_type = T1;
+  using second_type = T2;
+  static constexpr bool value = true;
+};
+
+template <class T1, class T2>
+struct pair_like_traits<tuple<T1, T2>> {
+  using first_type = T1;
+  using second_type = T2;
+  static constexpr bool value = true;
+};
+
+template <class T>
+struct pair_like_traits<std::complex<T>> {
+  using first_type = T;
+  using second_type = T;
+  static constexpr bool value = true;
+};
+
+template <class T>
+struct pair_like_traits<std::array<T, 2>> {
+  using first_type = T;
+  using second_type = T;
+  static constexpr bool value = true;
+};
+
+template <class T, class = void>
+struct integral_constant_pair_like : std::false_type {};
+
+template <class T>
+struct integral_constant_pair_like<
+    T, std::void_t<typename pair_like_traits<T>::first_type,
+                   typename pair_like_traits<T>::second_type>>
+{
+    static constexpr bool value =
+        mdspan_is_integral_constant<typename pair_like_traits<T>::first_type>::value &&
+        mdspan_is_integral_constant<typename pair_like_traits<T>::second_type>::value;
+};
+
 // Helper for identifying valid pair like things
 template <class T, class IndexType> struct index_pair_like : std::false_type {};
 
@@ -301,6 +353,8 @@ last_of(std::integral_constant<size_t, k>, const Extents &,
 }
 
 // get stride of slices
+
+// For integral and full_extent_t return 1
 MDSPAN_TEMPLATE_REQUIRES(
   class Slice,
   /* requires */(!index_pair_like<Slice, size_t>::value)
@@ -312,13 +366,24 @@ constexpr auto stride_of(const Slice &) {
 
 MDSPAN_TEMPLATE_REQUIRES(
   class Slice,
-  /* requires */(index_pair_like<Slice, size_t>::value)
+  /* requires */(index_pair_like<Slice, size_t>::value &&
+                 integral_constant_pair_like<Slice>::value)
+)
+MDSPAN_INLINE_FUNCTION
+constexpr auto stride_of(const Slice&) {
+    return std::integral_constant<std::ptrdiff_t, (
+        pair_like_traits<Slice>::first_type::value <=
+        pair_like_traits<Slice>::second_type::value ? 1 : -1)>();
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Slice,
+  /* requires */(index_pair_like<Slice, size_t>::value &&
+                 !integral_constant_pair_like<Slice>::value)
 )
 MDSPAN_INLINE_FUNCTION
 constexpr auto stride_of(const Slice& s) {
-  return get<0>(s) <= get<1>(s) ? 
-    std::integral_constant<std::ptrdiff_t, 1>() :
-    std::integral_constant<std::ptrdiff_t, -1>();
+  return get<0>(s) <= get<1>(s)? 1 : -1;
 }
 
 template <class OffsetType, class ExtentType, class StrideType>
