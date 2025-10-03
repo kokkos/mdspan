@@ -317,8 +317,8 @@ MDSPAN_TEMPLATE_REQUIRES(
 MDSPAN_INLINE_FUNCTION
 constexpr auto stride_of(const Slice& s) {
   return get<0>(s) <= get<1>(s) ? 
-    integral_constant<std::ptrdiff_t, 1>() :
-    integral_constant<std::ptrdiff_t, -1>();
+    std::integral_constant<std::ptrdiff_t, 1>() :
+    std::integral_constant<std::ptrdiff_t, -1>();
 }
 
 template <class OffsetType, class ExtentType, class StrideType>
