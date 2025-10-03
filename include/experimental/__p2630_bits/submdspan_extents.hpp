@@ -60,25 +60,21 @@ constexpr Signed abs(const std::integral_constant<Signed, val>&) {
   return val < 0 ? -val : val;
 }
 
-MDSPAN_TEMPLATE_REQUIRES(
-  class Integral0, class Integral1,
-  /* requires */ (std::is_integral_v<Integral0> &&
-                  std::is_integral_v<Integral1>)
-)
+template <class IndexT, class T0, class T1>
 MDSPAN_INLINE_FUNCTION
-constexpr size_t absminus(Integral0 val0, Integral1 val1) {
-  return (val0 > val1) ? val0 - val1 : val1 - val0;
+constexpr auto absminus(const T0 &v0, const T1 &v1) {
+    IndexT v0i = IndexT(v0);
+    IndexT v1i = IndexT(v1);
+  return (v0i > v1i) ? v0i - v1i : v1i - v0i;
 }
 
-MDSPAN_TEMPLATE_REQUIRES(
-  class Integral0, Integral0 val0, class Integral1, Integral1 val1,
-  /* requires */ (std::is_integral_v<Integral0> &&
-                  std::is_integral_v<Integral1>)
-)
+template <class IndexT, class T0, T0 v0, class T1, T1 v1>
 MDSPAN_INLINE_FUNCTION
-constexpr size_t absminus(const std::integral_constant<Integral0, val0>&,
-                          const std::integral_constant<Integral1, val1>&) {
-  return (val0 > val1) ? val0 - val1 : val1 - val0;
+constexpr auto absminus(const std::integral_constant<T0, v0> &,
+                      const std::integral_constant<T1, v1> &) {
+    IndexT v0i = IndexT(v0);
+    IndexT v1i = IndexT(v1);
+    return (v0i > v1i) ? v0i - v1i : v1i - v0i;
 }
 
 // Mapping from submapping ranks to srcmapping ranks
@@ -367,13 +363,13 @@ template <class Arg0, class Arg1> struct StaticExtentFromRange {
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
                              std::integral_constant<Integral1, val1>> {
-  constexpr static size_t value = absminus(val1, val0);
+  constexpr static size_t value = absminus<size_t>(val1, val0);
 };
 
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromRange<integral_constant<Integral0, val0>,
                              integral_constant<Integral1, val1>> {
-  constexpr static size_t value = absminus(val1, val0);
+  constexpr static size_t value = absminus<size_t>(val1, val0);
 };
 
 // compute new static extent from strided_slice, preserving static
@@ -416,10 +412,9 @@ struct extents_constructor {
         extents_constructor<K - 1, Extents, NewExtents..., new_static_extent>;
     using index_t = typename Extents::index_type;
     return next_t::next_extent(
-        ext, slices_and_extents...,
-        index_t(absminus(
-                last_of(std::integral_constant<size_t, Extents::rank() - K>(), ext, sl),
-                first_of(sl))));
+        ext, slices_and_extents..., absminus<index_t>(
+            last_of(std::integral_constant<size_t, Extents::rank() - K>(), ext, sl),
+            first_of(sl)));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
