@@ -29,7 +29,7 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ (std::is_unsigned_v<Unsigned>)
 )
 MDSPAN_INLINE_FUNCTION
-constexpr Unsigned abs(const Unsigned &val) {
+constexpr auto abs(const Unsigned &val) {
   return val;
 }
 
@@ -38,8 +38,8 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ (std::is_unsigned_v<Unsigned>)
 )
 MDSPAN_INLINE_FUNCTION
-constexpr Unsigned abs(const std::integral_constant<Unsigned, val>&) {
-  return val;
+constexpr auto abs(const std::integral_constant<Unsigned, val>&) {
+  return std::integral_constant<Unsigned, val>();
 }
 
 MDSPAN_TEMPLATE_REQUIRES(
@@ -47,7 +47,7 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ (std::is_signed_v<Signed>)
 )
 MDSPAN_INLINE_FUNCTION
-constexpr Signed abs(const Signed &val) {
+constexpr auto abs(const Signed &val) {
   return val < 0 ? -val : val;
 }
 
@@ -56,8 +56,8 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ (std::is_signed_v<Signed>)
 )
 MDSPAN_INLINE_FUNCTION
-constexpr Signed abs(const std::integral_constant<Signed, val>&) {
-  return val < 0 ? -val : val;
+constexpr auto abs(const std::integral_constant<Signed, val>&) {
+  return std::integral_constant<Signed, (val < 0 ? -val : val)>();
 }
 
 template <class IndexT, class T0, class T1>
@@ -443,7 +443,7 @@ struct extents_constructor {
           extents_constructor<K - 1, Extents, NewExtents..., dynamic_extent>;
       return next_t::next_extent(
           ext, slices_and_extents...,
-           r.extent > 0 ? 1 + divide<index_t>(r.extent - 1, abs(r.stride)) : 0);
+          r.extent > 0 ? 1 + divide<index_t>(r.extent - 1, abs(r.stride)) : 0);
     } else {
       constexpr size_t new_static_extent = new_static_extent_t::value;
       using next_t =
