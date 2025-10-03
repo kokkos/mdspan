@@ -301,9 +301,12 @@ last_of(std::integral_constant<size_t, k>, const Extents &,
 }
 
 // get stride of slices
-template <class T>
+MDSPAN_TEMPLATE_REQUIRES(
+  class Slice,
+  /* requires */(!index_pair_like<Slice, size_t>::value)
+)
 MDSPAN_INLINE_FUNCTION
-constexpr auto stride_of(const T &) {
+constexpr auto stride_of(const Slice &) {
   return integral_constant<size_t, 1>();
 }
 
