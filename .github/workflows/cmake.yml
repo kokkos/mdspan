@@ -40,6 +40,8 @@ jobs:
           stdcxx: 23
         - compiler_driver: g++-10
           stdcxx: 23
+        - compiler_driver: icpx
+          stdcxx: 14
     name: ${{ matrix.compiler_driver }} C++${{ matrix.stdcxx }}
     steps:
 
