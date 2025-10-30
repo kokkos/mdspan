@@ -220,11 +220,13 @@ struct is_stride_avail< T
 TEST(TestLayoutStrideStrideConstraint, test_layout_stride_stride_constraint) {
   Kokkos::extents<int,16> ext1d{};
   Kokkos::layout_stride::mapping m1d{ext1d, std::array<int,1>{1}};
+  ASSERT_EQ (m1d.extents(), ext1d);
   ASSERT_TRUE ((is_stride_avail< decltype(m1d), int >::value));
 
   Kokkos::extents<int> ext0d{};
   Kokkos::layout_stride::mapping m0d{ext0d, std::array<int,0>{}};
   // This is weird, but its what the standard says
+  ASSERT_EQ (m0d.extents(), ext0d);
   ASSERT_TRUE((is_stride_avail< decltype(m0d), int >::value));
 }
 #endif
