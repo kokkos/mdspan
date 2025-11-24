@@ -63,7 +63,7 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/mdspan-build
 
     - name: Check Out
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         path: ${{github.workspace}}/mdspan-src
 
