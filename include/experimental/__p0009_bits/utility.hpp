@@ -4,6 +4,11 @@
 #include <type_traits>
 #include <array>
 #include <utility>
+#ifdef MDSPAN_IMPL_HAS_CUDA
+#include <cuda/std/limits>
+#else
+#include <limits>
+#endif
 #include "macros.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
@@ -198,8 +203,13 @@ MDSPAN_INLINE_FUNCTION constexpr bool cmp_greater_equal(T t, U u) noexcept {
 
 template <class R, class T>
 MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
+#ifdef MDSPAN_IMPL_HAS_CUDA
+  return cmp_greater_equal(t, cuda::std::numeric_limits<R>::min()) &&
+          cmp_less_equal(t, cuda::std::numeric_limits<R>::max());
+#else
   return cmp_greater_equal(t, std::numeric_limits<R>::min()) &&
           cmp_less_equal(t, std::numeric_limits<R>::max());
+#endif
 }
 
 template <typename T >
@@ -216,7 +226,11 @@ check_mul_result_is_nonnegative_and_representable(T a, T b) {
   if constexpr (std::is_signed_v<T>) {
     if ( a < 0 || b < 0 ) return false;
   }
+#ifdef MDSPAN_IMPL_HAS_CUDA
+  return a <= cuda::std::numeric_limits<T>::max() / b;
+#else
   return a <= std::numeric_limits<T>::max() / b;
+#endif
 #endif
 }
 #endif
