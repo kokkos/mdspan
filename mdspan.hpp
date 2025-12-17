@@ -1408,7 +1408,7 @@ MDSPAN_IMPL_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<
 #include <type_traits>
 #include <array>
 #include <utility>
-#if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__)
+#if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__) && (__CUDACC_VER_MAJOR__ * 100 + __CUDACC_VER_MINOR__ * 10 >= 1260)
 #include <cuda/std/limits>
 #else
 #include <limits>
@@ -1606,7 +1606,7 @@ MDSPAN_INLINE_FUNCTION constexpr bool cmp_greater_equal(T t, U u) noexcept {
 
 template <class R, class T>
 MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
-#if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__)
+#if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__) && (__CUDACC_VER_MAJOR__ * 100 + __CUDACC_VER_MINOR__ * 10 >= 1260)
   using cuda::std::numeric_limits;
 #else
   using std::numeric_limits;
@@ -1629,7 +1629,7 @@ check_mul_result_is_nonnegative_and_representable(T a, T b) {
   if constexpr (std::is_signed_v<T>) {
     if ( a < 0 || b < 0 ) return false;
   }
-#if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__)
+#if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__) && (__CUDACC_VER_MAJOR__ * 100 + __CUDACC_VER_MINOR__ * 10 >= 1260)
   using cuda::std::numeric_limits;
 #else
   using std::numeric_limits;
