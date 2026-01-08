@@ -221,7 +221,7 @@ struct layout_stride {
 
       MDSPAN_TEMPLATE_REQUIRES(
         class IntegralType,
-        (MDSPAN_IMPL_TRAIT(std::is_convertible_v, IntegralType, typename extents_type::index_type))
+        (MDSPAN_IMPL_TRAIT(std::is_convertible, IntegralType, typename extents_type::index_type))
       )
       MDSPAN_INLINE_FUNCTION
       // Need to avoid zero length c-array
