@@ -20,6 +20,7 @@
 #include "trait_backports.hpp"
 #include "compressed_pair.hpp"
 #include "utility.hpp"
+#include "../__p2642_bits/layout_padded_fwd.hpp"
 
 #if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #  include "no_unique_address.hpp"
@@ -441,7 +442,9 @@ struct layout_stride {
       !(std::is_convertible<typename StridedLayoutMapping::extents_type, extents_type>::value &&
        (detail::is_mapping_of<layout_left, StridedLayoutMapping> ||
         detail::is_mapping_of<layout_right, StridedLayoutMapping> ||
-        detail::is_mapping_of<layout_stride, StridedLayoutMapping>))
+        detail::is_mapping_of<layout_stride, StridedLayoutMapping> ||
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<StridedLayoutMapping>::value ||
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_right_padded_mapping<StridedLayoutMapping>::value))
     ) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
     mapping(StridedLayoutMapping const& other) noexcept // NOLINT(google-explicit-constructor)
