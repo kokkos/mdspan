@@ -93,13 +93,13 @@ namespace detail {
 // Some compilers other than Clang or GCC like to define __clang__ or __GNUC__.
 // Thus, we order the tests from most to least specific.
 #if defined(__ICL)
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __declspec(align_value( BYTE_ALIGNMENT ));
+#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __declspec(align_value( BYTE_ALIGNMENT ))
   constexpr char align_attribute_method[] = "__declspec(align_value(BYTE_ALIGNMENT))";
 #elif defined(__ICC)
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __attribute__((align_value( BYTE_ALIGNMENT )));
+#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __attribute__((align_value( BYTE_ALIGNMENT )))
   constexpr char align_attribute_method[] = "__attribute__((align_value(BYTE_ALIGNMENT)))";
 #elif defined(__clang__)
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __attribute__((align_value( BYTE_ALIGNMENT )));
+#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __attribute__((align_value( BYTE_ALIGNMENT )))
   constexpr char align_attribute_method[] = "__attribute__((align_value(BYTE_ALIGNMENT)))";
 #else
 #  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT )

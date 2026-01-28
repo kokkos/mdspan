@@ -55,7 +55,6 @@ void test_aligned_accessor() {
   const std::size_t offset = ByteAlignment / sizeof(double);
   static_assert( NumElements > 2 + offset );
   auto md3 = Kokkos::submdspan(md, std::pair{ offset, NumElements - 2 } );
-  auto *ptr = md3.data_handle();
   ASSERT_TRUE(Kokkos::is_sufficiently_aligned<ByteAlignment>(md3.data_handle()));
 
   for (std::size_t i = 0; i < NumElements - 2 - offset; ++i )
