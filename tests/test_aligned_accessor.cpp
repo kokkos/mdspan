@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <mdspan/mdspan.hpp>
 #include <numeric>
+#include <cstdlib>
 
 TEST(TestAlignedAccessor, IsSufficientlyAligned) {
   ASSERT_TRUE(
