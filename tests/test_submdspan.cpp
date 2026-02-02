@@ -104,9 +104,9 @@ template<size_t ... Args>
 using args_t = std::index_sequence<Args...>;
 
 template<size_t PaddingValue>
-using layout_left_padded = Kokkos::Experimental::layout_left_padded<PaddingValue>;
+using layout_left_padded = Kokkos::layout_left_padded<PaddingValue>;
 template<size_t PaddingValue>
-using layout_right_padded = Kokkos::Experimental::layout_right_padded<PaddingValue>;
+using layout_right_padded = Kokkos::layout_right_padded<PaddingValue>;
 
 using submdspan_test_types =
   ::testing::Types<
@@ -466,6 +466,6 @@ TEST(TestSubmdspanIssue362, LayoutRightPadded) {
 
   // The bottom-right 2x2 matrix
   auto m2 = submdspan(m1, std::pair(2, 4), std::pair(3, 5));
-      
+
   EXPECT_EQ(m2.mapping().required_span_size(), m2.mapping()(1, 1) + 1);
 }
