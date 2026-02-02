@@ -4,8 +4,6 @@
 #include <gtest/gtest.h>
 #include <mdspan/mdspan.hpp>
 
-namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
-
 // Compile time tests
 
 // For internal traits
