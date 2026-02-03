@@ -16,7 +16,6 @@
 
 #pragma once
 
-// backward compatibility import into experimental
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 template< ::std::size_t Rank, class IndexType = std::size_t>
