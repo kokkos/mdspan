@@ -48,17 +48,15 @@
 #pragma once
 
 #include "macros.hpp"
-#include "trait_backports.hpp"
 #include "default_accessor.hpp"
-#include "extents.hpp"
-#include <bit>
 #include <cassert>
-#include <iostream>
+#include <cstdint>
 #include <memory>
 #include <type_traits>
 
 // If we don't have bitcast, we should use memcpy
 #ifndef __cpp_lib_bit_cast
+#include <bit>
 #include <cstring>
 #endif
 
@@ -107,7 +105,7 @@ namespace detail {
 #endif
 
 constexpr bool
-is_nonzero_power_of_two(const std::size_t x)
+has_single_bit(const std::size_t x)
 {
 // Just checking __cpp_lib_int_pow2 isn't enough for some GCC versions.
 // The <bit> header exists, but std::has_single_bit does not.
@@ -117,29 +115,6 @@ is_nonzero_power_of_two(const std::size_t x)
   return x != 0 && (x & (x - 1)) == 0;
 #endif
 }
-
-template<class ElementType>
-constexpr bool
-valid_byte_alignment(const std::size_t byte_alignment)
-{
-  return is_nonzero_power_of_two(byte_alignment) && byte_alignment >= alignof(ElementType);
-}
-
-// We define aligned_pointer_t through a struct
-// so we can check whether the byte alignment is valid.
-// This makes it impossible to use the alias
-// with an invalid byte alignment.
-template<class T, std::size_t Alignment>
-struct aligned_pointer {
-  static_assert(valid_byte_alignment<T>(Alignment),
-		"Alignment must be a power of two no less than "
-		"the minimum required alignment of T.");
-  using type = T* MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( Alignment );
-};
-
-
-template<class ElementType, std::size_t byte_alignment>
-using aligned_pointer_t = typename aligned_pointer<ElementType, byte_alignment>::type;
 } // namespace detail
 
 template<size_t Alignment, class T>
@@ -147,11 +122,8 @@ template<size_t Alignment, class T>
 constexpr
 #endif
 bool is_sufficiently_aligned(T* ptr) {
-  // Note this mandate is not what is currently in the standard
-  // See https://cplusplus.github.io/LWG/issue4290
-  static_assert(detail::valid_byte_alignment<T>(Alignment),
-		"Alignment must be a power of two no less than "
-		"the minimum required alignment of T.");
+  static_assert(detail::has_single_bit(Alignment),
+		"Alignment must be a power of two.");
 #ifdef __cpp_lib_bit_cast
   auto dst = std::bit_cast<std::uintptr_t>(ptr);
 #else
@@ -167,9 +139,12 @@ struct aligned_accessor {
   using offset_policy = default_accessor<ElementType>;
   using element_type = ElementType;
   using reference = ElementType&;
-  using data_handle_type = detail::aligned_pointer_t<ElementType, ByteAlignment>;
+  using data_handle_type = ElementType* MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( ByteAlignment );
 
   static constexpr size_t byte_alignment = ByteAlignment;
+  static_assert(detail::has_single_bit(byte_alignment) && byte_alignment >= alignof(ElementType),
+		"byte_alignment must be a power of two no less than "
+		"the minimum required alignment of ElementType.");
 
   constexpr aligned_accessor() noexcept = default;
 

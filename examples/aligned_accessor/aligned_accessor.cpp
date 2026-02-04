@@ -35,9 +35,31 @@
 
 namespace {
 using Kokkos::aligned_accessor;
-using Kokkos::detail::aligned_pointer_t;
 using Kokkos::detail::assume_aligned_method;
 using Kokkos::detail::align_attribute_method;
+
+// We define aligned_pointer_t through a struct
+// so we can check whether the byte alignment is valid.
+// This makes it impossible to use the alias
+// with an invalid byte alignment.
+template<class ElementType, std::size_t byte_alignment>
+struct aligned_pointer {
+#if defined(__ICC)
+  // x86-64 ICC 2021.5.0 emits warning #3186 ("expected typedef declaration") here.
+  // No other compiler (including Clang, which has a similar type attribute) has this issue.
+#  pragma warning push
+#  pragma warning disable 3186
+#endif
+
+  using type = ElementType* MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( byte_alignment );
+
+#if defined(__ICC)
+#  pragma warning pop
+#endif
+};
+
+template<class ElementType, std::size_t byte_alignment>
+using aligned_pointer_t = typename aligned_pointer<ElementType, byte_alignment>::type;
 
 using test_value_type = float;
 constexpr std::size_t min_overalignment_factor = 8;
