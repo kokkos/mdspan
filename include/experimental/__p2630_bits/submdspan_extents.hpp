@@ -562,28 +562,18 @@ constexpr auto multiply(const std::integral_constant<T0, v0> &,
 #endif
 
 // compute new static extent from range, preserving static knowledge
-template <class Arg0, class Arg1> struct StaticExtentFromRange {
-  constexpr static size_t value = dynamic_extent;
+template <class A, class B,
+  bool both_integral_constant_like =
+    is_integral_constant_like_v<A> && is_integral_constant_like_v<B>
+>
+struct StaticExtentFromRange {
+  static constexpr ::std::size_t value = dynamic_extent;
 };
 
-#if defined(MDSPAN_ENABLE_P3663)
-template <__mdspan_integral_constant_like A, __mdspan_integral_constant_like B>
-struct StaticExtentFromRange<A, B> {
-  constexpr static size_t value = B::value - A::value;
+template <class A, class B>
+struct StaticExtentFromRange<A, B, true> {
+  static constexpr ::std::size_t value = B::value - A::value;
 };
-#else
-template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
-struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
-                             std::integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val1 - val0;
-};
-
-template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
-struct StaticExtentFromRange<integral_constant<Integral0, val0>,
-                             integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val1 - val0;
-};
-#endif
 
 // compute new static extent from strided_slice, preserving static
 // knowledge
