@@ -58,7 +58,6 @@ namespace detail {
 #else
     mdspan_is_integral_constant<T>::value;
 #endif
-    ;
 } // namespace detail
 
 // Slice Specifier allowing for strides and compile time extent
