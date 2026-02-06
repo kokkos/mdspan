@@ -261,6 +261,10 @@ namespace exposition_only {
   cw_fixed_value(T) -> cw_fixed_value<T>;                     // exposition only
 } // namespace exposition_only
 
+
+// This definition requires C++20 because it uses nontype template
+// parameters of deduced class type.
+#if(__cplusplus >= 202002L)
 template<
   exposition_only::cw_fixed_value X,
   typename unspecified = typename decltype(X)::type // exposition only
@@ -271,12 +275,41 @@ struct constant_wrapper {
   using value_type = typename decltype(X)::type;
 
   constexpr operator decltype(auto)() const noexcept { return value; }
-  constexpr decltype(auto) operator()() const noexcept requires (!std::invocable<value_type>) { return value; }
+  constexpr decltype(auto) operator()() const noexcept
+    requires (!std::invocable<value_type>)
+  {
+    return value;
+  }
+};
+#else
+
+template<auto Value, class unspecified = decltype(Value)>
+struct constant_wrapper {
+  static constexpr exposition_only::cw_fixed_value<decltype(Value)> X{};
+  
+  static constexpr const auto & value = X.data;
+  using type = constant_wrapper;
+  using value_type = typename decltype(X)::type;
+
+  constexpr operator decltype(auto)() const noexcept { return value; }
+  constexpr decltype(auto) operator()() const noexcept { return value; }
 };
 
+#endif // (__cplusplus >= 202002L)
+
+#if defined(__cpp_constinit)
 template<exposition_only::cw_fixed_value X>
   constinit auto cw = constant_wrapper<X>{};
 
+#elif(__cplusplus >= 202002L)
+template<exposition_only::cw_fixed_value X>
+  constexpr auto cw = constant_wrapper<X>{};
+  
+#else
+template<auto Value>
+  constexpr auto cw = constant_wrapper<Value>{};
+#endif
+  
 } // namespace std
 
 #endif // ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
