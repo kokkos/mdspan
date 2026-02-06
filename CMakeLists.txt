@@ -32,7 +32,7 @@ set_property(CACHE MDSPAN_CXX_STANDARD PROPERTY STRINGS DETECT 14 17 20 23 26)
 
 option(MDSPAN_ENABLE_CONCEPTS "Try to enable concepts support by giving extra flags." On)
 
-option(MDSPAN_ENABLE_P3663 "Enable implementation of P3663 (Future-proof submdspan_mapping)." Off)
+option(MDSPAN_ENABLE_P3663 "Enable implementation of P3663 (Future-proof submdspan_mapping)." On)
 
 # Defaults to ON, because this has only been tested with Clang 21 (development Clang).
 option(MDSPAN_CONSTANT_WRAPPER_WORKAROUND "If MDSPAN_ENABLE_P3663 is enabled, work around some compilers' inability to build constant_wrapper." ON)
