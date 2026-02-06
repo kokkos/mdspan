@@ -35,7 +35,7 @@ template<class ElementType, class Extents, class Layout, class Accessor, size_t.
 constexpr typename Kokkos::mdspan<ElementType, Extents, Layout, Accessor>::reference
 get_broadcast_element_impl(
   const Kokkos::mdspan<ElementType, Extents, Layout, Accessor>& x,
-  typename Extents::index_type broadcast_index,
+  [[maybe_unused]] typename Extents::index_type broadcast_index,
   std::index_sequence<Indices...>)
 {
 #if defined(MDSPAN_USE_BRACKET_OPERATOR) && (MDSPAN_USE_BRACKET_OPERATOR != 0)
@@ -215,6 +215,15 @@ struct full_extent_wrapper_t {
   }
 };
 
+template<class ElementType, class Layout, class Accessor, class Slice, class IndexType, size_t... Exts, size_t... Inds>
+constexpr MDSPAN_FUNCTION auto slice_one_extent_impl(
+  const Kokkos::mdspan<ElementType, Kokkos::extents<IndexType, Exts...>, Layout, Accessor>& x,
+  Slice slice,
+  std::index_sequence<Inds...>)
+{
+  return Kokkos::submdspan(x, slice, ((void) Inds, full_extent_wrapper_t{})...);
+}
+
 template<class ElementType, class Layout, class Accessor, class Slice, class IndexType, size_t... Exts>
 constexpr MDSPAN_FUNCTION auto slice_one_extent(
   Kokkos::mdspan<ElementType, Kokkos::extents<IndexType, Exts...>, Layout, Accessor> x, Slice slice)
@@ -230,9 +239,7 @@ constexpr MDSPAN_FUNCTION auto slice_one_extent(
     return Kokkos::submdspan(x, slice);
   }
   else {
-    return [&] <size_t... Inds> (std::index_sequence<Inds...>) {
-      return Kokkos::submdspan(x, slice, ((void) Inds, full_extent_wrapper_t{})...);
-    } (std::make_index_sequence<sizeof...(Exts) - 1u>());
+    return slice_one_extent_impl(x, slice, std::make_index_sequence<sizeof...(Exts) - 1u>());
   }
 }
 
