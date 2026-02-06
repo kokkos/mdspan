@@ -52,7 +52,7 @@ else()
   fetchcontent_declare(
       googletest
       GIT_REPOSITORY https://github.com/google/googletest.git
-      GIT_TAG v1.16.0
+      GIT_TAG v1.17.0
   )
   
   # TODO CMake 3.28, we can pass EXCLUDE_FROM_ALL directly to fetchcontent_makeavailable
@@ -91,6 +91,7 @@ mdspan_add_test(test_layout_preconditions ENABLE_PRECONDITIONS)
 
 mdspan_add_test(test_dims)
 mdspan_add_test(test_extents)
+mdspan_add_test(test_mdspan_at)
 mdspan_add_test(test_mdspan_ctors)
 mdspan_add_test(test_mdspan_swap)
 mdspan_add_test(test_mdspan_conversion)
@@ -102,8 +103,8 @@ mdspan_add_test(test_layout_stride)
 if(NOT CMAKE_CXX_STANDARD STREQUAL "14")
   mdspan_add_test(test_submdspan)
   mdspan_add_test(test_submdspan_static_slice)
-  mdspan_add_test(test_layout_padded_left)
-  mdspan_add_test(test_layout_padded_right)
+  mdspan_add_test(test_layout_padded_left ENABLE_PRECONDITIONS)
+  mdspan_add_test(test_layout_padded_right ENABLE_PRECONDITIONS)
 endif()
 # both of those don't work yet since its using vector
 if(NOT MDSPAN_ENABLE_CUDA AND NOT MDSPAN_ENABLE_HIP)

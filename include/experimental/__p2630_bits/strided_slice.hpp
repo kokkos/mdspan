@@ -37,7 +37,7 @@ concept __mdspan_integral_constant_like =
   std::bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value;
 #endif // MDSPAN_ENABLE_P3663
 
-namespace { // (anonymous)
+namespace detail {
   template<class T>
   struct mdspan_is_integral_constant: std::false_type {};
 
@@ -59,7 +59,7 @@ namespace { // (anonymous)
     mdspan_is_integral_constant<T>::value;
 #endif
     ;
-} // namespace (anonymous)
+} // namespace detail
 
 // Slice Specifier allowing for strides and compile time extent
 template <class OffsetType, class ExtentType, class StrideType>

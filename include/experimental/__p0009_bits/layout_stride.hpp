@@ -21,6 +21,10 @@
 #include "compressed_pair.hpp"
 #include "utility.hpp"
 
+#if MDSPAN_HAS_CXX_17
+#include "../__p2642_bits/layout_padded_fwd.hpp"
+#endif
+
 #if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
 #  include "no_unique_address.hpp"
 #endif
@@ -48,9 +52,27 @@ struct layout_right {
 };
 
 namespace detail {
+#if MDSPAN_HAS_CXX_17
+  using std::void_t;
+#else
+  template<class...> using void_t = void;
+#endif
+  // FIXME GCC <= 12: workaround gcc-12 bug that shows up in Kokkos; compilation fails when Mapping doesn't have
+  // extents_type. Normally this should just be a substitution failure, but causes an error with GCC <= 12
+  // FIXME MSVC: I guess MSVC has a similar issue when it hits Layout::template mapping
+  template<class, class, class = void, class = void>
+  struct is_mapping_of_impl : std::false_type {};
+
+  // FIXME GCC <= 12: We can't just do a conjunction of the two conditions, because the affected GCC versions seem to not
+  // short-circuit when resolving the substitution of Mapping
+  template<class Mapping, class Layout>
+  struct is_mapping_of_impl<Mapping, Layout, void_t<typename Mapping::extents_type>, void_t< typename Layout::template mapping<typename Mapping::extents_type> >>
+    : std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>
+  {};
+
   template<class Layout, class Mapping>
   constexpr bool is_mapping_of =
-    std::is_same<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>::value;
+    is_mapping_of_impl<Mapping, Layout>::value;
 
 #if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 #  if !defined(__cpp_lib_concepts)
@@ -73,7 +95,7 @@ namespace detail {
     { M::is_always_unique() } -> std::same_as<bool>;
 #else
     { M::is_always_strided() } -> internal::same_as<bool>;
-    { M::is_always_exhaustive() } -> internal::_ame_as<bool>;
+    { M::is_always_exhaustive() } -> internal::same_as<bool>;
     { M::is_always_unique() } -> internal::same_as<bool>;
 #endif
     std::bool_constant<M::is_always_strided()>::value;
@@ -203,7 +225,7 @@ struct layout_stride {
 
       MDSPAN_TEMPLATE_REQUIRES(
         class IntegralType,
-        (std::is_convertible<IntegralType, typename extents_type::index_type>::value)
+        (MDSPAN_IMPL_TRAIT(std::is_convertible, IntegralType, typename extents_type::index_type))
       )
       MDSPAN_INLINE_FUNCTION
       // Need to avoid zero length c-array
@@ -423,6 +445,8 @@ struct layout_stride {
       !(std::is_convertible<typename StridedLayoutMapping::extents_type, extents_type>::value &&
        (detail::is_mapping_of<layout_left, StridedLayoutMapping> ||
         detail::is_mapping_of<layout_right, StridedLayoutMapping> ||
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<StridedLayoutMapping>::value || // Don't need to guard for C++14 as this isn't compiled in < C++20
+        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_right_padded_mapping<StridedLayoutMapping>::value ||
         detail::is_mapping_of<layout_stride, StridedLayoutMapping>))
     ) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
@@ -458,7 +482,7 @@ struct layout_stride {
 #else
       return this->base_t::ref().first();
 #endif
-    };
+    }
 
     MDSPAN_INLINE_FUNCTION
     constexpr std::array< index_type, extents_type::rank() > strides() const noexcept {

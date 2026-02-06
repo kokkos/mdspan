@@ -1,9 +1,8 @@
 #define MDSPAN_INTERNAL_TEST
 #define MDSPAN_DEBUG
 #include <cassert>
-
-#include <mdspan/mdspan.hpp>
 #include <gtest/gtest.h>
+#include <mdspan/mdspan.hpp>
 
 namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
@@ -498,3 +497,86 @@ TEST(LayoutLeftTests, issue362) {
   auto mapping = KokkosEx::layout_left_padded< 5 >::mapping< Kokkos::extents< std::size_t, 2, 2 > >();
   ASSERT_EQ(mapping.required_span_size(), mapping(1, 1) + 1);
 }
+
+TEST(LayoutLeftTests, empty_span) {
+  {
+    auto mapping = KokkosEx::layout_left_padded<16>::mapping<
+        Kokkos::extents<std::size_t, 0, 15>>();
+    ASSERT_EQ(mapping.required_span_size(), 0);
+  }
+  {
+    auto mapping = KokkosEx::layout_left_padded<16>::mapping<
+        Kokkos::extents<std::size_t, 15, 0>>();
+    ASSERT_EQ(mapping.required_span_size(), 0);
+  }
+}
+
+// https://github.com/kokkos/mdspan/issues/393
+#define LAYOUT_LEFT_COMPILE_ISSUE393_DEATH 0
+TEST(LayoutLeftTests, issue393) {
+  // Should not compile
+#if LAYOUT_LEFT_COMPILE_ISSUE393_DEATH
+  {
+    // static extents size not representable
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded< 2 >::mapping< Kokkos::extents< std::int8_t, 50, 50 > >();
+  }
+  {
+    // Padding value not representable
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded< 500 >::mapping< Kokkos::extents< std::int8_t, 2, 2 > >();
+  }
+  {
+    // Padding value product with remaining extents is representable
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded< 50 >::mapping< Kokkos::extents< std::int8_t, 2, 50 > >();
+  }
+#endif
+
+  // Valid usage, should compile without narrowing warnings
+  {
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<5>::mapping<
+        Kokkos::extents<std::int16_t, 2, 50>>();
+  }
+
+  // Test runtime
+  // Note GTest deathtest macros are a bit annoying so we just declare the tests
+  // in lambdas separately
+  auto test_extents_not_representable = []{
+      // extents not representable
+      [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<2>::mapping<
+          Kokkos::dextents<std::int8_t, 2>>{
+          Kokkos::dextents<std::int8_t, 2>{50, 50}};
+  };
+  EXPECT_DEATH(test_extents_not_representable(), "" );
+
+  auto test_padding_value_not_representable = []{
+    // Padding value not representable
+    [[maybe_unused]] auto mapping =
+        KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<
+            Kokkos::extents<std::int8_t, 2, 2>>{{}, 500};
+  };
+  EXPECT_DEATH(test_padding_value_not_representable(), "" );
+
+  auto test_padding_value_product_not_representable = []{
+    // Padding value product with remaining extents is representable
+    [[maybe_unused]] auto mapping =
+        KokkosEx::layout_left_padded<Kokkos::dynamic_extent>::mapping<
+            Kokkos::extents<std::int8_t, 2, 50>>{{}, 50};
+  };
+  EXPECT_DEATH(test_padding_value_product_not_representable(), "" );
+
+  auto test_padding_value_product_not_representable2 = []{
+    // Padding value product with remaining extents is representable
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<
+        Kokkos::dynamic_extent>::mapping<Kokkos::dextents<std::int8_t, 2>>{
+        Kokkos::dextents<std::int8_t, 2>{2, 50}, 50};
+  };
+  EXPECT_DEATH(test_padding_value_product_not_representable2(), "" );
+
+  auto test_padding_value_product_not_representable3 = []{
+    // Padding value product with remaining extents is representable
+    [[maybe_unused]] auto mapping = KokkosEx::layout_left_padded<50>::mapping<
+        Kokkos::dextents<std::int8_t, 2>>{
+        Kokkos::dextents<std::int8_t, 2>{2, 50}};
+  };
+  EXPECT_DEATH(test_padding_value_product_not_representable3(), "" );
+}
+#undef LAYOUT_LEFT_COMPILE_ISSUE393_DEATH

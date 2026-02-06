@@ -24,6 +24,7 @@ option(MDSPAN_ENABLE_OPENMP "Enable OpenMP benchmarks if benchmarks are enabled.
 option(MDSPAN_USE_SYSTEM_GTEST "Use system-installed GoogleTest library for tests." Off)
 option(MDSPAN_USE_SYSTEM_BENCHMARK "Use system-installed Google Benchmark library for benchmarks." On)
 option(MDSPAN_INSTALL_STDMODE_HEADERS "Whether to install headers to emulate standard library headers and namespaces" Off)
+option(MDSPAN_GENERATE_STD_NAMESPACE_TARGETS "Whether to generate and install targets with the std:: namespace instead of the mdspan:: namespace" Off)
 
 # Option to override which C++ standard to use
 set(MDSPAN_CXX_STANDARD DETECT CACHE STRING "Override the default CXX_STANDARD to compile with.")
@@ -132,7 +133,10 @@ endif()
 ################################################################################
 
 add_library(mdspan INTERFACE)
-add_library(std::mdspan ALIAS mdspan)
+add_library(mdspan::mdspan ALIAS mdspan)
+if (MDSPAN_GENERATE_STD_NAMESPACE_TARGETS)
+  add_library(std::mdspan ALIAS mdspan)
+endif()
 
 if(MDSPAN_ENABLE_SYCL)
   target_compile_options(mdspan INTERFACE "-fsycl")
@@ -152,14 +156,31 @@ install(TARGETS mdspan EXPORT mdspanTargets
 
 install(EXPORT mdspanTargets
     FILE mdspanTargets.cmake
-    NAMESPACE std::
+    NAMESPACE mdspan::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
 )
 
 export(TARGETS mdspan
-    NAMESPACE std::
+    NAMESPACE mdspan::
     FILE mdspanTargets.cmake
 )
+
+if (MDSPAN_GENERATE_STD_NAMESPACE_TARGETS)
+  install(TARGETS mdspan EXPORT mdspanStdTargets
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  )
+
+  install(EXPORT mdspanStdTargets
+      FILE mdspanStdTargets.cmake
+      NAMESPACE std::
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
+  )
+
+  export(TARGETS mdspan
+      NAMESPACE std::
+      FILE mdspanStdTargets.cmake
+  )
+endif()
 
 install(DIRECTORY include/mdspan DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 if (MDSPAN_INSTALL_STDMODE_HEADERS)
