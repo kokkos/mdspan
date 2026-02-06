@@ -70,7 +70,7 @@ static_assert(
     decltype(my_integral_constant<int, 1>::value)>);
 
 static_assert(
-  Kokkos::__mdspan_integral_constant_like<
+  Kokkos::detail::is_integral_constant_like_v<
     my_integral_constant<int, 1>
   >);
 #endif // MDSPAN_ENABLE_P3663

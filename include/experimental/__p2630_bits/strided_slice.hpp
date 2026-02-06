@@ -26,18 +26,6 @@
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
-#if defined(MDSPAN_ENABLE_P3663)
-
-#if defined(__cpp_lib_concepts)
-template<class T>
-concept __mdspan_integral_constant_like = detail::integral_constant_like<T>;
-#else
-template<class T>
-constexpr bool __mdspan_integral_constant_like = detail::is_integral_constant_like_v<T>;
-#endif
-
-#endif // MDSPAN_ENABLE_P3663
-
 namespace detail {
   template<class T>
   constexpr bool __mdspan_is_index_like_v =

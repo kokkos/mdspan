@@ -745,7 +745,7 @@ constexpr auto canonical_ice(S s) {
   // cast to IndexType before being used as the template argument
   // of `cw`, so we don't get a weird constant_wrapper whose value
   // has a different type than the second template argument.
-  if constexpr (__mdspan_integral_constant_like<S>) {
+  if constexpr (is_integral_constant_like_v<S>) {
     return std::cw<static_cast<IndexType>(index_cast<IndexType>(S::value))>;
   }
   else {
@@ -758,8 +758,8 @@ constexpr auto subtract_ice(X x, Y y) {
 #if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
   // Key to the work-around is acknowledging that GCC 11.4.0 can't find
   // constant_wrapper's overloaded arithmetic operators.
-  if constexpr (__mdspan_integral_constant_like<std::remove_cvref_t<X>> &&
-    __mdspan_integral_constant_like<std::remove_cvref_t<Y>>)
+  if constexpr (is_integral_constant_like_v<remove_cvref_t<X>> &&
+    is_integral_constant_like_v<remove_cvref_t<Y>>)
   {
     return std::cw<IndexType(canonical_ice<IndexType>(Y::value) - canonical_ice<IndexType>(X::value))>;
   }
@@ -776,7 +776,7 @@ constexpr T de_ice(T val) {
   return val;
 }
 
-template<__mdspan_integral_constant_like T>
+template<integral_constant_like T>
 constexpr auto de_ice(T) {
   return T::value;
 }
@@ -843,7 +843,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
     return check_static_bounds_result::in_bounds;
   }
   else if constexpr (std::is_convertible_v<S_k, IndexType>) {
-    if constexpr (__mdspan_integral_constant_like<S_k>) {
+    if constexpr (is_integral_constant_like_v<S_k>) {
       // integral-constant-like types are default constructible
       // in constant expressions, so it's OK to use S_k{} here
       // instead of std::declval.  Also, expressions like
@@ -868,7 +868,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
   else if constexpr (is_strided_slice<S_k>::value) {
     using offset_type = typename S_k::offset_type;
 
-    if constexpr (__mdspan_integral_constant_like<offset_type>) {
+    if constexpr (is_integral_constant_like_v<offset_type>) {
       if constexpr (de_ice(offset_type{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.3.1
       }
@@ -877,7 +877,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
       {
         return check_static_bounds_result::out_of_bounds; // 14.3.2
       }
-      else if constexpr (__mdspan_integral_constant_like<typename S_k::extent_type>) {
+      else if constexpr (is_integral_constant_like_v<typename S_k::extent_type>) {
         using extent_type = typename S_k::extent_type;
 
         if constexpr (de_ice(offset_type{}) + de_ice(extent_type{}) < 0) {
@@ -931,7 +931,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
     };
     using S_k0 = decltype(get_first(std::declval<S_k>()));
     using S_k1 = decltype(get_second(std::declval<S_k>()));
-    if constexpr (__mdspan_integral_constant_like<S_k0>) {
+    if constexpr (is_integral_constant_like_v<S_k0>) {
       if constexpr (de_ice(S_k0{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.4.1
       }
@@ -941,7 +941,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
       {
         return check_static_bounds_result::out_of_bounds; // 14.4.2
       }
-      else if constexpr (__mdspan_integral_constant_like<S_k1>) {
+      else if constexpr (is_integral_constant_like_v<S_k1>) {
         if constexpr (
           de_ice(S_k1{}) < de_ice(S_k0{}))
         {
