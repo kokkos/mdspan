@@ -70,7 +70,7 @@ namespace submdspan_benchmark {
 template<class ExecutionSpace,
   class IndexType, size_t... Exts,
   class Layout>
-void benchmark2_loop(ExecutionSpace exec_space,
+void benchmark2_loop([[maybe_unused]] ExecutionSpace exec_space,
   Kokkos::mdspan<std::uint8_t, Kokkos::extents<IndexType, Exts...>, Layout> out)
 {
   using mdspan_type = Kokkos::mdspan<std::uint8_t,
