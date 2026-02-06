@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "../__p0009_bits/macros.hpp"
+#include "integral_constant_like.hpp"
 #if defined(MDSPAN_ENABLE_P3663)
 #  include "constant_wrapper.hpp"
 #endif
@@ -27,14 +27,16 @@
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 #if defined(MDSPAN_ENABLE_P3663)
+
+#if defined(__cpp_lib_concepts)
 template<class T>
-concept __mdspan_integral_constant_like =
-  std::is_integral_v<std::remove_cvref_t<decltype(T::value)>> &&
-  ! std::is_same_v<bool, std::remove_cvref_t<decltype(T::value)>> &&
-  std::convertible_to<T, decltype(T::value)> &&
-  std::equality_comparable_with<T, decltype(T::value)> &&
-  std::bool_constant<T() == T::value>::value &&
-  std::bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value;
+concept __mdspan_integral_constant_like = detail::integral_constant_like<T>;
+#else
+template<class T>
+constexpr bool __mdspan_integral_constant_like = detail::is_integral_constant_like_v<T>;
+#endif
+
+
 #endif // MDSPAN_ENABLE_P3663
 
 namespace detail {
