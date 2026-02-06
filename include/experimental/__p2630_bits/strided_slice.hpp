@@ -40,11 +40,6 @@ constexpr bool __mdspan_integral_constant_like = detail::is_integral_constant_li
 
 namespace detail {
   template<class T>
-  struct mdspan_is_integral_constant :
-    std::bool_constant<is_integral_constant_like_v<T>>
-  {};
-
-  template<class T>
   constexpr bool __mdspan_is_index_like_v =
     (std::is_integral_v<T> && ! std::is_same_v<bool, T>) ||
     is_integral_constant_like_v<T>;
