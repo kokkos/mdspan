@@ -27,6 +27,15 @@
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 namespace detail {
+
+#if defined(MDSPAN_ENABLE_P3663)
+  template<class T, T Value>
+  using mdspan_constant_wrapper = decltype(std::cw<Value>);
+#else
+  template<class T, T Value>
+  using mdspan_constant_wrapper = std::integral_constant<T, Value>;
+#endif // MDSPAN_ENABLE_P3663
+
   template<class T>
   constexpr bool __mdspan_is_index_like_v =
     (std::is_integral_v<T> && ! std::is_same_v<bool, T>) ||
