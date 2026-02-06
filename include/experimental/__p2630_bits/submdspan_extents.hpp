@@ -295,16 +295,27 @@ first_of(const strided_slice<OffsetType, ExtentType, StrideType> &r) {
 // We need however not just the slice but also the extents
 // of the original view and which rank from the extents.
 // This is needed in the case of slice being full_extent_t.
-MDSPAN_TEMPLATE_REQUIRES(
+
+// clang++ with C++14 is not fond of the pragma appearing inside the
+// macro definition.  In that case, it complains, "error: embedding a
+// directive within macro arguments has undefined behavior
+// [-Werror,-Wembedded-directive]."  The fix is to duplicate code.
+
 #if defined(MDSPAN_ENABLE_P3663)
+MDSPAN_TEMPLATE_REQUIRES(
   auto k,
-#else
-  size_t k,
-#endif
   class Extents,
   class Integral,
   /* requires */(std::is_convertible_v<Integral, size_t>)
 )
+#else
+MDSPAN_TEMPLATE_REQUIRES(
+  size_t k,
+  class Extents,
+  class Integral,
+  /* requires */(std::is_convertible_v<Integral, size_t>)
+)
+#endif // MDSPAN_ENABLE_P3663
 MDSPAN_INLINE_FUNCTION
 constexpr Integral last_of(
 #if defined(MDSPAN_ENABLE_P3663)

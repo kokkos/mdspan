@@ -113,8 +113,10 @@ one_slice_out_of_bounds(const IndexType &ext, const Slice &slice) {
   // P3663 and no-P3663 cases, we don't want to copy the slice if not needed.
   // Thus, we introduce a special case.
   if constexpr (std::is_convertible_v<Slice, IndexType> &&
-    ! std::is_signed_v<std::remove_cvref_t<Slice>> &&
-    ! std::is_unsigned_v<std::remove_cvref_t<Slice>>)
+    ! std::is_signed_v<
+        std::remove_cv_t<std::remove_reference_t<Slice>>> &&
+    ! std::is_unsigned_v<
+        std::remove_cv_t<std::remove_reference_t<Slice>>>)
   {
     return first_of(static_cast<IndexType>(slice)) == ext; 
   }
