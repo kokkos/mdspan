@@ -283,17 +283,18 @@ struct constant_wrapper {
 };
 #else
 
-template<auto Value, class unspecified = decltype(Value)>
-struct constant_wrapper {
-  static constexpr exposition_only::cw_fixed_value<decltype(Value)> X{};
-  
-  static constexpr const auto & value = X.data;
-  using type = constant_wrapper;
-  using value_type = typename decltype(X)::type;
-
-  constexpr operator decltype(auto)() const noexcept { return value; }
-  constexpr decltype(auto) operator()() const noexcept { return value; }
+template<class T, T Value>
+struct constant_wrapper_impl
+{
+    static constexpr T value = Value;
+    using value_type = T;
+    using type = constant_wrapper_impl;
+    constexpr operator value_type() const noexcept { return value; }
+    constexpr value_type operator()() const noexcept { return value; }
 };
+
+template<auto Value, class T = decltype(Value)>
+using constant_wrapper = constant_wrapper_impl<T, Value>;
 
 #endif // (__cplusplus >= 202002L)
 
