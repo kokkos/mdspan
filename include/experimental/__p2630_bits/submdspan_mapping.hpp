@@ -75,10 +75,13 @@ template<class LayoutMapping>
 constexpr bool is_submdspan_mapping_result<
   submdspan_mapping_result<LayoutMapping>> = true;
 
+#if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 template<class LayoutMapping>
 concept submdspan_mapping_result =
   is_submdspan_mapping_result<LayoutMapping>;
+#endif // defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 
+#if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 template<class LayoutMapping>
 concept mapping_sliceable_with_full_extents =
   requires(const LayoutMapping& mapping) {
@@ -86,6 +89,32 @@ concept mapping_sliceable_with_full_extents =
       submdspan_mapping_with_full_extents(mapping)
     } -> submdspan_mapping_result;
   };
+
+template<class LayoutMapping>
+constexpr bool mapping_sliceable_with_full_extents_v =
+  mapping_sliceable_with_full_extents<LayoutMapping>;
+
+#else
+template<class LayoutMapping, class = void>
+struct mapping_sliceable_with_full_extents_impl : std::false_type {};
+
+template<class LayoutMapping>
+struct mapping_sliceable_with_full_extents_impl<
+  LayoutMapping,
+  std::void_t<
+    std::enable_if_t<
+      is_submdspan_mapping_result<
+        decltype(submdspan_mapping_with_full_extents(std::declval<const LayoutMapping&>()))
+      >
+    >
+  >
+> : std::true_type {};
+
+template<class LayoutMapping>
+constexpr bool mapping_sliceable_with_full_extents_v =
+  mapping_sliceable_with_full_extents_impl<LayoutMapping>::value;
+#endif // defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+
 #endif // MDSPAN_ENABLE_P3663
 
 // We use const Slice& and not Slice&& because the various

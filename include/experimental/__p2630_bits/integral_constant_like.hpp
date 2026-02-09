@@ -31,14 +31,23 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
   namespace detail { 
 
+    template<class T, class = void>
+    struct is_integral_constant_like_impl : std::false_type {};
+
     template<class T>
-    constexpr bool is_integral_constant_like_v =
-      std::is_integral_v<remove_cvref_t<decltype(T::value)>> &&
-      ! std::is_same_v<bool, remove_cvref_t<decltype(T::value)>> &&
-      std::is_convertible_v<T, decltype(T::value)> &&
-      is_equality_comparable_with<T, decltype(T::value)>::value &&
-      std::bool_constant<T() == T::value>::value &&
-      std::bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value;
+    struct is_integral_constant_like_impl<T, void_t<decltype(T::value), decltype(T())>> :
+      std::bool_constant<
+        std::is_integral_v<remove_cvref_t<decltype(T::value)>> &&
+        ! std::is_same_v<bool, remove_cvref_t<decltype(T::value)>> &&
+        std::is_convertible_v<T, decltype(T::value)> &&
+        is_equality_comparable_with<T, decltype(T::value)>::value &&
+        std::bool_constant<T() == T::value>::value &&
+        std::bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value
+      >
+    {};
+
+    template<class T>
+    constexpr bool is_integral_constant_like_v = is_integral_constant_like_impl<T>::value;
 
   } // namespace detail
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
