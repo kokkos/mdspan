@@ -692,22 +692,37 @@ struct extents_constructor<0, Extents, NewStaticExtents...> {
 
 namespace detail {
 
-template<class IndexType, class OtherIndexType>
-  requires(std::is_signed_v<remove_cvref_t<OtherIndexType>> ||
-    std::is_unsigned_v<remove_cvref_t<OtherIndexType>>)
+MDSPAN_TEMPLATE_REQUIRES(
+  class IndexType,
+  class OtherIndexType,
+  /* requires */ (
+    std::is_signed_v<remove_cvref_t<OtherIndexType>> ||
+    std::is_unsigned_v<remove_cvref_t<OtherIndexType>>
+  )
+)
 constexpr auto index_cast(OtherIndexType&& i) noexcept {
   return i;
 }
 
-template<class IndexType, class OtherIndexType>
-  requires(! std::is_signed_v<remove_cvref_t<OtherIndexType>> &&
-    !std::is_unsigned_v<remove_cvref_t<OtherIndexType>>)
+MDSPAN_TEMPLATE_REQUIRES(
+  class IndexType,
+  class OtherIndexType,
+  /* requires */ (
+    ! std::is_signed_v<remove_cvref_t<OtherIndexType>> &&
+    ! std::is_unsigned_v<remove_cvref_t<OtherIndexType>>
+  )
+)
 constexpr auto index_cast(OtherIndexType&& i) noexcept {
   return static_cast<IndexType>(i);
 }
 
-template<class IndexType, class S>
-  requires std::convertible_to<S, IndexType>
+MDSPAN_TEMPLATE_REQUIRES(
+  class IndexType,
+  class S,
+  /* requires */ (
+    std::is_convertible_v<S, IndexType>
+  )
+)
 constexpr auto canonical_ice(S s) {
   static_assert(std::is_signed_v<IndexType> || std::is_unsigned_v<IndexType>);
   // TODO Mandates: If S models integral-constant-like and if
@@ -754,7 +769,12 @@ constexpr T de_ice(T val) {
   return val;
 }
 
-template<integral_constant_like T>
+MDSPAN_TEMPLATE_REQUIRES(
+  class T,
+  /* requires */ (
+    is_integral_constant_like_v<T>
+  )
+)
 constexpr auto de_ice(T) {
   return T::value;
 }
@@ -1152,28 +1172,51 @@ submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Sli
 
 } // namespace detail
 
-template<class IndexType, size_t... Extents, class... Slices>
-  requires (sizeof...(Slices) == sizeof...(Extents)) // [mdspan.sub.slices] 8
+MDSPAN_TEMPLATE_REQUIRES(
+  size_t... Inds,
+  class IndexType,
+  size_t... Extents,
+  class... Slices,
+  /* requires */ (
+    sizeof...(Slices) == sizeof...(Extents)
+  )
+)
 MDSPAN_INLINE_FUNCTION
 constexpr auto
-submdspan_canonicalize_slices(const extents<IndexType, Extents...>& exts, Slices... slices)
+submdspan_canonicalize_slices_impl(
+  std::index_sequence<Inds...>,
+  const extents<IndexType, Extents...>& exts,
+  Slices... slices)
 {
-  return [&]<size_t... Inds>(std::index_sequence<Inds...>) {
-    return std::tuple{
-      // This is ill-formed if slices...[Inds] is not a valid slice type.
-      // That implements the Mandates clause of [mdspan.sub.slices] 9.
-      detail::submdspan_canonicalize_one_slice<Inds>(
-        exts,
-      // Clang 21 accepts this code.
-      // GCC 15.1.0 emits an error: "cannot index an empty pack."
+  return std::tuple{
+    // This is ill-formed if slices...[Inds] is not a valid slice type.
+    // That implements the Mandates clause of [mdspan.sub.slices] 9.
+    detail::submdspan_canonicalize_one_slice<Inds>(
+      exts,
+    // Clang 21 accepts this code.
+    // GCC 15.1.0 emits an error: "cannot index an empty pack."
 #if defined(__cpp_pack_indexing) && (! (defined(__GNUC__) && (__GNUC__ < 16)))
-        slices...[Inds]
+      slices...[Inds]
 #else
-        detail::get_kth_in_pack<Inds>(slices...)
+      detail::get_kth_in_pack<Inds>(slices...)
 #endif
-      )...
-    };
-  } (std::make_index_sequence<sizeof...(Slices)>{});
+    )...
+  };
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class IndexType,
+  size_t... Extents,
+  class... Slices,
+  /* requires */ (
+    sizeof...(Slices) == sizeof...(Extents)
+  )
+)
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan_canonicalize_slices(const extents<IndexType, Extents...>& exts, Slices&&... slices)
+{
+  return submdspan_canonicalize_slices_impl(std::make_index_sequence<sizeof...(Slices)>(), exts, slices...);
 }
 #endif // MDSPAN_ENABLE_P3663
 
