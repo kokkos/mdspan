@@ -102,6 +102,31 @@ namespace detail {
     std::bool_constant<M::is_always_exhaustive()>::value;
     std::bool_constant<M::is_always_unique()>::value;
   };
+
+  template<class M>
+  constexpr bool is_layout_mapping_alike_v = layout_mapping_alike<M>;
+
+#else
+
+  // C++17-compatible implementation of layout_mapping_alike (used for is_layout_stride_mapping_v)
+  template<class M, class = void>
+  struct is_layout_mapping_alike_impl : std::false_type {};
+
+  template<class M>
+  struct is_layout_mapping_alike_impl<M, void_t<
+    typename M::extents_type,
+    std::enable_if_t<impl_is_extents<typename M::extents_type>::value>,
+    std::enable_if_t<std::is_same<decltype(M::is_always_strided()), bool>::value>,
+    std::enable_if_t<std::is_same<decltype(M::is_always_exhaustive()), bool>::value>,
+    std::enable_if_t<std::is_same<decltype(M::is_always_unique()), bool>::value>,
+    std::bool_constant<M::is_always_strided()>,
+    std::bool_constant<M::is_always_exhaustive()>,
+    std::bool_constant<M::is_always_unique()>
+  >> : std::true_type {};
+
+  template<class M>
+  constexpr bool is_layout_mapping_alike_v = is_layout_mapping_alike_impl<M>::value;
+
 #endif
 
 } // namespace detail

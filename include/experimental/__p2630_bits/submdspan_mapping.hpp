@@ -54,7 +54,12 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 namespace detail {
 
 #if defined(MDSPAN_ENABLE_P3663)
-template<layout_mapping_alike LayoutMapping>
+MDSPAN_TEMPLATE_REQUIRES(
+  class LayoutMapping,
+  /* requires */ (
+    is_layout_mapping_alike_v<LayoutMapping>
+  )
+)
 constexpr auto
 submdspan_mapping_with_full_extents(const LayoutMapping& mapping) {
   using extents_type = typename LayoutMapping::extents_type;
