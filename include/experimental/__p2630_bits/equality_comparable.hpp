@@ -56,8 +56,8 @@ namespace detail {
       decltype(std::declval<const U&>() != std::declval<const T&>())
     >
   > : std::bool_constant<
-    std::is_equality_comparable<T>::value &&
-    std::is_equality_comparable<U>::value &&
+    is_equality_comparable<T>::value &&
+    is_equality_comparable<U>::value &&
     std::is_convertible_v<
       decltype(std::declval<const T&>() == std::declval<const U&>()),
       bool

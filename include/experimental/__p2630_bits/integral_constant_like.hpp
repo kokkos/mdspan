@@ -35,8 +35,8 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
     constexpr bool is_integral_constant_like_v =
       std::is_integral_v<remove_cvref_t<decltype(T::value)>> &&
       ! std::is_same_v<bool, remove_cvref_t<decltype(T::value)>> &&
-      std::is_convertible_to_v<T, decltype(T::value)> &&
-      is_equality_comparable_with_v<T, decltype(T::value)> &&
+      std::is_convertible_v<T, decltype(T::value)> &&
+      is_equality_comparable_with<T, decltype(T::value)>::value &&
       std::bool_constant<T() == T::value>::value &&
       std::bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value;
 

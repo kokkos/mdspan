@@ -25,34 +25,21 @@
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
-#if defined(MDSPAN_ENABLE_P3663)
-template<class T>
-constexpr bool is_constant_wrapper = false;
-
-template<auto Value, class Type>
-constexpr bool is_constant_wrapper<std::constant_wrapper<Value, Type>> = true;
-#endif
-
 // Mapping from submapping ranks to srcmapping ranks
 // InvMapRank is an index_sequence, which we build recursively
 // to contain the mapped indices.
 // end of recursion specialization containing the final index_sequence
 
+// NOTE (mfh 2026/02/06) This inexplicably only works with std::integral_constant.
+// That's fine; it's not exposed to users anyway.
+
 template<
-#if defined(MDSPAN_ENABLE_P3663)
-  auto Counter,
-#else
   size_t Counter,
-#endif
   size_t... MapIdxs
 >
 MDSPAN_INLINE_FUNCTION
-constexpr auto inv_map_rank(
-#if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<Counter>,
-#else
+constexpr auto inv_map_rank_impl(
   std::integral_constant<size_t, Counter>,
-#endif
   std::index_sequence<MapIdxs...>)
 {
   return std::index_sequence<MapIdxs...>();
@@ -60,52 +47,41 @@ constexpr auto inv_map_rank(
 
 // specialization reducing rank by one (i.e., integral slice specifier)
 template<
-#if defined(MDSPAN_ENABLE_P3663)
-  auto Counter,
-#else
   size_t Counter,
-#endif
   class Slice,
   class... SliceSpecifiers,
   size_t... MapIdxs>
 MDSPAN_INLINE_FUNCTION
-constexpr auto inv_map_rank(
-#if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<Counter> counter,
-#else
-  std::integral_constant<size_t, Counter>,
-#endif
+constexpr auto inv_map_rank_impl(
+  std::integral_constant<size_t, Counter> counter,
   std::index_sequence<MapIdxs...>,
   Slice,
   SliceSpecifiers... slices)
 {
-  constexpr size_t counter_value = 
-#if defined(MDSPAN_ENABLE_P3663)
-    decltype(counter){}();
-#else
-    Counter;
-#endif
-
   using next_idx_seq_t = std::conditional_t<
       std::is_convertible_v<Slice, size_t>,
       std::index_sequence<MapIdxs...>,
-      std::index_sequence<MapIdxs..., counter_value>
+      std::index_sequence<MapIdxs..., Counter>
     >;
 
-#if defined(MDSPAN_ENABLE_P3663) && ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-  static_assert(std::is_same_v<
-      decltype(counter + std::cw<size_t(1)>),
-      std::constant_wrapper<counter_value + size_t(1)>
-    >);
-#endif
-
-  return inv_map_rank(
-#if defined(MDSPAN_ENABLE_P3663)
-    std::cw<counter_value + size_t(1)>,
-#else
+  return inv_map_rank_impl(
     std::integral_constant<size_t, Counter + 1>(),
-#endif
     next_idx_seq_t(),
+    slices...);
+}
+
+template<
+  class... SliceSpecifiers,
+  size_t... MapIdxs
+>
+MDSPAN_INLINE_FUNCTION
+constexpr auto inv_map_rank(
+  std::index_sequence<MapIdxs...> seq,
+  SliceSpecifiers... slices)
+{
+  return inv_map_rank_impl(
+    std::integral_constant<size_t, 0>(),
+    seq,
     slices...);
 }
 
@@ -158,8 +134,10 @@ struct index_pair_like<std::array<IdxT, 2>, IndexType> {
 
 #if defined(MDSPAN_ENABLE_P3663)
 
-template<class Integral>
-  requires (std::is_signed_v<Integral> || std::is_unsigned_v<Integral>)
+MDSPAN_TEMPLATE_REQUIRES(
+  class Integral,
+  /* requires */(std::is_signed_v<Integral> || std::is_unsigned_v<Integral>)
+)
 MDSPAN_INLINE_FUNCTION
 constexpr Integral first_of(Integral i) {
   return i;
@@ -715,15 +693,15 @@ struct extents_constructor<0, Extents, NewStaticExtents...> {
 namespace detail {
 
 template<class IndexType, class OtherIndexType>
-  requires(std::is_signed_v<std::remove_cvref_t<OtherIndexType>> ||
-    std::is_unsigned_v<std::remove_cvref_t<OtherIndexType>>)
+  requires(std::is_signed_v<remove_cvref_t<OtherIndexType>> ||
+    std::is_unsigned_v<remove_cvref_t<OtherIndexType>>)
 constexpr auto index_cast(OtherIndexType&& i) noexcept {
   return i;
 }
 
 template<class IndexType, class OtherIndexType>
-  requires(! std::is_signed_v<std::remove_cvref_t<OtherIndexType>> &&
-    !std::is_unsigned_v<std::remove_cvref_t<OtherIndexType>>)
+  requires(! std::is_signed_v<remove_cvref_t<OtherIndexType>> &&
+    !std::is_unsigned_v<remove_cvref_t<OtherIndexType>>)
 constexpr auto index_cast(OtherIndexType&& i) noexcept {
   return static_cast<IndexType>(i);
 }
