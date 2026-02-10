@@ -32,7 +32,7 @@ namespace detail {
   {
     return submdspan_mapping(src_mapping, std::forward<Slices>(slices)...);
   }
-};
+}
 
 } // namespace detail
 

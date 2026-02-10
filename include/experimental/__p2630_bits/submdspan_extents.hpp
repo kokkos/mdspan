@@ -1064,12 +1064,33 @@ constexpr decltype(auto) get_kth_in_pack(First&& first, Rest&&... rest) {
 }
 #endif
 
+#if (__cplusplus < 202002L)
+template<size_t... Inds, class IndexType, size_t... Extents, class ... Slices>
+MDSPAN_INLINE_FUNCTION
+constexpr void
+check_canonical_kth_subdmspan_slice_types_impl(
+  std::index_sequence<Inds...>,
+  const extents<IndexType, Extents...>& exts,
+  Slices... slices)
+{
+  (check_canonical_kth_submdspan_slice_type<Inds>(
+    exts,
+    slices...[Inds]), ...);
+}
+#endif // (__cplusplus < 202002L)
+
 template<class IndexType, size_t... Extents, class ... Slices>
 MDSPAN_INLINE_FUNCTION
 constexpr void
 check_canonical_kth_subdmspan_slice_types(
   const extents<IndexType, Extents...>& exts, Slices... slices)
 {
+#if (__cplusplus < 202002L)
+  check_canonical_kth_subdmspan_slice_types_impl<IndexType, Extents...>(
+    std::make_index_sequence<sizeof...(Slices)>{}, exts, slices...);
+#else
+  // We really want to keep the C++20 branch here
+  // because it could offer compile time advantages.
   [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
     (check_canonical_kth_submdspan_slice_type<Inds>(
       exts,
@@ -1080,6 +1101,7 @@ check_canonical_kth_subdmspan_slice_types(
 #endif
     ), ...);
   } (std::make_index_sequence<sizeof...(Slices)>{});
+#endif // (__cplusplus < 202002L)
 }
 
 // [mdspan.sub.slices] 11
