@@ -1108,7 +1108,7 @@ check_canonical_kth_subdmspan_slice_types(
 template<size_t k, class Slice, class IndexType, size_t... Extents>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
-submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Slice s) {
+submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, [[maybe_unused]] Slice s) {
   // Part of [mdspan.sub.slices] 9.
   // This could be combined with the if constexpr branches below.
 #if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
