@@ -396,7 +396,7 @@ template <
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(
 #if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<k>,
+  std::constant_wrapper<k> k_input,
 #else
   std::integral_constant<size_t, k>,
 #endif
@@ -404,7 +404,7 @@ constexpr auto last_of(
   ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t)
 {
 #if defined(MDSPAN_ENABLE_P3663)
-  constexpr size_t k_value = std::constant_wrapper<k>{}();
+  constexpr size_t k_value = k_input();
 #else
   constexpr size_t k_value = k;
 #endif
@@ -876,8 +876,9 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
       if constexpr (de_ice(offset_type{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.3.1
       }
+      // We know de_ice(offset_type{}) >= 0, so the cast to size_t should be safe.
       else if constexpr (
-        Exts_k != dynamic_extent && Exts_k < de_ice(offset_type{}))
+        Exts_k != dynamic_extent && Exts_k < static_cast<size_t>(de_ice(offset_type{})))
       {
         return check_static_bounds_result::out_of_bounds; // 14.3.2
       }
@@ -887,9 +888,11 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
         if constexpr (de_ice(offset_type{}) + de_ice(extent_type{}) < 0) {
           return check_static_bounds_result::out_of_bounds; // 14.3.3
         }
+        // We know de_ice(offset_type{}) + de_ice(extent_type{}) >= 0,
+        // so the cast to size_t should be safe.
         else if constexpr (
           Exts_k != dynamic_extent &&
-          Exts_k < de_ice(offset_type{}) + de_ice(extent_type{}))
+          Exts_k < static_cast<size_t>(de_ice(offset_type{}) + de_ice(extent_type{})))
         {
           return check_static_bounds_result::out_of_bounds; // 14.3.4
         }
@@ -939,7 +942,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
       if constexpr (de_ice(S_k0{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.4.1
       }
-      // We know de_ice(S_k0{}) is nonnegative here, so the cast to size_t should be safe.
+      // We know de_ice(S_k0{}) >= 0, so the cast to size_t should be safe.
       else if constexpr (
         Exts_k != dynamic_extent &&
         Exts_k < static_cast<size_t>(de_ice(S_k0{})))
@@ -952,7 +955,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
         {
           return check_static_bounds_result::out_of_bounds; // 14.4.3
         }
-        // We know de_ice(S_k1{}) >= de_ice(S_k0{}) >= 0 here,
+        // We know de_ice(S_k1{}) >= de_ice(S_k0{}) >= 0,
         // so the cast to size_t should be safe.
         else if constexpr (
           Exts_k != dynamic_extent &&
