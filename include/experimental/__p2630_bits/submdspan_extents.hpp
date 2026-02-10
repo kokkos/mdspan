@@ -723,7 +723,7 @@ MDSPAN_TEMPLATE_REQUIRES(
     std::is_convertible_v<S, IndexType>
   )
 )
-constexpr auto canonical_ice(S s) {
+constexpr auto canonical_ice([[maybe_unused]] S s) {
   static_assert(std::is_signed_v<IndexType> || std::is_unsigned_v<IndexType>);
   // TODO Mandates: If S models integral-constant-like and if
   // decltype(S::value) is a signed or unsigned integer type, then
@@ -854,10 +854,11 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
       if constexpr (de_ice(S_k{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.3.1
       }
-      else if constexpr (Exts_k != dynamic_extent && Exts_k <= de_ice(S_k{})) {
+      // We know de_ice(S_k{}) is nonnegative here, so the cast to size_t should be safe.
+      else if constexpr (Exts_k != dynamic_extent && Exts_k <= static_cast<size_t>(de_ice(S_k{}))) {
         return check_static_bounds_result::out_of_bounds;
       }
-      else if constexpr (Exts_k != dynamic_extent && de_ice(S_k{}) < Exts_k) {
+      else if constexpr (Exts_k != dynamic_extent && static_cast<size_t>(de_ice(S_k{})) < Exts_k) {
         return check_static_bounds_result::in_bounds;
       }
       else {
@@ -938,9 +939,10 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
       if constexpr (de_ice(S_k0{}) < 0) {
         return check_static_bounds_result::out_of_bounds; // 14.4.1
       }
+      // We know de_ice(S_k0{}) is nonnegative here, so the cast to size_t should be safe.
       else if constexpr (
         Exts_k != dynamic_extent &&
-        Exts_k < de_ice(S_k0{}))
+        Exts_k < static_cast<size_t>(de_ice(S_k0{})))
       {
         return check_static_bounds_result::out_of_bounds; // 14.4.2
       }
@@ -950,9 +952,11 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
         {
           return check_static_bounds_result::out_of_bounds; // 14.4.3
         }
+        // We know de_ice(S_k1{}) >= de_ice(S_k0{}) >= 0 here,
+        // so the cast to size_t should be safe.
         else if constexpr (
           Exts_k != dynamic_extent &&
-          Exts_k < de_ice(S_k1{}))
+          Exts_k < static_cast<size_t>(de_ice(S_k1{})))
         {
           return check_static_bounds_result::out_of_bounds; // 14.4.4
         }
