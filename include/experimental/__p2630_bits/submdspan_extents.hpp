@@ -53,7 +53,7 @@ template<
   size_t... MapIdxs>
 MDSPAN_INLINE_FUNCTION
 constexpr auto inv_map_rank_impl(
-  std::integral_constant<size_t, Counter> counter,
+  std::integral_constant<size_t, Counter>,
   std::index_sequence<MapIdxs...>,
   Slice,
   SliceSpecifiers... slices)
