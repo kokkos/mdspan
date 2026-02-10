@@ -212,9 +212,9 @@ TEST(CanonicalizeSlices, Rank1_pair) {
   };
 #else
   constexpr auto expected_slices = std::tuple{Kokkos::strided_slice{
-    .offset = offset,
-    .extent = extent,
-    .stride = stride
+    /* .offset = */ offset,
+    /* .extent = */ extent,
+    /* .stride = */ stride
   }};
 #endif
   constexpr auto exts = Kokkos::extents<size_t, 13>{};
@@ -241,9 +241,9 @@ TEST(CanonicalizeSlices, Rank1_aggregate_pair) {
   };
 #else
   constexpr auto expected_slices = std::tuple{Kokkos::strided_slice{
-    .offset = offset,
-    .extent = extent,
-    .stride = stride
+    /* .offset = */ offset,
+    /* .extent = */ extent,
+    /* .stride = */ stride
   }};
 #endif
   constexpr auto exts = Kokkos::extents<size_t, 13>{};
@@ -270,9 +270,9 @@ TEST(CanonicalizeSlices, Rank1_nonaggregate_pair) {
   };
 #else
   constexpr auto expected_slices = std::tuple{Kokkos::strided_slice{
-    .offset = offset,
-    .extent = extent,
-    .stride = stride
+    /* .offset = */ offset,
+    /* .extent = */ extent,
+    /* .stride = */ stride
   }};
 #endif
   constexpr auto exts = Kokkos::extents<size_t, 13>{};
