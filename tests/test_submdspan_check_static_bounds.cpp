@@ -187,19 +187,30 @@ void test_check_static_bounds(
   ;
 }
 
+template<size_t... Indices, class Extents>
+void test_full_extent_impl_0(
+  std::index_sequence<Indices...>,
+  const Extents& extents)
+{
+  using Kokkos::detail::check_static_bounds_result;
+  (test_check_static_bounds<Indices, Kokkos::full_extent_t>(extents, check_static_bounds_result::in_bounds), ...);
+}
+
+template<size_t... Indices, class Extents>
+void test_full_extent_impl_1(
+  std::index_sequence<Indices...>,
+  const Extents& extents)
+{
+  using Kokkos::detail::check_static_bounds_result;
+  (test_check_static_bounds<Indices, convertible_to_full_extent_t>(extents, check_static_bounds_result::in_bounds), ...);
+}
+
 template<class IndexType, size_t ... Exts>
 void test_full_extent(
   Kokkos::extents<IndexType, Exts...> extents)
 {
-  using Kokkos::detail::check_static_bounds_result;
-
-  [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
-    (test_check_static_bounds<Inds, Kokkos::full_extent_t>(extents, check_static_bounds_result::in_bounds), ...);
-  } (std::make_index_sequence<sizeof...(Exts)>());
-
-  [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
-    (test_check_static_bounds<Inds, convertible_to_full_extent_t>(extents, check_static_bounds_result::in_bounds), ...);
-  } (std::make_index_sequence<sizeof...(Exts)>());
+  test_full_extent_impl_0(std::make_index_sequence<sizeof...(Exts)>(), extents);
+  test_full_extent_impl_1(std::make_index_sequence<sizeof...(Exts)>(), extents);
 }
 
 template<int Value>
