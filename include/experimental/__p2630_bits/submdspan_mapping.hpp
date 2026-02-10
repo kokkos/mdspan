@@ -67,7 +67,6 @@ constexpr auto
 submdspan_mapping_with_full_extents_impl(
   const LayoutMapping& mapping, std::index_sequence<Inds...>)
 {
-  using extents_type = typename LayoutMapping::extents_type;
   return submdspan_mapping(mapping, ((void) Inds, full_extent)...);
 }
 
