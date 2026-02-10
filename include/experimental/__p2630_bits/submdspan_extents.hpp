@@ -1140,9 +1140,9 @@ submdspan_canonicalize_one_slice(const extents<IndexType, Extents...>& exts, Sli
     return strided_slice<decltype(offset),
                          decltype(extent),
                          decltype(stride)> {
-      .offset = offset,
-      .extent = extent,
-      .stride = stride
+      /* .offset = */ offset,
+      /* .extent = */ extent,
+      /* .stride = */ stride
     };
 #endif
   }
