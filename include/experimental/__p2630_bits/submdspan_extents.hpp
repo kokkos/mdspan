@@ -764,7 +764,12 @@ constexpr auto subtract_ice(X x, Y y) {
 #endif
 }
 
-template<class T>
+MDSPAN_TEMPLATE_REQUIRES(
+  class T,
+  /* requires */ (
+    std::is_integral_v<remove_cvref_t<T>>
+  )
+)
 constexpr T de_ice(T val) {
   return val;
 }
@@ -772,10 +777,10 @@ constexpr T de_ice(T val) {
 MDSPAN_TEMPLATE_REQUIRES(
   class T,
   /* requires */ (
-    is_integral_constant_like_v<T>
+    is_integral_constant_like_v<remove_cvref_t<T>>
   )
 )
-constexpr auto de_ice(T) {
+constexpr decltype(T::value) de_ice(T) {
   return T::value;
 }
 
