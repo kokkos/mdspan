@@ -64,4 +64,9 @@ struct strided_slice {
   static_assert(detail::__mdspan_is_index_like_v<StrideType>);
 };
 
+#if (__cplusplus < 202002L)
+template <class OffsetType, class ExtentType, class StrideType>
+strided_slice(const OffsetType&, const ExtentType&, const StrideType&) ->
+  strided_slice<OffsetType, ExtentType, StrideType>;
+#endif
 } // MDSPAN_IMPL_STANDARD_NAMESPACE

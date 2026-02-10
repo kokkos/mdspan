@@ -46,8 +46,13 @@ template<class T, T Value>
 constexpr auto IC = std::integral_constant<T, Value>{};
 
 #if defined(MDSPAN_ENABLE_P3663)
-template<std::integral T, T Value>
-  requires(! std::is_same_v<T, bool>)
+MDSPAN_TEMPLATE_REQUIRES(
+  class T,
+  T Value,
+  /* requires */ (
+    std::is_integral_v<T> && ! std::is_same_v<T, bool>
+  )
+)
 struct my_integral_constant {
   static constexpr T value = Value;
   constexpr operator T () const { return value; }
@@ -60,14 +65,14 @@ template<class T, T Value>
 constexpr auto IC2 = my_integral_constant<T, Value>{};
 
 static_assert(
-  std::convertible_to<
+  std::is_convertible_v<
     my_integral_constant<int, 1>,
     decltype(my_integral_constant<int, 1>::value)>);
 
 static_assert(
-  std::equality_comparable_with<
+  Kokkos::detail::is_equality_comparable_with<
     my_integral_constant<int, 1>,
-    decltype(my_integral_constant<int, 1>::value)>);
+    decltype(my_integral_constant<int, 1>::value)>::value);
 
 static_assert(
   Kokkos::detail::is_integral_constant_like_v<

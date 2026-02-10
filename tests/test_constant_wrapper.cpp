@@ -79,9 +79,11 @@ TEST(TestConstantWrapper, IntegerPlus) {
   constexpr size_t value3 = decltype(cw_11)();
   static_assert(value == value3);
 
+#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND) && (__cplusplus >= 202002L)
   static_assert(std::is_same_v<
     decltype(cw_11),
     decltype(std::cw<size_t(11)>)>);
+#endif
 
   [[maybe_unused]] auto expected_result = std::cw<size_t(12)>;
   using expected_type = std::constant_wrapper<size_t(12)>;
