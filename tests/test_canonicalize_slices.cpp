@@ -140,7 +140,8 @@ test_canonicalize_slices(
 {
   auto result = Kokkos::submdspan_canonicalize_slices(input_extents, slices...);
   [&] <size_t... Indices> (std::index_sequence<Indices...>) {
-    auto test_one = [&] <size_t Ind> (std::integral_constant<size_t, Ind>) {
+    // We need maybe_unused in case the pack is empty.
+    [[maybe_unused]] auto test_one = [&] <size_t Ind> (std::integral_constant<size_t, Ind>) {
       using std::get;     
       auto left = get<Ind>(result);
       auto right = get<Ind>(expected_result);

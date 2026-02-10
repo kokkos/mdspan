@@ -1075,7 +1075,7 @@ check_canonical_kth_subdmspan_slice_types_impl(
 {
   (check_canonical_kth_submdspan_slice_type<Inds>(
     exts,
-    slices...[Inds]), ...);
+    get_kth_in_pack<Inds>(slices...)), ...);
 }
 #endif // (__cplusplus < 202002L)
 
@@ -1086,8 +1086,8 @@ check_canonical_kth_subdmspan_slice_types(
   const extents<IndexType, Extents...>& exts, Slices... slices)
 {
 #if (__cplusplus < 202002L)
-  check_canonical_kth_subdmspan_slice_types_impl<IndexType, Extents...>(
-    std::make_index_sequence<sizeof...(Slices)>{}, exts, slices...);
+  check_canonical_kth_subdmspan_slice_types_impl(
+    std::make_index_sequence<sizeof...(Slices)>(), exts, slices...);
 #else
   // We really want to keep the C++20 branch here
   // because it could offer compile time advantages.

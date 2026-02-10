@@ -24,7 +24,6 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 #if (__cplusplus < 202002L)
 
 namespace detail {
-
   template <class Mapping, class... Slices>
   constexpr auto submdspan_mapping_caller(
     const Mapping& src_mapping,
@@ -32,8 +31,6 @@ namespace detail {
   {
     return submdspan_mapping(src_mapping, std::forward<Slices>(slices)...);
   }
-}
-
 } // namespace detail
 
 #endif // (__cplusplus < 202002L)
@@ -62,28 +59,26 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
   auto canonical_slices_tuple =
     submdspan_canonicalize_slices(src.extents(), slices...);
 
-#if (__cplusplus >= 202002L)
+#    if (__cplusplus >= 202002L)
 
   auto sub_map_result = std::apply(
     [&] <class... TheSlices> (TheSlices&&... the_slices) {
       return submdspan_mapping(src.mapping(), std::forward<TheSlices>(the_slices)...);
     }, canonical_slices_tuple);
 
-#else
+#    else
 
   auto sub_map_result = std::apply(
-    submdspan_mapping_caller(
+    detail::submdspan_mapping_caller(
       src.mapping(),
-      std::forward<TheSlices>(the_slices)...
+      std::forward<SliceSpecifiers>(slices)...
     ),
     canonical_slices_tuple);
 
-#endif // (__cplusplus >= 202002L)
+#    endif // (__cplusplus >= 202002L)
 
-#  endif
+#  endif // defined(__cpp_structured_bindings) && (__cpp_structured_bindings >= 202411L)
 
-  // NOTE Added to P3663R2: It's src.data_handle(), not src.data().
-  // NOTE Added to P3663R2: Missing "typename" before AccessorPolicy::offset_policy.
   return mdspan(
     src.accessor().offset(src.data_handle(), sub_map_result.offset),
     sub_map_result.mapping,
@@ -100,6 +95,6 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
       src.accessor().offset(src.data_handle(), sub_submdspan_mapping_result.offset),
       sub_submdspan_mapping_result.mapping,
       sub_accessor_t(src.accessor()));
-#endif
+#endif // MDSPAN_ENABLE_P3663
 }
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
