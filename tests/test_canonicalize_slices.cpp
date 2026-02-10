@@ -131,6 +131,30 @@ constexpr bool slice_equal(
   return left.offset == right.offset && left.extent == right.extent && left.stride == right.stride;
 }
 
+template<size_t Index, class Result, class ExpectedResult>
+void
+test_canonicalize_slices_impl_one(
+  std::integral_constant<size_t, Index>,
+  const Result& result,
+  const ExpectedResult& expected_result)
+{
+  using std::get;     
+  auto left = get<Index>(result);
+  auto right = get<Index>(expected_result);
+  const bool outcome = slice_equal(left, right);
+  ASSERT_TRUE(outcome) << " failed for k=" << Index;
+}
+
+template<size_t... Indices, class Result, class ExpectedResult>
+void
+test_canonicalize_slices_impl(
+  std::index_sequence<Indices...>,
+  const Result& result,
+  const ExpectedResult& expected_result)
+{
+  (test_canonicalize_slices_impl_one(std::integral_constant<size_t, Indices>{}, result, expected_result), ...);
+}
+
 template<class ExpectedResult, class InputExtents, class... Slices>
 void
 test_canonicalize_slices(
@@ -139,19 +163,7 @@ test_canonicalize_slices(
   Slices... slices)
 {
   auto result = Kokkos::submdspan_canonicalize_slices(input_extents, slices...);
-  [&] <size_t... Indices> (std::index_sequence<Indices...>) {
-    // We need maybe_unused in case the pack is empty.
-    [[maybe_unused]] auto test_one = [&] <size_t Ind> (std::integral_constant<size_t, Ind>) {
-      using std::get;     
-      auto left = get<Ind>(result);
-      auto right = get<Ind>(expected_result);
-      const bool result = slice_equal(left, right);
-      // Below isn't well-formed for some reason -- a compiler bug?
-      //const bool result = slice_equal(get<Ind>(result), get<Ind>(expected_result));
-      ASSERT_TRUE(result) << " failed for k=" << Ind;
-    };
-    (test_one(std::integral_constant<size_t, Indices>{}), ...);
-  } (std::make_index_sequence<sizeof...(Slices)>());
+  test_canonicalize_slices_impl(std::make_index_sequence<sizeof...(Slices)>(), result, expected_result);
 }
 
 TEST(CanonicalizeSlices, Rank0) {
