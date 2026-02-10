@@ -20,6 +20,24 @@
 #include "submdspan_mapping.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+
+#if (__cplusplus < 202002L)
+
+namespace detail {
+
+  template <class Mapping, class... Slices>
+  constexpr auto submdspan_mapping_caller(
+    const Mapping& src_mapping,
+    Slices&&... slices)
+  {
+    return submdspan_mapping(src_mapping, std::forward<Slices>(slices)...);
+  }
+};
+
+} // namespace detail
+
+#endif // (__cplusplus < 202002L)
+
 template <class ElementType, class Extents, class LayoutPolicy,
           class AccessorPolicy, class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION
@@ -43,10 +61,24 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
 
   auto canonical_slices_tuple =
     submdspan_canonicalize_slices(src.extents(), slices...);
+
+#if (__cplusplus >= 202002L)
+
   auto sub_map_result = std::apply(
     [&] <class... TheSlices> (TheSlices&&... the_slices) {
       return submdspan_mapping(src.mapping(), std::forward<TheSlices>(the_slices)...);
     }, canonical_slices_tuple);
+
+#else
+
+  auto sub_map_result = std::apply(
+    submdspan_mapping_caller(
+      src.mapping(),
+      std::forward<TheSlices>(the_slices)...
+    ),
+    canonical_slices_tuple);
+
+#endif // (__cplusplus >= 202002L)
 
 #  endif
 
