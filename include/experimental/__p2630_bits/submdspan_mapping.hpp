@@ -54,6 +54,23 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 namespace detail {
 
 #if defined(MDSPAN_ENABLE_P3663)
+
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class LayoutMapping,
+  size_t... Inds,
+  /* requires */ (
+    is_layout_mapping_alike_v<LayoutMapping>
+  )
+)
+constexpr auto
+submdspan_mapping_with_full_extents_impl(
+  const LayoutMapping& mapping, std::index_sequence<Inds...>)
+{
+  using extents_type = typename LayoutMapping::extents_type;
+  return submdspan_mapping(mapping, ((void) Inds, full_extent)...);
+}
+
 MDSPAN_TEMPLATE_REQUIRES(
   class LayoutMapping,
   /* requires */ (
@@ -63,9 +80,9 @@ MDSPAN_TEMPLATE_REQUIRES(
 constexpr auto
 submdspan_mapping_with_full_extents(const LayoutMapping& mapping) {
   using extents_type = typename LayoutMapping::extents_type;
-  return [&] <size_t... Inds> (std::index_sequence<Inds...>) {   
-    return submdspan_mapping(mapping, ((void) Inds, full_extent)...);
-  } (std::make_index_sequence<extents_type::rank()>{});
+  constexpr size_t the_rank = extents_type::rank();
+  return submdspan_mapping_with_full_extents_impl(
+    mapping, std::make_index_sequence<the_rank>());
 }
 
 template<class T>
