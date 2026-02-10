@@ -21,16 +21,18 @@
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
-#if (__cplusplus < 202002L)
+#if defined(MDSPAN_ENABLE_P3663) && (! defined(__cpp_structured_bindings) || (__cpp_structured_bindings < 202411L))
 
 namespace detail {
-  template <class Mapping, class... Slices>
-  constexpr auto submdspan_mapping_caller(
-    const Mapping& src_mapping,
-    Slices&&... slices)
-  {
-    return submdspan_mapping(src_mapping, std::forward<Slices>(slices)...);
-  }
+  template<class Mapping>
+  struct submdspan_mapping_caller {
+    const Mapping& src_mapping;
+
+    template <class... Slices>
+    constexpr auto operator() (Slices&&... slices) const {
+      return submdspan_mapping(src_mapping, std::forward<Slices>(slices)...);
+    }
+  };
 } // namespace detail
 
 #endif // (__cplusplus < 202002L)
@@ -50,7 +52,6 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
 
   auto [...canonical_slices] =
     submdspan_canonicalize_slices(src.extents(), slices...);
-  // NOTE Added to P3663R2: [canonical_]slices (incorrect formatting).
   auto sub_map_result =
     submdspan_mapping(src.mapping(), canonical_slices...);
 
@@ -58,24 +59,10 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
 
   auto canonical_slices_tuple =
     submdspan_canonicalize_slices(src.extents(), slices...);
-
-#    if (__cplusplus >= 202002L)
-
+  using src_mapping_type = decltype(src.mapping()); // CTAD doesn't seem to work
   auto sub_map_result = std::apply(
-    [&] <class... TheSlices> (TheSlices&&... the_slices) {
-      return submdspan_mapping(src.mapping(), std::forward<TheSlices>(the_slices)...);
-    }, canonical_slices_tuple);
-
-#    else
-
-  auto sub_map_result = std::apply(
-    detail::submdspan_mapping_caller(
-      src.mapping(),
-      std::forward<SliceSpecifiers>(slices)...
-    ),
+    detail::submdspan_mapping_caller<src_mapping_type>{src.mapping()},
     canonical_slices_tuple);
-
-#    endif // (__cplusplus >= 202002L)
 
 #  endif // defined(__cpp_structured_bindings) && (__cpp_structured_bindings >= 202411L)
 
