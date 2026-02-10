@@ -274,66 +274,62 @@ first_of(const strided_slice<OffsetType, ExtentType, StrideType> &r) {
 // of the original view and which rank from the extents.
 // This is needed in the case of slice being full_extent_t.
 
+MDSPAN_TEMPLATE_REQUIRES(
+  class IntegralConstant,
+  class Extents,
+  class Integral,
+  /* requires */(
+    is_integral_constant_like_v<IntegralConstant> &&
+    std::is_convertible_v<Integral, size_t>
+  )
+)
+MDSPAN_INLINE_FUNCTION
+constexpr Integral last_of(
+  IntegralConstant,
+  const Extents&,
+  const Integral& i)
+{
+  return i;
+}
+
 // clang++ with C++14 is not fond of the pragma appearing inside the
 // macro definition.  In that case, it complains, "error: embedding a
 // directive within macro arguments has undefined behavior
 // [-Werror,-Wembedded-directive]."  The fix is to duplicate code.
-
-#if defined(MDSPAN_ENABLE_P3663)
-MDSPAN_TEMPLATE_REQUIRES(
-  auto k,
-  class Extents,
-  class Integral,
-  /* requires */(std::is_convertible_v<Integral, size_t>)
-)
-#else
-MDSPAN_TEMPLATE_REQUIRES(
-  size_t k,
-  class Extents,
-  class Integral,
-  /* requires */(std::is_convertible_v<Integral, size_t>)
-)
-#endif // MDSPAN_ENABLE_P3663
-MDSPAN_INLINE_FUNCTION
-constexpr Integral last_of(
-#if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<k>,
-#else
-  std::integral_constant<size_t, k>,
-#endif
-  const Extents &,
-  const Integral &i)
-{
-  return i;
-}
 
 #if ! defined(MDSPAN_ENABLE_P3663)
 
 // P3663 does not need these index_pair_like overloads,
 // because last_of should never see a pair-like type.
 MDSPAN_TEMPLATE_REQUIRES(
-  size_t k,
+  class IntegralConstant,
   class Extents, class Slice,
-  /* requires */(index_pair_like<Slice, size_t>::value)
+  /* requires */ (
+    is_integral_constant_like_v<IntegralConstant> &&
+    index_pair_like<Slice, size_t>::value
+  )
 )
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(
-  std::integral_constant<size_t, k>,
-  const Extents &,
-  const Slice &i)
+  IntegralConstant,
+  const Extents&,
+  const Slice& i)
 {
   using std::get;
   return get<1>(i);
 }
 
 MDSPAN_TEMPLATE_REQUIRES(
-  size_t k,
+  class IntegralConstant,
   class Extents, class IdxT1, class IdxT2,
-  /* requires */ (index_pair_like<std::tuple<IdxT1, IdxT2>, size_t>::value)
+  /* requires */ (
+      is_integral_constant_like_v<IntegralConstant> &&
+      index_pair_like<std::tuple<IdxT1, IdxT2>, size_t>::value
+    )
   )
 constexpr auto last_of(
-  std::integral_constant<size_t, k>,
-  const Extents &,
+  IntegralConstant,
+  const Extents&,
   const std::tuple<IdxT1, IdxT2>& i)
 {
   using std::get;
@@ -341,25 +337,35 @@ constexpr auto last_of(
 }
 
 MDSPAN_TEMPLATE_REQUIRES(
-  size_t k,
+  class IntegralConstant,
   class Extents, class IdxT1, class IdxT2,
-  /* requires */ (index_pair_like<std::pair<IdxT1, IdxT2>, size_t>::value)
+  /* requires */ (
+      is_integral_constant_like_v<IntegralConstant> &&
+      index_pair_like<std::pair<IdxT1, IdxT2>, size_t>::value
+    )
   )
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(
-  std::integral_constant<size_t, k>,
-  const Extents &,
+  IntegralConstant,
+  const Extents&,
   const std::pair<IdxT1, IdxT2>& i)
 {
   return i.second;
 }
 
-template<size_t k, class Extents, class T>
+MDSPAN_TEMPLATE_REQUIRES(
+  class IntegralConstant,
+  class Extents,
+  class T,
+  /* requires */ (
+    is_integral_constant_like_v<IntegralConstant>
+  )
+)
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(
-  std::integral_constant<size_t, k>,
-  const Extents &,
-  const std::complex<T> &i)
+  IntegralConstant,
+  const Extents&,
+  const std::complex<T>& i)
 {
   return i.imag();
 }
@@ -385,29 +391,21 @@ constexpr auto last_of(
     #pragma    diagnostic push
     #pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
-template <
-#if defined(MDSPAN_ENABLE_P3663)
-  auto
-#else
-  size_t
-#endif  
-  k,
-  class Extents>
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class IntegralConstant_k,
+  class Extents,
+  /* requires */ (
+    is_integral_constant_like_v<IntegralConstant_k>
+  )
+)
 MDSPAN_INLINE_FUNCTION
 constexpr auto last_of(
-#if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<k> k_input,
-#else
-  std::integral_constant<size_t, k>,
-#endif
-  const Extents &ext,
+  IntegralConstant_k,
+  const Extents& ext,
   ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t)
 {
-#if defined(MDSPAN_ENABLE_P3663)
-  constexpr size_t k_value = k_input();
-#else
-  constexpr size_t k_value = k;
-#endif
+  constexpr size_t k_value = IntegralConstant_k{}();
 
   if constexpr (Extents::static_extent(k_value) == dynamic_extent) {
     return ext.extent(k_value);
@@ -436,27 +434,22 @@ constexpr auto last_of(
     #pragma    diagnostic pop
 #endif
 
-template <
-#if defined(MDSPAN_ENABLE_P3663)
-  auto
-#else
-  size_t
-#endif  
-  k,
+MDSPAN_TEMPLATE_REQUIRES(
+  class IntegralConstant_k,
   class Extents,
   class OffsetType,
   class ExtentType,
-  class StrideType>
+  class StrideType,
+  /* requires */ (
+    is_integral_constant_like_v<IntegralConstant_k>
+  )
+)
 MDSPAN_INLINE_FUNCTION
 constexpr OffsetType
 last_of(
-#if defined(MDSPAN_ENABLE_P3663)
-  std::constant_wrapper<k>,
-#else
-  std::integral_constant<size_t, k>,
-#endif
-  const Extents &,
-  const strided_slice<OffsetType, ExtentType, StrideType> &r)
+  IntegralConstant_k,
+  const Extents&,
+  const strided_slice<OffsetType, ExtentType, StrideType>& r)
 {
   return r.extent; // FIXME then why does this return OffsetType?
 }
