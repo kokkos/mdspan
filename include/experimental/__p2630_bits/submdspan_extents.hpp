@@ -1192,9 +1192,9 @@ submdspan_canonicalize_one_slice(
     return strided_slice<decltype(offset),
                          decltype(extent),
                          decltype(stride)> {
-      .offset = offset,
-      .extent = extent,
-      .stride = stride
+      /* .offset = */ offset,
+      /* .extent = */ extent,
+      /* .stride = */ stride
     };
 #endif
   }
