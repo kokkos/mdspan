@@ -101,7 +101,7 @@ public:
     else {
       return p.second;
     }
-  };
+  }
 
   constexpr foo get_foo() const { return foo_; }
   constexpr bar get_bar() const { return bar_; }
