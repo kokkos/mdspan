@@ -26,13 +26,53 @@
 #  include <source_location>
 #endif
 
+namespace adl_get_trait_detail {
+  template<size_t k, class T>
+  constexpr auto get(T) = delete;
+
+  template <class T, class PairLike, class = void>
+  struct has_get_like_pair_0 : std::bool_constant<false> {};
+
+  template <class T, class PairLike>
+  struct has_get_like_pair_0<T, PairLike, std::void_t<decltype(get<0>(std::declval<T>()))>>
+    : std::bool_constant<
+      std::is_convertible_v<
+        decltype(get<0>(std::declval<T>())),
+        typename PairLike::first_type
+      >
+    >
+  {};
+
+  template <class T, class PairLike, class = void>
+  struct has_get_like_pair_1 : std::false_type {};
+
+  template <class T, class PairLike>
+  struct has_get_like_pair_1<T, PairLike, std::void_t<decltype(get<1>(std::declval<T>()))>>
+    : std::bool_constant<
+      std::is_convertible_v<
+        decltype(get<1>(std::declval<T>())),
+        typename PairLike::second_type
+      >
+    >
+  {};
+} // namespace adl_get_trait_detail
+
 namespace test {
 
+#if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 template<class T, class PairLike>
 concept has_get_like_pair = requires(T t) {
   { get<0>(t) } -> std::convertible_to<typename PairLike::first_type>;
   { get<1>(t) } -> std::convertible_to<typename PairLike::second_type>;
 };
+#else
+
+template <class T, class PairLike>
+constexpr bool has_get_like_pair =
+  adl_get_trait_detail::has_get_like_pair_0<T, PairLike>::value &&
+  adl_get_trait_detail::has_get_like_pair_1<T, PairLike>::value;
+
+#endif // defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
 
 struct foo {};
 struct bar {};
