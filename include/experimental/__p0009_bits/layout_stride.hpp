@@ -106,9 +106,12 @@ namespace detail {
   template<class M>
   constexpr bool is_layout_mapping_alike_v = layout_mapping_alike<M>;
 
-#else
+#elif MDSPAN_HAS_CXX_17
 
-  // C++17-compatible implementation of layout_mapping_alike (used for is_layout_stride_mapping_v)
+  // C++17-compatible implementation of layout_mapping_alike
+  // (used for is_layout_stride_mapping_v).
+  // C++14 doesn't have bool_constant.  That's OK;
+  // we generally don't try to back-port submdspan to C++14.
   template<class M, class = void>
   struct is_layout_mapping_alike_impl : std::false_type {};
 
