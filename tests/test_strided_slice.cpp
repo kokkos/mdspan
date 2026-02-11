@@ -53,7 +53,9 @@ MDSPAN_TEMPLATE_REQUIRES(
 struct my_integral_constant {
   static constexpr T value = Value;
   constexpr operator T () const { return value; }
-#if defined(__cpp_static_call_operator)
+  // icpx insists that, even with the macro protection,
+  // "declaring overloaded 'operator()' as 'static' is a C++2b extension."
+#if (__cplusplus >= 202302L) && defined(__cpp_static_call_operator)
   static constexpr T operator() () { return value; }
 #endif
 };
