@@ -740,8 +740,7 @@ constexpr auto canonical_ice([[maybe_unused]] S s) {
 }
 
 template<class IndexType, class X, class Y>
-constexpr auto subtract_ice(X x, Y y) {
-#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+constexpr auto subtract_ice([[maybe_unused]] X x, [[maybe_unused]] Y y) {
   // Key to the work-around is acknowledging that GCC 11.4.0 can't find
   // constant_wrapper's overloaded arithmetic operators.
   if constexpr (is_integral_constant_like_v<remove_cvref_t<X>> &&
@@ -752,9 +751,6 @@ constexpr auto subtract_ice(X x, Y y) {
   else {
     return canonical_ice<IndexType>(y) - canonical_ice<IndexType>(x);
   }
-#else
-  return canonical_ice<IndexType>(y) - canonical_ice<IndexType>(x);
-#endif
 }
 
 MDSPAN_TEMPLATE_REQUIRES(
