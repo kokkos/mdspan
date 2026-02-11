@@ -183,8 +183,8 @@ constexpr Integral first_of(const Integral &i) {
 #if defined(MDSPAN_ENABLE_P3663)
 template<auto Value>
 MDSPAN_INLINE_FUNCTION
-constexpr std::constant_wrapper<Value>
-first_of(std::constant_wrapper<Value>) {
+constexpr constant_wrapper<Value>
+first_of(constant_wrapper<Value>) {
   return {};
 }
 #else
@@ -207,7 +207,7 @@ MDSPAN_INLINE_FUNCTION
 constexpr
 auto
 first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
-  return std::cw<size_t(0)>;
+  return cw<size_t(0)>;
 }
 
 #else
@@ -412,7 +412,7 @@ constexpr auto last_of(
   }
   else {
 #if defined(MDSPAN_ENABLE_P3663)
-    return std::cw<Extents::static_extent(k_value)>;
+    return cw<Extents::static_extent(k_value)>;
 #else
     return integral_constant<size_t, Extents::static_extent(k_value)>();
 #endif
@@ -459,7 +459,7 @@ template <class T>
 MDSPAN_INLINE_FUNCTION
 constexpr auto stride_of(const T &) {
 #if defined(MDSPAN_ENABLE_P3663)
-  return std::cw<size_t(1)>;
+  return cw<size_t(1)>;
 #else
   return integral_constant<size_t, 1>();
 #endif
@@ -482,16 +482,16 @@ constexpr auto divide(const T0 &v0, const T1 &v1) {
 #if defined(MDSPAN_ENABLE_P3663)
 template <class IndexType, auto v0, auto v1>
 MDSPAN_INLINE_FUNCTION
-constexpr auto divide(std::constant_wrapper<v0> i0,
-                      std::constant_wrapper<v1> i1) {
-  using I0 = typename std::constant_wrapper<v0>::value_type;
-  using I1 = typename std::constant_wrapper<v1>::value_type;
+constexpr auto divide(constant_wrapper<v0> i0,
+                      constant_wrapper<v1> i1) {
+  using I0 = typename constant_wrapper<v0>::value_type;
+  using I1 = typename constant_wrapper<v1>::value_type;
   static_assert(std::is_signed_v<I0> || std::is_unsigned_v<I0>);
   static_assert(std::is_signed_v<I1> || std::is_unsigned_v<I1>);
 
   // cutting short division by zero
   // this is used for strided_slice with zero extent/stride
-  return std::cw<IndexType(i0() == 0 ? 0 : i0() / i1())>;
+  return cw<IndexType(i0() == 0 ? 0 : i0() / i1())>;
 }
 #else
 template <class IndexT, class T0, T0 v0, class T1, T1 v1>
@@ -514,14 +514,14 @@ constexpr auto multiply(const T0 &v0, const T1 &v1) {
 #if defined(MDSPAN_ENABLE_P3663)
 template <class IndexType, auto v0, auto v1>
 MDSPAN_INLINE_FUNCTION
-constexpr auto multiply(std::constant_wrapper<v0> i0,
-                        std::constant_wrapper<v1> i1) {
-  using I0 = typename std::constant_wrapper<v0>::value_type;
-  using I1 = typename std::constant_wrapper<v1>::value_type;
+constexpr auto multiply(constant_wrapper<v0> i0,
+                        constant_wrapper<v1> i1) {
+  using I0 = typename constant_wrapper<v0>::value_type;
+  using I1 = typename constant_wrapper<v1>::value_type;
   static_assert(std::is_signed_v<I0> || std::is_unsigned_v<I0>);
   static_assert(std::is_signed_v<I1> || std::is_unsigned_v<I1>);
 
-  return std::cw<IndexType(i0() * i1())>;
+  return cw<IndexType(i0() * i1())>;
 }
 #else
 template <class IndexT, class T0, T0 v0, class T1, T1 v1>
@@ -554,10 +554,10 @@ template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
 
 #if defined(MDSPAN_ENABLE_P3663)
 template <auto A, auto B>
-struct StaticExtentFromStridedRange<std::constant_wrapper<A>, std::constant_wrapper<B>> {
+struct StaticExtentFromStridedRange<constant_wrapper<A>, constant_wrapper<B>> {
 private:
-  static constexpr auto A_value = std::constant_wrapper<A>{}();
-  static constexpr auto B_value = std::constant_wrapper<B>{}();
+  static constexpr auto A_value = constant_wrapper<A>{}();
+  static constexpr auto B_value = constant_wrapper<B>{}();
 public:
   constexpr static size_t value = A_value > 0 ? 1 + (A_value - 1) / B_value : 0;
 };
@@ -609,7 +609,7 @@ struct extents_constructor {
         decltype(first_of(std::declval<Slice>())),
         decltype(last_of(
 #if defined(MDSPAN_ENABLE_P3663)
-          std::cw<Extents::rank() - K>,
+          cw<Extents::rank() - K>,
 #else
           std::integral_constant<size_t, Extents::rank() - K>(),
 #endif
@@ -623,7 +623,7 @@ struct extents_constructor {
         ext, slices_and_extents...,
         index_t(last_of(
 #if defined(MDSPAN_ENABLE_P3663)
-          std::cw<Extents::rank() - K>,
+          cw<Extents::rank() - K>,
 #else
           std::integral_constant<size_t, Extents::rank() - K>(),
 #endif
@@ -732,7 +732,7 @@ constexpr auto canonical_ice([[maybe_unused]] S s) {
   // of `cw`, so we don't get a weird constant_wrapper whose value
   // has a different type than the second template argument.
   if constexpr (is_integral_constant_like_v<S>) {
-    return std::cw<static_cast<IndexType>(index_cast<IndexType>(S::value))>;
+    return cw<static_cast<IndexType>(index_cast<IndexType>(S::value))>;
   }
   else {
     return static_cast<IndexType>(index_cast<IndexType>(s));
@@ -747,7 +747,7 @@ constexpr auto subtract_ice(X x, Y y) {
   if constexpr (is_integral_constant_like_v<remove_cvref_t<X>> &&
     is_integral_constant_like_v<remove_cvref_t<Y>>)
   {
-    return std::cw<IndexType(canonical_ice<IndexType>(Y::value) - canonical_ice<IndexType>(X::value))>;
+    return cw<IndexType(canonical_ice<IndexType>(Y::value) - canonical_ice<IndexType>(X::value))>;
   }
   else {
     return canonical_ice<IndexType>(y) - canonical_ice<IndexType>(x);
@@ -1156,12 +1156,12 @@ submdspan_canonicalize_one_slice(
     return strided_slice{
       .offset = canonical_ice<IndexType>(s.real()),
       .extent = canonical_ice<IndexType>(s.imag() - s.real()),
-      .stride = std::cw<IndexType(1)>
+      .stride = cw<IndexType(1)>
     };
 #else
     auto offset = canonical_ice<IndexType>(s.real());
     auto extent = canonical_ice<IndexType>(s.imag() - s.real());
-    auto stride = std::cw<IndexType(1)>;
+    auto stride = cw<IndexType(1)>;
     return strided_slice<decltype(offset),
                          decltype(extent),
                          decltype(stride)> {
@@ -1183,12 +1183,12 @@ submdspan_canonicalize_one_slice(
     return strided_slice{
       .offset = canonical_ice<IndexType>(s_k0),
       .extent = subtract_ice<IndexType>(s_k0, s_k1),
-      .stride = std::cw<IndexType(1)>
+      .stride = cw<IndexType(1)>
     };
 #else
     auto offset = canonical_ice<IndexType>(s_k0);
     auto extent = subtract_ice<IndexType>(s_k0, s_k1);
-    auto stride = std::cw<IndexType(1)>;
+    auto stride = cw<IndexType(1)>;
     return strided_slice<decltype(offset),
                          decltype(extent),
                          decltype(stride)> {

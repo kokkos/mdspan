@@ -24,6 +24,8 @@
 
 namespace my_test {
 
+using MDSPAN_IMPL_STANDARD_NAMESPACE::cw;
+
 template<class First, class Second>
 struct my_aggregate_pair {
   First first;
@@ -179,18 +181,22 @@ TEST(CanonicalizeSlices, Rank1_integer_dynamic) {
 }
 
 TEST(CanonicalizeSlices, Rank1_integer_static) {
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::cw;
+
   constexpr auto slice0 = std::integral_constant<int, 7>{};
-  constexpr auto expected_slices = std::tuple{std::cw<size_t(7u)>};
+  constexpr auto expected_slices = std::tuple{cw<size_t(7u)>};
   constexpr auto exts = Kokkos::extents<size_t, 10>{};
   test_canonicalize_slices(expected_slices, exts, slice0);
 }
 
 TEST(CanonicalizeSlices, Rank1_pair) {
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::cw;
+
   constexpr auto slice0 = std::pair{std::integral_constant<int, 7>{}, 11};
 
-  constexpr auto offset = std::cw<size_t(7u)>;
+  constexpr auto offset = cw<size_t(7u)>;
   constexpr auto extent = size_t(4u); // 11 - 7
-  constexpr auto stride = std::cw<size_t(1u)>;
+  constexpr auto stride = cw<size_t(1u)>;
 
   // Some compilers aren't so good at CTAD for aggregates.
   const auto expected_slices = std::tuple{
@@ -209,11 +215,13 @@ TEST(CanonicalizeSlices, Rank1_pair) {
 }
 
 TEST(CanonicalizeSlices, Rank1_aggregate_pair) {
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::cw;
+
   constexpr auto slice0 = my_test::my_aggregate_pair<int, int>{7, 11};
 
   constexpr auto offset = size_t(7u);
   constexpr auto extent = (size_t(11u) - size_t(7u));
-  constexpr auto stride = std::cw<size_t(1u)>;
+  constexpr auto stride = cw<size_t(1u)>;
 
   // Some compilers aren't so good at CTAD for aggregates.
   const auto expected_slices = std::tuple{
@@ -232,11 +240,13 @@ TEST(CanonicalizeSlices, Rank1_aggregate_pair) {
 }
 
 TEST(CanonicalizeSlices, Rank1_nonaggregate_pair) {
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::cw;
+
   constexpr auto slice0 = my_test::my_nonaggregate_pair<int, int>(7, 11);
 
   constexpr auto offset = size_t(7u);
   constexpr auto extent = (size_t(11u) - size_t(7u));
-  constexpr auto stride = std::cw<size_t(1u)>;
+  constexpr auto stride = cw<size_t(1u)>;
 
   // Some compilers aren't so good at CTAD for aggregates.
   const auto expected_slices = std::tuple{

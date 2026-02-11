@@ -232,9 +232,9 @@ constexpr bool is_range_slice_v<
     strided_slice<
       OffsetType,
       ExtentType,
-      std::constant_wrapper<Stride>>,
+      constant_wrapper<Stride>>,
     IndexType
-  > = (std::constant_wrapper<Stride>{}() == IndexType(1));
+  > = (constant_wrapper<Stride>{}() == IndexType(1));
 
 #else
 

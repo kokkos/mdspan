@@ -86,9 +86,11 @@ TEST(StridedSlice, WellFormed) {
   test_strided_slice(int(1), unsigned(10), IC<long, 3>);
 
 #if defined(MDSPAN_ENABLE_P3663)
-  test_strided_slice(std::cw<1>, unsigned(10), long(3));
-  test_strided_slice(int(1), std::cw<unsigned(10)>, long(3));
-  test_strided_slice(int(1), unsigned(10), std::cw<long(3)>);
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::cw;
+
+  test_strided_slice(cw<1>, unsigned(10), long(3));
+  test_strided_slice(int(1), cw<unsigned(10)>, long(3));
+  test_strided_slice(int(1), unsigned(10), cw<long(3)>);
 
   test_strided_slice(IC2<int, 1>, unsigned(10), long(3));
   test_strided_slice(int(1), IC2<unsigned, 10>, long(3));
