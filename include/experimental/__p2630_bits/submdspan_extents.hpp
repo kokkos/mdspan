@@ -893,7 +893,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
           Exts_k != dynamic_extent &&
           0 <= de_ice(offset_type{}) &&
           de_ice(offset_type{}) <= de_ice(offset_type{}) + de_ice(extent_type{}) &&
-          de_ice(offset_type{}) + de_ice(extent_type{}) <= Exts_k)
+          static_cast<size_t>(de_ice(offset_type{}) + de_ice(extent_type{})) <= Exts_k)
         {
           return check_static_bounds_result::in_bounds; // 14.3.5
         }
@@ -960,7 +960,7 @@ template<size_t k, class S_k, class IndexType, size_t... Exts>
           Exts_k != dynamic_extent &&
           0 <= de_ice(S_k0{}) &&
           de_ice(S_k0{}) <= de_ice(S_k1{}) &&
-          de_ice(S_k1{}) <= Exts_k)
+          static_cast<size_t>(de_ice(S_k1{})) <= Exts_k)
         {
           return check_static_bounds_result::in_bounds; // 14.4.5
         }
