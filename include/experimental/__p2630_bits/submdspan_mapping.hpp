@@ -42,7 +42,6 @@
 #endif
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
-
 //******************************************
 // Return type of submdspan_mapping overloads
 //******************************************
@@ -54,7 +53,6 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 namespace detail {
 
 #if defined(MDSPAN_ENABLE_P3663)
-
 
 MDSPAN_TEMPLATE_REQUIRES(
   class LayoutMapping,
@@ -151,7 +149,7 @@ one_slice_out_of_bounds(const IndexType &ext, const Slice &slice) {
   // For index types that are not integral but are nevertheless convertible
   // to integral, it would result in build errors when attempting to find
   // a common type between first_of(slice) and IndexType.  This is because
-  // first_of(slice) in that case would return the origina slice type,
+  // first_of(slice) in that case would return the original slice type,
   // which might not necessarily be convertible to IndexType.  The problem
   // is really in first_of: the analogous function in the Standard,
   // _`first`_`_`, is aware of IndexType and casts slices whose types

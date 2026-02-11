@@ -29,17 +29,11 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
 #if defined(MDSPAN_ENABLE_P3663)
-  template<class T, T Value>
-  using mdspan_constant_wrapper = decltype(cw<Value>);
-
   template<class T>
   constexpr bool is_constant_wrapper = false;
   
   template<auto Value, class Type>
   constexpr bool is_constant_wrapper<constant_wrapper<Value, Type>> = true;  
-#else
-  template<class T, T Value>
-  using mdspan_constant_wrapper = std::integral_constant<T, Value>;
 #endif // MDSPAN_ENABLE_P3663
 
   template<class T>
