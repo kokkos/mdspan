@@ -2654,7 +2654,6 @@ struct impl_compressed_pair<
 #include <cassert>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
-namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 
 template <size_t padding_value = dynamic_extent>
 struct layout_left_padded {
@@ -2766,7 +2765,6 @@ constexpr void check_padded_layout_converting_constructor_preconditions(MDSPAN_I
 }
 
 
-}
 }
 }
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2642_bits/layout_padded_fwd.hpp
@@ -3191,8 +3189,8 @@ struct layout_stride {
       !(std::is_convertible<typename StridedLayoutMapping::extents_type, extents_type>::value &&
        (detail::is_mapping_of<layout_left, StridedLayoutMapping> ||
         detail::is_mapping_of<layout_right, StridedLayoutMapping> ||
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<StridedLayoutMapping>::value || // Don't need to guard for C++14 as this isn't compiled in < C++20
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_right_padded_mapping<StridedLayoutMapping>::value ||
+        detail::is_layout_left_padded_mapping<StridedLayoutMapping>::value || // Don't need to guard for C++14 as this isn't compiled in < C++20
+        detail::is_layout_right_padded_mapping<StridedLayoutMapping>::value ||
         detail::is_mapping_of<layout_stride, StridedLayoutMapping>))
     ) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14
@@ -3543,20 +3541,18 @@ class layout_right::mapping {
 #if MDSPAN_HAS_CXX_17
     MDSPAN_TEMPLATE_REQUIRES(
         class Mapping,
-        /* requires */ (
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_right_padded_mapping<Mapping>::value
-        && std::is_constructible_v<extents_type, typename Mapping::extents_type>))
-    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
-    MDSPAN_INLINE_FUNCTION constexpr
-    mapping(const Mapping &other) noexcept
-        : m_extents(other.extents())
-    {
-      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
-          check_padded_layout_converting_constructor_mandates<
-            extents_type, Mapping>(detail::with_rank<extents_type::rank()>{});
-      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
-          check_padded_layout_converting_constructor_preconditions<
-            extents_type>(detail::with_rank<extents_type::rank()>{}, other);
+        /* requires */ (detail::is_layout_right_padded_mapping<Mapping>::value
+                            &&std::is_constructible_v<
+                                extents_type, typename Mapping::extents_type>))
+    MDSPAN_CONDITIONAL_EXPLICIT(
+        (!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
+    MDSPAN_INLINE_FUNCTION constexpr mapping(const Mapping &other) noexcept
+        : m_extents(other.extents()) {
+      detail::check_padded_layout_converting_constructor_mandates<extents_type,
+                                                                  Mapping>(
+          detail::with_rank<extents_type::rank()>{});
+      detail::check_padded_layout_converting_constructor_preconditions<
+          extents_type>(detail::with_rank<extents_type::rank()>{}, other);
     }
 #endif
 
@@ -4284,30 +4280,28 @@ class layout_left::mapping {
     /**
      * Converting constructor from `layout_left_padded::mapping`.
      *
-     * This overload participates in overload resolution only if Mapping is a layout_left_padded mapping and
-     * extents_type is constructible from Mapping::extents_type.
+     * This overload participates in overload resolution only if Mapping is a
+     * layout_left_padded mapping and extents_type is constructible from
+     * Mapping::extents_type.
      *
-     * \note There is currently a difference from p2642r2, where this function is specified as taking
-     * `layout_left_padded< padding_value >::mapping< Extents>`. However, this makes `padding_value` non-deducible.
+     * \note There is currently a difference from p2642r2, where this function
+     * is specified as taking `layout_left_padded< padding_value >::mapping<
+     * Extents>`. However, this makes `padding_value` non-deducible.
      */
     MDSPAN_TEMPLATE_REQUIRES(
-      class Mapping,
-      /* requires */ (
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<Mapping>::value
-        && std::is_constructible_v<extents_type, typename Mapping::extents_type>
-      )
-    )
-    MDSPAN_CONDITIONAL_EXPLICIT((!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
-    MDSPAN_INLINE_FUNCTION constexpr
-    mapping(const Mapping& other) noexcept
-      : m_extents(other.extents())
-    {
-      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
-          check_padded_layout_converting_constructor_mandates<
-            extents_type, Mapping>(detail::with_rank<extents_type::rank()>{});
-      MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
-          check_padded_layout_converting_constructor_preconditions<
-              extents_type>(detail::with_rank<extents_type::rank()>{}, other);
+        class Mapping,
+        /* requires */ (detail::is_layout_left_padded_mapping<Mapping>::value
+                            &&std::is_constructible_v<
+                                extents_type, typename Mapping::extents_type>))
+    MDSPAN_CONDITIONAL_EXPLICIT(
+        (!std::is_convertible_v<typename Mapping::extents_type, extents_type>))
+    MDSPAN_INLINE_FUNCTION constexpr mapping(const Mapping &other) noexcept
+        : m_extents(other.extents()) {
+      detail::check_padded_layout_converting_constructor_mandates<extents_type,
+                                                                  Mapping>(
+          detail::with_rank<extents_type::rank()>{});
+      detail::check_padded_layout_converting_constructor_preconditions<
+          extents_type>(detail::with_rank<extents_type::rank()>{}, other);
     }
 #endif
 
@@ -4455,7 +4449,6 @@ private:
 #include <cassert>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
-namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 namespace detail {
 template<class T, class U>
 MDSPAN_INLINE_FUNCTION
@@ -4510,7 +4503,7 @@ struct static_array_type_for_padded_extent {
   using extents_type = Extents;
   using type = ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::maybe_static_array<
       index_type, size_t, dynamic_extent,
-      ::MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
+      ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::
           get_actual_static_padding_value<extents_type, PaddingValue,
                                           ExtentToPadIdx>()>;
 };
@@ -5515,7 +5508,6 @@ public:
      }
 };
 }
-}
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2642_bits/layout_padded.hpp
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan.hpp
 //@HEADER
@@ -6237,7 +6229,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
                                                    offset};
   } else if constexpr (deduce_layout::layout_left_padded_value()) {
     constexpr size_t S_static = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::compute_s_static_layout_left<Extents, deduce_layout::gap_len, Extents::static_extent(0)>(std::make_index_sequence<Extents::rank()>());
-    using dst_mapping_t = typename MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<S_static>::template mapping<dst_ext_t>;
+    using dst_mapping_t = typename layout_left_padded<S_static>::template mapping<dst_ext_t>;
     return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext, stride(1 + deduce_layout::gap_len)), offset};
   } else {
@@ -6271,7 +6263,7 @@ template <size_t PaddingValue>
 template <class Extents>
 template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
-MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
+layout_left_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
 
   // compute sub extents
@@ -6280,7 +6272,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::mapping<Extent
   using dst_ext_t = decltype(dst_ext);
 
   if constexpr (Extents::rank() == 0) { // rank-0 case
-    using dst_mapping_t = typename MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::template mapping<Extents>;
+    using dst_mapping_t = typename layout_left_padded<PaddingValue>::template mapping<Extents>;
     return submdspan_mapping_result<dst_mapping_t>{*this, 0};
   } else {
     const bool out_of_bounds =
@@ -6316,7 +6308,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::mapping<Extent
         return submdspan_mapping_result<dst_mapping_t>{dst_mapping_t{dst_ext}, offset};
       } else if constexpr (deduce_layout::layout_left_padded_value()) { // can keep layout_left_padded
         constexpr size_t S_static = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::compute_s_static_layout_left<Extents, deduce_layout::gap_len, static_padding_stride>(std::make_index_sequence<Extents::rank()>());
-        using dst_mapping_t = typename MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<S_static>::template mapping<dst_ext_t>;
+        using dst_mapping_t = typename layout_left_padded<S_static>::template mapping<dst_ext_t>;
         return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext, stride(1 + deduce_layout::gap_len)), offset};
       } else { // layout_stride
@@ -6465,7 +6457,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
                                                    offset};
   } else if constexpr (deduce_layout::layout_right_padded_value()) {
     constexpr size_t S_static = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::compute_s_static_layout_left<Extents, deduce_layout::gap_len, Extents::static_extent(Extents::rank() - 1)>(std::make_index_sequence<Extents::rank()>());
-    using dst_mapping_t = typename MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<S_static>::template mapping<dst_ext_t>;
+    using dst_mapping_t = typename layout_right_padded<S_static>::template mapping<dst_ext_t>;
     return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext,
                       stride(src_ext_t::rank() - 2 - deduce_layout::gap_len)),
@@ -6501,7 +6493,7 @@ template <size_t PaddingValue>
 template <class Extents>
 template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
-MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
+layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
 
   // compute sub extents
@@ -6510,7 +6502,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::mapping<Exten
   using dst_ext_t = decltype(dst_ext);
 
   if constexpr (Extents::rank() == 0) { // rank-0 case
-    using dst_mapping_t = typename MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::template mapping<Extents>;
+    using dst_mapping_t = typename layout_right_padded<PaddingValue>::template mapping<Extents>;
     return submdspan_mapping_result<dst_mapping_t>{*this, 0};
   } else {
     // Figure out if any slice's lower bound equals the corresponding extent.
@@ -6538,7 +6530,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::mapping<Exten
         return submdspan_mapping_result<dst_mapping_t>{dst_mapping_t{dst_ext}, offset};
       } else if constexpr (deduce_layout::layout_right_padded_value()) { // can keep layout_right_padded
         constexpr size_t S_static = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::compute_s_static_layout_right<Extents, deduce_layout::gap_len, static_padding_stride>(std::make_index_sequence<Extents::rank()>());
-        using dst_mapping_t = typename MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<S_static>::template mapping<dst_ext_t>;
+        using dst_mapping_t = typename layout_right_padded<S_static>::template mapping<dst_ext_t>;
         return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext, stride(Extents::rank() - 2 - deduce_layout::gap_len)), offset};
       } else { // layout_stride
@@ -6665,15 +6657,12 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
 //@HEADER
 
 
-// backward compatibility import into experimental
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
-namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 
 template< ::std::size_t Rank, class IndexType = std::size_t>
 using dims =
   :: MDSPAN_IMPL_STANDARD_NAMESPACE :: dextents<IndexType, Rank>;
 
-} // namespace MDSPAN_IMPL_PROPOSED_NAMESPACE
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2389_bits/dims.hpp
 
