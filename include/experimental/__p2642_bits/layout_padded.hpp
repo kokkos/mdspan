@@ -26,7 +26,6 @@
 #include "../__p0009_bits/utility.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
-namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 namespace detail {
 template<class T, class U>
 MDSPAN_INLINE_FUNCTION
@@ -81,7 +80,7 @@ struct static_array_type_for_padded_extent {
   using extents_type = Extents;
   using type = ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::maybe_static_array<
       index_type, size_t, dynamic_extent,
-      ::MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::
+      ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::
           get_actual_static_padding_value<extents_type, PaddingValue,
                                           ExtentToPadIdx>()>;
 };
@@ -576,7 +575,7 @@ public:
       for (rank_type r = 1; r < extents_type::rank(); ++r) {
         value *= exts.extent(r);
       }
-      return value + exts.extent(0) - padded_stride.value(0);
+      return value == 0 ? 0 : value + exts.extent(0) - padded_stride.value(0);
     }
   }
 
@@ -969,7 +968,7 @@ public:
       for (rank_type r = 0; r < extent_to_pad_idx; ++r) {
         value *= exts.extent(r);
       }
-      return value + exts.extent(extent_to_pad_idx) - padded_stride.value(0);
+      return value == 0 ? 0 : value + exts.extent(extent_to_pad_idx) - padded_stride.value(0);
     }
   }
 
@@ -1085,5 +1084,4 @@ public:
          return src.submdspan_mapping_impl(slices...);
      }
 };
-}
 }

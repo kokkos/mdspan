@@ -91,4 +91,24 @@ MDSPAN_STATIC_TEST(
   !std::is_constructible<LS1, NotARealLayout::mapping<E2>>::value
 );
 
+MDSPAN_STATIC_TEST(std::is_constructible<LS1, Kokkos::layout_left::mapping<E1>>::value);
+MDSPAN_STATIC_TEST(std::is_convertible<Kokkos::layout_left::mapping<E1>, LS1>::value);
+MDSPAN_STATIC_TEST(std::is_assignable<LS1, Kokkos::layout_left::mapping<E1>>::value);
 
+MDSPAN_STATIC_TEST(std::is_constructible<LS1, Kokkos::layout_right::mapping<E1>>::value);
+MDSPAN_STATIC_TEST(std::is_convertible<Kokkos::layout_right::mapping<E1>, LS1>::value);
+MDSPAN_STATIC_TEST(std::is_assignable<LS1, Kokkos::layout_right::mapping<E1>>::value);
+
+MDSPAN_STATIC_TEST(std::is_constructible<LS1, Kokkos::layout_stride::mapping<E1>>::value);
+MDSPAN_STATIC_TEST(std::is_convertible<Kokkos::layout_stride::mapping<E1>, LS1>::value);
+MDSPAN_STATIC_TEST(std::is_assignable<LS1, Kokkos::layout_stride::mapping<E1>>::value);
+
+#if MDSPAN_HAS_CXX_17
+MDSPAN_STATIC_TEST(std::is_constructible<LS1, Kokkos::layout_left_padded<14>::mapping<E1>>::value);
+MDSPAN_STATIC_TEST(std::is_convertible<Kokkos::layout_left_padded<14>::mapping<E1>, LS1>::value);
+MDSPAN_STATIC_TEST(std::is_assignable<LS1, Kokkos::layout_left_padded<14>::mapping<E1>>::value);
+
+MDSPAN_STATIC_TEST(std::is_constructible<LS1, Kokkos::layout_right_padded<14>::mapping<E1>>::value);
+MDSPAN_STATIC_TEST(std::is_convertible<Kokkos::layout_right_padded<14>::mapping<E1>, LS1>::value);
+MDSPAN_STATIC_TEST(std::is_assignable<LS1, Kokkos::layout_right_padded<14>::mapping<E1>>::value);
+#endif

@@ -4,6 +4,11 @@
 #include <type_traits>
 #include <array>
 #include <utility>
+#if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__) && (__CUDACC_VER_MAJOR__ * 100 + __CUDACC_VER_MINOR__ * 10 >= 1260)
+#include <cuda/std/limits>
+#else
+#include <limits>
+#endif
 #include "macros.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
@@ -50,7 +55,7 @@ constexpr bool rankwise_equal(with_rank<N>, const T1& x, const T2& y, F func)
 #if MDSPAN_HAS_CXX_17
 inline
 #endif
-constexpr struct
+constexpr struct extent_functor
 {
   template <class T, class I>
   MDSPAN_INLINE_FUNCTION
@@ -63,7 +68,7 @@ constexpr struct
 #if MDSPAN_HAS_CXX_17
 inline
 #endif
-constexpr struct
+constexpr struct stride_functor
 {
   template <class T, class I>
   MDSPAN_INLINE_FUNCTION
@@ -199,8 +204,14 @@ MDSPAN_INLINE_FUNCTION constexpr bool cmp_greater_equal(T t, U u) noexcept {
 template <class R, class T>
 MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
   static_assert(std::is_integral_v<R> && std::is_integral_v<T>);
-  return cmp_greater_equal(t, std::numeric_limits<R>::min()) &&
-          cmp_less_equal(t, std::numeric_limits<R>::max());
+
+#if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__) && (__CUDACC_VER_MAJOR__ * 100 + __CUDACC_VER_MINOR__ * 10 >= 1260)
+  using cuda::std::numeric_limits;
+#else
+  using std::numeric_limits;
+#endif
+  return cmp_greater_equal(t, numeric_limits<R>::min()) &&
+          cmp_less_equal(t, numeric_limits<R>::max());
 }
 
 template <class R, class T>
@@ -265,14 +276,24 @@ extent_is_representable(const Extents &exts) noexcept {
 template <typename T >
 MDSPAN_INLINE_FUNCTION constexpr bool
 check_mul_result_is_nonnegative_and_representable(T a, T b) {
+// FIXME_SYCL The code below compiles to old_llvm.umul.with.overflow.i64
+// which isn't defined in device code
+#ifdef __SYCL_DEVICE_ONLY__
+  return true;
+#else
   if (b == 0 || a == 0)
     return true;
 
   if constexpr (std::is_signed_v<T>) {
     if ( a < 0 || b < 0 ) return false;
   }
-  return a <= std::numeric_limits<T>::max() / b;
-  return true;
+#if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__) && (__CUDACC_VER_MAJOR__ * 100 + __CUDACC_VER_MINOR__ * 10 >= 1260)
+  using cuda::std::numeric_limits;
+#else
+  using std::numeric_limits;
+#endif
+  return a <= numeric_limits<T>::max() / b;
+#endif
 }
 #endif
 } // namespace detail

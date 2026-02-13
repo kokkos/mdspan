@@ -257,20 +257,24 @@ struct is_stride_avail< T
 TEST(TestLayoutLeftStrideConstraint, test_layout_left_stride_constraint) {
   Kokkos::extents<int,16> ext1d{};
   Kokkos::layout_left::mapping m1d{ext1d};
+  ASSERT_EQ (m1d.extents(), ext1d);
   ASSERT_TRUE ((is_stride_avail< decltype(m1d), int >::value));
 
   Kokkos::extents<int> ext0d{};
   Kokkos::layout_left::mapping m0d{ext0d};
+  ASSERT_EQ (m0d.extents(), ext0d);
   ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
 }
 
 TEST(TestLayoutRightStrideConstraint, test_layout_right_stride_constraint) {
   Kokkos::extents<int,16> ext1d{};
   Kokkos::layout_right::mapping m1d{ext1d};
+  ASSERT_EQ (m1d.extents(), ext1d);
   ASSERT_TRUE ((is_stride_avail< decltype(m1d), int >::value));
 
   Kokkos::extents<int> ext0d{};
   Kokkos::layout_right::mapping m0d{ext0d};
+  ASSERT_EQ (m0d.extents(), ext0d);
   ASSERT_FALSE((is_stride_avail< decltype(m0d), int >::value));
 }
 #endif

@@ -45,7 +45,7 @@ jobs:
     - name: Cache icpx install
       if: ${{ matrix.compiler_driver == 'icpx' }}
       id: cache-icpx
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: /opt/intel/oneapi
         key: oneapi-${{ matrix.compiler_url}}
@@ -54,6 +54,9 @@ jobs:
       run: |
         curl  --url ${{ matrix.compiler_url }} --output download.sh
         sudo sh -x download.sh -s -a -s --action install --eula accept
+    - name: Install g++-9
+      if: ${{ matrix.compiler_driver == 'g++-9' }}
+      run: sudo apt-get install g++-9
     - name: Install gtest manually
       run: |
         sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
@@ -63,7 +66,7 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/mdspan-build
 
     - name: Check Out
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         path: ${{github.workspace}}/mdspan-src
 
@@ -86,3 +89,19 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
       run: make install
+
+    - name: Test Target Export
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-src
+      run: |
+        cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=${{github.workspace}}/mdspan-build
+        cmake --build /tmp/build-mdspan-examples
+        rm -rf /tmp/build-mdspan-examples
+
+    - name: Test Target Install
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-src
+      run: |
+        cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=${{github.workspace}}/mdspan-install
+        cmake --build /tmp/build-mdspan-examples
+        rm -rf /tmp/build-mdspan-examples
