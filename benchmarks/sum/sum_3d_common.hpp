@@ -20,8 +20,6 @@
 
 #include "fill.hpp"
 
-namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
-
 template <class T, class Size>
 void BM_Raw_Sum_1D(benchmark::State& state, T, Size size) {
   auto buffer = std::make_unique<T[]>(size);

@@ -473,8 +473,8 @@ struct layout_stride {
       !(std::is_convertible<typename StridedLayoutMapping::extents_type, extents_type>::value &&
        (detail::is_mapping_of<layout_left, StridedLayoutMapping> ||
         detail::is_mapping_of<layout_right, StridedLayoutMapping> ||
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_left_padded_mapping<StridedLayoutMapping>::value || // Don't need to guard for C++14 as this isn't compiled in < C++20
-        MDSPAN_IMPL_PROPOSED_NAMESPACE::detail::is_layout_right_padded_mapping<StridedLayoutMapping>::value ||
+        detail::is_layout_left_padded_mapping<StridedLayoutMapping>::value || // Don't need to guard for C++14 as this isn't compiled in < C++20
+        detail::is_layout_right_padded_mapping<StridedLayoutMapping>::value ||
         detail::is_mapping_of<layout_stride, StridedLayoutMapping>))
     ) // needs two () due to comma
     MDSPAN_INLINE_FUNCTION MDSPAN_IMPL_CONSTEXPR_14

@@ -45,7 +45,7 @@ void test_dims_with_two_template_arguments()
   static_assert(std::is_same<typename d::index_type, ExpectedIndexType>::value, "dims::index_type is wrong");
   static_assert(d::rank() == Rank, "dims::rank() is wrong");
 }
-  
+
 } // namespace test
 
 TEST(TestDims, Test0)
