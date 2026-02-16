@@ -232,7 +232,7 @@ constexpr bool is_range_slice_v<
       ExtentType,
       constant_wrapper<Stride>>,
     IndexType
-  > = (constant_wrapper<Stride>{}() == IndexType(1));
+  > = (constant_wrapper<Stride>::value == IndexType(1));
 
 #else
 

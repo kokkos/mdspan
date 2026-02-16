@@ -382,7 +382,7 @@ constexpr auto last_of(
   const Extents& ext,
   ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t)
 {
-  constexpr size_t k_value = IntegralConstant_k{}();
+  constexpr size_t k_value = IntegralConstant_k::value;
 
   if constexpr (Extents::static_extent(k_value) == dynamic_extent) {
     return ext.extent(k_value);
@@ -468,7 +468,9 @@ constexpr auto divide(constant_wrapper<v0> i0,
 
   // cutting short division by zero
   // this is used for strided_slice with zero extent/stride
-  return cw<IndexType(i0() == 0 ? 0 : i0() / i1())>;
+  constexpr auto i0_value = static_cast<I0>(i0);
+  constexpr auto i1_value = static_cast<I1>(i1);
+  return cw<IndexType(i0_value == 0 ? 0 : i0_value / i1_value)>;
 }
 #else
 template <class IndexT, class T0, T0 v0, class T1, T1 v1>
@@ -498,7 +500,9 @@ constexpr auto multiply(constant_wrapper<v0> i0,
   static_assert(std::is_signed_v<I0> || std::is_unsigned_v<I0>);
   static_assert(std::is_signed_v<I1> || std::is_unsigned_v<I1>);
 
-  return cw<IndexType(i0() * i1())>;
+  constexpr auto i0_value = static_cast<I0>(i0);
+  constexpr auto i1_value = static_cast<I1>(i1);
+  return cw<IndexType(i0_value * i1_value)>;
 }
 #else
 template <class IndexT, class T0, T0 v0, class T1, T1 v1>
@@ -533,8 +537,8 @@ template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
 template <auto A, auto B>
 struct StaticExtentFromStridedRange<constant_wrapper<A>, constant_wrapper<B>> {
 private:
-  static constexpr auto A_value = constant_wrapper<A>{}();
-  static constexpr auto B_value = constant_wrapper<B>{}();
+  static constexpr auto A_value = constant_wrapper<A>::value;
+  static constexpr auto B_value = constant_wrapper<B>::value;
 public:
   constexpr static size_t value = A_value > 0 ? 1 + (A_value - 1) / B_value : 0;
 };
@@ -1021,10 +1025,6 @@ check_canonical_kth_submdspan_slice_type(
   }
 }
 
-
-#if defined(__cpp_pack_indexing) && (! (defined(__GNUC__) && (__GNUC__ < 16)))
-// nothing
-#else
 template<size_t k, class First, class... Rest>
 constexpr decltype(auto) get_kth_in_pack(First&& first, Rest&&... rest) {
   static_assert(k <= sizeof...(Rest));
@@ -1035,9 +1035,7 @@ constexpr decltype(auto) get_kth_in_pack(First&& first, Rest&&... rest) {
     return get_kth_in_pack<k - 1>(std::forward<Rest>(rest)...);
   }
 }
-#endif
 
-#if (__cplusplus < 202002L)
 template<size_t... Inds, class IndexType, size_t... Extents, class ... Slices>
 MDSPAN_INLINE_FUNCTION
 constexpr void
@@ -1050,7 +1048,6 @@ check_canonical_kth_subdmspan_slice_types_impl(
     exts,
     get_kth_in_pack<Inds>(slices...)), ...);
 }
-#endif // (__cplusplus < 202002L)
 
 template<class IndexType, size_t... Extents, class ... Slices>
 MDSPAN_INLINE_FUNCTION
@@ -1058,23 +1055,8 @@ constexpr void
 check_canonical_kth_subdmspan_slice_types(
   const extents<IndexType, Extents...>& exts, Slices... slices)
 {
-#if (__cplusplus < 202002L)
   check_canonical_kth_subdmspan_slice_types_impl(
     std::make_index_sequence<sizeof...(Slices)>(), exts, slices...);
-#else
-  // We really want to keep the C++20 branch here
-  // because it could offer compile time advantages.
-  [&] <size_t ... Inds> (std::index_sequence<Inds...>) {
-    (check_canonical_kth_submdspan_slice_type<Inds>(
-      exts,
-#if defined(__cpp_pack_indexing) && (! (defined(__GNUC__) && (__GNUC__ < 16)))
-      slices...[Inds]
-#else
-      get_kth_in_pack<Inds>(slices...)
-#endif
-    ), ...);
-  } (std::make_index_sequence<sizeof...(Slices)>{});
-#endif // (__cplusplus < 202002L)
 }
 
 // [mdspan.sub.slices] 11
@@ -1196,13 +1178,7 @@ submdspan_canonicalize_slices_impl(
     // That implements the Mandates clause of [mdspan.sub.slices] 9.
     detail::submdspan_canonicalize_one_slice<Inds>(
       exts,
-    // Clang 21 accepts this code.
-    // GCC 15.1.0 emits an error: "cannot index an empty pack."
-#if defined(__cpp_pack_indexing) && (! (defined(__GNUC__) && (__GNUC__ < 16)))
-      slices...[Inds]
-#else
       detail::get_kth_in_pack<Inds>(slices...)
-#endif
     )...
   };
 }

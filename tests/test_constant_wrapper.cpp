@@ -80,7 +80,7 @@ TEST(TestConstantWrapper, IntegerPlus) {
 
   constant_wrapper<size_t(11)> cw_11;
   constexpr size_t value = cw_11;
-  constexpr size_t value2 = cw_11();
+  constexpr size_t value2 = constant_wrapper<size_t(11)>::value;
   static_assert(value == value2);
   constexpr size_t value3 = decltype(cw_11)();
   static_assert(value == value3);
