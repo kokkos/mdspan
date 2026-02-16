@@ -1606,6 +1606,8 @@ MDSPAN_INLINE_FUNCTION constexpr bool cmp_greater_equal(T t, U u) noexcept {
 
 template <class R, class T>
 MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
+  static_assert(std::is_integral_v<R> && std::is_integral_v<T>);
+
 #if defined(MDSPAN_IMPL_HAS_CUDA) && defined(__NVCC__) && (__CUDACC_VER_MAJOR__ * 100 + __CUDACC_VER_MINOR__ * 10 >= 1260)
   using cuda::std::numeric_limits;
 #else
@@ -1613,6 +1615,65 @@ MDSPAN_INLINE_FUNCTION constexpr bool in_range(T t) noexcept {
 #endif
   return cmp_greater_equal(t, numeric_limits<R>::min()) &&
           cmp_less_equal(t, numeric_limits<R>::max());
+}
+
+template <class R, class T>
+MDSPAN_INLINE_FUNCTION constexpr bool is_nonnegative_and_representable(T t) noexcept {
+  // T might not be integral and thus invalid to pass to in_range
+  // Only check this if we can actually call in_range
+  if constexpr (std::is_integral_v<T>)
+  {
+    if constexpr (std::is_signed_v<T>) {
+      if (t < 0)
+        return false;
+    }
+
+    return in_range<R>(t);
+  } else
+  {
+    if constexpr (std::is_signed_v<R>) {
+      if (static_cast<R>(t) < 0)
+        return false;
+    }
+
+    return true;
+  }
+}
+
+template<class R, class... Values>
+MDSPAN_INLINE_FUNCTION constexpr bool
+all_values_are_representable(Values... values) noexcept {
+  return ( in_range<R>( values ) && ... );
+}
+
+template<class R, class... Values>
+MDSPAN_INLINE_FUNCTION constexpr bool
+all_values_are_nonnegative_and_representable(Values... values) noexcept {
+  return ( is_nonnegative_and_representable<R>( values ) && ... );
+}
+
+template<class R, class ContiguousIterator>
+MDSPAN_INLINE_FUNCTION constexpr bool
+  range_is_nonnegative_and_representable(ContiguousIterator begin, ContiguousIterator end) noexcept {
+  for ( auto it = begin; it < end; ++it )
+  {
+    if ( !is_nonnegative_and_representable<R>( *it ) )
+      return false;
+  }
+
+  return true;
+}
+
+template<class R, class Extents>
+MDSPAN_INLINE_FUNCTION constexpr bool
+extent_is_representable(const Extents &exts) noexcept {
+  for ( std::size_t r = 0; r < Extents::rank(); ++r )
+  {
+    if ( !is_nonnegative_and_representable<R>( exts.extent(r) ) )
+      return false;
+  }
+
+  return true;
 }
 
 template <typename T >
@@ -2070,7 +2131,12 @@ public:
            sizeof...(OtherIndexTypes) == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   constexpr explicit extents(OtherIndexTypes... dynvals) noexcept
-      : m_vals(static_cast<index_type>(dynvals)...) {}
+      : m_vals(static_cast<index_type>(dynvals)...) {
+#if MDSPAN_HAS_CXX_17
+    MDSPAN_IMPL_PRECONDITION(
+        detail::all_values_are_nonnegative_and_representable<index_type>(dynvals...));
+#endif
+  }
 
   MDSPAN_TEMPLATE_REQUIRES(
       class OtherIndexType, size_t N,
@@ -2083,7 +2149,13 @@ public:
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
   constexpr extents(const std::array<OtherIndexType, N> &exts) noexcept
-      : m_vals(std::move(exts)) {}
+      : m_vals(std::move(exts)) {
+#if MDSPAN_HAS_CXX_17
+    MDSPAN_IMPL_PRECONDITION(
+        detail::range_is_nonnegative_and_representable<index_type>(
+            std::begin(exts), std::end(exts)));
+#endif
+  }
 
 #ifdef __cpp_lib_span
   MDSPAN_TEMPLATE_REQUIRES(
@@ -2095,7 +2167,11 @@ public:
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
   constexpr extents(const std::span<OtherIndexType, N> &exts) noexcept
-      : m_vals(std::move(exts)) {}
+      : m_vals(std::move(exts)) {
+    MDSPAN_IMPL_PRECONDITION(
+        detail::range_is_nonnegative_and_representable<index_type>(
+            std::begin(exts), std::end(exts)));
+  }
 #endif
 
 private:
@@ -2167,10 +2243,16 @@ public:
                                ...) ||
                               (std::numeric_limits<index_type>::max() <
                                std::numeric_limits<OtherIndexType>::max()))
-  constexpr extents(const extents<OtherIndexType, OtherExtents...> &other) noexcept
+  constexpr extents(
+      const extents<OtherIndexType, OtherExtents...> &other) noexcept
       : m_vals(impl_construct_vals_from_extents(
             std::integral_constant<size_t, 0>(),
-            std::integral_constant<size_t, 0>(), other)) {}
+            std::integral_constant<size_t, 0>(), other)) {
+#if MDSPAN_HAS_CXX_17
+    MDSPAN_IMPL_PRECONDITION(
+        detail::extent_is_representable<index_type>(other));
+#endif
+  }
 
   // Comparison operator
   template <class OtherIndexType, size_t... OtherExtents>
