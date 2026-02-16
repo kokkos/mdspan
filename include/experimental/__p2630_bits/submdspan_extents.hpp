@@ -132,15 +132,32 @@ struct index_pair_like<std::array<IdxT, 2>, IndexType> {
 
 // first_of(slice): getting begin of slice specifier range
 
+template <class OffsetType, class ExtentType, class StrideType>
+MDSPAN_INLINE_FUNCTION
+constexpr OffsetType
+first_of(const strided_slice<OffsetType, ExtentType, StrideType>& r) {
+  return r.offset;
+}
+
 #if defined(MDSPAN_ENABLE_P3663)
 
-MDSPAN_TEMPLATE_REQUIRES(
-  class Integral,
-  /* requires */(std::is_signed_v<Integral> || std::is_unsigned_v<Integral>)
-)
+template<class T>
 MDSPAN_INLINE_FUNCTION
-constexpr Integral first_of(Integral i) {
-  return i;
+constexpr T
+first_of([[maybe_unused]] T t) {
+  if constexpr (std::is_signed_v<T> || std::is_unsigned_v<T>) {
+    return t;
+  }
+  else { // if constexpr (is_constant_wrapper_v<T>) {
+    static_assert(is_constant_wrapper<T>);
+    return T{};
+  }
+}
+
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+first_of([[maybe_unused]] ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t) {
+  return cw<size_t(0)>;
 }
 
 #else
@@ -178,16 +195,6 @@ constexpr Integral first_of(const Integral &i) {
   return i;
 }
 
-#endif // MDSPAN_ENABLE_P3663
-
-#if defined(MDSPAN_ENABLE_P3663)
-template<auto Value>
-MDSPAN_INLINE_FUNCTION
-constexpr constant_wrapper<Value>
-first_of(constant_wrapper<Value>) {
-  return {};
-}
-#else
 // NOTE This is technically not conforming.
 // Pre-P3663, first_of should work on any integral-constant-like type.
 // Replacing the return type "Integral" with auto does not change test results.
@@ -197,20 +204,6 @@ constexpr Integral
 first_of(const std::integral_constant<Integral, v>&) {
   return integral_constant<Integral, v>();
 }
-#endif
-
-
-
-#if defined(MDSPAN_ENABLE_P3663)
-
-MDSPAN_INLINE_FUNCTION
-constexpr
-auto
-first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
-  return cw<size_t(0)>;
-}
-
-#else
 
 MDSPAN_INLINE_FUNCTION
 constexpr
@@ -219,14 +212,10 @@ first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
   return {};
 }
 
-#endif // MDSPAN_ENABLE_P3663
-
-
 // P3663 doesn't need any of these overloads,
 // because its version of first_of will never see pair-like types.
 // (The only "contiguous range of indices" slice types it sees are
 // full_extent_t and strided_slice with compile-time unit stride.)
-#if ! defined(MDSPAN_ENABLE_P3663)
 
 MDSPAN_TEMPLATE_REQUIRES(
   class Slice,
@@ -261,13 +250,6 @@ constexpr auto first_of(const std::complex<T> &i) {
 }
 
 #endif
-
-template <class OffsetType, class ExtentType, class StrideType>
-MDSPAN_INLINE_FUNCTION
-constexpr OffsetType
-first_of(const strided_slice<OffsetType, ExtentType, StrideType> &r) {
-  return r.offset;
-}
 
 // last_of(slice): getting end of slice specifier range
 // We need however not just the slice but also the extents
