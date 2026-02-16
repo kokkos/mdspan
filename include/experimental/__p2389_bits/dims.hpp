@@ -18,6 +18,8 @@
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
-using :: MDSPAN_IMPL_STANDARD_NAMESPACE :: dims;
+template< ::std::size_t Rank, class IndexType = std::size_t>
+using dims =
+  :: MDSPAN_IMPL_STANDARD_NAMESPACE :: dextents<IndexType, Rank>;
 
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
