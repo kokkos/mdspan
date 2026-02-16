@@ -46,16 +46,9 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
 
 #if defined(MDSPAN_ENABLE_P3663)
 
-#  if defined(__cpp_structured_bindings) && (__cpp_structured_bindings >= 202411L)
-  // Rely on P1061R10, "Structured bindings can introduce a pack."
-  // Clang 21 implements this, but GCC 15 does not.
-
-  auto [...canonical_slices] =
-    submdspan_canonicalize_slices(src.extents(), slices...);
-  auto sub_map_result =
-    submdspan_mapping(src.mapping(), canonical_slices...);
-
-#  else
+  // The wording relies on P1061R10, "Structured bindings can introduce a pack."
+  // That's a C++26 feature.  Clang 21 implements it, but GCC 15 does not.
+  // We back-port to C++17 here.
 
   auto canonical_slices_tuple =
     submdspan_canonicalize_slices(src.extents(), slices...);
@@ -63,8 +56,6 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
   auto sub_map_result = std::apply(
     detail::submdspan_mapping_caller<src_mapping_type>{src.mapping()},
     canonical_slices_tuple);
-
-#  endif // defined(__cpp_structured_bindings) && (__cpp_structured_bindings >= 202411L)
 
   return mdspan(
     src.accessor().offset(src.data_handle(), sub_map_result.offset),
