@@ -274,11 +274,6 @@ constexpr Integral last_of(
   return i;
 }
 
-// clang++ with C++14 is not fond of the pragma appearing inside the
-// macro definition.  In that case, it complains, "error: embedding a
-// directive within macro arguments has undefined behavior
-// [-Werror,-Wembedded-directive]."  The fix is to duplicate code.
-
 #if ! defined(MDSPAN_ENABLE_P3663)
 
 // P3663 does not need these index_pair_like overloads,
