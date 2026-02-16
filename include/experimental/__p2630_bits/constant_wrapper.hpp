@@ -34,4 +34,15 @@ template<auto Value>
 
 #endif // __cpp_lib_constant_wrapper
 
+namespace detail {
+
+template<auto Value, class T>
+constexpr auto
+increment([[maybe_unused]] constant_wrapper<Value, T> x) {
+  using value_type = decltype(x)::value_type;
+  return cw< decltype(x)::value + value_type(1) >;
+}
+
+} // namespace detail
+
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE

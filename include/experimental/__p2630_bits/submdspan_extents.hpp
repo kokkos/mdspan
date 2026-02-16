@@ -22,6 +22,9 @@
 #include "strided_slice.hpp"
 #include "../__p0009_bits/utility.hpp"
 
+#  include "constant_wrapper.hpp"
+
+
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
@@ -34,12 +37,12 @@ namespace detail {
 // That's fine; it's not exposed to users anyway.
 
 template<
-  size_t Counter,
+  auto Counter,
   size_t... MapIdxs
 >
 MDSPAN_INLINE_FUNCTION
 constexpr auto inv_map_rank_impl(
-  std::integral_constant<size_t, Counter>,
+  constant_wrapper<Counter, size_t>,
   std::index_sequence<MapIdxs...>)
 {
   return std::index_sequence<MapIdxs...>();
@@ -47,25 +50,32 @@ constexpr auto inv_map_rank_impl(
 
 // specialization reducing rank by one (i.e., integral slice specifier)
 template<
-  size_t Counter,
+  auto Counter,
   class Slice,
   class... SliceSpecifiers,
   size_t... MapIdxs>
 MDSPAN_INLINE_FUNCTION
 constexpr auto inv_map_rank_impl(
-  std::integral_constant<size_t, Counter>,
+  constant_wrapper<Counter, size_t> counter,
   std::index_sequence<MapIdxs...>,
   Slice,
   SliceSpecifiers... slices)
 {
+  constexpr auto counter_value = constant_wrapper<Counter, size_t>::value;
   using next_idx_seq_t = std::conditional_t<
+      // FIXME We should test here whether the slice
+      // is convertible to index_type.
+      //
+      // FIXME With P3663 enabled, Slice has already been
+      // canonicalized by this point, so we can test whether
+      // it's index_type or constant_wrapper of index_type.
       std::is_convertible_v<Slice, size_t>,
       std::index_sequence<MapIdxs...>,
-      std::index_sequence<MapIdxs..., Counter>
+      std::index_sequence<MapIdxs..., counter_value>
     >;
 
   return inv_map_rank_impl(
-    std::integral_constant<size_t, Counter + 1>(),
+    increment(counter),
     next_idx_seq_t(),
     slices...);
 }
@@ -80,7 +90,7 @@ constexpr auto inv_map_rank(
   SliceSpecifiers... slices)
 {
   return inv_map_rank_impl(
-    std::integral_constant<size_t, 0>(),
+    cw<size_t(0)>,
     seq,
     slices...);
 }
