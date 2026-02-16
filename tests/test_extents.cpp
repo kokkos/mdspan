@@ -481,3 +481,81 @@ TEST(TestExtentsCTADStdArray, test_extents_ctad_std_array) {
 }
 */
 #endif
+
+#if MDSPAN_HAS_CXX_17
+TEST(TestExtentsConstructorPreconditions, test_extents_construct_indices) {
+  auto test_precondition_indices_not_representable = [] {
+    [[maybe_unused]] auto exts = Kokkos::dextents< std::int8_t, 2 >{ 500, 500 };
+  };
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL)
+  EXPECT_DEATH(test_precondition_indices_not_representable(), "");
+#else
+  EXPECT_DEATH(test_precondition_indices_not_representable(), "all_values_are_nonnegative_and_representable");
+#endif
+
+  auto test_precondition_indices_are_negative = [] {
+    [[maybe_unused]] auto exts = Kokkos::dextents< int, 2 >{ 500, -500 };
+  };
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL)
+  EXPECT_DEATH(test_precondition_indices_are_negative(), "");
+#else
+  EXPECT_DEATH(test_precondition_indices_are_negative(), "all_values_are_nonnegative_and_representable");
+#endif
+}
+
+TEST(TestExtentsConstructorPreconditions, test_extents_construct_array) {
+  auto test_precondition_array_elements_not_representable = [] {
+    [[maybe_unused]] auto exts = Kokkos::dextents< std::int8_t, 2 >{ std::array{ 500, 500 } };
+  };
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL)
+  EXPECT_DEATH(test_precondition_array_elements_not_representable(), "");
+#else
+  EXPECT_DEATH(test_precondition_array_elements_not_representable(), "range_is_nonnegative_and_representable");
+#endif
+
+  auto test_precondition_array_elements_are_negative = [] {
+    [[maybe_unused]] auto exts = Kokkos::dextents< int, 2 >{ std::array{ 500, -500 } };
+  };
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL)
+  EXPECT_DEATH(test_precondition_array_elements_are_negative(), "");
+#else
+  EXPECT_DEATH(test_precondition_array_elements_are_negative(), "range_is_nonnegative_and_representable");
+#endif
+}
+
+#ifdef __cpp_lib_span
+TEST(TestExtentsConstructorPreconditions, test_extents_construct_span) {
+  auto test_precondition_span_elements_not_representable = [] {
+    auto indices = std::array{ 500, 500 };
+    [[maybe_unused]] auto exts = Kokkos::dextents< std::int8_t, 2 >{ std::span{ indices } };
+  };
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL)
+  EXPECT_DEATH(test_precondition_span_elements_not_representable(), "");
+#else
+  EXPECT_DEATH(test_precondition_span_elements_not_representable(), "range_is_nonnegative_and_representable");
+#endif
+
+  auto test_precondition_span_elements_are_negative = [] {
+    auto indices = std::array{ 500, -500 };
+    [[maybe_unused]] auto exts = Kokkos::dextents< int, 2 >{ std::span{ indices } };
+  };
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL)
+  EXPECT_DEATH(test_precondition_span_elements_are_negative(), "");
+#else
+  EXPECT_DEATH(test_precondition_span_elements_are_negative(), "range_is_nonnegative_and_representable");
+#endif
+}
+#endif
+
+TEST(TestExtentsConstructorPreconditions, test_extents_construct_other_extents) {
+  auto test_precondition_extent_ranks_not_representable = [] {
+    auto first = Kokkos::dextents< int, 2 >{ 500, 500 };
+    [[maybe_unused]] auto exts = Kokkos::dextents< std::int8_t, 2 >{ first };
+  };
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL)
+  EXPECT_DEATH(test_precondition_extent_ranks_not_representable(), "");
+#else
+  EXPECT_DEATH(test_precondition_extent_ranks_not_representable(), "extent_is_representable");
+#endif
+}
+#endif
