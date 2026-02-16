@@ -29,7 +29,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
-      run: cmake -DCMAKE_CXX_FLAGS=-EHsc $GITHUB_WORKSPACE/mdspan-src -DMDSPAN_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON 
+      run: cmake -DCMAKE_CXX_FLAGS=-EHsc $GITHUB_WORKSPACE/mdspan-src -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON
 
     - name: Build
       shell: bash
