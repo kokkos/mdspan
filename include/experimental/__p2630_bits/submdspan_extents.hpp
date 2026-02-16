@@ -141,6 +141,12 @@ first_of(const strided_slice<OffsetType, ExtentType, StrideType>& r) {
 
 #if defined(MDSPAN_ENABLE_P3663)
 
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+first_of([[maybe_unused]] ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t) {
+  return cw<size_t(0)>;
+}
+
 template<class T>
 MDSPAN_INLINE_FUNCTION
 constexpr T
@@ -152,12 +158,6 @@ first_of([[maybe_unused]] T t) {
     static_assert(is_constant_wrapper<T>);
     return T{};
   }
-}
-
-MDSPAN_INLINE_FUNCTION
-constexpr auto
-first_of([[maybe_unused]] ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t) {
-  return cw<size_t(0)>;
 }
 
 #else
