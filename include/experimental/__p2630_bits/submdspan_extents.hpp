@@ -1014,11 +1014,8 @@ check_canonical_kth_submdspan_slice_type(
   [[maybe_unused]] Slice slice)
 {
   if constexpr (! is_canonical_slice_type<IndexType, Slice>()) {
-#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+    // Apparent redundancy is just a back-port of static_assert(false).
     static_assert(is_canonical_slice_type<IndexType, Slice>());
-#else
-    static_assert(false);
-#endif
   }
   else { // 3.2
     static_assert(check_static_bounds<k, decltype(slice)>(extents<IndexType, Extents...>{}) != check_static_bounds_result::out_of_bounds);
@@ -1069,11 +1066,10 @@ submdspan_canonicalize_one_slice(
 {
   // Part of [mdspan.sub.slices] 9.
   // This could be combined with the if constexpr branches below.
-#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-  static_assert(check_static_bounds<k, decltype(s)>(extents<IndexType, Extents...>{}) != check_static_bounds_result::out_of_bounds);
-#else
-  static_assert(check_static_bounds<k, decltype(s)>(exts) != check_static_bounds_result::out_of_bounds);
-#endif
+  static_assert(
+    check_static_bounds<k, decltype(s)>(
+      extents<IndexType, Extents...>{}) !=
+    check_static_bounds_result::out_of_bounds);
 
   // TODO Check Precondition that s is a valid k-th submdspan slice for exts.
 
@@ -1084,14 +1080,6 @@ submdspan_canonicalize_one_slice(
     return canonical_ice<IndexType>(s); // 11.2
   }
   else if constexpr (is_strided_slice<Slice>::value) { // 11.3
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-    // GCC 11.4.0 (C++20) accepts this code, but Clang 14 does not.
-    return strided_slice{
-      .offset = canonical_ice<IndexType>(s.offset),
-      .extent = canonical_ice<IndexType>(s.extent),
-      .stride = canonical_ice<IndexType>(s.stride)
-    };
-#else
     auto offset = canonical_ice<IndexType>(s.offset);
     auto extent = canonical_ice<IndexType>(s.extent);
     auto stride = canonical_ice<IndexType>(s.stride);
@@ -1102,18 +1090,9 @@ submdspan_canonicalize_one_slice(
       /* .extent = */ extent,
       /* .stride = */ stride
     };
-#endif
   }
 #if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
   else if constexpr (detail::is_std_complex<Slice>) {
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-    // GCC 11.4.0 (C++20) accepts this code, but Clang 14 does not.
-    return strided_slice{
-      .offset = canonical_ice<IndexType>(s.real()),
-      .extent = canonical_ice<IndexType>(s.imag() - s.real()),
-      .stride = cw<IndexType(1)>
-    };
-#else
     auto offset = canonical_ice<IndexType>(s.real());
     auto extent = canonical_ice<IndexType>(s.imag() - s.real());
     auto stride = cw<IndexType(1)>;
@@ -1124,7 +1103,6 @@ submdspan_canonicalize_one_slice(
       /* .extent = */ extent,
       /* .stride = */ stride
     };
-#endif
   }
 #endif
   else { // 11.4
@@ -1133,14 +1111,7 @@ submdspan_canonicalize_one_slice(
     using S_k1 = decltype(s_k1);
     static_assert(std::is_convertible_v<S_k0, IndexType>);
     static_assert(std::is_convertible_v<S_k1, IndexType>);
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-    // GCC 11.4.0 (C++20) accepts this code, but Clang 14 does not.
-    return strided_slice{
-      .offset = canonical_ice<IndexType>(s_k0),
-      .extent = subtract_ice<IndexType>(s_k0, s_k1),
-      .stride = cw<IndexType(1)>
-    };
-#else
+
     auto offset = canonical_ice<IndexType>(s_k0);
     auto extent = subtract_ice<IndexType>(s_k0, s_k1);
     auto stride = cw<IndexType(1)>;
@@ -1151,7 +1122,6 @@ submdspan_canonicalize_one_slice(
       /* .extent = */ extent,
       /* .stride = */ stride
     };
-#endif
   }
 }
 

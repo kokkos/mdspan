@@ -40,7 +40,7 @@ public:
     : first_(first), second_(second)
   {}
 
-#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+#if ! defined(__cpp_lib_constant_wrapper)
   template<std::size_t Index>
   constexpr auto get() -> std::conditional_t<Index == 0, First, Second> {
     if constexpr (Index == 0) {
@@ -79,7 +79,7 @@ struct std::tuple_size<my_test::my_nonaggregate_pair<First, Second>>
 
 template<std::size_t Index, class First, class Second>
 struct std::tuple_element<Index, my_test::my_nonaggregate_pair<First, Second>> {
-#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+#if ! defined(__cpp_lib_constant_wrapper)
   static_assert(Index == 0 || Index == 1, "Invalid index");
 #else
   static_assert(false, "Invalid index");

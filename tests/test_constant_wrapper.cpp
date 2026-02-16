@@ -24,7 +24,7 @@
 
 namespace { // (anonymous)
 
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+#if defined(__cpp_lib_constant_wrapper)
 
 template<class Integral, Integral Value>
 using IC = std::integral_constant<Integral, Value>;
@@ -37,7 +37,7 @@ constexpr void test_integral_constant_wrapper(IC<Integral, Value> ic) {
   constexpr auto c = cw<Value>;
 
   static_assert(std::is_same_v<
-    decltype(cw<Value>),
+    std::remove_const_t<decltype(cw<Value>)>,
     constant_wrapper<Value>>);
   static_assert(decltype(c)::value == Value);
   static_assert(std::is_same_v<
@@ -52,7 +52,7 @@ constexpr void test_integral_constant_wrapper(IC<Integral, Value> ic) {
   // any integer promotions (e.g., short + short -> int).
   constexpr auto val_plus_1 = Integral(Value + Integral(1));
   constexpr auto c_assigned = (c2 = IC<Integral, val_plus_1>{});
-  static_assert(c_assigned() == val_plus_1);
+  static_assert(c_assigned == val_plus_1);
 }
 
 TEST(TestConstantWrapper, Construction) {
@@ -85,17 +85,17 @@ TEST(TestConstantWrapper, IntegerPlus) {
   constexpr size_t value3 = decltype(cw_11)();
   static_assert(value == value3);
 
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+#if defined(__cpp_lib_constant_wrapper)
   static_assert(std::is_same_v<
     decltype(cw_11),
-    decltype(cw<size_t(11)>)>);
+    std::remove_const_t<decltype(cw<size_t(11)>)>>);
 #endif
 
   [[maybe_unused]] auto expected_result = cw<size_t(12)>;
   using expected_type = constant_wrapper<size_t(12)>;
   static_assert(std::is_same_v<decltype(expected_result), expected_type>);
 
-#if ! defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+#if defined(__cpp_lib_constant_wrapper)
   [[maybe_unused]] auto cw_11_plus_one = cw_11 + cw<size_t(1)>;
   [[maybe_unused]] auto one_plus_cw_11 = cw<size_t(1)> + cw_11;
 

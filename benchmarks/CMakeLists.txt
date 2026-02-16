@@ -10,12 +10,6 @@ function(mdspan_add_benchmark EXENAME)
   if(MDSPAN_ENABLE_P3663)
     target_compile_definitions(${EXENAME} PUBLIC MDSPAN_ENABLE_P3663=1)
   endif()
-  if(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-    target_compile_definitions(${EXENAME}
-      PUBLIC
-      MDSPAN_CONSTANT_WRAPPER_WORKAROUND=1
-    )
-  endif()
 endfunction()
 
 if(MDSPAN_USE_SYSTEM_BENCHMARK)
@@ -78,12 +72,6 @@ function(mdspan_add_cuda_benchmark EXENAME)
   if(MDSPAN_ENABLE_P3663)
     target_compile_definitions(${EXENAME} PUBLIC MDSPAN_ENABLE_P3663=1)
   endif()
-  if(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-    target_compile_definitions(${EXENAME}
-      PUBLIC
-      MDSPAN_CONSTANT_WRAPPER_WORKAROUND=1
-    )
-  endif()
 endfunction()
 
 if(MDSPAN_ENABLE_OPENMP)
@@ -102,12 +90,6 @@ function(mdspan_add_openmp_benchmark EXENAME)
       if(MDSPAN_ENABLE_P3663)
         target_compile_definitions(${EXENAME} PUBLIC MDSPAN_ENABLE_P3663=1)
       endif()
-      if(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-        target_compile_definitions(${EXENAME}
-          PUBLIC
-          MDSPAN_CONSTANT_WRAPPER_WORKAROUND=1
-        )
-      endif() 
     else()
       message(WARNING "Not adding target ${EXENAME} because OpenMP was not found")
     endif()

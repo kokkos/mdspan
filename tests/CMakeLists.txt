@@ -33,12 +33,6 @@ function(mdspan_add_test name)
       MDSPAN_ENABLE_P3663=1
     )
   endif()
-  if(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-    target_compile_definitions(${name}
-      PUBLIC
-      MDSPAN_CONSTANT_WRAPPER_WORKAROUND=1
-    )
-  endif()
 endfunction()
 
 if(MDSPAN_USE_SYSTEM_GTEST)

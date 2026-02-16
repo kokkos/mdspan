@@ -34,9 +34,6 @@ option(MDSPAN_ENABLE_CONCEPTS "Try to enable concepts support by giving extra fl
 
 option(MDSPAN_ENABLE_P3663 "Enable implementation of P3663 (Future-proof submdspan_mapping)." On)
 
-# Defaults to ON, because this has only been tested with Clang 21 (development Clang).
-option(MDSPAN_CONSTANT_WRAPPER_WORKAROUND "If MDSPAN_ENABLE_P3663 is enabled, work around some compilers' inability to build constant_wrapper." ON)
-
 ################################################################################
 
 # Decide on the standard to use

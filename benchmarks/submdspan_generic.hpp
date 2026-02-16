@@ -29,8 +29,6 @@
 
 namespace submdspan_benchmark {
 
-#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
-
 template<class ElementType, class Extents, class Layout, class Accessor, size_t... Indices>
 constexpr typename Kokkos::mdspan<ElementType, Extents, Layout, Accessor>::reference
 get_broadcast_element_impl(
@@ -53,19 +51,6 @@ get_broadcast_element(
 {
   return get_broadcast_element_impl(x, broadcast_index, std::make_index_sequence<Extents::rank()>());
 }
-
-#else
-
-template<class ElementType, class IndexType, size_t... Exts, class Layout, class Accessor>
-constexpr typename Kokkos::mdspan<ElementType, Kokkos::extents<IndexType, Exts...>, Layout, Accessor>::reference
-get_broadcast_element(
-  const Kokkos::mdspan<ElementType, Kokkos::extents<IndexType, Exts...>, Layout, Accessor>& x,
-  typename Kokkos::extents<IndexType, Exts...>::index_type broadcast_index)
-{
-  return x[((void) Exts, broadcast_index)...];
-}
-
-#endif
 
 template<class IndexType, size_t... Exts>
 using nonconst_test_mdspan =
@@ -229,11 +214,8 @@ constexpr MDSPAN_FUNCTION auto slice_one_extent(
   Kokkos::mdspan<ElementType, Kokkos::extents<IndexType, Exts...>, Layout, Accessor> x, Slice slice)
 {
   if constexpr (sizeof...(Exts) == 0) {
-#if defined(MDSPAN_CONSTANT_WRAPPER_WORKAROUND)
+    // Apparent redundancy is just a back-port of static_assert(false).
     static_assert(sizeof...(Exts) != 0, "slice_one_extent called with no extents");
-#else
-    static_assert(false, "slice_one_extent called with no extents");
-#endif
   }
   else if constexpr (sizeof...(Exts) == 1) {
     return Kokkos::submdspan(x, slice);
