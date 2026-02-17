@@ -730,8 +730,6 @@ constexpr auto canonical_ice([[maybe_unused]] S s) {
 
 template<class IndexType, class X, class Y>
 constexpr auto subtract_ice([[maybe_unused]] X x, [[maybe_unused]] Y y) {
-  // Key to the work-around is acknowledging that GCC 11.4.0 can't find
-  // constant_wrapper's overloaded arithmetic operators.
   if constexpr (is_integral_constant_like_v<remove_cvref_t<X>> &&
     is_integral_constant_like_v<remove_cvref_t<Y>>)
   {
@@ -761,6 +759,9 @@ MDSPAN_TEMPLATE_REQUIRES(
 constexpr decltype(T::value) de_ice(T) {
   return T::value;
 }
+
+// FIXME In P3663R3 (instead of R2), check_static_bounds
+// returns bool instead of an enum.
 
 enum class check_static_bounds_result {
   in_bounds,
@@ -1151,9 +1152,14 @@ submdspan_canonicalize_slices_impl(
   const extents<IndexType, Extents...>& exts,
   Slices... slices)
 {
+  // FIXME Return Kokkos::detail::tuple instead of std::tuple,
+  // so that this works in device code.  We'll need to fix
+  // the place in submdspan where we call std::apply on this tuple.
   return std::tuple{
     // This is ill-formed if slices...[Inds] is not a valid slice type.
     // That implements the Mandates clause of [mdspan.sub.slices] 9.
+    //
+    // TODO Paragraph numbers might be from R2 instead of R3 of P3663.
     detail::submdspan_canonicalize_one_slice<Inds>(
       exts,
       detail::get_kth_in_pack<Inds>(slices...)
@@ -1171,9 +1177,12 @@ MDSPAN_TEMPLATE_REQUIRES(
 )
 MDSPAN_INLINE_FUNCTION
 constexpr auto
-submdspan_canonicalize_slices(const extents<IndexType, Extents...>& exts, Slices&&... slices)
+submdspan_canonicalize_slices(
+  const extents<IndexType, Extents...>& exts,
+  Slices&&... slices)
 {
-  return submdspan_canonicalize_slices_impl(std::make_index_sequence<sizeof...(Slices)>(), exts, slices...);
+  return submdspan_canonicalize_slices_impl(
+    std::make_index_sequence<sizeof...(Slices)>(), exts, slices...);
 }
 #endif // MDSPAN_ENABLE_P3663
 
