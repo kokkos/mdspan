@@ -17,25 +17,15 @@
 
 #pragma once
 
+#include "../__p0009_bits/config.hpp"
+#include "constant_wrapper.hpp"
 #include "integral_constant_like.hpp"
-#if defined(MDSPAN_ENABLE_P3663)
-#  include "constant_wrapper.hpp"
-#endif
 
 #include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 namespace detail {
-
-#if defined(MDSPAN_ENABLE_P3663)
-  template<class T>
-  constexpr bool is_constant_wrapper = false;
-  
-  template<auto Value, class Type>
-  constexpr bool is_constant_wrapper<constant_wrapper<Value, Type>> = true;  
-#endif // MDSPAN_ENABLE_P3663
-
   template<class T, class = void>
   struct is_signed_or_unsigned_integral_constant_like : std::false_type {};
 

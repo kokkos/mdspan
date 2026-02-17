@@ -43,6 +43,13 @@ increment([[maybe_unused]] constant_wrapper<Value, T> x) {
   return cw< decltype(x)::value + value_type(1) >;
 }
 
+template<class T>
+constexpr bool is_constant_wrapper = false;
+  
+template<auto Value, class Type>
+constexpr bool is_constant_wrapper<constant_wrapper<Value, Type>> = true;  
+
 } // namespace detail
+
 
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE

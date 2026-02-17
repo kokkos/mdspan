@@ -19,11 +19,9 @@
 #include <complex>
 #include <tuple>
 
+#include "constant_wrapper.hpp"
 #include "strided_slice.hpp"
 #include "../__p0009_bits/utility.hpp"
-
-#  include "constant_wrapper.hpp"
-
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
