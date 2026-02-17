@@ -20,12 +20,30 @@
 #include "submdspan_mapping.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+
 template <class ElementType, class Extents, class LayoutPolicy,
           class AccessorPolicy, class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
           SliceSpecifiers... slices) {
+
+#if defined(MDSPAN_ENABLE_P3663)
+  // The wording relies on P1061R10, "Structured bindings can introduce a pack."
+  // That's a C++26 feature.  Clang 21 implements it, but GCC 15 does not.
+
+  auto sub_map_result = std::apply(
+    [&] (auto&&... canonical_slices) {
+      return submdspan_mapping(src.mapping(),
+        std::forward<decltype(canonical_slices)>(canonical_slices)...);
+    }, submdspan_canonicalize_slices(src.extents(), slices...));
+
+  return mdspan(
+    src.accessor().offset(src.data_handle(), sub_map_result.offset),
+    sub_map_result.mapping,
+    typename AccessorPolicy::offset_policy(src.accessor()));
+
+#else
   const auto sub_submdspan_mapping_result = submdspan_mapping(src.mapping(), slices...);
   // NVCC has a problem with the deduction so lets figure out the type
   using sub_mapping_t = std::remove_cv_t<decltype(sub_submdspan_mapping_result.mapping)>;
@@ -36,5 +54,6 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
       src.accessor().offset(src.data_handle(), sub_submdspan_mapping_result.offset),
       sub_submdspan_mapping_result.mapping,
       sub_accessor_t(src.accessor()));
+#endif // MDSPAN_ENABLE_P3663
 }
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE

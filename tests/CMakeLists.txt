@@ -26,7 +26,13 @@ function(mdspan_add_test name)
   target_compile_definitions(${name}
     PUBLIC
     MDSPAN_IMPL_CHECK_PRECONDITION=$<BOOL:${ARGUMENT_ENABLE_PRECONDITIONS}>
-  )
+    )
+  if(MDSPAN_ENABLE_P3663)
+    target_compile_definitions(${name}
+      PUBLIC
+      MDSPAN_ENABLE_P3663=1
+    )
+  endif()
 endfunction()
 
 if(MDSPAN_USE_SYSTEM_GTEST)
@@ -105,3 +111,12 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR ((CMAKE_CXX_COMPILER_ID STREQUAL GN
   add_subdirectory(libcxx-backports)
 endif()
 endif()
+
+if(MDSPAN_ENABLE_P3663)
+  mdspan_add_test(test_constant_wrapper)
+  mdspan_add_test(test_strided_slice)
+  mdspan_add_test(test_canonicalize_slices)
+  mdspan_add_test(test_submdspan_check_static_bounds)
+endif()
+
+mdspan_add_test(test_convertible_to_index_type)

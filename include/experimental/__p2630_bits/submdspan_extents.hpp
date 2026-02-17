@@ -17,7 +17,9 @@
 #pragma once
 
 #include <complex>
+#include <tuple>
 
+#include "constant_wrapper.hpp"
 #include "strided_slice.hpp"
 #include "../__p0009_bits/utility.hpp"
 
@@ -28,23 +30,67 @@ namespace detail {
 // InvMapRank is an index_sequence, which we build recursively
 // to contain the mapped indices.
 // end of recursion specialization containing the final index_sequence
-template <size_t Counter, size_t... MapIdxs>
+
+// NOTE (mfh 2026/02/06) This inexplicably only works with std::integral_constant.
+// That's fine; it's not exposed to users anyway.
+
+template<
+  auto Counter,
+  size_t... MapIdxs
+>
 MDSPAN_INLINE_FUNCTION
-constexpr auto inv_map_rank(std::integral_constant<size_t, Counter>, std::index_sequence<MapIdxs...>) {
+constexpr auto inv_map_rank_impl(
+  constant_wrapper<Counter, size_t>,
+  std::index_sequence<MapIdxs...>)
+{
   return std::index_sequence<MapIdxs...>();
 }
 
 // specialization reducing rank by one (i.e., integral slice specifier)
-template<size_t Counter, class Slice, class... SliceSpecifiers, size_t... MapIdxs>
+template<
+  auto Counter,
+  class Slice,
+  class... SliceSpecifiers,
+  size_t... MapIdxs>
 MDSPAN_INLINE_FUNCTION
-constexpr auto inv_map_rank(std::integral_constant<size_t, Counter>, std::index_sequence<MapIdxs...>, Slice,
-                  SliceSpecifiers... slices) {
-  using next_idx_seq_t = std::conditional_t<std::is_convertible_v<Slice, size_t>,
-                                       std::index_sequence<MapIdxs...>,
-                                       std::index_sequence<MapIdxs..., Counter>>;
+constexpr auto inv_map_rank_impl(
+  constant_wrapper<Counter, size_t> counter,
+  std::index_sequence<MapIdxs...>,
+  Slice,
+  SliceSpecifiers... slices)
+{
+  constexpr auto counter_value = constant_wrapper<Counter, size_t>::value;
+  using next_idx_seq_t = std::conditional_t<
+      // FIXME We should test here whether the slice
+      // is convertible to index_type.
+      //
+      // FIXME With P3663 enabled, Slice has already been
+      // canonicalized by this point, so we can test whether
+      // it's index_type or constant_wrapper of index_type.
+      std::is_convertible_v<Slice, size_t>,
+      std::index_sequence<MapIdxs...>,
+      std::index_sequence<MapIdxs..., counter_value>
+    >;
 
-  return inv_map_rank(std::integral_constant<size_t,Counter + 1>(), next_idx_seq_t(),
-                                     slices...);
+  return inv_map_rank_impl(
+    increment(counter),
+    next_idx_seq_t(),
+    slices...);
+}
+
+template<
+  class... SliceSpecifiers,
+  size_t... MapIdxs
+>
+MDSPAN_INLINE_FUNCTION
+constexpr auto inv_map_rank(
+  std::index_sequence<MapIdxs...> seq,
+  SliceSpecifiers... slices)
+{
+  return inv_map_rank_impl(
+    cw<size_t(0)>,
+    seq,
+    slices...);
 }
 
 // Helper for identifying strided_slice
@@ -53,6 +99,11 @@ template <class T> struct is_strided_slice : std::false_type {};
 template <class OffsetType, class ExtentType, class StrideType>
 struct is_strided_slice<
     strided_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
+
+// P3663 does not need index_pair_like.  In fact, it's impossible
+// to define a concept for the set of types that P3663 accepts
+// as a pair of indices.
+#if ! defined(MDSPAN_ENABLE_P3663)
 
 // Helper for identifying valid pair like things
 template <class T, class IndexType> struct index_pair_like : std::false_type {};
@@ -85,27 +136,94 @@ struct index_pair_like<std::array<IdxT, 2>, IndexType> {
   static constexpr bool value = std::is_convertible_v<IdxT, IndexType>;
 };
 
+#endif // ! defined(MDSPAN_ENABLE_P3663)
+
 // first_of(slice): getting begin of slice specifier range
+
+template <class OffsetType, class ExtentType, class StrideType>
+MDSPAN_INLINE_FUNCTION
+constexpr OffsetType
+first_of(const strided_slice<OffsetType, ExtentType, StrideType>& r) {
+  return r.offset;
+}
+
+#if defined(MDSPAN_ENABLE_P3663)
+
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+first_of([[maybe_unused]] ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t) {
+  return cw<size_t(0)>;
+}
+
+template<class T>
+MDSPAN_INLINE_FUNCTION
+constexpr T
+first_of([[maybe_unused]] T t) {
+  if constexpr (std::is_signed_v<T> || std::is_unsigned_v<T>) {
+    return t;
+  }
+  else { // if constexpr (is_constant_wrapper_v<T>) {
+    static_assert(is_constant_wrapper<T>);
+    return T{};
+  }
+}
+
+#else
+
+// NOTE (mfh 2025/06/06) The original "return i;" was not conforming,
+// in particular for index types that were not integral-not-bool
+// but were convertible to index_type.
+
 MDSPAN_TEMPLATE_REQUIRES(
   class Integral,
-  /* requires */(std::is_convertible_v<Integral, size_t>)
+  /* requires */(
+    ! std::is_signed_v<Integral> &&
+    ! std::is_unsigned_v<Integral> &&
+    (
+      std::is_convertible_v<Integral, size_t> ||
+      std::is_convertible_v<Integral, int>
+    )
+  )
+)
+MDSPAN_INLINE_FUNCTION
+constexpr Integral first_of(const Integral &i) {
+  // FIXME (mfh 2025/06/06) This is broken, but it's better than it was.
+  return size_t(i);
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class Integral,
+  /* requires */(
+    std::is_signed_v<Integral> ||
+    std::is_unsigned_v<Integral>
+  )
 )
 MDSPAN_INLINE_FUNCTION
 constexpr Integral first_of(const Integral &i) {
   return i;
 }
 
+// NOTE This is technically not conforming.
+// Pre-P3663, first_of should work on any integral-constant-like type.
+// Replacing the return type "Integral" with auto does not change test results.
 template<class Integral, Integral v>
 MDSPAN_INLINE_FUNCTION
-constexpr Integral first_of(const std::integral_constant<Integral, v>&) {
+constexpr Integral
+first_of(const std::integral_constant<Integral, v>&) {
   return integral_constant<Integral, v>();
 }
 
 MDSPAN_INLINE_FUNCTION
-constexpr integral_constant<size_t, 0>
+constexpr
+integral_constant<size_t, 0>
 first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
-  return integral_constant<size_t, 0>();
+  return {};
 }
+
+// P3663 doesn't need any of these overloads,
+// because its version of first_of will never see pair-like types.
+// (The only "contiguous range of indices" slice types it sees are
+// full_extent_t and strided_slice with compile-time unit stride.)
 
 MDSPAN_TEMPLATE_REQUIRES(
   class Slice,
@@ -139,59 +257,105 @@ constexpr auto first_of(const std::complex<T> &i) {
   return i.real();
 }
 
-template <class OffsetType, class ExtentType, class StrideType>
-MDSPAN_INLINE_FUNCTION
-constexpr OffsetType
-first_of(const strided_slice<OffsetType, ExtentType, StrideType> &r) {
-  return r.offset;
-}
+#endif
 
 // last_of(slice): getting end of slice specifier range
 // We need however not just the slice but also the extents
 // of the original view and which rank from the extents.
 // This is needed in the case of slice being full_extent_t.
+
 MDSPAN_TEMPLATE_REQUIRES(
-  size_t k, class Extents, class Integral,
-  /* requires */(std::is_convertible_v<Integral, size_t>)
+  class IntegralConstant,
+  class Extents,
+  class Integral,
+  /* requires */(
+    is_integral_constant_like_v<IntegralConstant> &&
+    std::is_convertible_v<Integral, size_t>
+  )
 )
 MDSPAN_INLINE_FUNCTION
-constexpr Integral
-    last_of(std::integral_constant<size_t, k>, const Extents &, const Integral &i) {
+constexpr Integral last_of(
+  IntegralConstant,
+  const Extents&,
+  const Integral& i)
+{
   return i;
 }
 
+#if ! defined(MDSPAN_ENABLE_P3663)
+
+// P3663 does not need these index_pair_like overloads,
+// because last_of should never see a pair-like type.
 MDSPAN_TEMPLATE_REQUIRES(
-  size_t k, class Extents, class Slice,
-  /* requires */(index_pair_like<Slice, size_t>::value)
+  class IntegralConstant,
+  class Extents, class Slice,
+  /* requires */ (
+    is_integral_constant_like_v<IntegralConstant> &&
+    index_pair_like<Slice, size_t>::value
+  )
 )
 MDSPAN_INLINE_FUNCTION
-constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &,
-                       const Slice &i) {
+constexpr auto last_of(
+  IntegralConstant,
+  const Extents&,
+  const Slice& i)
+{
+  using std::get;
   return get<1>(i);
 }
 
 MDSPAN_TEMPLATE_REQUIRES(
-  size_t k, class Extents, class IdxT1, class IdxT2,
-  /* requires */ (index_pair_like<std::tuple<IdxT1, IdxT2>, size_t>::value)
+  class IntegralConstant,
+  class Extents, class IdxT1, class IdxT2,
+  /* requires */ (
+      is_integral_constant_like_v<IntegralConstant> &&
+      index_pair_like<std::tuple<IdxT1, IdxT2>, size_t>::value
+    )
   )
-constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const std::tuple<IdxT1, IdxT2>& i) {
+constexpr auto last_of(
+  IntegralConstant,
+  const Extents&,
+  const std::tuple<IdxT1, IdxT2>& i)
+{
+  using std::get;
   return get<1>(i);
 }
 
 MDSPAN_TEMPLATE_REQUIRES(
-  size_t k, class Extents, class IdxT1, class IdxT2,
-  /* requires */ (index_pair_like<std::pair<IdxT1, IdxT2>, size_t>::value)
+  class IntegralConstant,
+  class Extents, class IdxT1, class IdxT2,
+  /* requires */ (
+      is_integral_constant_like_v<IntegralConstant> &&
+      index_pair_like<std::pair<IdxT1, IdxT2>, size_t>::value
+    )
   )
 MDSPAN_INLINE_FUNCTION
-constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const std::pair<IdxT1, IdxT2>& i) {
+constexpr auto last_of(
+  IntegralConstant,
+  const Extents&,
+  const std::pair<IdxT1, IdxT2>& i)
+{
   return i.second;
 }
 
-template<size_t k, class Extents, class T>
+MDSPAN_TEMPLATE_REQUIRES(
+  class IntegralConstant,
+  class Extents,
+  class T,
+  /* requires */ (
+    is_integral_constant_like_v<IntegralConstant>
+  )
+)
 MDSPAN_INLINE_FUNCTION
-constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const std::complex<T> &i) {
+constexpr auto last_of(
+  IntegralConstant,
+  const Extents&,
+  const std::complex<T>& i)
+{
   return i.imag();
 }
+
+#endif // ! defined(MDSPAN_ENABLE_P3663)
 
 // Suppress spurious warning with NVCC about no return statement.
 // This is a known issue in NVCC and NVC++
@@ -212,14 +376,31 @@ constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const
     #pragma    diagnostic push
     #pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
-template <size_t k, class Extents>
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class IntegralConstant_k,
+  class Extents,
+  /* requires */ (
+    is_integral_constant_like_v<IntegralConstant_k>
+  )
+)
 MDSPAN_INLINE_FUNCTION
-constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &ext,
-                       ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t) {
-  if constexpr (Extents::static_extent(k) == dynamic_extent) {
-    return ext.extent(k);
-  } else {
-    return integral_constant<size_t, Extents::static_extent(k)>();
+constexpr auto last_of(
+  IntegralConstant_k,
+  const Extents& ext,
+  ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t)
+{
+  constexpr size_t k_value = IntegralConstant_k::value;
+
+  if constexpr (Extents::static_extent(k_value) == dynamic_extent) {
+    return ext.extent(k_value);
+  }
+  else {
+#if defined(MDSPAN_ENABLE_P3663)
+    return cw<Extents::static_extent(k_value)>;
+#else
+    return integral_constant<size_t, Extents::static_extent(k_value)>();
+#endif
   }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
   // Even with CUDA_ARCH protection this thing warns about calling host function
@@ -238,20 +419,35 @@ constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &ext,
     #pragma    diagnostic pop
 #endif
 
-template <size_t k, class Extents, class OffsetType, class ExtentType,
-          class StrideType>
+MDSPAN_TEMPLATE_REQUIRES(
+  class IntegralConstant_k,
+  class Extents,
+  class OffsetType,
+  class ExtentType,
+  class StrideType,
+  /* requires */ (
+    is_integral_constant_like_v<IntegralConstant_k>
+  )
+)
 MDSPAN_INLINE_FUNCTION
 constexpr OffsetType
-last_of(std::integral_constant<size_t, k>, const Extents &,
-        const strided_slice<OffsetType, ExtentType, StrideType> &r) {
-  return r.extent;
+last_of(
+  IntegralConstant_k,
+  const Extents&,
+  const strided_slice<OffsetType, ExtentType, StrideType>& r)
+{
+  return r.extent; // FIXME then why does this return OffsetType?
 }
 
 // get stride of slices
 template <class T>
 MDSPAN_INLINE_FUNCTION
 constexpr auto stride_of(const T &) {
+#if defined(MDSPAN_ENABLE_P3663)
+  return cw<size_t(1)>;
+#else
   return integral_constant<size_t, 1>();
+#endif
 }
 
 template <class OffsetType, class ExtentType, class StrideType>
@@ -268,6 +464,23 @@ constexpr auto divide(const T0 &v0, const T1 &v1) {
   return IndexT(v0) / IndexT(v1);
 }
 
+#if defined(MDSPAN_ENABLE_P3663)
+template <class IndexType, auto v0, auto v1>
+MDSPAN_INLINE_FUNCTION
+constexpr auto divide(constant_wrapper<v0> i0,
+                      constant_wrapper<v1> i1) {
+  using I0 = typename constant_wrapper<v0>::value_type;
+  using I1 = typename constant_wrapper<v1>::value_type;
+  static_assert(std::is_signed_v<I0> || std::is_unsigned_v<I0>);
+  static_assert(std::is_signed_v<I1> || std::is_unsigned_v<I1>);
+
+  // cutting short division by zero
+  // this is used for strided_slice with zero extent/stride
+  constexpr auto i0_value = static_cast<I0>(i0);
+  constexpr auto i1_value = static_cast<I1>(i1);
+  return cw<IndexType(i0_value == 0 ? 0 : i0_value / i1_value)>;
+}
+#else
 template <class IndexT, class T0, T0 v0, class T1, T1 v1>
 MDSPAN_INLINE_FUNCTION
 constexpr auto divide(const std::integral_constant<T0, v0> &,
@@ -276,6 +489,7 @@ constexpr auto divide(const std::integral_constant<T0, v0> &,
   // this is used for strided_slice with zero extent/stride
   return integral_constant<IndexT, v0 == 0 ? 0 : v0 / v1>();
 }
+#endif
 
 // multiply which can deal with integral constant preservation
 template <class IndexT, class T0, class T1>
@@ -284,28 +498,41 @@ constexpr auto multiply(const T0 &v0, const T1 &v1) {
   return IndexT(v0) * IndexT(v1);
 }
 
+#if defined(MDSPAN_ENABLE_P3663)
+template <class IndexType, auto v0, auto v1>
+MDSPAN_INLINE_FUNCTION
+constexpr auto multiply(constant_wrapper<v0> i0,
+                        constant_wrapper<v1> i1) {
+  using I0 = typename constant_wrapper<v0>::value_type;
+  using I1 = typename constant_wrapper<v1>::value_type;
+  static_assert(std::is_signed_v<I0> || std::is_unsigned_v<I0>);
+  static_assert(std::is_signed_v<I1> || std::is_unsigned_v<I1>);
+
+  constexpr auto i0_value = static_cast<I0>(i0);
+  constexpr auto i1_value = static_cast<I1>(i1);
+  return cw<IndexType(i0_value * i1_value)>;
+}
+#else
 template <class IndexT, class T0, T0 v0, class T1, T1 v1>
 MDSPAN_INLINE_FUNCTION
 constexpr auto multiply(const std::integral_constant<T0, v0> &,
                         const std::integral_constant<T1, v1> &) {
   return integral_constant<IndexT, v0 * v1>();
 }
+#endif
 
 // compute new static extent from range, preserving static knowledge
-template <class Arg0, class Arg1> struct StaticExtentFromRange {
-  constexpr static size_t value = dynamic_extent;
+template <class A, class B,
+  bool both_integral_constant_like =
+    is_integral_constant_like_v<A> && is_integral_constant_like_v<B>
+>
+struct StaticExtentFromRange {
+  static constexpr ::std::size_t value = dynamic_extent;
 };
 
-template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
-struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
-                             std::integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val1 - val0;
-};
-
-template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
-struct StaticExtentFromRange<integral_constant<Integral0, val0>,
-                             integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val1 - val0;
+template <class A, class B>
+struct StaticExtentFromRange<A, B, true> {
+  static constexpr ::std::size_t value = B::value - A::value;
 };
 
 // compute new static extent from strided_slice, preserving static
@@ -314,6 +541,16 @@ template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
   constexpr static size_t value = dynamic_extent;
 };
 
+#if defined(MDSPAN_ENABLE_P3663)
+template <auto A, auto B>
+struct StaticExtentFromStridedRange<constant_wrapper<A>, constant_wrapper<B>> {
+private:
+  static constexpr auto A_value = constant_wrapper<A>::value;
+  static constexpr auto B_value = constant_wrapper<B>::value;
+public:
+  constexpr static size_t value = A_value > 0 ? 1 + (A_value - 1) / B_value : 0;
+};
+#else
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
                                     std::integral_constant<Integral1, val1>> {
@@ -325,33 +562,62 @@ struct StaticExtentFromStridedRange<integral_constant<Integral0, val0>,
                                     integral_constant<Integral1, val1>> {
   constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
 };
+#endif
 
 // creates new extents through recursive calls to next_extent member function
 // next_extent has different overloads for different types of stride specifiers
 template <size_t K, class Extents, size_t... NewExtents>
 struct extents_constructor {
+
+  // This covers both the full_extent_t and index-pair-like cases.
+  // P3663 only needs the full_extent_t case.
+#if defined(MDSPAN_ENABLE_P3663)
+  template<class... SlicesAndExtents>
+#else
   MDSPAN_TEMPLATE_REQUIRES(
     class Slice, class... SlicesAndExtents,
     /* requires */(!std::is_convertible_v<Slice, size_t> &&
                    !is_strided_slice<Slice>::value)
   )
+#endif
   MDSPAN_INLINE_FUNCTION
-  constexpr static auto next_extent(const Extents &ext, const Slice &sl,
-                                    SlicesAndExtents... slices_and_extents) {
+  constexpr static auto next_extent(
+    const Extents &ext,
+#if defined(MDSPAN_ENABLE_P3663)
+    full_extent_t sl,
+#else
+    const Slice &sl,
+#endif
+    SlicesAndExtents... slices_and_extents)
+  {
+#if defined(MDSPAN_ENABLE_P3663)
+    using Slice = full_extent_t;
+#endif
+
     constexpr size_t new_static_extent = StaticExtentFromRange<
         decltype(first_of(std::declval<Slice>())),
-        decltype(last_of(std::integral_constant<size_t, Extents::rank() - K>(),
-                         std::declval<Extents>(),
-                         std::declval<Slice>()))>::value;
+        decltype(last_of(
+#if defined(MDSPAN_ENABLE_P3663)
+          cw<Extents::rank() - K>,
+#else
+          std::integral_constant<size_t, Extents::rank() - K>(),
+#endif
+          std::declval<Extents>(),
+          std::declval<Slice>()))>::value;
 
     using next_t =
         extents_constructor<K - 1, Extents, NewExtents..., new_static_extent>;
     using index_t = typename Extents::index_type;
     return next_t::next_extent(
         ext, slices_and_extents...,
-        index_t(last_of(std::integral_constant<size_t, Extents::rank() - K>(), ext,
-                        sl)) -
-            index_t(first_of(sl)));
+        index_t(last_of(
+#if defined(MDSPAN_ENABLE_P3663)
+          cw<Extents::rank() - K>,
+#else
+          std::integral_constant<size_t, Extents::rank() - K>(),
+#endif
+          ext,
+          sl)) - index_t(first_of(sl)));
   }
 
   MDSPAN_TEMPLATE_REQUIRES(
@@ -403,6 +669,522 @@ struct extents_constructor<0, Extents, NewStaticExtents...> {
 };
 
 } // namespace detail
+
+#if defined(MDSPAN_ENABLE_P3663)
+
+namespace detail {
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class IndexType,
+  class OtherIndexType,
+  /* requires */ (
+    std::is_signed_v<remove_cvref_t<OtherIndexType>> ||
+    std::is_unsigned_v<remove_cvref_t<OtherIndexType>>
+  )
+)
+constexpr auto index_cast(OtherIndexType&& i) noexcept {
+  return i;
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class IndexType,
+  class OtherIndexType,
+  /* requires */ (
+    ! std::is_signed_v<remove_cvref_t<OtherIndexType>> &&
+    ! std::is_unsigned_v<remove_cvref_t<OtherIndexType>>
+  )
+)
+constexpr auto index_cast(OtherIndexType&& i) noexcept {
+  return static_cast<IndexType>(i);
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class IndexType,
+  class S,
+  /* requires */ (
+    std::is_convertible_v<S, IndexType>
+  )
+)
+constexpr auto canonical_ice([[maybe_unused]] S s) {
+  static_assert(std::is_signed_v<IndexType> || std::is_unsigned_v<IndexType>);
+  // TODO Mandates: If S models integral-constant-like and if
+  // decltype(S::value) is a signed or unsigned integer type, then
+  // S::value is representable as a value of type IndexType.
+  //
+  // TODO Preconditions: If S is a signed or unsigned integer type,
+  // then s is representable as a value of type IndexType.
+  //
+  // NOTE Added to P3663R2: Use cw instead of constant_wrapper.
+  //
+  // NOTE Added to P3663R2: Specify that index-cast result is
+  // cast to IndexType before being used as the template argument
+  // of `cw`, so we don't get a weird constant_wrapper whose value
+  // has a different type than the second template argument.
+  if constexpr (is_integral_constant_like_v<S>) {
+    return cw<static_cast<IndexType>(index_cast<IndexType>(S::value))>;
+  }
+  else {
+    return static_cast<IndexType>(index_cast<IndexType>(s));
+  }
+}
+
+template<class IndexType, class X, class Y>
+constexpr auto subtract_ice([[maybe_unused]] X x, [[maybe_unused]] Y y) {
+  if constexpr (is_integral_constant_like_v<remove_cvref_t<X>> &&
+    is_integral_constant_like_v<remove_cvref_t<Y>>)
+  {
+    return cw<IndexType(canonical_ice<IndexType>(Y::value) - canonical_ice<IndexType>(X::value))>;
+  }
+  else {
+    return canonical_ice<IndexType>(y) - canonical_ice<IndexType>(x);
+  }
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class T,
+  /* requires */ (
+    std::is_integral_v<remove_cvref_t<T>>
+  )
+)
+constexpr T de_ice(T val) {
+  return val;
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class T,
+  /* requires */ (
+    is_integral_constant_like_v<remove_cvref_t<T>>
+  )
+)
+constexpr decltype(T::value) de_ice(T) {
+  return T::value;
+}
+
+// FIXME In P3663R3 (instead of R2), check_static_bounds
+// returns bool instead of an enum.
+
+enum class check_static_bounds_result {
+  in_bounds,
+  out_of_bounds,
+  unknown
+};
+
+// Clang 21.0.0 does not define __cpp_lib_tuple_like, so it does not
+// support the tuple protocol for std::complex.  Interestingly, it permits
+// structured binding, but decomposes it into one element, not two.
+// We work around with a special canonicalization case.
+#if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
+template<class T>
+constexpr bool is_std_complex = false;
+template<class T>
+constexpr bool is_std_complex<std::complex<T>> = true;
+#endif
+
+// NOTE It's impossible to write an "if constexpr" check for
+// "structured binding into two elements is well-formed."  Thus, we
+// must assume that the input Slices are all valid slice types.
+// One way to do that is to invoke this only post-canonicalization.
+// Another way is to rely on submdspan_canonicalize_slices to be
+// ill-formed if called with an invalid slice type.  We can do the
+// latter in submdspan_canonicalize_slices by expressing the four
+// possible categories of valid slice types in if constexpr, with
+// the final else attempting the structured binding into two elements.
+
+// DONE Added to P3663R2: Rewrite wording to use only $S_k$
+// and not $s_k$ in check-static-bounds, since we can't use
+// the actual function parameter in a function that we want
+// to work in a constant expression.
+
+// DONE Added to P3663R2: Implementation takes k and one slice
+// only (S_k) as explicit template parameters, rather than
+// passing in the whole parameter pack of slices.  This makes
+// sense because the function only tests one slice (the k-th one).
+// Also, taking slices parameter(s) makes use of check_static_bounds
+// not a constant expression.
+
+// DONE Added to P3663R2: Check wording of check-static-bounds
+// so that it only assumes that types are default constructible
+// in constant expressions if they are integral-constant-like.
+
+template<size_t k, class S_k, class IndexType, size_t... Exts>
+  constexpr check_static_bounds_result check_static_bounds(
+    const extents<IndexType, Exts...>&)
+{
+#if defined(__cpp_pack_indexing)
+  constexpr size_t Exts_k = Exts...[k];
+#else
+  constexpr size_t Exts_k = [] () {
+    size_t result = 0;
+    size_t i = 0;
+    (void) ((i++ == k ? (result = Exts, true) : false) || ...);
+    return result;
+  } ();
+#endif
+
+  if constexpr (std::is_convertible_v<S_k, full_extent_t>) {
+    return check_static_bounds_result::in_bounds;
+  }
+  else if constexpr (std::is_convertible_v<S_k, IndexType>) {
+    if constexpr (is_integral_constant_like_v<S_k>) {
+      // integral-constant-like types are default constructible
+      // in constant expressions, so it's OK to use S_k{} here
+      // instead of std::declval.  Also, expressions like
+      // de_ice(std::declval<S_k>()) are not constant expressions.
+      if constexpr (de_ice(S_k{}) < 0) {
+        return check_static_bounds_result::out_of_bounds; // 14.3.1
+      }
+      // We know de_ice(S_k{}) is nonnegative here, so the cast to size_t should be safe.
+      else if constexpr (Exts_k != dynamic_extent && Exts_k <= static_cast<size_t>(de_ice(S_k{}))) {
+        return check_static_bounds_result::out_of_bounds;
+      }
+      else if constexpr (Exts_k != dynamic_extent && static_cast<size_t>(de_ice(S_k{})) < Exts_k) {
+        return check_static_bounds_result::in_bounds;
+      }
+      else {
+        return check_static_bounds_result::unknown;
+      }
+    }
+    else { // integer, not integral-constant-like (14.5 case)
+      return check_static_bounds_result::unknown;
+    }
+  }
+  else if constexpr (is_strided_slice<S_k>::value) {
+    using offset_type = typename S_k::offset_type;
+
+    if constexpr (is_integral_constant_like_v<offset_type>) {
+      if constexpr (de_ice(offset_type{}) < 0) {
+        return check_static_bounds_result::out_of_bounds; // 14.3.1
+      }
+      // We know de_ice(offset_type{}) >= 0, so the cast to size_t should be safe.
+      else if constexpr (
+        Exts_k != dynamic_extent && Exts_k < static_cast<size_t>(de_ice(offset_type{})))
+      {
+        return check_static_bounds_result::out_of_bounds; // 14.3.2
+      }
+      else if constexpr (is_integral_constant_like_v<typename S_k::extent_type>) {
+        using extent_type = typename S_k::extent_type;
+
+        if constexpr (de_ice(offset_type{}) + de_ice(extent_type{}) < 0) {
+          return check_static_bounds_result::out_of_bounds; // 14.3.3
+        }
+        // We know de_ice(offset_type{}) + de_ice(extent_type{}) >= 0,
+        // so the cast to size_t should be safe.
+        else if constexpr (
+          Exts_k != dynamic_extent &&
+          Exts_k < static_cast<size_t>(de_ice(offset_type{}) + de_ice(extent_type{})))
+        {
+          return check_static_bounds_result::out_of_bounds; // 14.3.4
+        }
+        else if constexpr (
+          Exts_k != dynamic_extent &&
+          0 <= de_ice(offset_type{}) &&
+          de_ice(offset_type{}) <= de_ice(offset_type{}) + de_ice(extent_type{}) &&
+          static_cast<size_t>(de_ice(offset_type{}) + de_ice(extent_type{})) <= Exts_k)
+        {
+          return check_static_bounds_result::in_bounds; // 14.3.5
+        }
+        else {
+          return check_static_bounds_result::unknown; // 14.3.6
+        }
+      }
+      else {
+        return check_static_bounds_result::unknown; // 14.5
+      }
+    }
+    else { // strided_slice but offset_type isn't integral-constant-like
+      return check_static_bounds_result::unknown; // 14.5
+    }
+  }
+#if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
+  else if constexpr (is_std_complex<S_k>) {
+    // std::complex only has run-time slice values, so we can't
+    // check at compile time whether they are in bounds.
+    return check_static_bounds_result::unknown;
+  }
+#endif
+  else { // 14.4
+    // NOTE: This case means that check_static_bounds cannot be
+    // well-formed if it didn't fall into one of the above cases
+    // and if it can't be destructured into two elements.
+    // That implements the Mandates clause.
+    auto get_first = [] (S_k s_k) {
+      auto [s_k0, _] = s_k;
+      return s_k0;
+    };
+    auto get_second = [] (S_k s_k) {
+      auto [_, s_k1] = s_k;
+      return s_k1;
+    };
+    using S_k0 = decltype(get_first(std::declval<S_k>()));
+    using S_k1 = decltype(get_second(std::declval<S_k>()));
+    if constexpr (is_integral_constant_like_v<S_k0>) {
+      if constexpr (de_ice(S_k0{}) < 0) {
+        return check_static_bounds_result::out_of_bounds; // 14.4.1
+      }
+      // We know de_ice(S_k0{}) >= 0, so the cast to size_t should be safe.
+      else if constexpr (
+        Exts_k != dynamic_extent &&
+        Exts_k < static_cast<size_t>(de_ice(S_k0{})))
+      {
+        return check_static_bounds_result::out_of_bounds; // 14.4.2
+      }
+      else if constexpr (is_integral_constant_like_v<S_k1>) {
+        if constexpr (
+          de_ice(S_k1{}) < de_ice(S_k0{}))
+        {
+          return check_static_bounds_result::out_of_bounds; // 14.4.3
+        }
+        // We know de_ice(S_k1{}) >= de_ice(S_k0{}) >= 0,
+        // so the cast to size_t should be safe.
+        else if constexpr (
+          Exts_k != dynamic_extent &&
+          Exts_k < static_cast<size_t>(de_ice(S_k1{})))
+        {
+          return check_static_bounds_result::out_of_bounds; // 14.4.4
+        }
+        else if constexpr (
+          Exts_k != dynamic_extent &&
+          0 <= de_ice(S_k0{}) &&
+          de_ice(S_k0{}) <= de_ice(S_k1{}) &&
+          static_cast<size_t>(de_ice(S_k1{})) <= Exts_k)
+        {
+          return check_static_bounds_result::in_bounds; // 14.4.5
+        }
+        else {
+          return check_static_bounds_result::unknown; // 14.4.6
+        }
+      }
+      else {
+        return check_static_bounds_result::unknown; // 14.4.6
+      }
+    }
+    else { // S_k0 not integral-constant-like
+      return check_static_bounds_result::unknown;
+    }
+  }
+}
+
+// [mdspan.sub.slices] 1
+template<class IndexType, class T>
+constexpr bool is_canonical_submdspan_index_type() {
+  if constexpr (is_constant_wrapper<T>) {
+    using value_type = typename T::value_type;
+    return std::is_same_v<value_type, IndexType>;
+  }
+  else {
+    return std::is_same_v<T, IndexType>;
+  }
+}
+
+// [mdspan.sub.slices] 2
+template<class IndexType, class Slice>
+MDSPAN_INLINE_FUNCTION
+constexpr bool is_canonical_slice_type() {
+  if constexpr (std::is_same_v<Slice, full_extent_t>) { // 2.1
+    return true;
+  }
+  else if constexpr (is_canonical_submdspan_index_type<IndexType, Slice>()) { // 2.2
+    return true;
+  }
+  else if constexpr (is_strided_slice<Slice>::value) { // 2.3
+    if constexpr ( // 2.3.1
+      is_canonical_submdspan_index_type<IndexType, typename Slice::offset_type>() &&
+      is_canonical_submdspan_index_type<IndexType, typename Slice::extent_type>() &&
+      is_canonical_submdspan_index_type<IndexType, typename Slice::stride_type>())
+    {
+      if constexpr (
+        is_constant_wrapper<typename Slice::stride_type> &&
+        is_constant_wrapper<typename Slice::extent_type>)
+      {
+        constexpr auto Stride = de_ice(typename Slice::stride_type{});
+        constexpr auto Extent = de_ice(typename Slice::extent_type{});
+        return Extent == 0 || Stride > 0; // 2.3.2
+      }
+      else {
+        return true;
+      }
+    }
+    else {
+      return false;
+    }
+  }
+  else {
+    return false;
+  }
+}
+
+// [mdspan.sub.slices] 3
+
+template<size_t k, class IndexType, size_t... Extents, class Slice>
+MDSPAN_INLINE_FUNCTION
+constexpr void
+check_canonical_kth_submdspan_slice_type(
+  const extents<IndexType, Extents...>&,
+  [[maybe_unused]] Slice slice)
+{
+  if constexpr (! is_canonical_slice_type<IndexType, Slice>()) {
+    // Apparent redundancy is just a back-port of static_assert(false).
+    static_assert(is_canonical_slice_type<IndexType, Slice>());
+  }
+  else { // 3.2
+    static_assert(check_static_bounds<k, decltype(slice)>(extents<IndexType, Extents...>{}) != check_static_bounds_result::out_of_bounds);
+  }
+}
+
+template<size_t k, class First, class... Rest>
+constexpr decltype(auto) get_kth_in_pack(First&& first, Rest&&... rest) {
+  static_assert(k <= sizeof...(Rest));
+  if constexpr (k == 0) {
+    return std::forward<First>(first);
+  }
+  else {
+    return get_kth_in_pack<k - 1>(std::forward<Rest>(rest)...);
+  }
+}
+
+template<size_t... Inds, class IndexType, size_t... Extents, class ... Slices>
+MDSPAN_INLINE_FUNCTION
+constexpr void
+check_canonical_kth_subdmspan_slice_types_impl(
+  std::index_sequence<Inds...>,
+  const extents<IndexType, Extents...>& exts,
+  Slices... slices)
+{
+  (check_canonical_kth_submdspan_slice_type<Inds>(
+    exts,
+    get_kth_in_pack<Inds>(slices...)), ...);
+}
+
+template<class IndexType, size_t... Extents, class ... Slices>
+MDSPAN_INLINE_FUNCTION
+constexpr void
+check_canonical_kth_subdmspan_slice_types(
+  const extents<IndexType, Extents...>& exts, Slices... slices)
+{
+  check_canonical_kth_subdmspan_slice_types_impl(
+    std::make_index_sequence<sizeof...(Slices)>(), exts, slices...);
+}
+
+// [mdspan.sub.slices] 11
+template<size_t k, class Slice, class IndexType, size_t... Extents>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan_canonicalize_one_slice(
+  [[maybe_unused]] const extents<IndexType, Extents...>& exts,
+  [[maybe_unused]] Slice s)
+{
+  // Part of [mdspan.sub.slices] 9.
+  // This could be combined with the if constexpr branches below.
+  static_assert(
+    check_static_bounds<k, decltype(s)>(
+      extents<IndexType, Extents...>{}) !=
+    check_static_bounds_result::out_of_bounds);
+
+  // TODO Check Precondition that s is a valid k-th submdspan slice for exts.
+
+  if constexpr (std::is_convertible_v<Slice, full_extent_t>) {
+    return full_extent; // 11.1
+  }
+  else if constexpr (std::is_convertible_v<Slice, IndexType>) {
+    return canonical_ice<IndexType>(s); // 11.2
+  }
+  else if constexpr (is_strided_slice<Slice>::value) { // 11.3
+    auto offset = canonical_ice<IndexType>(s.offset);
+    auto extent = canonical_ice<IndexType>(s.extent);
+    auto stride = canonical_ice<IndexType>(s.stride);
+    return strided_slice<decltype(offset),
+                         decltype(extent),
+                         decltype(stride)> {
+      /* .offset = */ offset,
+      /* .extent = */ extent,
+      /* .stride = */ stride
+    };
+  }
+#if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
+  else if constexpr (detail::is_std_complex<Slice>) {
+    auto offset = canonical_ice<IndexType>(s.real());
+    auto extent = canonical_ice<IndexType>(s.imag() - s.real());
+    auto stride = cw<IndexType(1)>;
+    return strided_slice<decltype(offset),
+                         decltype(extent),
+                         decltype(stride)> {
+      /* .offset = */ offset,
+      /* .extent = */ extent,
+      /* .stride = */ stride
+    };
+  }
+#endif
+  else { // 11.4
+    auto [s_k0, s_k1] = s;
+    using S_k0 = decltype(s_k0);
+    using S_k1 = decltype(s_k1);
+    static_assert(std::is_convertible_v<S_k0, IndexType>);
+    static_assert(std::is_convertible_v<S_k1, IndexType>);
+
+    auto offset = canonical_ice<IndexType>(s_k0);
+    auto extent = subtract_ice<IndexType>(s_k0, s_k1);
+    auto stride = cw<IndexType(1)>;
+    return strided_slice<decltype(offset),
+                         decltype(extent),
+                         decltype(stride)> {
+      /* .offset = */ offset,
+      /* .extent = */ extent,
+      /* .stride = */ stride
+    };
+  }
+}
+
+} // namespace detail
+
+MDSPAN_TEMPLATE_REQUIRES(
+  size_t... Inds,
+  class IndexType,
+  size_t... Extents,
+  class... Slices,
+  /* requires */ (
+    sizeof...(Slices) == sizeof...(Extents)
+  )
+)
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan_canonicalize_slices_impl(
+  std::index_sequence<Inds...>,
+  const extents<IndexType, Extents...>& exts,
+  Slices... slices)
+{
+  // FIXME Return Kokkos::detail::tuple instead of std::tuple,
+  // so that this works in device code.  We'll need to fix
+  // the place in submdspan where we call std::apply on this tuple.
+  return std::tuple{
+    // This is ill-formed if slices...[Inds] is not a valid slice type.
+    // That implements the Mandates clause of [mdspan.sub.slices] 9.
+    //
+    // TODO Paragraph numbers might be from R2 instead of R3 of P3663.
+    detail::submdspan_canonicalize_one_slice<Inds>(
+      exts,
+      detail::get_kth_in_pack<Inds>(slices...)
+    )...
+  };
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class IndexType,
+  size_t... Extents,
+  class... Slices,
+  /* requires */ (
+    sizeof...(Slices) == sizeof...(Extents)
+  )
+)
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+submdspan_canonicalize_slices(
+  const extents<IndexType, Extents...>& exts,
+  Slices&&... slices)
+{
+  return submdspan_canonicalize_slices_impl(
+    std::make_index_sequence<sizeof...(Slices)>(), exts, slices...);
+}
+#endif // MDSPAN_ENABLE_P3663
 
 // submdspan_extents creates new extents given src extents and submdspan slice
 // specifiers

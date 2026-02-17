@@ -52,6 +52,85 @@ template <class LayoutMapping> struct submdspan_mapping_result {
 
 namespace detail {
 
+#if defined(MDSPAN_ENABLE_P3663)
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class LayoutMapping,
+  size_t... Inds,
+  /* requires */ (
+    is_layout_mapping_alike_v<LayoutMapping>
+  )
+)
+constexpr auto
+submdspan_mapping_with_full_extents_impl(
+  const LayoutMapping& mapping, std::index_sequence<Inds...>)
+{
+  return submdspan_mapping(mapping, ((void) Inds, full_extent)...);
+}
+
+MDSPAN_TEMPLATE_REQUIRES(
+  class LayoutMapping,
+  /* requires */ (
+    is_layout_mapping_alike_v<LayoutMapping>
+  )
+)
+constexpr auto
+submdspan_mapping_with_full_extents(const LayoutMapping& mapping) {
+  using extents_type = typename LayoutMapping::extents_type;
+  constexpr size_t the_rank = extents_type::rank();
+  return submdspan_mapping_with_full_extents_impl(
+    mapping, std::make_index_sequence<the_rank>());
+}
+
+template<class T>
+constexpr bool is_submdspan_mapping_result = false;
+
+template<class LayoutMapping>
+constexpr bool is_submdspan_mapping_result<
+  submdspan_mapping_result<LayoutMapping>> = true;
+
+#if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+template<class LayoutMapping>
+concept submdspan_mapping_result =
+  is_submdspan_mapping_result<LayoutMapping>;
+#endif // defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+
+#if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+template<class LayoutMapping>
+concept mapping_sliceable_with_full_extents =
+  requires(const LayoutMapping& mapping) {
+    {
+      submdspan_mapping_with_full_extents(mapping)
+    } -> submdspan_mapping_result;
+  };
+
+template<class LayoutMapping>
+constexpr bool mapping_sliceable_with_full_extents_v =
+  mapping_sliceable_with_full_extents<LayoutMapping>;
+
+#else
+template<class LayoutMapping, class = void>
+struct mapping_sliceable_with_full_extents_impl : std::false_type {};
+
+template<class LayoutMapping>
+struct mapping_sliceable_with_full_extents_impl<
+  LayoutMapping,
+  std::void_t<
+    std::enable_if_t<
+      is_submdspan_mapping_result<
+        decltype(submdspan_mapping_with_full_extents(std::declval<const LayoutMapping&>()))
+      >
+    >
+  >
+> : std::true_type {};
+
+template<class LayoutMapping>
+constexpr bool mapping_sliceable_with_full_extents_v =
+  mapping_sliceable_with_full_extents_impl<LayoutMapping>::value;
+#endif // defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
+
+#endif // MDSPAN_ENABLE_P3663
+
 // We use const Slice& and not Slice&& because the various
 // submdspan_mapping_impl overloads use their slices arguments
 // multiple times.  This makes perfect forwarding not useful, but we
@@ -60,10 +139,42 @@ namespace detail {
 template <class IndexType, class Slice>
 MDSPAN_INLINE_FUNCTION constexpr bool
 one_slice_out_of_bounds(const IndexType &ext, const Slice &slice) {
+#if defined(MDSPAN_ENABLE_P3663)
   using common_t =
-      std::common_type_t<decltype(detail::first_of(slice)), IndexType>;
-  return static_cast<common_t>(detail::first_of(slice)) ==
+      std::common_type_t<decltype(first_of(slice)), IndexType>;
+  return static_cast<common_t>(first_of(slice)) ==
          static_cast<common_t>(ext);
+#else
+  // NOTE (mfh 2025/06/06) The original implementation was not conforming.
+  // For index types that are not integral but are nevertheless convertible
+  // to integral, it would result in build errors when attempting to find
+  // a common type between first_of(slice) and IndexType.  This is because
+  // first_of(slice) in that case would return the original slice type,
+  // which might not necessarily be convertible to IndexType.  The problem
+  // is really in first_of: the analogous function in the Standard,
+  // _`first`_`_`, is aware of IndexType and casts slices whose types
+  // are "integral not bool" to IndexType (even before P3663).  However,
+  // first_of doesn't know IndexType and so it can only return the original
+  // slice in the case where it's convertible to integral-not-bool.
+  //
+  // The easy fix is P3663.  However, for fair benchmarking between the
+  // P3663 and no-P3663 cases, we don't want to copy the slice if not needed.
+  // Thus, we introduce a special case.
+  if constexpr (std::is_convertible_v<Slice, IndexType> &&
+    ! std::is_signed_v<
+        std::remove_cv_t<std::remove_reference_t<Slice>>> &&
+    ! std::is_unsigned_v<
+        std::remove_cv_t<std::remove_reference_t<Slice>>>)
+  {
+    return first_of(static_cast<IndexType>(slice)) == ext; 
+  }
+  else {
+    using common_t =
+        std::common_type_t<decltype(first_of(slice)), IndexType>;
+    return static_cast<common_t>(first_of(slice)) ==
+          static_cast<common_t>(ext);
+  }
+#endif // MDSPAN_ENABLE_P3663
 }
 
 template <size_t... RankIndices, class IndexType, size_t... Exts,
@@ -101,15 +212,36 @@ MDSPAN_INLINE_FUNCTION constexpr auto construct_sub_strides(
        static_cast<index_type>(get<InvMapIdxs>(slices_stride_factor)))...}};
 }
 
-template<class SliceSpecifier, class IndexType>
-struct is_range_slice {
-  constexpr static bool value =
-    std::is_same_v<SliceSpecifier, full_extent_t> ||
-    index_pair_like<SliceSpecifier, IndexType>::value;
-};
+// NOTE Make the submdspan_mapping_impl functions recognize
+// strided_slice with compile-time stride 1 as a range slice.
+// Otherwise, they fall back to layout_stride::mapping.
+// This might be a bug in the pre-P3663 implementation.
+
+#if defined(MDSPAN_ENABLE_P3663)
 
 template<class SliceSpecifier, class IndexType>
-constexpr bool is_range_slice_v = is_range_slice<SliceSpecifier, IndexType>::value;
+constexpr bool is_range_slice_v = false;
+
+template<class IndexType>
+constexpr bool is_range_slice_v<full_extent_t, IndexType> = true;
+
+template<class OffsetType, class ExtentType, auto Stride, class IndexType>
+constexpr bool is_range_slice_v<
+    strided_slice<
+      OffsetType,
+      ExtentType,
+      constant_wrapper<Stride>>,
+    IndexType
+  > = (constant_wrapper<Stride>::value == IndexType(1));
+
+#else
+
+template<class SliceSpecifier, class IndexType>
+constexpr bool is_range_slice_v = 
+  std::is_same_v<SliceSpecifier, full_extent_t> ||
+  index_pair_like<SliceSpecifier, IndexType>::value;
+
+#endif // MDSPAN_ENABLE_P3663
 
 template<class SliceSpecifier, class IndexType>
 struct is_index_slice {
@@ -209,6 +341,13 @@ MDSPAN_INLINE_FUNCTION constexpr auto
 layout_left::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
 
+#if defined(MDSPAN_ENABLE_P3663)
+  {
+    using detail::check_canonical_kth_subdmspan_slice_types;
+    check_canonical_kth_subdmspan_slice_types(extents(), slices...);
+  }
+#endif // MDSPAN_ENABLE_P3663
+
   // compute sub extents
   using src_ext_t = Extents;
   auto dst_ext = submdspan_extents(extents(), slices...);
@@ -241,8 +380,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
   } else {
     // layout_stride case
     using dst_mapping_t = typename layout_stride::mapping<dst_ext_t>;
-    auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                        std::index_sequence<>(), slices...);
+    auto inv_map = detail::inv_map_rank(std::index_sequence<>(), slices...);
     return submdspan_mapping_result<dst_mapping_t> {
       dst_mapping_t(mdspan_non_standard, dst_ext,
                     detail::construct_sub_strides(
@@ -271,6 +409,13 @@ template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
 layout_left_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
+
+#if defined(MDSPAN_ENABLE_P3663)
+  {
+    using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_canonical_kth_subdmspan_slice_types;
+    check_canonical_kth_subdmspan_slice_types(extents(), slices...);
+  }
+#endif // MDSPAN_ENABLE_P3663
 
   // compute sub extents
   using src_ext_t = Extents;
@@ -318,25 +463,15 @@ layout_left_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
         return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext, stride(1 + deduce_layout::gap_len)), offset};
       } else { // layout_stride
-    auto inv_map = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                        std::index_sequence<>(), slices...);
-      using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
-    return submdspan_mapping_result<dst_mapping_t> {
-      dst_mapping_t(mdspan_non_standard, dst_ext,
-                    MDSPAN_IMPL_STANDARD_NAMESPACE::detail::construct_sub_strides(
-                        *this, inv_map,
-// HIP needs deduction guides to have markups so we need to be explicit
-// NVCC 11.0 has a bug with deduction guide here, tested that 11.2 does not have
-// the issue but Clang-CUDA also doesn't accept the use of deduction guide so
-// disable it for CUDA alltogether
-#if defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_CUDA)
-                        MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices))...>{
-                            MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
-#else
-                        MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple{MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
-#endif
-          offset
-    };
+        auto inv_map = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::inv_map_rank(
+          std::index_sequence<>(), slices...);
+        using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
+        return submdspan_mapping_result<dst_mapping_t> {
+          dst_mapping_t(mdspan_non_standard, dst_ext,
+                        MDSPAN_IMPL_STANDARD_NAMESPACE::detail::construct_sub_strides(
+                            *this, inv_map,
+                            MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple{MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
+          offset};
       }
     }
   }
@@ -437,6 +572,13 @@ MDSPAN_INLINE_FUNCTION constexpr auto
 layout_right::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
 
+#if defined(MDSPAN_ENABLE_P3663)
+  {
+    using detail::check_canonical_kth_subdmspan_slice_types;
+    check_canonical_kth_subdmspan_slice_types(extents(), slices...);
+  }
+#endif // MDSPAN_ENABLE_P3663
+
   // compute sub extents
   using src_ext_t = Extents;
   auto dst_ext = submdspan_extents(extents(), slices...);
@@ -471,8 +613,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
   } else {
     // layout_stride case
     using dst_mapping_t = typename layout_stride::mapping<dst_ext_t>;
-    auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                        std::index_sequence<>(), slices...);
+    auto inv_map = detail::inv_map_rank(std::index_sequence<>(), slices...);
     return submdspan_mapping_result<dst_mapping_t> {
       dst_mapping_t(mdspan_non_standard, dst_ext,
                     detail::construct_sub_strides(
@@ -501,6 +642,13 @@ template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
 layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
+
+#if defined(MDSPAN_ENABLE_P3663)
+  {
+    using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_canonical_kth_subdmspan_slice_types;
+    check_canonical_kth_subdmspan_slice_types(extents(), slices...);
+  }
+#endif // MDSPAN_ENABLE_P3663
 
   // compute sub extents
   using src_ext_t = Extents;
@@ -540,8 +688,8 @@ layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
         return submdspan_mapping_result<dst_mapping_t>{
         dst_mapping_t(dst_ext, stride(Extents::rank() - 2 - deduce_layout::gap_len)), offset};
       } else { // layout_stride
-    auto inv_map = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                        std::index_sequence<>(), slices...);
+    auto inv_map = MDSPAN_IMPL_STANDARD_NAMESPACE::detail::inv_map_rank(
+      std::index_sequence<>(), slices...);
       using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
     return submdspan_mapping_result<dst_mapping_t> {
       dst_mapping_t(mdspan_non_standard, dst_ext,
@@ -577,10 +725,17 @@ template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
 layout_stride::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
+
+#if defined(MDSPAN_ENABLE_P3663)
+  {
+    using detail::check_canonical_kth_subdmspan_slice_types;
+    check_canonical_kth_subdmspan_slice_types(extents(), slices...);
+  }
+#endif // MDSPAN_ENABLE_P3663
+
   auto dst_ext = submdspan_extents(extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
-  auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
-                                      std::index_sequence<>(), slices...);
+  auto inv_map = detail::inv_map_rank(std::index_sequence<>(), slices...);
   using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
 
   // Figure out if any slice's lower bound equals the corresponding extent.
