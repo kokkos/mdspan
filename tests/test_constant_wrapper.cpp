@@ -107,4 +107,37 @@ TEST(TestConstantWrapper, IntegerPlus) {
 #endif
 }
 
+TEST(TestConstantWrapper, Arithmetic) {
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::constant_wrapper;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::increment;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::divide;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::multiply;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::is_constant_wrapper;
+
+  constexpr auto c6 = cw<size_t(6)>;
+  constexpr auto c3 = cw<size_t(3)>;
+  constexpr auto c0 = cw<size_t(0)>;
+
+  // increment preserves compile-time constant
+  constexpr auto c7 = increment(c6);
+  static_assert(size_t(c7) == 7u);
+  static_assert(is_constant_wrapper<decltype(c7)>);
+
+  // divide preserves compile-time constant
+  constexpr auto div_result = divide<size_t>(c6, c3);
+  static_assert(size_t(div_result) == 2u);
+  static_assert(is_constant_wrapper<decltype(div_result)>);
+
+  // divide by zero returns 0 (special case for strided_slice)
+  constexpr auto div_zero = divide<size_t>(c0, c3);
+  static_assert(size_t(div_zero) == 0u);
+  static_assert(is_constant_wrapper<decltype(div_zero)>);
+
+  // multiply preserves compile-time constant
+  constexpr auto mul_result = multiply<size_t>(c6, c3);
+  static_assert(size_t(mul_result) == 18u);
+  static_assert(is_constant_wrapper<decltype(mul_result)>);
+}
+
 } // namespace (anonymous)
