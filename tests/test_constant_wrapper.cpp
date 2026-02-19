@@ -27,8 +27,8 @@ using IC = std::integral_constant<Integral, Value>;
 
 template<class Integral, Integral Value>
 constexpr void test_integral_constant_wrapper(IC<Integral, Value> ic) {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::cw;
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::constant_wrapper;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::constant_wrapper;
 
   constexpr auto c = cw<Value>;
 
@@ -71,8 +71,8 @@ TEST(TestConstantWrapper, Construction) {
 #endif
 
 TEST(TestConstantWrapper, IntegerPlus) {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::cw;
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::constant_wrapper;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::constant_wrapper;
 
   constant_wrapper<size_t(11)> cw_11;
   constexpr size_t value = cw_11;

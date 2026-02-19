@@ -20,6 +20,7 @@
 #include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace detail {
 
 #if defined(__cpp_lib_constant_wrapper)
 
@@ -29,14 +30,12 @@ using std::cw;
 #else
 
 template<auto Value, class T = decltype(Value)>
-using constant_wrapper = :: MDSPAN_IMPL_STANDARD_NAMESPACE :: detail :: integral_constant<T, Value>;
+using constant_wrapper = integral_constant<T, Value>;
 
 template<auto Value>
   constexpr auto cw = constant_wrapper<Value>{};
 
 #endif // __cpp_lib_constant_wrapper
-
-namespace detail {
 
 template<auto Value, class T>
 constexpr auto
@@ -52,6 +51,4 @@ template<auto Value, class Type>
 constexpr bool is_constant_wrapper<constant_wrapper<Value, Type>> = true;
 
 } // namespace detail
-
-
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
