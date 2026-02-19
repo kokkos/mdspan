@@ -28,22 +28,8 @@ using std::cw;
 
 #else
 
-namespace detail {
-
-template<class T, T Value>
-struct constant_wrapper_impl
-{
-    static constexpr T value = Value;
-    using value_type = T;
-    using type = constant_wrapper_impl;
-    constexpr operator value_type() const noexcept { return value; }
-    constexpr value_type operator()() const noexcept { return value; }
-};
-
-} // namespace detail
-
 template<auto Value, class T = decltype(Value)>
-using constant_wrapper = detail::constant_wrapper_impl<T, Value>;
+using constant_wrapper = :: MDSPAN_IMPL_STANDARD_NAMESPACE :: detail :: integral_constant<T, Value>;
 
 template<auto Value>
   constexpr auto cw = constant_wrapper<Value>{};
