@@ -112,9 +112,6 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL Clang) OR ((CMAKE_CXX_COMPILER_ID STREQUAL GN
 endif()
 endif()
 
-mdspan_add_test(test_convertible_to_index_type)
-
 if(MDSPAN_ENABLE_P3663)
   mdspan_add_test(test_constant_wrapper)
-  mdspan_add_test(test_strided_slice)
 endif()

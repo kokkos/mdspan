@@ -60,21 +60,10 @@ namespace detail {
 template <class IndexType, class Slice>
 MDSPAN_INLINE_FUNCTION constexpr bool
 one_slice_out_of_bounds(const IndexType &ext, const Slice &slice) {
-  // For types that are convertible to IndexType but are not built-in
-  // integral types (e.g., user-defined index types), std::common_type_t
-  // may not be defined.  Cast through IndexType first in that case.
-  if constexpr (std::is_convertible_v<Slice, IndexType> &&
-    ! std::is_signed_v<std::remove_cv_t<std::remove_reference_t<Slice>>> &&
-    ! std::is_unsigned_v<std::remove_cv_t<std::remove_reference_t<Slice>>>)
-  {
-    return detail::first_of(static_cast<IndexType>(slice)) == ext;
-  }
-  else {
-    using common_t =
-        std::common_type_t<decltype(detail::first_of(slice)), IndexType>;
-    return static_cast<common_t>(detail::first_of(slice)) ==
-           static_cast<common_t>(ext);
-  }
+  using common_t =
+      std::common_type_t<decltype(detail::first_of(slice)), IndexType>;
+  return static_cast<common_t>(detail::first_of(slice)) ==
+         static_cast<common_t>(ext);
 }
 
 template <size_t... RankIndices, class IndexType, size_t... Exts,
