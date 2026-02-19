@@ -32,7 +32,7 @@ set_property(CACHE MDSPAN_CXX_STANDARD PROPERTY STRINGS DETECT 14 17 20 23 26)
 
 option(MDSPAN_ENABLE_CONCEPTS "Try to enable concepts support by giving extra flags." On)
 
-option(MDSPAN_ENABLE_P3663 "Enable implementation of P3663 (Future-proof submdspan_mapping)." On)
+option(MDSPAN_IMPL_ENABLE_P3663 "Enable implementation of P3663 (Future-proof submdspan_mapping)." On)
 
 ################################################################################
 

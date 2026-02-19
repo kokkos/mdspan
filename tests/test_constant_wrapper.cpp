@@ -16,11 +16,7 @@
 #include <type_traits>
 #include <gtest/gtest.h>
 
-#if defined(MDSPAN_ENABLE_P3663)
-#  include "../include/experimental/__p2630_bits/constant_wrapper.hpp"
-#else
-#  error "This test requires that the CMake option MDSPAN_ENABLE_P3663 be ON."
-#endif
+#include "../include/experimental/__p2630_bits/constant_wrapper.hpp"
 
 namespace { // (anonymous)
 

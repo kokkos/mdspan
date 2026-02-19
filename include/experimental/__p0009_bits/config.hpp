@@ -304,6 +304,6 @@ static_assert(MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14
 #  define MDSPAN_IMPL_OP6(mds, a, b, c, d, e, f) mds(a,b,c,d,e,f)
 #endif
 
-#if ! defined(MDSPAN_ENABLE_P3663)
-#  define MDSPAN_ENABLE_P3663 1
+#if ! defined(MDSPAN_IMPL_ENABLE_P3663)
+#  define MDSPAN_IMPL_ENABLE_P3663 1
 #endif
