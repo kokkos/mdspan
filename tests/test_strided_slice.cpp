@@ -42,7 +42,6 @@ void test_strided_slice(OffsetType offset, ExtentType extent, StrideType stride)
 template<class T, T Value>
 constexpr auto IC = std::integral_constant<T, Value>{};
 
-#if defined(MDSPAN_IMPL_ENABLE_P3663)
 MDSPAN_TEMPLATE_REQUIRES(
   class T,
   T Value,
@@ -53,11 +52,6 @@ MDSPAN_TEMPLATE_REQUIRES(
 struct my_integral_constant {
   static constexpr T value = Value;
   constexpr operator T () const { return value; }
-  // icpx insists that, even with the macro protection,
-  // "declaring overloaded 'operator()' as 'static' is a C++2b extension."
-#if (__cplusplus >= 202302L) && defined(__cpp_static_call_operator)
-  static constexpr T operator() () { return value; }
-#endif
 };
 
 template<class T, T Value>
@@ -77,7 +71,6 @@ static_assert(
   Kokkos::detail::is_integral_constant_like_v<
     my_integral_constant<int, 1>
   >);
-#endif // MDSPAN_IMPL_ENABLE_P3663
 
 TEST(StridedSlice, WellFormed) {
   test_strided_slice(int(1), unsigned(10), long(3));
@@ -87,7 +80,6 @@ TEST(StridedSlice, WellFormed) {
   test_strided_slice(int(1), IC<unsigned, 10>, long(3));
   test_strided_slice(int(1), unsigned(10), IC<long, 3>);
 
-#if defined(MDSPAN_IMPL_ENABLE_P3663)
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
 
   test_strided_slice(cw<1>, unsigned(10), long(3));
@@ -97,7 +89,6 @@ TEST(StridedSlice, WellFormed) {
   test_strided_slice(IC2<int, 1>, unsigned(10), long(3));
   test_strided_slice(int(1), IC2<unsigned, 10>, long(3));
   test_strided_slice(int(1), unsigned(10), IC2<long, 3>);
-#endif
 }
 
 } // namespace (anonymous)
