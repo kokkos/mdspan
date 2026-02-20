@@ -31,14 +31,6 @@ namespace detail {
 using std::constant_wrapper;
 using std::cw;
 
-template<auto Value>
-MDSPAN_INLINE_FUNCTION
-constexpr auto
-increment([[maybe_unused]] constant_wrapper<Value> x) {
-  using value_type = typename decltype(x)::value_type;
-  return cw< value_type(Value) + value_type(1) >;
-}
-
 template<class T>
 constexpr bool is_constant_wrapper = false;
 
@@ -56,14 +48,6 @@ using constant_wrapper = integral_constant<T, Value>;
 template<auto Value>
   constexpr auto cw = constant_wrapper<Value>{};
 
-template<auto Value, class T>
-MDSPAN_INLINE_FUNCTION
-constexpr auto
-increment([[maybe_unused]] constant_wrapper<Value, T> x) {
-  using value_type = typename decltype(x)::value_type;
-  return cw< decltype(x)::value + value_type(1) >;
-}
-
 template<class T>
 constexpr bool is_constant_wrapper = false;
 
@@ -76,6 +60,19 @@ template<class Type, Type Value>
 constexpr bool is_constant_wrapper<integral_constant<Type, Value>> = true;
 
 #endif // __cpp_lib_constant_wrapper
+
+// ============================================================
+// increment function for constant wrapper
+// ============================================================
+
+template<auto Value>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+increment([[maybe_unused]] constant_wrapper<Value> x) {
+  using value_type = typename decltype(x)::value_type;
+  return cw< value_type(Value) + value_type(1) >;
+}
+
 
 // ============================================================
 // Generic divide / multiply (scalar fall-through)
