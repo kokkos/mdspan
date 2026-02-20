@@ -19,11 +19,7 @@ namespace detail {
   using std::remove_cvref_t;
 #else
   template<class T>
-  struct remove_cvref {
-    using type = std::remove_cv_t<std::remove_reference_t<T>>;
-  };
-  template<class T>
-  using remove_cvref_t = typename remove_cvref<T>::type;
+  using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 #endif // __cplusplus >= 202002L
 
 // type alias used for rank-based tag dispatch
