@@ -14,6 +14,18 @@
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
+// Backport of std::remove_cvref / std::remove_cvref_t (C++20)
+#if (__cplusplus >= 202002L)
+  using std::remove_cvref_t;
+#else
+  template<class T>
+  struct remove_cvref {
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+  };
+  template<class T>
+  using remove_cvref_t = typename remove_cvref<T>::type;
+#endif // __cplusplus >= 202002L
+
 // type alias used for rank-based tag dispatch
 //
 // this is used to enable alternatives to constexpr if when building for C++14
