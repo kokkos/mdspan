@@ -1421,6 +1421,14 @@ MDSPAN_IMPL_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
 
+// Backport of std::remove_cvref / std::remove_cvref_t (C++20)
+#if (__cplusplus >= 202002L)
+  using std::remove_cvref_t;
+#else
+  template<class T>
+  using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+#endif // __cplusplus >= 202002L
+
 // type alias used for rank-based tag dispatch
 //
 // this is used to enable alternatives to constexpr if when building for C++14
@@ -5809,17 +5817,190 @@ constexpr auto multiply(const constant_wrapper<v0, T0> &,
 //@HEADER
 
 
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/integral_constant_like.hpp
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
+//
+// Under the terms of Contract DE-NA0003525 with NTESS,
+// the U.S. Government retains certain rights in this software.
+//
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//@HEADER
+
+
+#include <type_traits>
+#if defined(__cpp_lib_concepts)
+#  include <concepts>
+#endif // __cpp_lib_concepts
+
+// ============================================================
+// equality_comparable back-port (used only by integral_constant_like)
+// ============================================================
+
+#if defined(__cpp_lib_concepts)
+
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+  namespace detail {
+    template<class T, class = void>
+    struct is_equality_comparable : std::bool_constant<std::equality_comparable<T>> {};
+
+    template<class T, class U, class = void>
+    struct is_equality_comparable_with : std::bool_constant<std::equality_comparable_with<T, U>> {};
+  } // namespace detail
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
+
+#else
+
+#include <utility>
+
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace detail {
+
+  template<typename T, typename = void>
+  struct is_equality_comparable : std::false_type {};
+
+  template<typename T>
+  struct is_equality_comparable<
+    T,
+    std::void_t<
+      decltype(std::declval<const T&>() == std::declval<const T&>()),
+      decltype(std::declval<const T&>() != std::declval<const T&>())
+    >
+  > : std::bool_constant<
+    std::is_convertible_v<
+      decltype(std::declval<const T&>() == std::declval<const T&>()),
+      bool
+    > &&
+    std::is_convertible_v<
+      decltype(std::declval<const T&>() != std::declval<const T&>()),
+      bool
+    >
+  > {};
+
+  template<typename T, typename U, typename = void>
+  struct is_equality_comparable_with : std::false_type {};
+
+  template<typename T, typename U>
+  struct is_equality_comparable_with<
+    T, U,
+    std::void_t<
+      decltype(std::declval<const T&>() == std::declval<const U&>()),
+      decltype(std::declval<const T&>() != std::declval<const U&>()),
+      decltype(std::declval<const U&>() == std::declval<const T&>()),
+      decltype(std::declval<const U&>() != std::declval<const T&>())
+    >
+  > : std::bool_constant<
+    is_equality_comparable<T>::value &&
+    is_equality_comparable<U>::value &&
+    std::is_convertible_v<
+      decltype(std::declval<const T&>() == std::declval<const U&>()),
+      bool
+    > &&
+    std::is_convertible_v<
+      decltype(std::declval<const T&>() != std::declval<const U&>()),
+      bool
+    > &&
+    std::is_convertible_v<
+      decltype(std::declval<const U&>() == std::declval<const T&>()),
+      bool
+    > &&
+    std::is_convertible_v<
+      decltype(std::declval<const U&>() != std::declval<const T&>()),
+      bool
+    >
+  > {};
+
+} // namespace detail
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
+
+#endif // defined(__cpp_lib_concepts)
+
+// ============================================================
+// integral_constant_like concept / trait
+// ============================================================
+
+#if defined(__cpp_lib_concepts)
+
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+  namespace detail {
+
+    template<class T>
+    concept integral_constant_like =
+      std::is_integral_v<std::remove_cvref_t<decltype(T::value)>> &&
+      !std::is_same_v<bool, std::remove_cvref_t<decltype(T::value)>> &&
+      std::convertible_to<T, decltype(T::value)> &&
+      std::equality_comparable_with<T, decltype(T::value)> &&
+      std::bool_constant<T() == T::value>::value &&
+      std::bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value;
+
+    template<class T>
+    constexpr bool is_integral_constant_like_v = integral_constant_like<T>;
+
+  } // namespace detail
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
+
+#else
+
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+  namespace detail {
+
+    template<class T, class = void>
+    struct is_integral_constant_like_impl : std::false_type {};
+
+    template<class T>
+    struct is_integral_constant_like_impl<T, std::void_t<decltype(T::value), decltype(T())>> :
+      std::bool_constant<
+        std::is_integral_v<remove_cvref_t<decltype(T::value)>> &&
+        ! std::is_same_v<bool, remove_cvref_t<decltype(T::value)>> &&
+        std::is_convertible_v<T, decltype(T::value)> &&
+        is_equality_comparable_with<T, decltype(T::value)>::value &&
+        std::bool_constant<T() == T::value>::value &&
+        std::bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value
+      >
+    {};
+
+    template<class T>
+    constexpr bool is_integral_constant_like_v = is_integral_constant_like_impl<T>::value;
+
+  } // namespace detail
+} // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
+
+#endif // __cpp_lib_concepts
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/integral_constant_like.hpp
+
 #include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
 namespace detail {
-  template<class T>
-  struct mdspan_is_integral_constant: std::false_type {};
+  template<class T, class = void>
+  struct is_signed_or_unsigned_integral_constant_like : std::false_type {};
 
-  template<class T, T val>
-  struct mdspan_is_integral_constant<std::integral_constant<T,val>>: std::true_type {};
-}
+  template<class T>
+  struct is_signed_or_unsigned_integral_constant_like<
+    T, std::enable_if_t<is_integral_constant_like_v<T>>
+  > : std::bool_constant<
+      std::is_integral_v<remove_cvref_t<decltype(T::value)>> &&
+      ! std::is_same_v<bool, remove_cvref_t<decltype(T::value)>>
+    >
+  {};
+
+  template<class T>
+  constexpr bool is_signed_or_unsigned_integral_constant_like_v =
+    is_signed_or_unsigned_integral_constant_like<T>::value;
+
+  template<class T>
+  constexpr bool mdspan_is_index_like_v =
+    (std::is_integral_v<T> && ! std::is_same_v<bool, T>) ||
+    is_signed_or_unsigned_integral_constant_like_v<T>;
+} // namespace detail
 
 // Slice Specifier allowing for strides and compile time extent
 template <class OffsetType, class ExtentType, class StrideType>
@@ -5832,9 +6013,9 @@ struct strided_slice {
   MDSPAN_IMPL_NO_UNIQUE_ADDRESS ExtentType extent{};
   MDSPAN_IMPL_NO_UNIQUE_ADDRESS StrideType stride{};
 
-  static_assert(std::is_integral_v<OffsetType> || detail::mdspan_is_integral_constant<OffsetType>::value);
-  static_assert(std::is_integral_v<ExtentType> || detail::mdspan_is_integral_constant<ExtentType>::value);
-  static_assert(std::is_integral_v<StrideType> || detail::mdspan_is_integral_constant<StrideType>::value);
+  static_assert(detail::mdspan_is_index_like_v<OffsetType>);
+  static_assert(detail::mdspan_is_index_like_v<ExtentType>);
+  static_assert(detail::mdspan_is_index_like_v<StrideType>);
 };
 
 } // MDSPAN_IMPL_STANDARD_NAMESPACE
