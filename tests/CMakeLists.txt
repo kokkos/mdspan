@@ -113,3 +113,4 @@ endif()
 endif()
 
 mdspan_add_test(test_constant_wrapper)
+mdspan_add_test(test_strided_slice)
