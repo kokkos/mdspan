@@ -304,22 +304,6 @@ constexpr check_static_bounds_result check_static_bounds(
 }
 
 // ============================================================
-// get_kth_in_pack: get the k-th element of a parameter pack
-// ============================================================
-
-template<size_t k, class First, class... Rest>
-MDSPAN_INLINE_FUNCTION
-constexpr decltype(auto) get_kth_in_pack(First&& first, Rest&&... rest) {
-  static_assert(k <= sizeof...(Rest));
-  if constexpr (k == 0) {
-    return std::forward<First>(first);
-  }
-  else {
-    return get_kth_in_pack<k - 1>(std::forward<Rest>(rest)...);
-  }
-}
-
-// ============================================================
 // check_submdspan_slice_mandate: mandate check for the k-th slice
 //
 // Contains only static_asserts; no actual computation.
@@ -352,22 +336,23 @@ constexpr void check_submdspan_slice_mandates(
   const extents<IndexType, Extents...>& exts,
   Slices... slices)
 {
-  (check_submdspan_slice_mandate<Inds>(exts, get_kth_in_pack<Inds>(slices...)), ...);
+  (check_submdspan_slice_mandate<Inds>(exts, slices), ...);
 }
 
 // ============================================================
-// submdspan_canonicalize_one_slice: canonicalize the k-th slice
+// submdspan_canonicalize_one_slice: canonicalize a single slice
 //
 // This function performs ONLY the conversion to canonical form.
 // Mandate checking (static_asserts) is NOT done here; it is
 // done separately by check_submdspan_slice_mandates.
+//
+// Templated only on IndexType (the extents index type) and Slice.
+// Neither k nor the extents are needed for the actual conversion.
 // ============================================================
 
-template<size_t k, class Slice, class IndexType, size_t... Extents>
+template<class IndexType, class Slice>
 MDSPAN_INLINE_FUNCTION
-constexpr auto submdspan_canonicalize_one_slice(
-  [[maybe_unused]] const extents<IndexType, Extents...>& exts,
-  [[maybe_unused]] Slice s)
+constexpr auto submdspan_canonicalize_one_slice([[maybe_unused]] Slice s)
 {
   if constexpr (std::is_convertible_v<Slice, full_extent_t>) {
     return full_extent; // canonical full-extent slice
@@ -447,10 +432,7 @@ constexpr auto submdspan_canonicalize_slices_impl(
 
   // Actual canonicalization: returns detail::tuple for device compatibility.
   return detail::tuple{
-    submdspan_canonicalize_one_slice<Inds>(
-      exts,
-      get_kth_in_pack<Inds>(slices...)
-    )...
+    submdspan_canonicalize_one_slice<IndexType>(slices)...
   };
 }
 
