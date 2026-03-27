@@ -24,26 +24,27 @@
 #include <cstring>
 #include <functional>
 #include <utility>
+#include <algorithm>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
 namespace detail {
 
 template <class Extents, class F, class ArrayType>
-constexpr void apply_fun_over_extents(const Extents &ext, F &fun,
+constexpr void apply_fun_over_extents(const Extents &ext, F &&fun,
                                       ArrayType &indices,
                                       std::index_sequence<>) {
-  std::apply(fun, indices);
+  std::apply(std::forward<F>(fun), indices);
 }
 
 template <class Extents, class F, class ArrayType, size_t R, size_t... Ranks>
-constexpr void apply_fun_over_extents(const Extents &ext, F &fun,
+constexpr void apply_fun_over_extents(const Extents &ext, F &&fun,
                                       ArrayType &indices,
                                       std::index_sequence<R, Ranks...>) {
   using index_type = typename Extents::index_type;
   for (index_type i = 0; i < ext.extent(R); ++i) {
     indices[R] = i;
-    apply_fun_over_extents(ext, fun, indices, std::index_sequence<Ranks...>{});
+    apply_fun_over_extents(ext, std::forward<F>(fun), indices, std::index_sequence<Ranks...>{});
   }
 }
 
@@ -58,7 +59,7 @@ template <size_t N>
 using make_reverse_index_sequence = typename make_reverse_index_sequence_impl<
     N, std::make_index_sequence<N>>::type;
 
-template <class SrcMDSpanType, class DstMDSpanType, typename Enabled = void>
+template <class SrcMDSpanType, class DstMDSpanType>
 struct mdspan_copy_impl {
   using extents_type = typename DstMDSpanType::extents_type;
 
@@ -71,16 +72,16 @@ struct mdspan_copy_impl {
     constexpr auto rank = extents_type::rank();
     auto indices = std::array<typename extents_type::index_type, rank>{};
     apply_fun_over_extents(
-        ext, [&src, &dst](auto... idxs) { dst(idxs...) = src(idxs...); },
-        indices, make_reverse_index_sequence<rank>{});
+        ext, [&src, &dst](auto... idxs) { dst[idxs...] = src[idxs...]; },
+        indices, std::make_index_sequence<rank>{});
   }
 };
 
-template <class ElementType, class SrcExtents, class DstExtents>
+template <class ElementType, class SrcExtents, class SrcLayout, class DstExtents, class DstLayout>
+  requires (SrcLayout::template mapping<SrcExtents>::is_always_exhaustive() && DstLayout::template mapping<DstExtents>::is_always_exhaustive())
 struct mdspan_copy_impl<
-    mdspan<ElementType, SrcExtents, layout_left, default_accessor<ElementType>>,
-    mdspan<ElementType, DstExtents, layout_left, default_accessor<ElementType>>,
-    void> {
+    mdspan<ElementType, SrcExtents, SrcLayout>,
+    mdspan<ElementType, DstExtents, DstLayout>> {
   using extents_type = DstExtents;
   using src_mdspan_type = mdspan<ElementType, SrcExtents, layout_left,
                                  default_accessor<ElementType>>;
@@ -90,25 +91,7 @@ struct mdspan_copy_impl<
   static constexpr void copy_over_extents(const extents_type &ext,
                                           const src_mdspan_type &src,
                                           const dst_mdspan_type &dst) {
-    std::memcpy(dst.data_handle(), src.data_handle(), dst.mapping().required_span_size() * sizeof(ElementType));
-  }
-};
-
-template <class ElementType, class SrcExtents, class DstExtents>
-struct mdspan_copy_impl<
-    mdspan<ElementType, SrcExtents, layout_right, default_accessor<ElementType>>,
-    mdspan<ElementType, DstExtents, layout_right, default_accessor<ElementType>>,
-    void> {
-  using extents_type = DstExtents;
-  using src_mdspan_type = mdspan<ElementType, SrcExtents, layout_left,
-                                 default_accessor<ElementType>>;
-  using dst_mdspan_type = mdspan<ElementType, DstExtents, layout_left,
-                                 default_accessor<ElementType>>;
-
-  static constexpr void copy_over_extents(const extents_type &ext,
-                                          const src_mdspan_type &src,
-                                          const dst_mdspan_type &dst) {
-    std::memcpy(dst.data_handle(), src.data_handle(), dst.mapping().required_span_size() * sizeof(ElementType));
+    std::copy(src.data_handle(), src.data_handle() + src.mapping().required_span_size(), dst.data_handle());
   }
 };
 } // namespace detail
@@ -116,7 +99,7 @@ struct mdspan_copy_impl<
 template <class SrcElementType, class SrcExtents, class SrcLayoutPolicy,
           class SrcAccessorPolicy, class DstElementType, class DstExtents,
           class DstLayoutPolicy, class DstAccessorPolicy>
-void copy(
+constexpr void copy(
     mdspan<SrcElementType, SrcExtents, SrcLayoutPolicy, SrcAccessorPolicy> src,
     mdspan<DstElementType, DstExtents, DstLayoutPolicy, DstAccessorPolicy>
         dst) {
