@@ -174,7 +174,7 @@ void test_canonicalize_slices(
   const InputExtents& input_extents,
   Slices... slices)
 {
-  auto result = MDSPAN_IMPL_STANDARD_NAMESPACE::submdspan_canonicalize_slices(
+  auto result = MDSPAN_IMPL_STANDARD_NAMESPACE::canonical_slices(
     input_extents, slices...);
   test_canonicalize_slices_impl(
     std::make_index_sequence<sizeof...(Slices)>(), result, expected_result);

@@ -78,7 +78,7 @@ constexpr auto index_cast(OtherIndexType&& i) noexcept {
 }
 
 // ============================================================
-// canonical_ice: canonicalize a value to IndexType,
+// canonical_index: canonicalize a value to IndexType,
 //   preserving integral-constant nature when possible
 // ============================================================
 
@@ -88,13 +88,15 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ (std::is_convertible_v<S, IndexType>)
 )
 MDSPAN_INLINE_FUNCTION
-constexpr auto canonical_ice([[maybe_unused]] S s) {
+constexpr auto canonical_index([[maybe_unused]] S s) {
+  // TODO: might move to public semi/public only to get error earlier, and
+  // don't duplicate check
   static_assert(std::is_signed_v<IndexType> || std::is_unsigned_v<IndexType>);
   if constexpr (is_integral_constant_like_v<S>) {
     return cw<static_cast<IndexType>(index_cast<IndexType>(S::value))>;
   }
   else {
-    return static_cast<IndexType>(index_cast<IndexType>(s));
+    return static_cast<IndexType>(index_cast<IndexType>(std::move(s)));
   }
 }
 
@@ -110,10 +112,10 @@ constexpr auto subtract_ice([[maybe_unused]] X x, [[maybe_unused]] Y y) {
     is_integral_constant_like_v<remove_cvref_t<X>> &&
     is_integral_constant_like_v<remove_cvref_t<Y>>)
   {
-    return cw<IndexType(canonical_ice<IndexType>(Y::value) - canonical_ice<IndexType>(X::value))>;
+    return cw<IndexType(canonical_index<IndexType>(Y::value) - canonical_index<IndexType>(X::value))>;
   }
   else {
-    return canonical_ice<IndexType>(y) - canonical_ice<IndexType>(x);
+    return canonical_index<IndexType>(y) - canonical_index<IndexType>(x);
   }
 }
 
@@ -307,7 +309,7 @@ constexpr check_static_bounds_result check_static_bounds(
 // check_submdspan_slice_mandate: mandate check for the k-th slice
 //
 // Contains only static_asserts; no actual computation.
-// Separated from submdspan_canonicalize_one_slice so that
+// Separated from canonical_slice so that
 // mandate checking and canonicalization are distinct concerns.
 // ============================================================
 
@@ -340,7 +342,7 @@ constexpr void check_submdspan_slice_mandates(
 }
 
 // ============================================================
-// submdspan_canonicalize_one_slice: canonicalize a single slice
+// canonical_slice: canonicalize a single slice
 //
 // This function performs ONLY the conversion to canonical form.
 // Mandate checking (static_asserts) is NOT done here; it is
@@ -352,19 +354,19 @@ constexpr void check_submdspan_slice_mandates(
 
 template<class IndexType, class Slice>
 MDSPAN_INLINE_FUNCTION
-constexpr auto submdspan_canonicalize_one_slice([[maybe_unused]] Slice s)
+constexpr auto canonical_slice([[maybe_unused]] Slice s)
 {
   if constexpr (std::is_convertible_v<Slice, full_extent_t>) {
     return full_extent; // canonical full-extent slice
   }
   else if constexpr (std::is_convertible_v<Slice, IndexType>) {
-    return canonical_ice<IndexType>(s); // canonical integer index
+    return canonical_index<IndexType>(std::move(s)); // canonical integer index
   }
   else if constexpr (is_strided_slice<Slice>::value) {
     // Canonicalize each component of the strided_slice
-    auto offset = canonical_ice<IndexType>(s.offset);
-    auto extent = canonical_ice<IndexType>(s.extent);
-    auto stride = canonical_ice<IndexType>(s.stride);
+    auto offset = canonical_index<IndexType>(s.offset);
+    auto extent = canonical_index<IndexType>(s.extent);
+    auto stride = canonical_index<IndexType>(s.stride);
     return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
       /* .offset = */ offset,
       /* .extent = */ extent,
@@ -374,8 +376,8 @@ constexpr auto submdspan_canonicalize_one_slice([[maybe_unused]] Slice s)
 #if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
   else if constexpr (is_std_complex<Slice>) {
     // std::complex<T> used as [real, imag) range (offset, offset+extent)
-    auto offset = canonical_ice<IndexType>(s.real());
-    auto extent = canonical_ice<IndexType>(s.imag() - s.real());
+    auto offset = canonical_index<IndexType>(s.real());
+    auto extent = canonical_index<IndexType>(s.imag() - s.real());
     auto stride = cw<IndexType(1)>;
     return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
       /* .offset = */ offset,
@@ -392,7 +394,7 @@ constexpr auto submdspan_canonicalize_one_slice([[maybe_unused]] Slice s)
     static_assert(std::is_convertible_v<S_k0, IndexType>);
     static_assert(std::is_convertible_v<S_k1, IndexType>);
 
-    auto offset = canonical_ice<IndexType>(s_k0);
+    auto offset = canonical_index<IndexType>(s_k0);
     auto extent = subtract_ice<IndexType>(s_k0, s_k1);
     auto stride = cw<IndexType(1)>;
     return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
@@ -404,7 +406,7 @@ constexpr auto submdspan_canonicalize_one_slice([[maybe_unused]] Slice s)
 }
 
 // ============================================================
-// submdspan_canonicalize_slices_impl: implementation helper
+// canonical_slices_impl: implementation helper
 //
 // First performs mandate checks (static_asserts), then
 // returns a detail::tuple of canonical slices.
@@ -420,7 +422,7 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ (sizeof...(Slices) == sizeof...(Extents))
 )
 MDSPAN_INLINE_FUNCTION
-constexpr auto submdspan_canonicalize_slices_impl(
+constexpr auto canonical_slices_impl(
   std::index_sequence<Inds...>,
   const extents<IndexType, Extents...>& exts,
   Slices... slices)
@@ -432,7 +434,7 @@ constexpr auto submdspan_canonicalize_slices_impl(
 
   // Actual canonicalization: returns detail::tuple for device compatibility.
   return detail::tuple{
-    submdspan_canonicalize_one_slice<IndexType>(slices)...
+    canonical_slice<IndexType>(slices)...
   };
 }
 
@@ -456,11 +458,11 @@ MDSPAN_TEMPLATE_REQUIRES(
   /* requires */ (sizeof...(Slices) == sizeof...(Extents))
 )
 MDSPAN_INLINE_FUNCTION
-constexpr auto submdspan_canonicalize_slices(
+constexpr auto canonical_slices(
   const extents<IndexType, Extents...>& exts,
-  Slices&&... slices)
+  Slices... slices)
 {
-  return detail::submdspan_canonicalize_slices_impl(
+  return detail::canonical_slices_impl(
     std::make_index_sequence<sizeof...(Slices)>(), exts, slices...);
 }
 
