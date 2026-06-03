@@ -367,26 +367,13 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     auto offset = canonical_index<IndexType>(s.offset);
     auto extent = canonical_index<IndexType>(s.extent);
     auto stride = canonical_index<IndexType>(s.stride);
+    // TODO: Later introduce canonical-range-slice
     return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
       /* .offset = */ offset,
       /* .extent = */ extent,
       /* .stride = */ stride
     };
-  }
-#if ! defined(__cpp_lib_tuple_like) || (__cpp_lib_tuple_like < 202311L)
-  else if constexpr (is_std_complex<Slice>) {
-    // std::complex<T> used as [real, imag) range (offset, offset+extent)
-    auto offset = canonical_index<IndexType>(s.real());
-    auto extent = canonical_index<IndexType>(s.imag() - s.real());
-    auto stride = cw<IndexType(1)>;
-    return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
-      /* .offset = */ offset,
-      /* .extent = */ extent,
-      /* .stride = */ stride
-    };
-  }
-#endif
-  else {
+  } else {
     // General pair-like case: structured binding into [first, last)
     auto [s_k0, s_k1] = s;
     using S_k0 = decltype(s_k0);
@@ -397,6 +384,7 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     auto offset = canonical_index<IndexType>(s_k0);
     auto extent = subtract_ice<IndexType>(s_k0, s_k1);
     auto stride = cw<IndexType(1)>;
+    // TODO: Later introduce canonical-range-slice
     return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
       /* .offset = */ offset,
       /* .extent = */ extent,
