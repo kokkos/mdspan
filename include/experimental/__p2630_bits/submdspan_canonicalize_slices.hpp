@@ -308,7 +308,7 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     };
   } else {
     // General pair-like case: structured binding into [first, last)
-    auto [s_k0, s_k1] = s;
+    auto [s_k0, s_k1] = std::move(s);
     using S_k0 = decltype(s_k0);
     using S_k1 = decltype(s_k1);
     static_assert(std::is_convertible_v<S_k0, IndexType>);
