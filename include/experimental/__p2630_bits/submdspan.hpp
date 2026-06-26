@@ -27,7 +27,10 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
           SliceSpecifiers... slices) {
-  const auto sub_submdspan_mapping_result = submdspan_mapping(src.mapping(), slices...);
+  detail::check_submdspan_slice_mandates<Extents>(std::make_index_sequence<Extents::rank()>(), slices...);
+
+  const auto sub_submdspan_mapping_result = submdspan_mapping(src.mapping(),
+        detail::canonical_slice<typename Extents::index_type>(slices)...);
   // NVCC has a problem with the deduction so lets figure out the type
   using sub_mapping_t = std::remove_cv_t<decltype(sub_submdspan_mapping_result.mapping)>;
   using sub_extents_t = typename sub_mapping_t::extents_type;
