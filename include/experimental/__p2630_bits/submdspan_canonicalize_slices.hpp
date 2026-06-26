@@ -300,7 +300,6 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     auto offset = canonical_index<IndexType>(s.offset);
     auto extent = canonical_index<IndexType>(s.extent);
     auto stride = canonical_index<IndexType>(s.stride);
-    // TODO: Later introduce canonical-range-slice
     return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
       /* .offset = */ offset,
       /* .extent = */ extent,
@@ -317,7 +316,6 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     auto offset = canonical_index<IndexType>(s_k0);
     auto extent = subtract_ice<IndexType>(s_k0, s_k1);
     auto stride = cw<IndexType(1)>;
-    // TODO: Later introduce canonical-range-slice
     return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
       /* .offset = */ offset,
       /* .extent = */ extent,
@@ -360,7 +358,7 @@ constexpr auto canonical_slices_impl(
 } // namespace detail
 
 // ============================================================
-// submdspan_canonicalize_slices: public API
+// canonicalize_slices: public API
 //
 // Given an extents object and a pack of slice specifiers,
 // returns a detail::tuple of canonical slice specifiers.
