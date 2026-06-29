@@ -60,50 +60,22 @@
 #include <cstring>
 #endif
 
-namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
-namespace detail {
-
-// Prefer std::assume_aligned if available, as it is in the C++ Standard.
-// Otherwise, use a compiler-specific equivalent if available.
-
-// NOTE (mfh 2022/08/08) BYTE_ALIGNMENT must be unsigned and a power of 2.
-#if defined(__cpp_lib_assume_aligned)
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) (std::assume_aligned< BYTE_ALIGNMENT >( POINTER ))
-  constexpr char assume_aligned_method[] = "std::assume_aligned";
-#elif defined(__ICL)
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) POINTER
-  constexpr char assume_aligned_method[] = "(none)";
-#elif defined(__ICC)
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) POINTER
-  constexpr char assume_aligned_method[] = "(none)";
-#elif defined(__clang__)
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) POINTER
-  constexpr char assume_aligned_method[] = "(none)";
-#elif defined(__GNUC__)
-  // __builtin_assume_aligned returns void*
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) reinterpret_cast< ELEMENT_TYPE* >(__builtin_assume_aligned( POINTER, BYTE_ALIGNMENT ))
-  constexpr char assume_aligned_method[] = "__builtin_assume_aligned";
-#else
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) POINTER
-  constexpr char assume_aligned_method[] = "(none)";
-#endif
-
 // Some compilers other than Clang or GCC like to define __clang__ or __GNUC__.
 // Thus, we order the tests from most to least specific.
 #if defined(__ICL)
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __declspec(align_value( BYTE_ALIGNMENT ))
-  constexpr char align_attribute_method[] = "__declspec(align_value(BYTE_ALIGNMENT))";
+#define MDSPAN_ALIGN(BYTE_ALIGNMENT) __declspec(align_value(BYTE_ALIGNMENT))
 #elif defined(__ICC)
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __attribute__((align_value( BYTE_ALIGNMENT )))
-  constexpr char align_attribute_method[] = "__attribute__((align_value(BYTE_ALIGNMENT)))";
+#define MDSPAN_ALIGN(BYTE_ALIGNMENT)                                           \
+  __attribute__((align_value(BYTE_ALIGNMENT)))
 #elif defined(__clang__)
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __attribute__((align_value( BYTE_ALIGNMENT )))
-  constexpr char align_attribute_method[] = "__attribute__((align_value(BYTE_ALIGNMENT)))";
+#define MDSPAN_ALIGN(BYTE_ALIGNMENT)                                           \
+  __attribute__((align_value(BYTE_ALIGNMENT)))
 #else
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT )
-  constexpr char align_attribute_method[] = "(none)";
+#define MDSPAN_ALIGN(BYTE_ALIGNMENT)
 #endif
 
+namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
+namespace detail {
 constexpr bool
 has_single_bit(const std::size_t x)
 {
@@ -116,6 +88,24 @@ has_single_bit(const std::size_t x)
 #endif
 }
 } // namespace detail
+
+#ifdef __cpp_lib_assume_aligned
+using std::assume_aligned;
+#elif defined(__GNUC__)
+template <std::size_t ByteAlignment, class T>
+constexpr T *assume_aligned(T *ptr) {
+  static_assert(detail::has_single_bit(Alignment),
+                "Alignment must be a power of two.");
+  return reinterpret_cast<T *>(__builtin_assume_aligned(ptr, ByteAlignment));
+}
+#else
+template <std::size_t ByteAlignment, class T>
+constexpr T *assume_aligned(T *ptr) {
+  static_assert(detail::has_single_bit(Alignment),
+                "Alignment must be a power of two.");
+  return ptr;
+}
+#endif
 
 template<size_t Alignment, class T>
 #ifdef __cpp_lib_bit_cast // Only can be constexpr if we have bit_cast
@@ -139,7 +129,7 @@ struct aligned_accessor {
   using offset_policy = default_accessor<ElementType>;
   using element_type = ElementType;
   using reference = ElementType&;
-  using data_handle_type = ElementType* MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( ByteAlignment );
+  using data_handle_type = ElementType* MDSPAN_ALIGN( ByteAlignment );
 
   static constexpr size_t byte_alignment = ByteAlignment;
   static_assert(detail::has_single_bit(byte_alignment) && byte_alignment >= alignof(ElementType),
@@ -172,7 +162,7 @@ struct aligned_accessor {
   constexpr reference access(data_handle_type p, size_t i) const noexcept {
     // This may declare alignment twice, depending on
     // if we have an attribute for marking pointer types.
-    return MDSPAN_IMPL_ASSUME_ALIGNED( ElementType, p, byte_alignment )[i];
+    return assume_aligned<byte_alignment>(p)[i];
   }
 
   constexpr typename offset_policy::data_handle_type

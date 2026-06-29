@@ -29,37 +29,15 @@
 #include <memory>
 #include <type_traits>
 #include <string> // stoi
+#ifdef MDSPAN_ENABLE_OPENMP
+#include <omp.h>
+#endif
 
 // mfh 2022/08/08: This is based on my comment on RAPIDS RAFT issue 725:
 // https://github.com/rapidsai/raft/pull/725#discussion_r937991701
 
 namespace {
 using Kokkos::aligned_accessor;
-using Kokkos::detail::assume_aligned_method;
-using Kokkos::detail::align_attribute_method;
-
-// We define aligned_pointer_t through a struct
-// so we can check whether the byte alignment is valid.
-// This makes it impossible to use the alias
-// with an invalid byte alignment.
-template<class ElementType, std::size_t byte_alignment>
-struct aligned_pointer {
-#if defined(__ICC)
-  // x86-64 ICC 2021.5.0 emits warning #3186 ("expected typedef declaration") here.
-  // No other compiler (including Clang, which has a similar type attribute) has this issue.
-#  pragma warning push
-#  pragma warning disable 3186
-#endif
-
-  using type = ElementType* MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( byte_alignment );
-
-#if defined(__ICC)
-#  pragma warning pop
-#endif
-};
-
-template<class ElementType, std::size_t byte_alignment>
-using aligned_pointer_t = typename aligned_pointer<ElementType, byte_alignment>::type;
 
 using test_value_type = float;
 constexpr std::size_t min_overalignment_factor = 8;
@@ -68,13 +46,6 @@ constexpr std::size_t min_byte_alignment = min_overalignment_factor * sizeof(flo
 // Use int, not size_t, as the index_type.
 // Some compilers have trouble optimizing loops with unsigned or 64-bit index types.
 using index_type = int;
-
-template<class ElementType, std::size_t byte_alignment>
-aligned_pointer_t<ElementType, byte_alignment>
-bless(ElementType* ptr, std::integral_constant<std::size_t, byte_alignment> /* ba */ )
-{
-  return MDSPAN_IMPL_ASSUME_ALIGNED( ElementType, ptr, byte_alignment );
-}
 
 template<class ElementType>
 struct delete_raw {
@@ -155,14 +126,14 @@ public:
     num_elements(number_of_elements)
   {}
 
-  aligned_pointer_t<ElementType, byte_alignment> data() const
+  ElementType *data() const
   {
-    return MDSPAN_IMPL_ASSUME_ALIGNED( ElementType, pointer, byte_alignment );
+    return Kokkos::assume_aligned< byte_alignment >(pointer);
   }
 
 private:
   allocation_t<ElementType> allocation{nullptr, delete_raw<ElementType>{}};
-  aligned_pointer_t<ElementType, byte_alignment> pointer{nullptr};
+  ElementType *pointer{nullptr};
   std::size_t num_elements{0};
 };
 
@@ -321,9 +292,9 @@ auto benchmark_add_raw_1d(const std::size_t num_trials,
 // Assume that x, y, and z all have the same alignment.
 template<class ElementType, std::size_t byte_alignment>
 void add_aligned_raw_1d(const index_type n,
-			aligned_pointer_t<const ElementType, byte_alignment> x,
-			aligned_pointer_t<const ElementType, byte_alignment> y,
-			aligned_pointer_t<ElementType, byte_alignment> z)
+			const ElementType * MDSPAN_ALIGN(byte_alignment) x,
+			const ElementType * MDSPAN_ALIGN(byte_alignment) y,
+			ElementType * MDSPAN_ALIGN(byte_alignment) z)
 {
   for (index_type i = 0; i < n; ++i) {
     z[i] = x[i] + y[i];
@@ -337,19 +308,19 @@ auto benchmark_add_aligned_raw_1d(const std::size_t num_trials,
 				  const ElementType x[],
 				  const ElementType y[],
 				  ElementType z[],
-				  std::integral_constant<std::size_t, byte_alignment> ba)
+				  std::integral_constant<std::size_t, byte_alignment>)
 {
   TICK();
-  auto x_blessed = bless(x, ba);
-  auto y_blessed = bless(y, ba);
-  auto z_blessed = bless(z, ba);
+  auto x_blessed = Kokkos::assume_aligned< byte_alignment >(x);
+  auto y_blessed = Kokkos::assume_aligned< byte_alignment >(y);
+  auto z_blessed = Kokkos::assume_aligned< byte_alignment >(z);
   for (std::size_t trial = 0; trial < num_trials; ++trial) {
     add_aligned_raw_1d<ElementType, byte_alignment>(n, x_blessed, y_blessed, z_blessed);
   }
   return TOCK();
 }
 
-#ifdef _OPENMP
+#ifdef MDSPAN_ENABLE_OPENMP
 template<class ElementType, std::size_t byte_alignment>
 void add_omp_simd_aligned_mdspan_1d(aligned_mdspan_1d<const ElementType, byte_alignment> x,
 				    aligned_mdspan_1d<const ElementType, byte_alignment> y,
@@ -533,7 +504,7 @@ auto benchmark_add_omp_aligned_simd_aligned_raw_1d(
   }
   return TOCK();
 }
-#endif // _OPENMP
+#endif // MDSPAN_ENABLE_OPENMP
 
 template<class ElementType>
 void set_elements_of_arrays(const index_type n,
@@ -578,7 +549,7 @@ int main(int argc, char* argv[])
     benchmark_add_aligned_raw_1d(num_trials, n, x_aligned.data(),
 				 y_aligned.data(), z_aligned.data(),
 				 byte_alignment);
-#ifdef _OPENMP
+#ifdef MDSPAN_ENABLE_OPENMP
   auto omp_simd_aligned_mdspan_result =
     benchmark_add_omp_simd_aligned_mdspan_1d(num_trials, n, x_aligned.data(),
 					     y_aligned.data(), z_aligned.data(),
@@ -609,7 +580,7 @@ int main(int argc, char* argv[])
     benchmark_add_raw_1d(num_trials, n, x_unaligned.data(),
 			 y_unaligned.data(), z_unaligned.data());
 
-#ifdef _OPENMP
+#ifdef MDSPAN_ENABLE_OPENMP
   auto omp_simd_mdspan_result =
     benchmark_add_omp_simd_mdspan_1d(num_trials, n, x_unaligned.data(),
 				     y_unaligned.data(), z_unaligned.data());
@@ -620,17 +591,13 @@ int main(int argc, char* argv[])
 
   cout << "Number of trials: " << num_trials << endl
        << "Number of loop iterations per trial: " << n << endl
-       << "Way to declare a pointer value aligned, if any: "
-       << assume_aligned_method << endl
-       << "Way to declare a pointer type aligned, if any: "
-       << align_attribute_method << endl
        << "Total time in seconds for non-OpenMP loops:" << endl
        << "  aligned mdspan: " << aligned_mdspan_result << endl
        << "  unaligned mdspan: " << mdspan_result << endl
        << "  aligned raw: " << aligned_raw_result << endl
        << "  unaligned raw: " << raw_result << endl;
 
-#ifdef _OPENMP
+#ifdef MDSPAN_ENABLE_OPENMP
   cout << "Total time in seconds for OpenMP (omp simd) loops:" << endl
        << "  omp_simd_aligned_mdspan: " << omp_simd_aligned_mdspan_result << endl
        << "  omp_simd_mdspan: " << omp_simd_mdspan_result << endl

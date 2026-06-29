@@ -5,28 +5,21 @@
 #include <cstdlib>
 
 TEST(TestAlignedAccessor, IsSufficientlyAligned) {
+  alignas(4) const char dummy_arr[16] = {};
   ASSERT_TRUE(
-      Kokkos::is_sufficiently_aligned<1>(reinterpret_cast<char *>(0x12345678)));
+      Kokkos::is_sufficiently_aligned<1>(&dummy_arr[1]));
   ASSERT_TRUE(
-      Kokkos::is_sufficiently_aligned<1>(reinterpret_cast<char *>(0x12345671)));
+      Kokkos::is_sufficiently_aligned<1>(&dummy_arr[1]));
 
-  ASSERT_TRUE(Kokkos::is_sufficiently_aligned<2>(
-      reinterpret_cast<std::int16_t *>(0x12345678)));
-  ASSERT_TRUE(!Kokkos::is_sufficiently_aligned<2>(
-      reinterpret_cast<std::int16_t *>(0x12345671)));
+  ASSERT_TRUE(Kokkos::is_sufficiently_aligned<2>(&dummy_arr[0]));
+  ASSERT_TRUE(!Kokkos::is_sufficiently_aligned<2>(&dummy_arr[1]));
 
-  ASSERT_TRUE(Kokkos::is_sufficiently_aligned<4>(
-      reinterpret_cast<std::int32_t *>(0x12345678)));
-  ASSERT_TRUE(Kokkos::is_sufficiently_aligned<4>(
-      reinterpret_cast<std::int32_t *>(0x12345674)));
-  ASSERT_TRUE(Kokkos::is_sufficiently_aligned<4>(
-      reinterpret_cast<std::int32_t *>(0x1234567c)));
-  ASSERT_TRUE(!Kokkos::is_sufficiently_aligned<4>(
-      reinterpret_cast<std::int32_t *>(0x12345672)));
-  ASSERT_TRUE(!Kokkos::is_sufficiently_aligned<4>(
-      reinterpret_cast<std::int32_t *>(0x12345671)));
-  ASSERT_TRUE(!Kokkos::is_sufficiently_aligned<4>(
-      reinterpret_cast<std::int32_t *>(0x12345677)));
+  ASSERT_TRUE(Kokkos::is_sufficiently_aligned<4>(&dummy_arr[0]));
+  ASSERT_TRUE(Kokkos::is_sufficiently_aligned<4>(&dummy_arr[4]));
+  ASSERT_TRUE(Kokkos::is_sufficiently_aligned<4>(&dummy_arr[8]));
+  ASSERT_TRUE(!Kokkos::is_sufficiently_aligned<4>(&dummy_arr[1]));
+  ASSERT_TRUE(!Kokkos::is_sufficiently_aligned<4>(&dummy_arr[2]));
+  ASSERT_TRUE(!Kokkos::is_sufficiently_aligned<4>(&dummy_arr[3]));
 }
 
 // These shouldn't be in the global namespace or they may replace the C version
@@ -66,6 +59,8 @@ namespace testing
       return *this;
     }
   };
+
+  static_assert(sizeof(different_align_and_size) != alignof(different_align_and_size));
 }
 
 template <typename T, std::size_t ByteAlignment, std::size_t NumElements>
