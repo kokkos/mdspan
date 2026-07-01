@@ -94,7 +94,7 @@ struct static_array_impl<R, T, FirstExt, Extents...> {
     else
       return static_array_impl<R + 1, T, Extents...>::template get<r>();
 #else
-    get(r);
+    return get(r);
 #endif
   }
 };
