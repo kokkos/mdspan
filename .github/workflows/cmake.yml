@@ -45,7 +45,7 @@ jobs:
     - name: Cache icpx install
       if: ${{ matrix.compiler_driver == 'icpx' }}
       id: cache-icpx
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: /opt/intel/oneapi
         key: oneapi-${{ matrix.compiler_url}}
