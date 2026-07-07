@@ -94,26 +94,26 @@ using std::assume_aligned;
 #elif defined(__GNUC__)
 template <std::size_t ByteAlignment, class T>
 constexpr T *assume_aligned(T *ptr) {
-  static_assert(detail::has_single_bit(Alignment),
-                "Alignment must be a power of two.");
+  static_assert(detail::has_single_bit(ByteAlignment),
+                "ByteAlignment must be a power of two.");
   return reinterpret_cast<T *>(__builtin_assume_aligned(ptr, ByteAlignment));
 }
 #else
 template <std::size_t ByteAlignment, class T>
 constexpr T *assume_aligned(T *ptr) {
-  static_assert(detail::has_single_bit(Alignment),
-                "Alignment must be a power of two.");
+  static_assert(detail::has_single_bit(ByteAlignment),
+                "ByteAlignment must be a power of two.");
   return ptr;
 }
 #endif
 
-template<size_t Alignment, class T>
+template<size_t ByteAlignment, class T>
 #ifdef __cpp_lib_bit_cast // Only can be constexpr if we have bit_cast
 constexpr
 #endif
 bool is_sufficiently_aligned(T* ptr) {
-  static_assert(detail::has_single_bit(Alignment),
-		"Alignment must be a power of two.");
+  static_assert(detail::has_single_bit(ByteAlignment),
+		"ByteAlignment must be a power of two.");
 #ifdef __cpp_lib_bit_cast
   auto dst = std::bit_cast<std::uintptr_t>(ptr);
 #else
@@ -121,7 +121,7 @@ bool is_sufficiently_aligned(T* ptr) {
   std::uintptr_t dst;
   std::memcpy(&dst, &ptr, sizeof(std::uintptr_t));
 #endif
-  return !(dst & (Alignment - 1));
+  return !(dst & (ByteAlignment - 1));
 }
 
 template<class ElementType, std::size_t ByteAlignment>
