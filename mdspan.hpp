@@ -1791,16 +1791,6 @@ struct static_array_impl<R, T, FirstExt, Extents...> {
     else
       return static_array_impl<R + 1, T, Extents...>::get(r);
   }
-  template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static T get() {
-#if MDSPAN_HAS_CXX_17
-    if constexpr (r == R)
-      return FirstExt;
-    else
-      return static_array_impl<R + 1, T, Extents...>::template get<r>();
-#else
-    get(r);
-#endif
-  }
 };
 
 // End the recursion
@@ -1808,18 +1798,12 @@ template <size_t R, class T, T FirstExt>
 struct static_array_impl<R, T, FirstExt> {
   MDSPAN_INLINE_FUNCTION
   constexpr static T get(size_t) { return FirstExt; }
-  template <size_t> MDSPAN_INLINE_FUNCTION constexpr static T get() {
-    return FirstExt;
-  }
 };
 
 // Don't start recursion if size 0
 template <class T> struct static_array_impl<0, T> {
   MDSPAN_INLINE_FUNCTION
   constexpr static T get(size_t) { return T(); }
-  template <size_t> MDSPAN_INLINE_FUNCTION constexpr static T get() {
-    return T();
-  }
 };
 
 // Static array, provides get<r>(), get(r) and operator[r]
