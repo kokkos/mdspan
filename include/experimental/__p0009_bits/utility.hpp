@@ -287,6 +287,8 @@ check_mul_result_is_nonnegative_and_representable(T a, T b) {
 // FIXME_SYCL The code below compiles to old_llvm.umul.with.overflow.i64
 // which isn't defined in device code
 #ifdef __SYCL_DEVICE_ONLY__
+  (void) a;
+  (void) b;
   return true;
 #else
   if (b == 0 || a == 0)
