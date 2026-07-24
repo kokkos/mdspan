@@ -217,6 +217,12 @@ static_assert(MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14
 #  endif
 #endif
 
+#ifndef MDSPAN_IMPL_HAS_OPENACC
+#  if defined(_OPENACC)
+#    define MDSPAN_IMPL_HAS_OPENACC _OPENACC
+#  endif
+#endif
+
 #ifndef MDSPAN_IMPL_HAS_CPP_ATTRIBUTE
 #  ifndef __has_cpp_attribute
 #    define MDSPAN_IMPL_HAS_CPP_ATTRIBUTE(x) 0
@@ -433,7 +439,7 @@ static_assert(MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14
 #if defined(MDSPAN_IMPL_HAS_SYCL)
 #include <sycl/sycl.hpp> // sycl::ext::oneapi::experimental::printf
 #endif
-#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL)
+#if defined(MDSPAN_IMPL_HAS_CUDA) || defined(MDSPAN_IMPL_HAS_HIP) || defined(MDSPAN_IMPL_HAS_SYCL) || defined(MDSPAN_IMPL_HAS_OPENACC)
 #include "assert.h"
 #endif
 
@@ -538,6 +544,11 @@ MDSPAN_FUNCTION inline void default_precondition_violation_handler(const char* c
   (void) line;
 #endif
   assert(0);
+}
+#elif defined(MDSPAN_IMPL_HAS_OPENACC)
+MDSPAN_FUNCTION inline void default_precondition_violation_handler(const char* /* cond */, const char* /* file */, unsigned /* line */)
+{
+  assert(false);
 }
 #else
 MDSPAN_FUNCTION inline void default_precondition_violation_handler(const char* cond, const char* file, unsigned line)
