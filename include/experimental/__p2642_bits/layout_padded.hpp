@@ -592,7 +592,7 @@ public:
       /* requires */ (sizeof...(Indices) == extents_type::rank() &&
                       (::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::
                            are_valid_indices<index_type, Indices...>())))
-  MDSPAN_INLINE_FUNCTION constexpr size_t
+  MDSPAN_INLINE_FUNCTION constexpr index_type
   operator()(Indices... idxs) const noexcept {
 #if !defined(NDEBUG)
     ::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::check_all_indices(this->extents(),
@@ -985,7 +985,7 @@ public:
       /* requires */ (sizeof...(Indices) == extents_type::rank() &&
                       (::MDSPAN_IMPL_STANDARD_NAMESPACE::detail::
                            are_valid_indices<index_type, Indices...>())))
-  MDSPAN_INLINE_FUNCTION constexpr size_t
+  MDSPAN_INLINE_FUNCTION constexpr index_type
   operator()(Indices... idxs) const noexcept {
     return compute_offset(std::index_sequence_for<Indices...>{}, idxs...);
   }
