@@ -274,6 +274,15 @@ constexpr bool check_submdspan_slice_mandate(
   return true;
 }
 
+template<class Extents, size_t ... Idx, class ... Slices>
+MDSPAN_INLINE_FUNCTION
+constexpr bool check_submdspan_slice_mandates(
+  const std::index_sequence<Idx...>& ,
+  [[maybe_unused]] const Slices& ... slices)
+{
+  return (check_submdspan_slice_mandate<typename Extents::index_type, Extents::static_extent(Idx), Slices>(slices) && ... && true);
+}
+
 // ============================================================
 // canonical_slice: canonicalize a single slice
 //

@@ -141,7 +141,9 @@ using submdspan_test_types =
     // layout_right to layout_right Check Extents Preservation
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10>,           args_t<10>,          Kokkos::extents<size_t,10>, Kokkos::full_extent_t>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10>,           args_t<10>,          Kokkos::extents<size_t,dyn>, std::pair<int,int>>
+#if defined(__cpp_lib_tuple_like) && (__cpp_lib_tuple_like >= 202311L) // submdspan uses structured binding for slices, which requires C++26 for complex
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10>,           args_t<10>,          Kokkos::extents<size_t,dyn>, std::complex<double>>
+#endif
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10>,           args_t<10>,          Kokkos::extents<size_t>, int>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10,20>,        args_t<10,20>,       Kokkos::extents<size_t,10,20>, Kokkos::full_extent_t, Kokkos::full_extent_t>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_right, Kokkos::extents<size_t,10,20>,        args_t<10,20>,       Kokkos::extents<size_t,dyn,20>, std::pair<int,int>, Kokkos::full_extent_t>
