@@ -163,11 +163,13 @@
 #else
 #define MDSPAN_CXX_STD_23 202100L
 #endif
+#define MDSPAN_CXX_STD_26 202603L
 
 #define MDSPAN_HAS_CXX_14 (MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_14)
 #define MDSPAN_HAS_CXX_17 (MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_17)
 #define MDSPAN_HAS_CXX_20 (MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_20)
 #define MDSPAN_HAS_CXX_23 (MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_23)
+#define MDSPAN_HAS_CXX_26 (MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_26)
 
 static_assert(MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14 or later.");
 
@@ -6051,37 +6053,6 @@ template <class OffsetType, class ExtentType, class StrideType>
 struct is_strided_slice<
     strided_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
 
-// Helper for identifying valid pair like things
-template <class T, class IndexType> struct index_pair_like : std::false_type {};
-
-template <class IdxT1, class IdxT2, class IndexType>
-struct index_pair_like<std::pair<IdxT1, IdxT2>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT1, IndexType> &&
-                                std::is_convertible_v<IdxT2, IndexType>;
-};
-
-template <class IdxT1, class IdxT2, class IndexType>
-struct index_pair_like<std::tuple<IdxT1, IdxT2>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT1, IndexType> &&
-                                std::is_convertible_v<IdxT2, IndexType>;
-};
-
-template <class IdxT1, class IdxT2, class IndexType>
-struct index_pair_like<tuple<IdxT1, IdxT2>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT1, IndexType> &&
-                                std::is_convertible_v<IdxT2, IndexType>;
-};
-
-template <class IdxT, class IndexType>
-struct index_pair_like<std::complex<IdxT>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT, IndexType>;
-};
-
-template <class IdxT, class IndexType>
-struct index_pair_like<std::array<IdxT, 2>, IndexType> {
-  static constexpr bool value = std::is_convertible_v<IdxT, IndexType>;
-};
-
 // first_of(slice): getting begin of slice specifier range
 MDSPAN_TEMPLATE_REQUIRES(
   class Integral,
@@ -6094,46 +6065,14 @@ constexpr Integral first_of(const Integral &i) {
 
 template<class Integral, Integral v>
 MDSPAN_INLINE_FUNCTION
-constexpr Integral first_of(const std::integral_constant<Integral, v>&) {
-  return integral_constant<Integral, v>();
+constexpr auto first_of(const constant_wrapper<v, Integral>&) {
+  return constant_wrapper<v, Integral>();
 }
 
 MDSPAN_INLINE_FUNCTION
 constexpr integral_constant<size_t, 0>
 first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
   return integral_constant<size_t, 0>();
-}
-
-MDSPAN_TEMPLATE_REQUIRES(
-  class Slice,
-  /* requires */(index_pair_like<Slice, size_t>::value)
-)
-MDSPAN_INLINE_FUNCTION
-constexpr auto first_of(const Slice &i) {
-  return get<0>(i);
-}
-
-MDSPAN_TEMPLATE_REQUIRES(
-  class IdxT1, class IdxT2,
-  /* requires */ (index_pair_like<std::tuple<IdxT1, IdxT2>, size_t>::value)
-  )
-constexpr auto first_of(const std::tuple<IdxT1, IdxT2>& i) {
-  return get<0>(i);
-}
-
-MDSPAN_TEMPLATE_REQUIRES(
-  class IdxT1, class IdxT2,
-  /* requires */ (index_pair_like<std::pair<IdxT1, IdxT2>, size_t>::value)
-  )
-MDSPAN_INLINE_FUNCTION
-constexpr auto first_of(const std::pair<IdxT1, IdxT2>& i) {
-  return i.first;
-}
-
-template<class T>
-MDSPAN_INLINE_FUNCTION
-constexpr auto first_of(const std::complex<T> &i) {
-  return i.real();
 }
 
 template <class OffsetType, class ExtentType, class StrideType>
@@ -6155,39 +6094,6 @@ MDSPAN_INLINE_FUNCTION
 constexpr Integral
     last_of(std::integral_constant<size_t, k>, const Extents &, const Integral &i) {
   return i;
-}
-
-MDSPAN_TEMPLATE_REQUIRES(
-  size_t k, class Extents, class Slice,
-  /* requires */(index_pair_like<Slice, size_t>::value)
-)
-MDSPAN_INLINE_FUNCTION
-constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &,
-                       const Slice &i) {
-  return get<1>(i);
-}
-
-MDSPAN_TEMPLATE_REQUIRES(
-  size_t k, class Extents, class IdxT1, class IdxT2,
-  /* requires */ (index_pair_like<std::tuple<IdxT1, IdxT2>, size_t>::value)
-  )
-constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const std::tuple<IdxT1, IdxT2>& i) {
-  return get<1>(i);
-}
-
-MDSPAN_TEMPLATE_REQUIRES(
-  size_t k, class Extents, class IdxT1, class IdxT2,
-  /* requires */ (index_pair_like<std::pair<IdxT1, IdxT2>, size_t>::value)
-  )
-MDSPAN_INLINE_FUNCTION
-constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const std::pair<IdxT1, IdxT2>& i) {
-  return i.second;
-}
-
-template<size_t k, class Extents, class T>
-MDSPAN_INLINE_FUNCTION
-constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &, const std::complex<T> &i) {
-  return i.imag();
 }
 
 // Suppress spurious warning with NVCC about no return statement.
@@ -6216,7 +6122,7 @@ constexpr auto last_of(std::integral_constant<size_t, k>, const Extents &ext,
   if constexpr (Extents::static_extent(k) == dynamic_extent) {
     return ext.extent(k);
   } else {
-    return integral_constant<size_t, Extents::static_extent(k)>();
+    return constant_wrapper<Extents::static_extent(k), size_t>();
   }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
   // Even with CUDA_ARCH protection this thing warns about calling host function
@@ -6659,6 +6565,15 @@ constexpr bool check_submdspan_slice_mandate(
   return true;
 }
 
+template<class Extents, size_t ... Idx, class ... Slices>
+MDSPAN_INLINE_FUNCTION
+constexpr bool check_submdspan_slice_mandates(
+  const std::index_sequence<Idx...>& ,
+  [[maybe_unused]] const Slices& ... slices)
+{
+  return (check_submdspan_slice_mandate<typename Extents::index_type, Extents::static_extent(Idx), Slices>(slices) && ... && true);
+}
+
 // ============================================================
 // canonical_slice: canonicalize a single slice
 //
@@ -6875,14 +6790,19 @@ MDSPAN_INLINE_FUNCTION constexpr auto construct_sub_strides(
 }
 
 template<class SliceSpecifier, class IndexType>
-struct is_range_slice {
-  constexpr static bool value =
-    std::is_same_v<SliceSpecifier, full_extent_t> ||
-    index_pair_like<SliceSpecifier, IndexType>::value;
-};
+constexpr bool is_range_slice_v = false;
 
-template<class SliceSpecifier, class IndexType>
-constexpr bool is_range_slice_v = is_range_slice<SliceSpecifier, IndexType>::value;
+template<class IndexType>
+constexpr bool is_range_slice_v<full_extent_t, IndexType> = true;
+
+template<class OffsetType, class ExtentType, auto Stride, class IndexType>
+constexpr bool is_range_slice_v<
+    strided_slice<
+      OffsetType,
+      ExtentType,
+      constant_wrapper<Stride>>,
+    IndexType
+  > = (constant_wrapper<Stride>::value == IndexType(1));
 
 template<class SliceSpecifier, class IndexType>
 struct is_index_slice {
@@ -6982,6 +6902,9 @@ MDSPAN_INLINE_FUNCTION constexpr auto
 layout_left::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
 
+  // Implements mandate check
+  detail::check_submdspan_slice_mandates<Extents>(std::make_index_sequence<Extents::rank()>(), slices...);
+
   // compute sub extents
   using src_ext_t = Extents;
   auto dst_ext = submdspan_extents(extents(), slices...);
@@ -7044,6 +6967,9 @@ template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
 layout_left_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
+
+  // Implements mandate check
+  detail::check_submdspan_slice_mandates<Extents>(std::make_index_sequence<Extents::rank()>(), slices...);
 
   // compute sub extents
   using src_ext_t = Extents;
@@ -7210,6 +7136,9 @@ MDSPAN_INLINE_FUNCTION constexpr auto
 layout_right::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
 
+  // Implements mandate check
+  detail::check_submdspan_slice_mandates<Extents>(std::make_index_sequence<Extents::rank()>(), slices...);
+
   // compute sub extents
   using src_ext_t = Extents;
   auto dst_ext = submdspan_extents(extents(), slices...);
@@ -7274,6 +7203,9 @@ template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
 layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
+
+  // Implements mandate check
+  detail::check_submdspan_slice_mandates<Extents>(std::make_index_sequence<Extents::rank()>(), slices...);
 
   // compute sub extents
   using src_ext_t = Extents;
@@ -7350,6 +7282,10 @@ template <class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION constexpr auto
 layout_stride::mapping<Extents>::submdspan_mapping_impl(
     SliceSpecifiers... slices) const {
+
+  // Implements mandate check
+  detail::check_submdspan_slice_mandates<Extents>(std::make_index_sequence<Extents::rank()>(), slices...);
+
   auto dst_ext = submdspan_extents(extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
   auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
@@ -7404,7 +7340,10 @@ MDSPAN_INLINE_FUNCTION
 constexpr auto
 submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
           SliceSpecifiers... slices) {
-  const auto sub_submdspan_mapping_result = submdspan_mapping(src.mapping(), slices...);
+  detail::check_submdspan_slice_mandates<Extents>(std::make_index_sequence<Extents::rank()>(), slices...);
+
+  const auto sub_submdspan_mapping_result = submdspan_mapping(src.mapping(),
+        detail::canonical_slice<typename Extents::index_type>(slices)...);
   // NVCC has a problem with the deduction so lets figure out the type
   using sub_mapping_t = std::remove_cv_t<decltype(sub_submdspan_mapping_result.mapping)>;
   using sub_extents_t = typename sub_mapping_t::extents_type;
