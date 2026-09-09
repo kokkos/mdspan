@@ -43,6 +43,7 @@ else()
   if (MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   endif()
+  set(INSTALL_GTEST OFF)
   FetchContent_Declare(
       googletest
       GIT_REPOSITORY https://github.com/google/googletest.git
