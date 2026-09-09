@@ -17,11 +17,15 @@
 #include <memory>
 #include <type_traits>
 #include <string> // stoi
+#ifdef MDSPAN_ENABLE_OPENMP
+#include <omp.h>
+#endif
 
 // mfh 2022/08/08: This is based on my comment on RAPIDS RAFT issue 725:
 // https://github.com/rapidsai/raft/pull/725#discussion_r937991701
 
 namespace {
+using Kokkos::aligned_accessor;
 
 using test_value_type = float;
 constexpr std::size_t min_overalignment_factor = 8;
@@ -30,129 +34,6 @@ constexpr std::size_t min_byte_alignment = min_overalignment_factor * sizeof(flo
 // Use int, not size_t, as the index_type.
 // Some compilers have trouble optimizing loops with unsigned or 64-bit index types.
 using index_type = int;
-
-
-// Prefer std::assume_aligned if available, as it is in the C++ Standard.
-// Otherwise, use a compiler-specific equivalent if available.
-
-// NOTE (mfh 2022/08/08) BYTE_ALIGNMENT must be unsigned and a power of 2.
-#if defined(__cpp_lib_assume_aligned)
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) (std::assume_aligned< BYTE_ALIGNMENT >( POINTER ))
-  constexpr char assume_aligned_method[] = "std::assume_aligned";
-#elif defined(__ICL)
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) POINTER
-  constexpr char assume_aligned_method[] = "(none)";
-#elif defined(__ICC)
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) POINTER
-  constexpr char assume_aligned_method[] = "(none)";
-#elif defined(__clang__)
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) POINTER
-  constexpr char assume_aligned_method[] = "(none)";
-#elif defined(__GNUC__)
-  // __builtin_assume_aligned returns void*
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) reinterpret_cast< ELEMENT_TYPE* >(__builtin_assume_aligned( POINTER, BYTE_ALIGNMENT ))
-  constexpr char assume_aligned_method[] = "__builtin_assume_aligned";
-#else
-#  define MDSPAN_IMPL_ASSUME_ALIGNED( ELEMENT_TYPE, POINTER, BYTE_ALIGNMENT ) POINTER
-  constexpr char assume_aligned_method[] = "(none)";
-#endif
-
-// Some compilers other than Clang or GCC like to define __clang__ or __GNUC__.
-// Thus, we order the tests from most to least specific.
-#if defined(__ICL)
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __declspec(align_value( BYTE_ALIGNMENT ))
-  constexpr char align_attribute_method[] = "__declspec(align_value(BYTE_ALIGNMENT))";
-#elif defined(__ICC)
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __attribute__((align_value( BYTE_ALIGNMENT )))
-  constexpr char align_attribute_method[] = "__attribute__((align_value(BYTE_ALIGNMENT)))";
-#elif defined(__clang__)
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT ) __attribute__((align_value( BYTE_ALIGNMENT )))
-  constexpr char align_attribute_method[] = "__attribute__((align_value(BYTE_ALIGNMENT)))";
-#else
-#  define MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( BYTE_ALIGNMENT )
-  constexpr char align_attribute_method[] = "(none)";
-#endif
-
-constexpr bool
-is_nonzero_power_of_two(const std::size_t x)
-{
-// Just checking __cpp_lib_int_pow2 isn't enough for some GCC versions.
-// The <bit> header exists, but std::has_single_bit does not.
-#if defined(__cpp_lib_int_pow2) && __cplusplus >= 202002L
-  return std::has_single_bit(x);
-#else
-  return x != 0 && (x & (x - 1)) == 0;
-#endif
-}
-
-template<class ElementType>
-constexpr bool
-valid_byte_alignment(const std::size_t byte_alignment)
-{
-  return is_nonzero_power_of_two(byte_alignment) && byte_alignment >= alignof(ElementType);
-}
-
-// We define aligned_pointer_t through a struct
-// so we can check whether the byte alignment is valid.
-// This makes it impossible to use the alias
-// with an invalid byte alignment.
-template<class ElementType, std::size_t byte_alignment>
-struct aligned_pointer {
-  static_assert(valid_byte_alignment<ElementType>(byte_alignment),
-		"byte_alignment must be a power of two no less than "
-		"the minimum required alignment of ElementType.");
-
-#if defined(__ICC)
-  // x86-64 ICC 2021.5.0 emits warning #3186 ("expected typedef declaration") here.
-  // No other compiler (including Clang, which has a similar type attribute) has this issue.
-#  pragma warning push
-#  pragma warning disable 3186
-#endif
-
-  using type = ElementType* MDSPAN_IMPL_ALIGN_VALUE_ATTRIBUTE( byte_alignment );
-
-#if defined(__ICC)
-#  pragma warning pop
-#endif
-};
-
-template<class ElementType, std::size_t byte_alignment>
-using aligned_pointer_t = typename aligned_pointer<ElementType, byte_alignment>::type;
-
-template<class ElementType, std::size_t byte_alignment>
-aligned_pointer_t<ElementType, byte_alignment>
-bless(ElementType* ptr, std::integral_constant<std::size_t, byte_alignment> /* ba */ )
-{
-  return MDSPAN_IMPL_ASSUME_ALIGNED( ElementType, ptr, byte_alignment );
-}
-
-template<class ElementType, std::size_t byte_alignment>
-struct aligned_accessor {
-  using offset_policy = Kokkos::default_accessor<ElementType>;
-  using element_type = ElementType;
-  using reference = ElementType&;
-  using data_handle_type = aligned_pointer_t<ElementType, byte_alignment>;
-
-  constexpr aligned_accessor() noexcept = default;
-
-  MDSPAN_TEMPLATE_REQUIRES(
-    class OtherElementType,
-    std::size_t other_byte_alignment,
-    /* requires */ (std::is_convertible<OtherElementType(*)[], element_type(*)[]>::value && other_byte_alignment == byte_alignment)
-    )
-  constexpr aligned_accessor(aligned_accessor<OtherElementType, other_byte_alignment>) noexcept {}
-
-  constexpr reference access(data_handle_type p, size_t i) const noexcept {
-    // This may declare alignment twice, depending on
-    // if we have an attribute for marking pointer types.
-    return MDSPAN_IMPL_ASSUME_ALIGNED( ElementType, p, byte_alignment )[i];
-  }
-
-  constexpr typename offset_policy::data_handle_type
-  offset(data_handle_type p, size_t i) const noexcept {
-    return p + i;
-  }
-};
 
 template<class ElementType>
 struct delete_raw {
@@ -233,14 +114,14 @@ public:
     num_elements(number_of_elements)
   {}
 
-  aligned_pointer_t<ElementType, byte_alignment> data() const
+  ElementType *data() const
   {
-    return MDSPAN_IMPL_ASSUME_ALIGNED( ElementType, pointer, byte_alignment );
+    return Kokkos::assume_aligned< byte_alignment >(pointer);
   }
 
 private:
   allocation_t<ElementType> allocation{nullptr, delete_raw<ElementType>{}};
-  aligned_pointer_t<ElementType, byte_alignment> pointer{nullptr};
+  ElementType *pointer{nullptr};
   std::size_t num_elements{0};
 };
 
@@ -399,9 +280,9 @@ auto benchmark_add_raw_1d(const std::size_t num_trials,
 // Assume that x, y, and z all have the same alignment.
 template<class ElementType, std::size_t byte_alignment>
 void add_aligned_raw_1d(const index_type n,
-			aligned_pointer_t<const ElementType, byte_alignment> x,
-			aligned_pointer_t<const ElementType, byte_alignment> y,
-			aligned_pointer_t<ElementType, byte_alignment> z)
+			const ElementType * MDSPAN_ALIGN(byte_alignment) x,
+			const ElementType * MDSPAN_ALIGN(byte_alignment) y,
+			ElementType * MDSPAN_ALIGN(byte_alignment) z)
 {
   for (index_type i = 0; i < n; ++i) {
     z[i] = x[i] + y[i];
@@ -415,19 +296,19 @@ auto benchmark_add_aligned_raw_1d(const std::size_t num_trials,
 				  const ElementType x[],
 				  const ElementType y[],
 				  ElementType z[],
-				  std::integral_constant<std::size_t, byte_alignment> ba)
+				  std::integral_constant<std::size_t, byte_alignment>)
 {
   TICK();
-  auto x_blessed = bless(x, ba);
-  auto y_blessed = bless(y, ba);
-  auto z_blessed = bless(z, ba);
+  auto x_blessed = Kokkos::assume_aligned< byte_alignment >(x);
+  auto y_blessed = Kokkos::assume_aligned< byte_alignment >(y);
+  auto z_blessed = Kokkos::assume_aligned< byte_alignment >(z);
   for (std::size_t trial = 0; trial < num_trials; ++trial) {
     add_aligned_raw_1d<ElementType, byte_alignment>(n, x_blessed, y_blessed, z_blessed);
   }
   return TOCK();
 }
 
-#ifdef _OPENMP
+#ifdef MDSPAN_ENABLE_OPENMP
 template<class ElementType, std::size_t byte_alignment>
 void add_omp_simd_aligned_mdspan_1d(aligned_mdspan_1d<const ElementType, byte_alignment> x,
 				    aligned_mdspan_1d<const ElementType, byte_alignment> y,
@@ -611,7 +492,7 @@ auto benchmark_add_omp_aligned_simd_aligned_raw_1d(
   }
   return TOCK();
 }
-#endif // _OPENMP
+#endif // MDSPAN_ENABLE_OPENMP
 
 template<class ElementType>
 void set_elements_of_arrays(const index_type n,
@@ -656,7 +537,7 @@ int main(int argc, char* argv[])
     benchmark_add_aligned_raw_1d(num_trials, n, x_aligned.data(),
 				 y_aligned.data(), z_aligned.data(),
 				 byte_alignment);
-#ifdef _OPENMP
+#ifdef MDSPAN_ENABLE_OPENMP
   auto omp_simd_aligned_mdspan_result =
     benchmark_add_omp_simd_aligned_mdspan_1d(num_trials, n, x_aligned.data(),
 					     y_aligned.data(), z_aligned.data(),
@@ -687,7 +568,7 @@ int main(int argc, char* argv[])
     benchmark_add_raw_1d(num_trials, n, x_unaligned.data(),
 			 y_unaligned.data(), z_unaligned.data());
 
-#ifdef _OPENMP
+#ifdef MDSPAN_ENABLE_OPENMP
   auto omp_simd_mdspan_result =
     benchmark_add_omp_simd_mdspan_1d(num_trials, n, x_unaligned.data(),
 				     y_unaligned.data(), z_unaligned.data());
@@ -698,17 +579,13 @@ int main(int argc, char* argv[])
 
   cout << "Number of trials: " << num_trials << endl
        << "Number of loop iterations per trial: " << n << endl
-       << "Way to declare a pointer value aligned, if any: "
-       << assume_aligned_method << endl
-       << "Way to declare a pointer type aligned, if any: "
-       << align_attribute_method << endl
        << "Total time in seconds for non-OpenMP loops:" << endl
        << "  aligned mdspan: " << aligned_mdspan_result << endl
        << "  unaligned mdspan: " << mdspan_result << endl
        << "  aligned raw: " << aligned_raw_result << endl
        << "  unaligned raw: " << raw_result << endl;
 
-#ifdef _OPENMP
+#ifdef MDSPAN_ENABLE_OPENMP
   cout << "Total time in seconds for OpenMP (omp simd) loops:" << endl
        << "  omp_simd_aligned_mdspan: " << omp_simd_aligned_mdspan_result << endl
        << "  omp_simd_mdspan: " << omp_simd_mdspan_result << endl

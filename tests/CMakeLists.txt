@@ -39,7 +39,7 @@ if(MDSPAN_USE_SYSTEM_GTEST)
   find_package(GTest CONFIG REQUIRED)
 else()
   include(FetchContent)
-  
+
   if (MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   endif()
@@ -48,14 +48,14 @@ else()
       GIT_REPOSITORY https://github.com/google/googletest.git
       GIT_TAG v1.17.0
   )
-  
+
   # TODO CMake 3.28, we can pass EXCLUDE_FROM_ALL directly to fetchcontent_makeavailable
   fetchcontent_getproperties(googletest)
   if (NOT googletest_POPULATED)
     fetchcontent_populate(googletest)
     add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
   endif()
-  
+
   add_library(GTest::gtest_main ALIAS gtest_main)
 endif()
 
@@ -101,6 +101,7 @@ if(NOT CMAKE_CXX_STANDARD STREQUAL "14")
   mdspan_add_test(test_layout_padded_right ENABLE_PRECONDITIONS)
   mdspan_add_test(test_canonicalize_slices)
 endif()
+mdspan_add_test(test_aligned_accessor)
 # both of those don't work yet since its using vector
 if(NOT MDSPAN_ENABLE_CUDA AND NOT MDSPAN_ENABLE_HIP)
 mdspan_add_test(test_mdarray_ctors)
