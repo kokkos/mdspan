@@ -28,7 +28,8 @@ jobs:
           # To get new URL, look here:
           # https://www.intel.com/content/www/us/en/developer/articles/tool/oneapi-standalone-components.html#inpage-nav-6-undefined
           compiler_url: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/ebf5d9aa-17a7-46a4-b5df-ace004227c0e/l_dpcpp-cpp-compiler_p_2023.2.1.8_offline.sh
-          cxx_flags_extra: "-DMDSPAN_USE_BRACKET_OPERATOR=0 -Wextra-semi -Wno-c++17-attribute-extensions -Wno-gnu-zero-variadic-macro-arguments"
+          cxx_flags_extra: "-DMDSPAN_USE_BRACKET_OPERATOR=0 -Wextra-semi -Wno-c++17-attribute-extensions -Wno-gnu-zero-variadic-macro-arguments -fsycl"
+          set_up_environment: ". /opt/intel/oneapi/setvars.sh"
         - enable_benchmark: ON
         - stdcxx: 14
           enable_benchmark: OFF
@@ -39,6 +40,8 @@ jobs:
           stdcxx: 23
         - compiler_driver: g++-10
           stdcxx: 23
+        - compiler_driver: icpx
+          stdcxx: 14
     name: ${{ matrix.compiler_driver }} C++${{ matrix.stdcxx }}
     steps:
 
@@ -73,17 +76,23 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
-      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DMDSPAN_CXX_STANDARD=${{ matrix.stdcxx }} -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DMDSPAN_ENABLE_BENCHMARKS=${{matrix.enable_benchmark}} -DMDSPAN_ENABLE_COMP_BENCH=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic ${{matrix.cxx_flags_extra}}"
+      run: |
+        ${{ matrix.set_up_environment }}
+        CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DMDSPAN_CXX_STANDARD=${{ matrix.stdcxx }} -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DMDSPAN_ENABLE_BENCHMARKS=${{matrix.enable_benchmark}} -DMDSPAN_ENABLE_COMP_BENCH=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic ${{matrix.cxx_flags_extra}}"
 
     - name: Build
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-build
-      run: make -j
+      run: |
+        ${{ matrix.set_up_environment }}
+         make -j
 
     - name: Test
       working-directory: ${{github.workspace}}/mdspan-build
       shell: bash
-      run: ctest --output-on-failure
+      run: |
+        ${{ matrix.set_up_environment }}
+        ctest --output-on-failure
 
     - name: Install
       shell: bash
@@ -94,6 +103,7 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-src
       run: |
+        ${{ matrix.set_up_environment }}
         cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=${{github.workspace}}/mdspan-build
         cmake --build /tmp/build-mdspan-examples
         rm -rf /tmp/build-mdspan-examples
@@ -102,6 +112,7 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-src
       run: |
+        ${{ matrix.set_up_environment }}
         cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=${{github.workspace}}/mdspan-install
         cmake --build /tmp/build-mdspan-examples
         rm -rf /tmp/build-mdspan-examples
