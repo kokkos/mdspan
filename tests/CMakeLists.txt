@@ -43,20 +43,13 @@ else()
   if (MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   endif()
-  fetchcontent_declare(
+  set(INSTALL_GTEST OFF)
+  FetchContent_Declare(
       googletest
       GIT_REPOSITORY https://github.com/google/googletest.git
       GIT_TAG v1.17.0
   )
-  
-  # TODO CMake 3.28, we can pass EXCLUDE_FROM_ALL directly to fetchcontent_makeavailable
-  fetchcontent_getproperties(googletest)
-  if (NOT googletest_POPULATED)
-    fetchcontent_populate(googletest)
-    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-  endif()
-  
-  add_library(GTest::gtest_main ALIAS gtest_main)
+  FetchContent_MakeAvailable(googletest)
 endif()
 
 # FIXME_MSVC
