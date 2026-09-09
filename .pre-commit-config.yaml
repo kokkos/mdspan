@@ -1,0 +1,13 @@
+repos:
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: ad1b27d73581aa16cca06fc4a0761fc563ffe8e8 # v1.5.6
+    hooks:
+    - id: insert-license
+      name: License and copyright headers in C++ files
+      args:
+      - --license-filepath
+      - scripts/license_header.txt
+      - --comment-style
+      - '//'
+      files: '\.(hh|hpp|cc|cpp|cppm|hip|cuh|cu)$'
+      exclude: '^tests/libcxx-backports/'
