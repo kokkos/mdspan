@@ -49,8 +49,6 @@ else()
       GIT_TAG v1.17.0
   )
   FetchContent_MakeAvailable(googletest)
-  
-  add_library(GTest::gtest_main ALIAS gtest_main)
 endif()
 
 # FIXME_MSVC
