@@ -159,7 +159,7 @@ install(EXPORT mdspanTargets
 
 export(TARGETS mdspan
     NAMESPACE mdspan::
-    FILE mdspanTargets.cmake
+    FILE cmake_packages/mdspanTargets.cmake
 )
 
 if (MDSPAN_GENERATE_STD_NAMESPACE_TARGETS)
@@ -189,15 +189,15 @@ endif()
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/mdspanConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfig.cmake
+  ${mdspan_BINARY_DIR}/cmake_packages/mdspanConfig.cmake
   INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
 )
-write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/mdspanConfigVersion.cmake
+write_basic_package_version_file(${mdspan_BINARY_DIR}/cmake_packages/mdspanConfigVersion.cmake
   COMPATIBILITY SameMajorVersion
   ARCH_INDEPENDENT
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/mdspanConfigVersion.cmake
+install(FILES ${mdspan_BINARY_DIR}/cmake_packages/mdspanConfig.cmake ${mdspan_BINARY_DIR}/cmake_packages/mdspanConfigVersion.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
 )
 
