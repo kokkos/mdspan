@@ -197,6 +197,17 @@ write_basic_package_version_file(${mdspan_BINARY_DIR}/cmake_packages/mdspanConfi
   ARCH_INDEPENDENT
 )
 
+# Required to be a TriBITS-compliant external package
+if(NOT mdspan_BINARY_DIR STREQUAL CMAKE_BINARY_DIR) # TODO use PATH_EQUAL with CMake 3.24+
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/cmake_packages/Kokkos)
+  file(
+    COPY ${mdspan_BINARY_DIR}/cmake_packages/mdspanConfig.cmake
+         ${mdspan_BINARY_DIR}/cmake_packages/mdspanConfigVersion.cmake
+         ${mdspan_BINARY_DIR}/cmake_packages/mdspanTargets.cmake
+    DESTINATION ${CMAKE_BINARY_DIR}/cmake_packages/mdspan
+  )
+endif()
+
 install(FILES ${mdspan_BINARY_DIR}/cmake_packages/mdspanConfig.cmake ${mdspan_BINARY_DIR}/cmake_packages/mdspanConfigVersion.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
 )
