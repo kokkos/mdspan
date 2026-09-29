@@ -530,8 +530,8 @@ class mdspan {
 MDSPAN_TEMPLATE_REQUIRES(
     class ElementType, class... SizeTypes,
     /* requires */
-        MDSPAN_IMPL_FOLD_AND(MDSPAN_IMPL_TRAIT(std::is_convertible, SizeTypes,
-                                               size_t) /* && ... */) &&
+    MDSPAN_IMPL_FOLD_AND(MDSPAN_IMPL_TRAIT(std::is_convertible, SizeTypes,
+                                           size_t) /* && ... */) &&
         (sizeof...(SizeTypes) > 0))
 MDSPAN_DEDUCTION_GUIDE explicit mdspan(ElementType*, SizeTypes...) -> mdspan<
     ElementType,
