@@ -19,8 +19,8 @@
 //    ...
 //  };
 //
-//  Each specialization of default_accessor is a trivially copyable type that models semiregular.
-
+//  Each specialization of default_accessor is a trivially copyable type that
+//  models semiregular.
 
 #include <mdspan/mdspan.hpp>
 #include <type_traits>

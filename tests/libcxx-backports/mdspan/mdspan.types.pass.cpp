@@ -9,7 +9,8 @@
 
 // <mdspan/mdspan.hpp>
 //
-//  template<class ElementType, class Extents, class LayoutPolicy = layout_right,
+//  template<class ElementType, class Extents, class LayoutPolicy =
+//  layout_right,
 //           class AccessorPolicy = default_accessor<ElementType>>
 //  class mdspan {
 //  public:
@@ -40,29 +41,33 @@
 
 // Calculated expected size of an mdspan
 // Note this expectes that only default_accessor is empty
-template<class MDS>
+template <class MDS>
 constexpr size_t expected_size() {
   size_t sizeof_dht = sizeof(typename MDS::data_handle_type);
-  size_t result = sizeof_dht;
-  if(MDS::rank_dynamic() > 0) {
+  size_t result     = sizeof_dht;
+  if (MDS::rank_dynamic() > 0) {
     size_t alignof_idx = alignof(typename MDS::index_type);
-    size_t sizeof_idx = sizeof(typename MDS::index_type);
+    size_t sizeof_idx  = sizeof(typename MDS::index_type);
     // add alignment if necessary
-    result += sizeof_dht%alignof_idx == 0?0:alignof_idx - (sizeof_dht%alignof_idx);
+    result += sizeof_dht % alignof_idx == 0
+                  ? 0
+                  : alignof_idx - (sizeof_dht % alignof_idx);
     // add sizeof stored extents
     result += MDS::rank_dynamic() * sizeof_idx;
   }
   using A = typename MDS::accessor_type;
-  if(!std::is_same_v<A, std::default_accessor<typename MDS::element_type>>) {
+  if (!std::is_same_v<A, std::default_accessor<typename MDS::element_type>>) {
     size_t alignof_acc = alignof(A);
-    size_t sizeof_acc = sizeof(A);
+    size_t sizeof_acc  = sizeof(A);
     // add alignment if necessary
-    result += result%alignof_acc == 0?0:alignof_acc - (result%alignof_acc);
+    result +=
+        result % alignof_acc == 0 ? 0 : alignof_acc - (result % alignof_acc);
     // add sizeof stored accessor
     result += sizeof_acc;
   }
   // add alignment of the mdspan itself
-  result += result%alignof(MDS) == 0?0:alignof(MDS) - (result%alignof(MDS));
+  result +=
+      result % alignof(MDS) == 0 ? 0 : alignof(MDS) - (result % alignof(MDS));
   return result;
 }
 
@@ -80,7 +85,8 @@ constexpr bool trv_cp_asgn = std::is_trivially_copy_assignable_v<T>;
 template <class T>
 constexpr bool trv_mv_asgn = std::is_trivially_move_assignable_v<T>;
 
-template <class MDS, bool default_ctor, bool copy_ctor, bool move_ctor, bool destr, bool copy_assign, bool move_assign>
+template <class MDS, bool default_ctor, bool copy_ctor, bool move_ctor,
+          bool destr, bool copy_assign, bool move_assign>
 void check_triviality() {
   static_assert(trv_df_ctor<MDS> == default_ctor);
   static_assert(trv_cp_ctor<MDS> == copy_ctor);
@@ -103,28 +109,33 @@ void test_mdspan_types() {
   ASSERT_SAME_TYPE(typename MDS::index_type, typename E::index_type);
   ASSERT_SAME_TYPE(typename MDS::size_type, typename E::size_type);
   ASSERT_SAME_TYPE(typename MDS::rank_type, typename E::rank_type);
-  ASSERT_SAME_TYPE(typename MDS::data_handle_type, typename A::data_handle_type);
+  ASSERT_SAME_TYPE(typename MDS::data_handle_type,
+                   typename A::data_handle_type);
   ASSERT_SAME_TYPE(typename MDS::reference, typename A::reference);
 
 // This miserably failed with clang-cl - likely because it doesn't honor/enable
 // no-unique-address fully by default
 #ifndef _WIN32
   // check the size of mdspan
-  if constexpr (std::is_same_v<L, std::layout_left> || std::is_same_v<L, std::layout_right>) {
+  if constexpr (std::is_same_v<L, std::layout_left> ||
+                std::is_same_v<L, std::layout_right>) {
     LIBCPP_STATIC_ASSERT(sizeof(MDS) == expected_size<MDS>());
   }
 #endif
 
   // check default template parameters:
-  ASSERT_SAME_TYPE(std::mdspan<T, E>, std::mdspan<T, E, std::layout_right, std::default_accessor<T>>);
-  ASSERT_SAME_TYPE(std::mdspan<T, E, L>, std::mdspan<T, E, L, std::default_accessor<T>>);
+  ASSERT_SAME_TYPE(
+      std::mdspan<T, E>,
+      std::mdspan<T, E, std::layout_right, std::default_accessor<T>>);
+  ASSERT_SAME_TYPE(std::mdspan<T, E, L>,
+                   std::mdspan<T, E, L, std::default_accessor<T>>);
 
   // check triviality
   using DH = typename MDS::data_handle_type;
   using MP = typename MDS::mapping_type;
 
   check_triviality<MDS,
-                   false, // mdspan is never trivially constructible right now
+                   false,  // mdspan is never trivially constructible right now
                    trv_cp_ctor<DH> && trv_cp_ctor<MP> && trv_cp_ctor<A>,
                    trv_mv_ctor<DH> && trv_mv_ctor<MP> && trv_mv_ctor<A>,
                    trv_dstruct<DH> && trv_dstruct<MP> && trv_dstruct<A>,
@@ -167,14 +178,12 @@ int main(int, char**) {
   mixin_accessor<const MinimalElementType>();
 
   // sanity checks for triviality
-  check_triviality<std::mdspan<int, std::extents<int>>, false, true, true, true, true, true>();
-  check_triviality<std::mdspan<int, std::dextents<int, 1>>, false, true, true, true, true, true>();
-  check_triviality<std::mdspan<int, std::dextents<int, 1>, std::layout_right, checked_accessor<int>>,
-                   false,
-                   true,
-                   false,
-                   true,
-                   true,
-                   true>();
+  check_triviality<std::mdspan<int, std::extents<int>>, false, true, true, true,
+                   true, true>();
+  check_triviality<std::mdspan<int, std::dextents<int, 1>>, false, true, true,
+                   true, true, true>();
+  check_triviality<std::mdspan<int, std::dextents<int, 1>, std::layout_right,
+                               checked_accessor<int>>,
+                   false, true, false, true, true, true>();
   return 0;
 }

@@ -13,21 +13,23 @@
 //            class AccessorPolicy = default_accessor<ElementType>>
 //   class mdspan {
 //   public:
-//     static constexpr rank_type rank() noexcept { return extents_type::rank(); }
-//     static constexpr rank_type rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
-//     static constexpr size_t static_extent(rank_type r) noexcept
+//     static constexpr rank_type rank() noexcept { return extents_type::rank();
+//     } static constexpr rank_type rank_dynamic() noexcept { return
+//     extents_type::rank_dynamic(); } static constexpr size_t
+//     static_extent(rank_type r) noexcept
 //       { return extents_type::static_extent(r); }
-//     constexpr index_type extent(rank_type r) const noexcept { return extents().extent(r); }
+//     constexpr index_type extent(rank_type r) const noexcept { return
+//     extents().extent(r); }
 //
 //     constexpr size_type size() const noexcept;
 //     [[nodiscard]] constexpr bool empty() const noexcept;
 //
 //
-//     constexpr const extents_type& extents() const noexcept { return map_.extents(); }
-//     constexpr const data_handle_type& data_handle() const noexcept { return ptr_; }
-//     constexpr const mapping_type& mapping() const noexcept { return map_; }
-//     constexpr const accessor_type& accessor() const noexcept { return acc_; }
-//     static constexpr bool is_always_unique()
+//     constexpr const extents_type& extents() const noexcept { return
+//     map_.extents(); } constexpr const data_handle_type& data_handle() const
+//     noexcept { return ptr_; } constexpr const mapping_type& mapping() const
+//     noexcept { return map_; } constexpr const accessor_type& accessor() const
+//     noexcept { return acc_; } static constexpr bool is_always_unique()
 //       { return mapping_type::is_always_unique(); }
 //     static constexpr bool is_always_exhaustive()
 //       { return mapping_type::is_always_exhaustive(); }
@@ -48,7 +50,8 @@
 //    - is_nothrow_move_constructible_v<MDS> is true,
 //    - is_nothrow_move_assignable_v<MDS> is true, and
 //    - is_nothrow_swappable_v<MDS> is true.
-// A specialization of mdspan is a trivially copyable type if its accessor_type, mapping_type, and data_handle_type are trivially copyable types.
+// A specialization of mdspan is a trivially copyable type if its accessor_type,
+// mapping_type, and data_handle_type are trivially copyable types.
 
 #include <mdspan/mdspan.hpp>
 #include <type_traits>
@@ -62,7 +65,8 @@
 
 template <class H, class M, class A>
 constexpr void test_mdspan_types(const H& handle, const M& map, const A& acc) {
-  using MDS = std::mdspan<typename A::element_type, typename M::extents_type, typename M::layout_type, A>;
+  using MDS = std::mdspan<typename A::element_type, typename M::extents_type,
+                          typename M::layout_type, A>;
   MDS m(handle, map, acc);
 
   // =====================================
@@ -177,12 +181,23 @@ constexpr void test_mdspan_types(const H& handle, const M& map, const A& acc) {
 template <class H, class L, class A>
 constexpr void mixin_extents(const H& handle, const L& layout, const A& acc) {
   constexpr size_t D = std::dynamic_extent;
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<int>()), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<char, D>(7)), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<int64_t, D, 7, D, 4, D, D>(1, 2, 3, 2)), acc);
+  test_mdspan_types(handle, construct_mapping(layout, std::extents<int>()),
+                    acc);
+  test_mdspan_types(handle, construct_mapping(layout, std::extents<char, D>(7)),
+                    acc);
+  test_mdspan_types(
+      handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc);
+  test_mdspan_types(
+      handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)),
+      acc);
+  test_mdspan_types(
+      handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)),
+      acc);
+  test_mdspan_types(
+      handle,
+      construct_mapping(layout,
+                        std::extents<int64_t, D, 7, D, 4, D, D>(1, 2, 3, 2)),
+      acc);
 }
 
 template <class H, class A>

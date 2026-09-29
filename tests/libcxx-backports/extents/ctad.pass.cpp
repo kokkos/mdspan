@@ -24,7 +24,7 @@
 struct NoDefaultCtorIndex {
   size_t value;
   constexpr NoDefaultCtorIndex() = delete;
-  constexpr NoDefaultCtorIndex(size_t val) : value(val){}
+  constexpr NoDefaultCtorIndex(size_t val) : value(val) {}
   constexpr operator size_t() const noexcept { return value; }
 };
 
@@ -41,8 +41,10 @@ constexpr bool test() {
   test(std::extents(1), std::extents<std::size_t, D>(1));
   test(std::extents(1, 2u), std::extents<std::size_t, D, D>(1, 2u));
   test(std::extents(1, 2u, 3, 4, 5, 6, 7, 8, 9),
-       std::extents<std::size_t, D, D, D, D, D, D, D, D, D>(1, 2u, 3, 4, 5, 6, 7, 8, 9));
-  test(std::extents(NoDefaultCtorIndex{1}, NoDefaultCtorIndex{2}), std::extents<std::size_t, D, D>(1, 2));
+       std::extents<std::size_t, D, D, D, D, D, D, D, D, D>(1, 2u, 3, 4, 5, 6,
+                                                            7, 8, 9));
+  test(std::extents(NoDefaultCtorIndex{1}, NoDefaultCtorIndex{2}),
+       std::extents<std::size_t, D, D>(1, 2));
   return true;
 }
 
