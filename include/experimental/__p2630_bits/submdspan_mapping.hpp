@@ -422,7 +422,10 @@ compute_s_static_layout_right (std::index_sequence<Idx...>) {
   // Neither StaticStride nor any of the provided extents can be zero.
   // StaticStride can never be zero, the static_extents we are looking at are associated with
   // integral slice specifiers - which wouldn't be valid for zero extent
-    size_t val = ((Idx >= Extents::rank() - 1 - NumGaps && Idx < Extents::rank() - 1 ? (Extents::static_extent(Idx) == dynamic_extent?0:Extents::static_extent(Idx)) : 1) * ... * (StaticStride == dynamic_extent?0:StaticStride));
+  // Note the condition was originally written as Idx >= Extents::rank() - 1 - NumGaps && Idx < Extents::rank() - 1
+  // But that triggered CodeQL warnings.
+    size_t val = ((Idx + 1 + NumGaps >= Extents::rank() && Idx + 1 < Extents::rank() ?
+       (Extents::static_extent(Idx) == dynamic_extent?0:Extents::static_extent(Idx)) : 1) * ... * (StaticStride == dynamic_extent?0:StaticStride));
     return val == 0?dynamic_extent:val;
   }
 
