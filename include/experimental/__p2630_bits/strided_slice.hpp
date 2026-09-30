@@ -37,7 +37,7 @@ namespace detail {
 
 // Slice Specifier allowing for strides and compile time extent
 template <class OffsetType, class ExtentType, class StrideType>
-struct strided_slice {
+struct extent_slice {
   using offset_type = OffsetType;
   using extent_type = ExtentType;
   using stride_type = StrideType;
@@ -50,5 +50,8 @@ struct strided_slice {
   static_assert(detail::mdspan_is_index_like_v<ExtentType>);
   static_assert(detail::mdspan_is_index_like_v<StrideType>);
 };
+
+template <class OffsetType, class ExtentType, class StrideType>
+using strided_slice [[deprecated("strided_slice was removed from C++26, use extent_slice instead")]] = extent_slice<OffsetType, ExtentType, StrideType>;
 
 } // MDSPAN_IMPL_STANDARD_NAMESPACE

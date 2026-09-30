@@ -12,9 +12,9 @@ template<class OffsetType, class ExtentType, class StrideType>
 void test_strided_slice(OffsetType offset, ExtentType extent, StrideType stride)
 {
   // Some compilers are bad at CTAD for aggregates.
-  Kokkos::strided_slice<OffsetType, ExtentType, StrideType> s{offset, extent, stride};
+  Kokkos::extent_slice<OffsetType, ExtentType, StrideType> s{offset, extent, stride};
 
-  static_assert(std::is_same_v<decltype(s), Kokkos::strided_slice<OffsetType, ExtentType, StrideType>>);
+  static_assert(std::is_same_v<decltype(s), Kokkos::extent_slice<OffsetType, ExtentType, StrideType>>);
   auto offset2 = s.offset;
   static_assert(std::is_same_v<OffsetType, decltype(offset2)>);
   auto extent2 = s.extent;
