@@ -13,8 +13,8 @@
 //
 // constexpr extents() noexcept = default;
 //
-// Remarks: since the standard uses an exposition only array member, dynamic extents
-// need to be zero intialized!
+// Remarks: since the standard uses an exposition only array member, dynamic
+// extents need to be zero intialized!
 
 #include <mdspan/mdspan.hpp>
 #include <cassert>
@@ -26,10 +26,12 @@
 
 struct DefaultCtorTest {
   template <class E, class AllExtents, class Extents, size_t... Indices>
-  static constexpr void test_construction(AllExtents all_ext, Extents, std::index_sequence<Indices...>) {
-    // This function gets called twice: once with Extents being just the dynamic ones, and once with all the extents specified.
-    // We only test during the all extent case, since then Indices is the correct number. This allows us to reuse the same
-    // testing machinery used in other constructor tests.
+  static constexpr void test_construction(AllExtents all_ext, Extents,
+                                          std::index_sequence<Indices...>) {
+    // This function gets called twice: once with Extents being just the dynamic
+    // ones, and once with all the extents specified. We only test during the
+    // all extent case, since then Indices is the correct number. This allows us
+    // to reuse the same testing machinery used in other constructor tests.
     if constexpr (sizeof...(Indices) == E::rank()) {
       ASSERT_NOEXCEPT(E{});
       // Need to construct new expected values, replacing dynamic values with 0

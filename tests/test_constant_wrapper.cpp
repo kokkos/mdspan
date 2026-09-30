@@ -6,30 +6,26 @@
 
 #include "../include/experimental/__p2630_bits/constant_wrapper.hpp"
 
-namespace { // (anonymous)
+namespace {  // (anonymous)
 
 #if defined(__cpp_lib_constant_wrapper)
 
-template<class Integral, Integral Value>
+template <class Integral, Integral Value>
 using IC = std::integral_constant<Integral, Value>;
 
-template<class Integral, Integral Value>
+template <class Integral, Integral Value>
 constexpr void test_integral_constant_wrapper(IC<Integral, Value> ic) {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::constant_wrapper;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
 
   constexpr auto c = cw<Value>;
 
-  static_assert(std::is_same_v<
-    std::remove_const_t<decltype(cw<Value>)>,
-    constant_wrapper<Value>>);
+  static_assert(std::is_same_v<std::remove_const_t<decltype(cw<Value>)>,
+                               constant_wrapper<Value>>);
   static_assert(decltype(c)::value == Value);
-  static_assert(std::is_same_v<
-    typename decltype(c)::type,
-    constant_wrapper<Value>>);
-  static_assert(std::is_same_v<
-    typename decltype(c)::value_type,
-    Integral>);
+  static_assert(
+      std::is_same_v<typename decltype(c)::type, constant_wrapper<Value>>);
+  static_assert(std::is_same_v<typename decltype(c)::value_type, Integral>);
 
   constexpr auto c2 = cw<Value>;
   // Casting the arithmetic result back to Integral undoes
@@ -59,49 +55,44 @@ TEST(TestConstantWrapper, Construction) {
 #endif
 
 TEST(TestConstantWrapper, IntegerPlus) {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::constant_wrapper;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
 
   constant_wrapper<size_t(11)> cw_11;
-  constexpr size_t value = cw_11;
+  constexpr size_t value  = cw_11;
   constexpr size_t value2 = constant_wrapper<size_t(11)>::value;
   static_assert(value == value2);
   constexpr size_t value3 = decltype(cw_11)();
   static_assert(value == value3);
 
 #if defined(__cpp_lib_constant_wrapper)
-  static_assert(std::is_same_v<
-    decltype(cw_11),
-    std::remove_const_t<decltype(cw<size_t(11)>)>>);
+  static_assert(std::is_same_v<decltype(cw_11),
+                               std::remove_const_t<decltype(cw<size_t(11)>)>>);
 #endif
 
   [[maybe_unused]] auto expected_result = cw<size_t(12)>;
-  using expected_type = constant_wrapper<size_t(12)>;
+  using expected_type                   = constant_wrapper<size_t(12)>;
   static_assert(std::is_same_v<decltype(expected_result), expected_type>);
 
 #if defined(__cpp_lib_constant_wrapper)
   [[maybe_unused]] auto cw_11_plus_one = cw_11 + cw<size_t(1)>;
   [[maybe_unused]] auto one_plus_cw_11 = cw<size_t(1)> + cw_11;
 
-  static_assert(! std::is_same_v<
-    decltype(cw_11 + cw<size_t(1)>),
-    size_t>);
-  static_assert(std::is_same_v<
-    decltype(cw_11 + cw<size_t(1)>),
-    constant_wrapper<value + size_t(1)>>);
-  static_assert(std::is_same_v<
-    decltype(cw<size_t(1)> + cw_11),
-    constant_wrapper<value + size_t(1)>>);
+  static_assert(!std::is_same_v<decltype(cw_11 + cw<size_t(1)>), size_t>);
+  static_assert(std::is_same_v<decltype(cw_11 + cw<size_t(1)>),
+                               constant_wrapper<value + size_t(1)>>);
+  static_assert(std::is_same_v<decltype(cw<size_t(1)> + cw_11),
+                               constant_wrapper<value + size_t(1)>>);
 #endif
 }
 
 TEST(TestConstantWrapper, Arithmetic) {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::constant_wrapper;
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::increment;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::divide;
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::multiply;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::increment;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::is_constant_wrapper;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::multiply;
 
   constexpr auto c6 = cw<size_t(6)>;
   constexpr auto c3 = cw<size_t(3)>;
@@ -128,4 +119,4 @@ TEST(TestConstantWrapper, Arithmetic) {
   static_assert(is_constant_wrapper<decltype(mul_result)>);
 }
 
-} // namespace (anonymous)
+}  // namespace

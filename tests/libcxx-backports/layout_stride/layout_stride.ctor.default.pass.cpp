@@ -15,10 +15,13 @@
 // constexpr mapping() noexcept;
 //
 //
-// Preconditions: layout_right::mapping<extents_type>().required_span_size() is representable as a value of type index_type ([basic.fundamental]).
+// Preconditions: layout_right::mapping<extents_type>().required_span_size() is
+// representable as a value of type index_type ([basic.fundamental]).
 //
-// Effects: Direct-non-list-initializes extents_ with extents_type(), and for all d in the range [0, rank_),
-//          direct-non-list-initializes strides_[d] with layout_right::mapping<extents_type>().stride(d).
+// Effects: Direct-non-list-initializes extents_ with extents_type(), and for
+// all d in the range [0, rank_),
+//          direct-non-list-initializes strides_[d] with
+//          layout_right::mapping<extents_type>().stride(d).
 
 #include <mdspan/mdspan.hpp>
 #include <cassert>
@@ -43,7 +46,8 @@ constexpr void test_construction() {
     expected_size *= e.extent(r);
   assert(m.required_span_size() == expected_size);
 
-  // check strides: node stride function is constrained on rank>0, e.extent(r) is not
+  // check strides: node stride function is constrained on rank>0, e.extent(r)
+  // is not
   auto strides = m.strides();
   ASSERT_NOEXCEPT(m.strides());
   if constexpr (E::rank() > 0) {

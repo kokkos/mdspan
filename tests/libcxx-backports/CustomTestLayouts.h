@@ -44,7 +44,7 @@ struct not_extents_constructible_tag {};
 
 template <size_t Wrap>
 class layout_wrapping_integral {
-public:
+ public:
   template <class Extents>
   class mapping;
 };
@@ -52,36 +52,40 @@ public:
 template <size_t WrapArg>
 template <class Extents>
 class layout_wrapping_integral<WrapArg>::mapping {
-  static constexpr typename Extents::index_type Wrap = static_cast<typename Extents::index_type>(WrapArg);
+  static constexpr typename Extents::index_type Wrap =
+      static_cast<typename Extents::index_type>(WrapArg);
 
-public:
+ public:
   using extents_type = Extents;
   using index_type   = typename extents_type::index_type;
   using size_type    = typename extents_type::size_type;
   using rank_type    = typename extents_type::rank_type;
   using layout_type  = layout_wrapping_integral<Wrap>;
 
-private:
-  static constexpr bool required_span_size_is_representable(const extents_type& ext) {
-    if constexpr (extents_type::rank() == 0)
-      return true;
+ private:
+  static constexpr bool required_span_size_is_representable(
+      const extents_type& ext) {
+    if constexpr (extents_type::rank() == 0) return true;
 
     index_type prod = ext.extent(0);
     for (rank_type r = 1; r < extents_type::rank(); r++) {
-      bool overflowed = __builtin_mul_overflow(prod, std::min(ext.extent(r), Wrap), &prod);
-      if (overflowed)
-        return false;
+      bool overflowed =
+          __builtin_mul_overflow(prod, std::min(ext.extent(r), Wrap), &prod);
+      if (overflowed) return false;
     }
     return true;
   }
 
-public:
+ public:
   constexpr mapping() noexcept = delete;
-  constexpr mapping(const mapping& other) noexcept : extents_(other.extents()){}
+  constexpr mapping(const mapping& other) noexcept
+      : extents_(other.extents()) {}
   constexpr mapping(extents_type&& ext) noexcept
     requires(Wrap == 8)
       : extents_(ext) {}
-  constexpr mapping(const extents_type& ext, not_extents_constructible_tag) noexcept : extents_(ext) {}
+  constexpr mapping(const extents_type& ext,
+                    not_extents_constructible_tag) noexcept
+      : extents_(ext) {}
 
   template <class OtherExtents>
     requires(std::is_constructible_v<extents_type, OtherExtents> && (Wrap != 8))
@@ -125,15 +129,18 @@ public:
   }
 
   template <std::integral... Indices>
-    requires((sizeof...(Indices) == extents_type::rank()) && (std::is_convertible_v<Indices, index_type> && ...) &&
+    requires((sizeof...(Indices) == extents_type::rank()) &&
+             (std::is_convertible_v<Indices, index_type> && ...) &&
              (std::is_nothrow_constructible_v<index_type, Indices> && ...))
   constexpr index_type operator()(Indices... idx) const noexcept {
-    std::array<index_type, extents_type::rank()> idx_a{static_cast<index_type>(static_cast<index_type>(idx) % Wrap)...};
+    std::array<index_type, extents_type::rank()> idx_a{
+        static_cast<index_type>(static_cast<index_type>(idx) % Wrap)...};
     return [&]<size_t... Pos>(std::index_sequence<Pos...>) {
       index_type res = 0;
       ((res = idx_a[extents_type::rank() - 1 - Pos] +
-              (extents_.extent(extents_type::rank() - 1 - Pos) < Wrap ? extents_.extent(extents_type::rank() - 1 - Pos)
-                                                                      : Wrap) *
+              (extents_.extent(extents_type::rank() - 1 - Pos) < Wrap
+                   ? extents_.extent(extents_type::rank() - 1 - Pos)
+                   : Wrap) *
                   res),
        ...);
       return res;
@@ -146,16 +153,14 @@ public:
 
   constexpr bool is_unique() const noexcept {
     for (rank_type r = 0; r < extents_type::rank(); r++) {
-      if (extents_.extent(r) > Wrap)
-        return false;
+      if (extents_.extent(r) > Wrap) return false;
     }
     return true;
   }
   static constexpr bool is_exhaustive() noexcept { return true; }
   constexpr bool is_strided() const noexcept {
     for (rank_type r = 0; r < extents_type::rank(); r++) {
-      if (extents_.extent(r) > Wrap)
-        return false;
+      if (extents_.extent(r) > Wrap) return false;
     }
     return true;
   }
@@ -171,7 +176,8 @@ public:
 
   template <class OtherExtents>
     requires(OtherExtents::rank() == extents_type::rank())
-  friend constexpr bool operator==(const mapping& lhs, const mapping<OtherExtents>& rhs) noexcept {
+  friend constexpr bool operator==(const mapping& lhs,
+                                   const mapping<OtherExtents>& rhs) noexcept {
     return lhs.extents() == rhs.extents();
   }
 
@@ -190,7 +196,7 @@ public:
   }
 #endif
 
-private:
+ private:
   extents_type extents_{};
 };
 
@@ -205,48 +211,52 @@ constexpr auto construct_mapping(std::layout_right, Extents exts) {
 }
 
 template <size_t Wraps, class Extents>
-constexpr auto construct_mapping(layout_wrapping_integral<Wraps>, Extents exts) {
-  return typename layout_wrapping_integral<Wraps>::template mapping<Extents>(exts, not_extents_constructible_tag{});
+constexpr auto construct_mapping(layout_wrapping_integral<Wraps>,
+                                 Extents exts) {
+  return typename layout_wrapping_integral<Wraps>::template mapping<Extents>(
+      exts, not_extents_constructible_tag{});
 }
 
 // This layout does not check convertibility of extents for its conversion ctor
 // Allows triggering mdspan's ctor static assertion on convertibility of extents
 // It also allows for negative strides and offsets via runtime arguments
 class always_convertible_layout {
-public:
+ public:
   template <class Extents>
   class mapping;
 };
 
 template <class Extents>
 class always_convertible_layout::mapping {
-public:
+ public:
   using extents_type = Extents;
   using index_type   = typename extents_type::index_type;
   using size_type    = typename extents_type::size_type;
   using rank_type    = typename extents_type::rank_type;
   using layout_type  = always_convertible_layout;
 
-private:
-  static constexpr bool required_span_size_is_representable(const extents_type& ext) {
-    if constexpr (extents_type::rank() == 0)
-      return true;
+ private:
+  static constexpr bool required_span_size_is_representable(
+      const extents_type& ext) {
+    if constexpr (extents_type::rank() == 0) return true;
 
     index_type prod = ext.extent(0);
     for (rank_type r = 1; r < extents_type::rank(); r++) {
       bool overflowed = __builtin_mul_overflow(prod, ext.extent(r), &prod);
-      if (overflowed)
-        return false;
+      if (overflowed) return false;
     }
     return true;
   }
 
-public:
+ public:
   constexpr mapping() noexcept = delete;
   constexpr mapping(const mapping& other) noexcept
-      : extents_(other.extents_), offset_(other.offset_), scaling_(other.scaling_){}
-  constexpr mapping(const extents_type& ext, index_type offset = 0, index_type scaling = 1) noexcept
-      : extents_(ext), offset_(offset), scaling_(scaling){}
+      : extents_(other.extents_),
+        offset_(other.offset_),
+        scaling_(other.scaling_) {}
+  constexpr mapping(const extents_type& ext, index_type offset = 0,
+                    index_type scaling = 1) noexcept
+      : extents_(ext), offset_(offset), scaling_(scaling) {}
 
   template <class OtherExtents>
   constexpr mapping(const mapping<OtherExtents>& other) noexcept {
@@ -283,14 +293,17 @@ public:
   }
 
   template <std::integral... Indices>
-    requires((sizeof...(Indices) == extents_type::rank()) && (std::is_convertible_v<Indices, index_type> && ...) &&
+    requires((sizeof...(Indices) == extents_type::rank()) &&
+             (std::is_convertible_v<Indices, index_type> && ...) &&
              (std::is_nothrow_constructible_v<index_type, Indices> && ...))
   constexpr index_type operator()(Indices... idx) const noexcept {
-    std::array<index_type, extents_type::rank()> idx_a{static_cast<index_type>(static_cast<index_type>(idx))...};
+    std::array<index_type, extents_type::rank()> idx_a{
+        static_cast<index_type>(static_cast<index_type>(idx))...};
     return offset_ +
            scaling_ * ([&]<size_t... Pos>(std::index_sequence<Pos...>) {
              index_type res = 0;
-             ((res = idx_a[extents_type::rank() - 1 - Pos] + extents_.extent(extents_type::rank() - 1 - Pos) * res),
+             ((res = idx_a[extents_type::rank() - 1 - Pos] +
+                     extents_.extent(extents_type::rank() - 1 - Pos) * res),
               ...);
              return res;
            }(std::make_index_sequence<sizeof...(Indices)>()));
@@ -308,15 +321,16 @@ public:
     requires(extents_type::rank() > 0)
   {
     index_type s = 1;
-    for (rank_type i = 0; i < r; i++)
-      s *= extents_.extent(i);
+    for (rank_type i = 0; i < r; i++) s *= extents_.extent(i);
     return s * scaling_;
   }
 
   template <class OtherExtents>
     requires(OtherExtents::rank() == extents_type::rank())
-  friend constexpr bool operator==(const mapping& lhs, const mapping<OtherExtents>& rhs) noexcept {
-    return lhs.extents() == rhs.extents() && lhs.offset_ == rhs.offset && lhs.scaling_ == rhs.scaling_;
+  friend constexpr bool operator==(const mapping& lhs,
+                                   const mapping<OtherExtents>& rhs) noexcept {
+    return lhs.extents() == rhs.extents() && lhs.offset_ == rhs.offset &&
+           lhs.scaling_ == rhs.scaling_;
   }
 
 #if MDSPAN_HAS_CXX_23
@@ -333,7 +347,7 @@ public:
   }
 #endif
 
-private:
+ private:
   template <class>
   friend class mapping;
 
@@ -341,4 +355,4 @@ private:
   index_type offset_{};
   index_type scaling_{};
 };
-#endif // TEST_STD_CONTAINERS_VIEWS_MDSPAN_CUSTOM_TEST_LAYOUTS_H
+#endif  // TEST_STD_CONTAINERS_VIEWS_MDSPAN_CUSTOM_TEST_LAYOUTS_H

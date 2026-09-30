@@ -8,13 +8,16 @@
 
 namespace {
 
-template<class OffsetType, class ExtentType, class StrideType>
-void test_strided_slice(OffsetType offset, ExtentType extent, StrideType stride)
-{
+template <class OffsetType, class ExtentType, class StrideType>
+void test_strided_slice(OffsetType offset, ExtentType extent,
+                        StrideType stride) {
   // Some compilers are bad at CTAD for aggregates.
-  Kokkos::strided_slice<OffsetType, ExtentType, StrideType> s{offset, extent, stride};
+  Kokkos::strided_slice<OffsetType, ExtentType, StrideType> s{offset, extent,
+                                                              stride};
 
-  static_assert(std::is_same_v<decltype(s), Kokkos::strided_slice<OffsetType, ExtentType, StrideType>>);
+  static_assert(
+      std::is_same_v<decltype(s), Kokkos::strided_slice<OffsetType, ExtentType,
+                                                        StrideType>>);
   auto offset2 = s.offset;
   static_assert(std::is_same_v<OffsetType, decltype(offset2)>);
   auto extent2 = s.extent;
@@ -27,42 +30,35 @@ void test_strided_slice(OffsetType offset, ExtentType extent, StrideType stride)
   ASSERT_EQ(stride2, stride);
 }
 
-template<class T, T Value>
+template <class T, T Value>
 constexpr auto IC = std::integral_constant<T, Value>{};
 
 MDSPAN_TEMPLATE_REQUIRES(
-  class T,
-  T Value,
-  /* requires */ (
-    std::is_integral_v<T> && ! std::is_same_v<T, bool>
-  )
-)
+    class T, T Value,
+    /* requires */ (std::is_integral_v<T> && !std::is_same_v<T, bool>))
 struct my_integral_constant {
   static constexpr T value = Value;
-  constexpr operator T () const { return value; }
+  constexpr operator T() const { return value; }
 };
 
-template<class T, T Value>
+template <class T, T Value>
 constexpr auto IC2 = my_integral_constant<T, Value>{};
 
 static_assert(
-  std::is_convertible_v<
-    my_integral_constant<int, 1>,
-    decltype(my_integral_constant<int, 1>::value)>);
+    std::is_convertible_v<my_integral_constant<int, 1>,
+                          decltype(my_integral_constant<int, 1>::value)>);
+
+static_assert(Kokkos::detail::is_equality_comparable_with<
+              my_integral_constant<int, 1>,
+              decltype(my_integral_constant<int, 1>::value)>::value);
 
 static_assert(
-  Kokkos::detail::is_equality_comparable_with<
-    my_integral_constant<int, 1>,
-    decltype(my_integral_constant<int, 1>::value)>::value);
-
-static_assert(
-  Kokkos::detail::is_integral_constant_like_v<
-    my_integral_constant<int, 1>
-  >);
+    Kokkos::detail::is_integral_constant_like_v<my_integral_constant<int, 1>>);
 
 TEST(StridedSlice, WellFormed) {
   test_strided_slice(int(1), unsigned(10), long(3));
-  test_strided_slice((signed char)(1), (unsigned short)(10), (unsigned long long)(3));
+  test_strided_slice((signed char)(1), (unsigned short)(10),
+                     (unsigned long long)(3));
 
   test_strided_slice(IC<int, 1>, unsigned(10), long(3));
   test_strided_slice(int(1), IC<unsigned, 10>, long(3));
@@ -79,4 +75,4 @@ TEST(StridedSlice, WellFormed) {
   test_strided_slice(int(1), unsigned(10), IC2<long, 3>);
 }
 
-} // namespace (anonymous)
+}  // namespace
