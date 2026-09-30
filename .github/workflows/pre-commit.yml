@@ -1,7 +1,6 @@
 name: pre-commit
 
-on:
-  workflow_call:
+on: [push, pull_request]
 
 permissions: read-all
 
