@@ -102,8 +102,8 @@ constexpr bool slice_equal(
 
 template<class O1, class E1, class S1, class O2, class E2, class S2>
 constexpr bool slice_equal(
-  const MDSPAN_IMPL_STANDARD_NAMESPACE::strided_slice<O1, E1, S1>& left,
-  const MDSPAN_IMPL_STANDARD_NAMESPACE::strided_slice<O2, E2, S2>& right)
+  const MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<O1, E1, S1>& left,
+  const MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<O2, E2, S2>& right)
 {
   return left.offset == right.offset &&
          left.extent == right.extent &&
@@ -222,7 +222,7 @@ TEST(CanonicalizeSlices, Rank1_pair) {
   constexpr auto stride = cw<size_t(1u)>;
 
   const auto expected_slices = tuple{
-    MDSPAN_IMPL_STANDARD_NAMESPACE::strided_slice<
+    MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<
       decltype(offset), decltype(extent), decltype(stride)
     >{offset, extent, stride}
   };
@@ -241,7 +241,7 @@ TEST(CanonicalizeSlices, Rank1_aggregate_pair) {
   constexpr auto stride = cw<size_t(1u)>;
 
   const auto expected_slices = tuple{
-    MDSPAN_IMPL_STANDARD_NAMESPACE::strided_slice<
+    MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<
       decltype(offset), decltype(extent), decltype(stride)
     >{offset, extent, stride}
   };
@@ -260,7 +260,7 @@ TEST(CanonicalizeSlices, Rank1_nonaggregate_pair) {
   constexpr auto stride = cw<size_t(1u)>;
 
   const auto expected_slices = tuple{
-    MDSPAN_IMPL_STANDARD_NAMESPACE::strided_slice<
+    MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<
       decltype(offset), decltype(extent), decltype(stride)
     >{offset, extent, stride}
   };
@@ -281,14 +281,14 @@ TEST(CanonicalizeSlices, Rank1_strided_slice_dynamic) {
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple;
 
   // strided_slice with all dynamic values
-  const auto slice0 = MDSPAN_IMPL_STANDARD_NAMESPACE::strided_slice<int, int, int>{
+  const auto slice0 = MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<int, int, int>{
     /* .offset = */ 1,
     /* .extent = */ 4,
     /* .stride = */ 2
   };
 
   const auto expected_slices = tuple{
-    MDSPAN_IMPL_STANDARD_NAMESPACE::strided_slice<size_t, size_t, size_t>{
+    MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<size_t, size_t, size_t>{
       size_t(1), size_t(4), size_t(2)
     }
   };
@@ -304,10 +304,10 @@ TEST(CanonicalizeSlices, Rank1_strided_slice_static) {
   using extent_t = std::integral_constant<int, 4>;
   using stride_t = std::integral_constant<int, 2>;
   const auto slice0 =
-    MDSPAN_IMPL_STANDARD_NAMESPACE::strided_slice<offset_t, extent_t, stride_t>{};
+    MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<offset_t, extent_t, stride_t>{};
 
   const auto expected_slices = tuple{
-    MDSPAN_IMPL_STANDARD_NAMESPACE::strided_slice<
+    MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<
       decltype(cw<size_t(1)>),
       decltype(cw<size_t(4)>),
       decltype(cw<size_t(2)>)
