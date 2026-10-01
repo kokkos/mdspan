@@ -5719,7 +5719,7 @@ namespace detail {
 
 // Slice Specifier allowing for strides and compile time extent
 template <class OffsetType, class ExtentType, class StrideType>
-struct strided_slice {
+struct extent_slice {
   using offset_type = OffsetType;
   using extent_type = ExtentType;
   using stride_type = StrideType;
@@ -5763,11 +5763,11 @@ constexpr auto inv_map_rank(std::integral_constant<size_t, Counter>, std::index_
 }
 
 // Helper for identifying strided_slice
-template <class T> struct is_strided_slice : std::false_type {};
+template <class T> struct is_extent_slice : std::false_type {};
 
 template <class OffsetType, class ExtentType, class StrideType>
-struct is_strided_slice<
-    strided_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
+struct is_extent_slice<
+    extent_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
 
 // first_of(slice): getting begin of slice specifier range
 MDSPAN_TEMPLATE_REQUIRES(
@@ -5794,7 +5794,7 @@ first_of(const ::MDSPAN_IMPL_STANDARD_NAMESPACE::full_extent_t &) {
 template <class OffsetType, class ExtentType, class StrideType>
 MDSPAN_INLINE_FUNCTION
 constexpr OffsetType
-first_of(const strided_slice<OffsetType, ExtentType, StrideType> &r) {
+first_of(const extent_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.offset;
 }
 
@@ -5862,7 +5862,7 @@ template <size_t k, class Extents, class OffsetType, class ExtentType,
 MDSPAN_INLINE_FUNCTION
 constexpr OffsetType
 last_of(std::integral_constant<size_t, k>, const Extents &,
-        const strided_slice<OffsetType, ExtentType, StrideType> &r) {
+        const extent_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.extent;
 }
 
@@ -5876,7 +5876,7 @@ constexpr auto stride_of(const T &) {
 template <class OffsetType, class ExtentType, class StrideType>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
-stride_of(const strided_slice<OffsetType, ExtentType, StrideType> &r) {
+stride_of(const extent_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.stride;
 }
 
@@ -5899,20 +5899,20 @@ struct StaticExtentFromRange<integral_constant<Integral0, val0>,
 
 // compute new static extent from strided_slice, preserving static
 // knowledge
-template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
+template <class ExtentType, class StrideType> struct StaticExtentFromStridedRange {
   constexpr static size_t value = dynamic_extent;
 };
 
-template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
-struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
-                                    std::integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
+template <class ExtentType, ExtentType Extent, class StrideType, StrideType Stride>
+struct StaticExtentFromStridedRange<std::integral_constant<ExtentType, Extent>,
+                                    std::integral_constant<StrideType, Stride>> {
+  constexpr static size_t value = Extent;
 };
 
-template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
-struct StaticExtentFromStridedRange<integral_constant<Integral0, val0>,
-                                    integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
+template <class ExtentType, ExtentType Extent, class StrideType, StrideType Stride>
+struct StaticExtentFromStridedRange<integral_constant<ExtentType, Extent>,
+                                    integral_constant<StrideType, Stride>> {
+  constexpr static size_t value = Extent;
 };
 
 // creates new extents through recursive calls to next_extent member function
@@ -5922,7 +5922,7 @@ struct extents_constructor {
   MDSPAN_TEMPLATE_REQUIRES(
     class Slice, class... SlicesAndExtents,
     /* requires */(!std::is_convertible_v<Slice, size_t> &&
-                   !is_strided_slice<Slice>::value)
+                   !is_extent_slice<Slice>::value)
   )
   MDSPAN_INLINE_FUNCTION
   constexpr static auto next_extent(const Extents &ext, const Slice &sl,
@@ -5959,7 +5959,7 @@ struct extents_constructor {
   MDSPAN_INLINE_FUNCTION
   constexpr static auto
   next_extent(const Extents &ext,
-              const strided_slice<OffsetType, ExtentType, StrideType> &r,
+              const extent_slice<OffsetType, ExtentType, StrideType> &r,
               SlicesAndExtents... slices_and_extents) {
     using index_t = typename Extents::index_type;
     using new_static_extent_t =
@@ -5969,7 +5969,7 @@ struct extents_constructor {
           extents_constructor<K - 1, Extents, NewExtents..., dynamic_extent>;
       return next_t::next_extent(
           ext, slices_and_extents...,
-          r.extent > 0 ? 1 + divide<index_t>(r.extent - 1, r.stride) : 0);
+          r.extent);
     } else {
       constexpr size_t new_static_extent = new_static_extent_t::value;
       using next_t =
@@ -6145,7 +6145,7 @@ constexpr bool check_static_bounds()
       return true;
     }
   }
-  else if constexpr (is_strided_slice<S_k>::value) {
+  else if constexpr (is_extent_slice<S_k>::value) {
     using offset_type = typename S_k::offset_type;
 
     if constexpr (is_integral_constant_like_v<offset_type>) {
@@ -6298,12 +6298,12 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
   else if constexpr (std::is_convertible_v<Slice, IndexType>) {
     return canonical_index<IndexType>(std::move(s)); // canonical integer index
   }
-  else if constexpr (is_strided_slice<Slice>::value) {
+  else if constexpr (is_extent_slice<Slice>::value) {
     // Canonicalize each component of the strided_slice
     auto offset = canonical_index<IndexType>(s.offset);
     auto extent = canonical_index<IndexType>(s.extent);
     auto stride = canonical_index<IndexType>(s.stride);
-    return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
+    return extent_slice<decltype(offset), decltype(extent), decltype(stride)>{
       /* .offset = */ offset,
       /* .extent = */ extent,
       /* .stride = */ stride
@@ -6319,7 +6319,7 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     auto offset = canonical_index<IndexType>(s_k0);
     auto extent = subtract_ice<IndexType>(s_k0, s_k1);
     auto stride = cw<IndexType(1)>;
-    return strided_slice<decltype(offset), decltype(extent), decltype(stride)>{
+    return extent_slice<decltype(offset), decltype(extent), decltype(stride)>{
       /* .offset = */ offset,
       /* .extent = */ extent,
       /* .stride = */ stride
@@ -6368,7 +6368,7 @@ constexpr auto canonical_slices_impl(
 // Each canonical slice is one of:
 //   - full_extent_t (for full-extent slices)
 //   - IndexType (for integer index slices)
-//   - strided_slice<...> (for range and strided-range slices)
+//   - extent_slice<...> (for range and strided-range slices)
 // ============================================================
 
 MDSPAN_TEMPLATE_REQUIRES(
@@ -6480,14 +6480,14 @@ MDSPAN_INLINE_FUNCTION constexpr auto construct_sub_strides(
 }
 
 template<class SliceSpecifier, class IndexType>
-constexpr bool is_range_slice_v = false;
+constexpr bool is_range_like_slice_v = false;
 
 template<class IndexType>
-constexpr bool is_range_slice_v<full_extent_t, IndexType> = true;
+constexpr bool is_range_like_slice_v<full_extent_t, IndexType> = true;
 
 template<class OffsetType, class ExtentType, auto Stride, class IndexType>
-constexpr bool is_range_slice_v<
-    strided_slice<
+constexpr bool is_range_like_slice_v<
+    extent_slice<
       OffsetType,
       ExtentType,
       constant_wrapper<Stride>>,
@@ -6536,13 +6536,13 @@ struct deduce_layout_left_submapping<
       return true;
     // Use layout_left for rank 1 result if leftmost slice specifier is range like
     } else if constexpr (SubRank == 1) {
-      return ((Idx > 0 || is_range_slice_v<SliceSpecifiers, IndexType>)&&...);
+      return ((Idx > 0 || is_range_like_slice_v<SliceSpecifiers, IndexType>)&&...);
     } else {
       // Preserve if leftmost SubRank-1 slices are full_extent_t and
       // the slice at idx Subrank - 1 is a range and
       // for idx > SubRank the slice is an index
       return ((((Idx <  SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-               ((Idx == SubRank - 1) && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+               ((Idx == SubRank - 1) && is_range_like_slice_v<SliceSpecifiers, IndexType>) ||
                ((Idx >  SubRank - 1) && is_index_slice_v<SliceSpecifiers, IndexType>)) && ...);
     }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
@@ -6563,10 +6563,10 @@ struct deduce_layout_left_submapping<
     // then another range slice
     // then more index slices
     // e.g. R I I I F F F R I I for obtaining a rank-5 from a rank-10
-    return ((((Idx == 0)                                       && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+    return ((((Idx == 0)                                       && is_range_like_slice_v<SliceSpecifiers, IndexType>) ||
              ((Idx > 0 && Idx <= gap_len)                     && is_index_slice_v<SliceSpecifiers, IndexType>) ||
              ((Idx > gap_len && Idx < gap_len + SubRank - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-             ((Idx == gap_len + SubRank - 1)                  && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx == gap_len + SubRank - 1)                  && is_range_like_slice_v<SliceSpecifiers, IndexType>) ||
              ((Idx >  gap_len + SubRank - 1)                  && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
   }
 };
@@ -6770,13 +6770,13 @@ struct deduce_layout_right_submapping<
       return true;
     // Use layout_right for rank 1 result if rightmost slice specifier is range like
     } else if constexpr (SubRank == 1) {
-      return ((Idx < Rank - 1 || is_range_slice_v<SliceSpecifiers, IndexType>)&&...);
+      return ((Idx < Rank - 1 || is_range_like_slice_v<SliceSpecifiers, IndexType>)&&...);
     } else {
       // Preserve if rightmost SubRank-1 slices are full_extent_t and
       // the slice at idx Rank-Subrank is a range and
       // for idx < Rank - SubRank the slice is an index
       return ((((Idx >= Rank - SubRank) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-               ((Idx == Rank - SubRank) && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+               ((Idx == Rank - SubRank) && is_range_like_slice_v<SliceSpecifiers, IndexType>) ||
                ((Idx <  Rank - SubRank) && is_index_slice_v<SliceSpecifiers, IndexType>)) && ...);
     }
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
@@ -6797,10 +6797,10 @@ struct deduce_layout_right_submapping<
     // then another range slice
     // then more index slices
     // e.g. I I R F F F I I I R for obtaining a rank-5 from a rank-10
-    return ((((Idx == Rank - 1)                                               && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+    return ((((Idx == Rank - 1)                                               && is_range_like_slice_v<SliceSpecifiers, IndexType>) ||
              ((Idx >= Rank - gap_len - 1 && Idx < Rank - 1)                  && is_index_slice_v<SliceSpecifiers, IndexType>) ||
              ((Idx >  Rank - gap_len - SubRank && Idx < Rank - gap_len - 1) && std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-             ((Idx == Rank - gap_len - SubRank)                              && is_range_slice_v<SliceSpecifiers, IndexType>) ||
+             ((Idx == Rank - gap_len - SubRank)                              && is_range_like_slice_v<SliceSpecifiers, IndexType>) ||
              ((Idx <  Rank - gap_len - SubRank)                              && is_index_slice_v<SliceSpecifiers, IndexType>)) && ... );
   }
 };
