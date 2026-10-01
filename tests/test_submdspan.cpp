@@ -305,7 +305,7 @@ struct TestSubMDSpan<
   static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>,
                                      Kokkos::extent_slice<int,int,int> p, SliceArgs ... slices) {
     using idx_t = typename SubMDSpan::index_type;
-    return (sub_mds.extent(sub_idx)==static_cast<idx_t>((p.extent+p.stride-1)/p.stride)) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,3>(), std::index_sequence<SubIdx...,1>(), slices...);
+    return (sub_mds.extent(sub_idx)==static_cast<idx_t>(p.extent)) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,3>(), std::index_sequence<SubIdx...,1>(), slices...);
   }
   template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>
   MDSPAN_INLINE_FUNCTION

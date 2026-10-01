@@ -172,20 +172,20 @@ struct StaticExtentFromRange<integral_constant<Integral0, val0>,
 
 // compute new static extent from strided_slice, preserving static
 // knowledge
-template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
+template <class ExtentType, class StrideType> struct StaticExtentFromStridedRange {
   constexpr static size_t value = dynamic_extent;
 };
 
-template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
-struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
-                                    std::integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
+template <class ExtentType, ExtentType Extent, class StrideType, StrideType Stride>
+struct StaticExtentFromStridedRange<std::integral_constant<ExtentType, Extent>,
+                                    std::integral_constant<StrideType, Stride>> {
+  constexpr static size_t value = Extent;
 };
 
-template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
-struct StaticExtentFromStridedRange<integral_constant<Integral0, val0>,
-                                    integral_constant<Integral1, val1>> {
-  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
+template <class ExtentType, ExtentType Extent, class StrideType, StrideType Stride>
+struct StaticExtentFromStridedRange<integral_constant<ExtentType, Extent>,
+                                    integral_constant<StrideType, Stride>> {
+  constexpr static size_t value = Extent;
 };
 
 // creates new extents through recursive calls to next_extent member function
@@ -242,7 +242,7 @@ struct extents_constructor {
           extents_constructor<K - 1, Extents, NewExtents..., dynamic_extent>;
       return next_t::next_extent(
           ext, slices_and_extents...,
-          r.extent > 0 ? 1 + divide<index_t>(r.extent - 1, r.stride) : 0);
+          r.extent);
     } else {
       constexpr size_t new_static_extent = new_static_extent_t::value;
       using next_t =
