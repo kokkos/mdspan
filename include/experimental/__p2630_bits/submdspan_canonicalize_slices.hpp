@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include "experimental/__p2630_bits/constant_wrapper.hpp"
-#include "submdspan_extents.hpp"
+#include "constant_wrapper.hpp"
 #include <complex>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
@@ -12,6 +11,19 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 #if MDSPAN_HAS_CXX_17
 
 namespace detail {
+
+// Helper for identifying extent_slice and range_slice
+template <class T> struct is_extent_slice : std::false_type {};
+
+template <class OffsetType, class ExtentType, class StrideType>
+struct is_extent_slice<
+    extent_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
+
+template <class T> struct is_range_slice : std::false_type {};
+
+template<class FirstType, class LastType, class StrideType>
+struct is_range_slice<
+  range_slice<FirstType, LastType, StrideType>> : std::true_type {};
 
 // ============================================================
 // de_ice: extract the value of an integral-constant-like type
@@ -186,6 +198,36 @@ constexpr bool check_static_bounds()
     else {
       return true;
     }
+  } else if constexpr (is_range_slice<S_k>::value) {
+    using first_type = decltype(std::declval<S_k>().first);
+    using last_type = decltype(std::declval<S_k>().last);
+
+    if constexpr (is_integral_constant_like_v<first_type>) {
+      if constexpr (de_ice(first_type{}) < 0) {
+        return false;
+      }
+      else if constexpr (
+        Exts_k != dynamic_extent &&
+        Exts_k < static_cast<size_t>(de_ice(first_type{})))
+      {
+        return false;
+      }
+    }
+
+    if constexpr (is_integral_constant_like_v<last_type>) {
+      if constexpr ((!is_integral_constant_like_v<first_type> || (de_ice(first_type()) <= de_ice(last_type{})))
+                      && de_ice(last_type{}) < 0) {
+        return false;
+      }
+      else if constexpr (
+        Exts_k != dynamic_extent &&
+        Exts_k < static_cast<size_t>(de_ice(last_type{})))
+      {
+        return false;
+      }
+    }
+
+    return true;
   } else {
     // General pair-like case: attempt to get the first and second elements.
     // If S_k cannot be structured-bound into two elements, this is ill-formed,

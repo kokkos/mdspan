@@ -154,6 +154,11 @@ using submdspan_test_types =
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, std::pair<int,int>, Kokkos::extent_slice<int,int,int>>
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::extent_slice<int,int,int>, std::pair<int,int>>
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::extent_slice<int,int,int>, Kokkos::extent_slice<int,int,int>>
+    , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,1>,          args_t<10>,          Kokkos::dextents<size_t,1>, Kokkos::range_slice<int,int,int>>
+    , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,1>, Kokkos::range_slice<int,int,int>, int>
+    , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, std::pair<int,int>, Kokkos::range_slice<int,int,int>>
+    , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::range_slice<int,int,int>, std::pair<int,int>>
+    , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::range_slice<int,int,int>, Kokkos::range_slice<int,int,int>>
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, Kokkos::extents<size_t,6,dyn,8>, Kokkos::full_extent_t, int, std::pair<int,int>, int, int, Kokkos::full_extent_t>
     , std::tuple<Kokkos::layout_left, Kokkos::layout_stride,  Kokkos::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, Kokkos::extents<size_t,4,dyn,7>, int, Kokkos::full_extent_t, std::pair<int,int>, int, Kokkos::full_extent_t, int>
     // layout_right to layout_right_padded
@@ -169,6 +174,12 @@ using submdspan_test_types =
     , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, std::pair<int,int>, Kokkos::extent_slice<int,int,int>>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::extent_slice<int,int,int>, std::pair<int,int>>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::extent_slice<int,int,int>, Kokkos::extent_slice<int,int,int>>
+    , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::dextents<size_t,1>,          args_t<10>,          Kokkos::dextents<size_t,1>, Kokkos::range_slice<int,int,int>>
+    , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::dextents<size_t,1>,          args_t<10>,          Kokkos::extents<size_t,0>,  Kokkos::range_slice<std::integral_constant<int,1>,std::integral_constant<int,1>,std::integral_constant<int,0>>>
+    , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,1>, Kokkos::range_slice<int,int,int>, int>
+    , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, std::pair<int,int>, Kokkos::range_slice<int,int,int>>
+    , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::range_slice<int,int,int>, std::pair<int,int>>
+    , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,2>, Kokkos::range_slice<int,int,int>, Kokkos::range_slice<int,int,int>>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, Kokkos::extents<size_t,6,dyn,8>, Kokkos::full_extent_t, int, std::pair<int,int>, int, int, Kokkos::full_extent_t>
     , std::tuple<Kokkos::layout_right, Kokkos::layout_stride, Kokkos::extents<size_t,6,4,5,6,7,8>, args_t<6,4,5,6,7,8>, Kokkos::extents<size_t,4,dyn,7>, int, Kokkos::full_extent_t, std::pair<int,int>, int, Kokkos::full_extent_t, int>
     // layout_left_padded to layout_left
@@ -279,6 +290,15 @@ struct TestSubMDSpan<
     return Kokkos::extent_slice<int,std::integral_constant<int, Ext>, std::integral_constant<int, Stride>>{1,std::integral_constant<int, Ext>(), std::integral_constant<int, Ext>()};
   }
   MDSPAN_INLINE_FUNCTION
+  static auto create_slice_arg(Kokkos::range_slice<int,int,int>) {
+    return Kokkos::range_slice<int,int,int>{1,8,2};
+  }
+  template<int First, int Second, int Stride>
+  MDSPAN_INLINE_FUNCTION
+  static auto create_slice_arg(Kokkos::range_slice<std::integral_constant<int, First>,std::integral_constant<int, Second>, std::integral_constant<int, Stride>>) {
+    return Kokkos::range_slice{std::integral_constant<int, First>(),std::integral_constant<int, Second>(), std::integral_constant<int, Stride>()};
+  }
+  MDSPAN_INLINE_FUNCTION
   static auto create_slice_arg(Kokkos::full_extent_t) {
     return Kokkos::full_extent;
   }
@@ -311,6 +331,19 @@ struct TestSubMDSpan<
   MDSPAN_INLINE_FUNCTION
   static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>,
                                      Kokkos::extent_slice<int,std::integral_constant<int, 0>,std::integral_constant<int,0>>, SliceArgs ... slices) {
+    return (sub_mds.extent(sub_idx)==0) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,1>(), std::index_sequence<SubIdx...,0>(), slices...);
+  }
+  template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
+  static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>,
+                                     Kokkos::range_slice<int,int,int> p, SliceArgs ... slices) {
+    using idx_t = typename SubMDSpan::index_type;
+    return (sub_mds.extent(sub_idx)==static_cast<idx_t>(1 + (p.last - p.first - 1) / p.stride)) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,3>(), std::index_sequence<SubIdx...,1>(), slices...);
+  }
+  template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, int FirstLast, class ... SliceArgs>
+  MDSPAN_INLINE_FUNCTION
+  static bool check_submdspan_match(int src_idx, int sub_idx, SrcMDSpan src_mds, SubMDSpan sub_mds, std::index_sequence<SrcIdx...>, std::index_sequence<SubIdx...>,
+                                     Kokkos::range_slice<std::integral_constant<int, FirstLast>,std::integral_constant<int, FirstLast>,std::integral_constant<int,0>>, SliceArgs ... slices) {
     return (sub_mds.extent(sub_idx)==0) && check_submdspan_match(++src_idx, ++sub_idx, src_mds, sub_mds, std::index_sequence<SrcIdx...,1>(), std::index_sequence<SubIdx...,0>(), slices...);
   }
   template<class SrcMDSpan, class SubMDSpan, size_t ... SrcIdx, size_t ... SubIdx, class ... SliceArgs>

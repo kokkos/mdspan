@@ -8,6 +8,7 @@
 #include "constant_wrapper.hpp"
 #include "strided_slice.hpp"
 #include "../__p0009_bits/utility.hpp"
+#include "submdspan_canonicalize_slices.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
@@ -34,19 +35,6 @@ constexpr auto inv_map_rank(std::integral_constant<size_t, Counter>, std::index_
   return inv_map_rank(std::integral_constant<size_t,Counter + 1>(), next_idx_seq_t(),
                                      slices...);
 }
-
-// Helper for identifying strided_slice
-template <class T> struct is_extent_slice : std::false_type {};
-
-template <class OffsetType, class ExtentType, class StrideType>
-struct is_extent_slice<
-    extent_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
-
-template <class T> struct is_range_slice : std::false_type {};
-
-template<class FirstType, class LastType, class StrideType>
-struct is_range_slice<
-  range_slice<FirstType, LastType, StrideType>> : std::true_type {};
 
 // first_of(slice): getting begin of slice specifier range
 MDSPAN_TEMPLATE_REQUIRES(
@@ -304,6 +292,6 @@ constexpr auto submdspan_extents(const extents<IndexType, Extents...> &src_exts,
 
   using ext_t = extents<IndexType, Extents...>;
   return detail::extents_constructor<ext_t::rank(), ext_t>::next_extent(
-      src_exts, slices...);
+      src_exts, detail::canonical_slice<IndexType>(slices)...);
 }
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
