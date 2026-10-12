@@ -4,6 +4,7 @@
 #pragma once
 
 #include "constant_wrapper.hpp"
+#include "strided_slice.hpp"
 #include <complex>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
@@ -354,15 +355,21 @@ struct calculate_stride<IndexType, constant_wrapper<Stride>>
 };
 
 
+// Some compilers do not do ctad properly with canonical_range_slice
+template<class OffsetType, class ExtentType, class StrideType>
+constexpr auto make_extent_slice(OffsetType offset, ExtentType extent, StrideType stride)
+{
+  return extent_slice<OffsetType, ExtentType, StrideType>{offset, extent, stride};
+}
 
 template<class IndexType, class OffsetType, class SpanType, class StrideType>
 constexpr auto canonical_range_slice(OffsetType offset, SpanType span, StrideType stride)
 {
-  return extent_slice{
+  return make_extent_slice(
     offset,
     calculate_extents<IndexType, SpanType, StrideType>::value(span, stride),
     calculate_stride<IndexType, StrideType>::value(span, stride)
-  };
+  );
 }
 
 template<class IndexType, class OffsetType, class SpanType>
