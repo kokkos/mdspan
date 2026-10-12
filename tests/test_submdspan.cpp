@@ -296,7 +296,7 @@ struct TestSubMDSpan<
   template<int First, int Second, int Stride>
   MDSPAN_INLINE_FUNCTION
   static auto create_slice_arg(Kokkos::range_slice<std::integral_constant<int, First>,std::integral_constant<int, Second>, std::integral_constant<int, Stride>>) {
-    return Kokkos::range_slice{std::integral_constant<int, First>(),std::integral_constant<int, Second>(), std::integral_constant<int, Stride>()};
+    return Kokkos::range_slice<std::integral_constant<int, First>, std::integral_constant<int, Second>, std::integral_constant<int, Stride>>{std::integral_constant<int, First>(),std::integral_constant<int, Second>(), std::integral_constant<int, Stride>()};
   }
   MDSPAN_INLINE_FUNCTION
   static auto create_slice_arg(Kokkos::full_extent_t) {
