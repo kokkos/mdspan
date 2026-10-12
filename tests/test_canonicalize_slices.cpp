@@ -276,7 +276,7 @@ TEST(CanonicalizeSlices, Rank2_full) {
     MDSPAN_IMPL_STANDARD_NAMESPACE::extents<int, 11, 13>{}, full, full);
 }
 
-TEST(CanonicalizeSlices, Rank1_strided_slice_dynamic) {
+TEST(CanonicalizeSlices, Rank1_extent_slice_dynamic) {
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple;
 
@@ -296,7 +296,27 @@ TEST(CanonicalizeSlices, Rank1_strided_slice_dynamic) {
   test_canonicalize_slices(expected_slices, exts, slice0);
 }
 
-TEST(CanonicalizeSlices, Rank1_strided_slice_static) {
+TEST(CanonicalizeSlices, Rank1_range_slice_dynamic) {
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple;
+
+  // strided_slice with all dynamic values
+  const auto slice0 = MDSPAN_IMPL_STANDARD_NAMESPACE::range_slice<int, int, int>{
+    /* .first = */ 1,
+    /* .last = */ 11,
+    /* .stride = */ 3
+  };
+
+  const auto expected_slices = tuple{
+    MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<size_t, size_t, size_t>{
+      size_t(1), size_t(4), size_t(3)
+    }
+  };
+  const auto exts = MDSPAN_IMPL_STANDARD_NAMESPACE::extents<size_t, 11>{};
+  test_canonicalize_slices(expected_slices, exts, slice0);
+}
+
+TEST(CanonicalizeSlices, Rank1_extent_slice_static) {
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple;
 
@@ -314,6 +334,27 @@ TEST(CanonicalizeSlices, Rank1_strided_slice_static) {
     >{cw<size_t(1)>, cw<size_t(4)>, cw<size_t(2)>}
   };
   const auto exts = MDSPAN_IMPL_STANDARD_NAMESPACE::extents<size_t, 10>{};
+  test_canonicalize_slices(expected_slices, exts, slice0);
+}
+
+TEST(CanonicalizeSlices, Rank1_range_slice_static) {
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple;
+
+  using offset_t = std::integral_constant<int, 1>;
+  using extent_t = std::integral_constant<int, 11>;
+  using stride_t = std::integral_constant<int, 3>;
+  const auto slice0 =
+    MDSPAN_IMPL_STANDARD_NAMESPACE::range_slice<offset_t, extent_t, stride_t>{};
+
+  const auto expected_slices = tuple{
+    MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<
+      decltype(cw<size_t(1)>),
+      decltype(cw<size_t(4)>),
+      decltype(cw<size_t(3)>)
+    >{cw<size_t(1)>, cw<size_t(4)>, cw<size_t(3)>}
+  };
+  const auto exts = MDSPAN_IMPL_STANDARD_NAMESPACE::extents<size_t, 11>{};
   test_canonicalize_slices(expected_slices, exts, slice0);
 }
 
