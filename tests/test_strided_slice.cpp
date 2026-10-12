@@ -9,7 +9,7 @@
 namespace {
 
 template<class OffsetType, class ExtentType, class StrideType>
-void test_strided_slice(OffsetType offset, ExtentType extent, StrideType stride)
+void test_extent_slice(OffsetType offset, ExtentType extent, StrideType stride)
 {
   // Some compilers are bad at CTAD for aggregates.
   Kokkos::extent_slice<OffsetType, ExtentType, StrideType> s{offset, extent, stride};
@@ -60,23 +60,60 @@ static_assert(
     my_integral_constant<int, 1>
   >);
 
-TEST(StridedSlice, WellFormed) {
-  test_strided_slice(int(1), unsigned(10), long(3));
-  test_strided_slice((signed char)(1), (unsigned short)(10), (unsigned long long)(3));
+TEST(ExtentSlice, WellFormed) {
+  test_extent_slice(int(1), unsigned(10), long(3));
+  test_extent_slice((signed char)(1), (unsigned short)(10), (unsigned long long)(3));
 
-  test_strided_slice(IC<int, 1>, unsigned(10), long(3));
-  test_strided_slice(int(1), IC<unsigned, 10>, long(3));
-  test_strided_slice(int(1), unsigned(10), IC<long, 3>);
+  test_extent_slice(IC<int, 1>, unsigned(10), long(3));
+  test_extent_slice(int(1), IC<unsigned, 10>, long(3));
+  test_extent_slice(int(1), unsigned(10), IC<long, 3>);
 
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
 
-  test_strided_slice(cw<1>, unsigned(10), long(3));
-  test_strided_slice(int(1), cw<unsigned(10)>, long(3));
-  test_strided_slice(int(1), unsigned(10), cw<long(3)>);
+  test_extent_slice(cw<1>, unsigned(10), long(3));
+  test_extent_slice(int(1), cw<unsigned(10)>, long(3));
+  test_extent_slice(int(1), unsigned(10), cw<long(3)>);
 
-  test_strided_slice(IC2<int, 1>, unsigned(10), long(3));
-  test_strided_slice(int(1), IC2<unsigned, 10>, long(3));
-  test_strided_slice(int(1), unsigned(10), IC2<long, 3>);
+  test_extent_slice(IC2<int, 1>, unsigned(10), long(3));
+  test_extent_slice(int(1), IC2<unsigned, 10>, long(3));
+  test_extent_slice(int(1), unsigned(10), IC2<long, 3>);
+}
+
+template<class FirstType, class LastType, class StrideType>
+void test_range_slice(FirstType first, LastType last, StrideType stride)
+{
+  // Some compilers are bad at CTAD for aggregates.
+  Kokkos::range_slice<FirstType, LastType, StrideType> s{first, last, stride};
+
+  auto first2 = s.first;
+  static_assert(std::is_same_v<FirstType, decltype(first2)>);
+  auto last2 = s.last;
+  static_assert(std::is_same_v<LastType, decltype(last2)>);
+  auto stride2 = s.stride;
+  static_assert(std::is_same_v<StrideType, decltype(stride2)>);
+
+  ASSERT_EQ(first2, first);
+  ASSERT_EQ(last2, last);
+  ASSERT_EQ(stride2, stride);
+}
+
+TEST(RangeSlice, WellFormed) {
+  test_range_slice(int(1), unsigned(10), long(3));
+  test_range_slice((signed char)(1), (unsigned short)(10), (unsigned long long)(3));
+
+  test_range_slice(IC<int, 1>, unsigned(10), long(3));
+  test_range_slice(int(1), IC<unsigned, 10>, long(3));
+  test_range_slice(int(1), unsigned(10), IC<long, 3>);
+
+  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
+
+  test_range_slice(cw<1>, unsigned(10), long(3));
+  test_range_slice(int(1), cw<unsigned(10)>, long(3));
+  test_range_slice(int(1), unsigned(10), cw<long(3)>);
+
+  test_range_slice(IC2<int, 1>, unsigned(10), long(3));
+  test_range_slice(int(1), IC2<unsigned, 10>, long(3));
+  test_range_slice(int(1), unsigned(10), IC2<long, 3>);
 }
 
 } // namespace (anonymous)
