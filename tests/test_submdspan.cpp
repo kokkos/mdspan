@@ -209,6 +209,12 @@ using submdspan_test_types =
     , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,2>, args_t<10,20>, Kokkos::dextents<size_t,2>, Kokkos::full_extent_t, Kokkos::extent_slice<int,int,int>>
     , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,3>, args_t<10,20,30>, Kokkos::dextents<size_t,3>, Kokkos::full_extent_t, Kokkos::extent_slice<int,int,int>, Kokkos::full_extent_t>
     , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,3>, args_t<10,20,30>, Kokkos::dextents<size_t,2>, Kokkos::full_extent_t, int, Kokkos::extent_slice<int,int,int>>
+    , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,1>, args_t<10>, Kokkos::dextents<size_t,1>, Kokkos::range_slice<int,int,int>>
+    , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,2>, args_t<10,20>, Kokkos::dextents<size_t,1>, Kokkos::range_slice<int,int,int>, int>
+    , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,2>, args_t<10,20>, Kokkos::dextents<size_t,2>, Kokkos::range_slice<int,int,int>, Kokkos::full_extent_t>
+    , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,2>, args_t<10,20>, Kokkos::dextents<size_t,2>, Kokkos::full_extent_t, Kokkos::range_slice<int,int,int>>
+    , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,3>, args_t<10,20,30>, Kokkos::dextents<size_t,3>, Kokkos::full_extent_t, Kokkos::range_slice<int,int,int>, Kokkos::full_extent_t>
+    , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,3>, args_t<10,20,30>, Kokkos::dextents<size_t,2>, Kokkos::full_extent_t, int, Kokkos::range_slice<int,int,int>>
     , std::tuple<layout_left_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,4>, args_t<10,20,30,40>, Kokkos::dextents<size_t,3>, Kokkos::full_extent_t, Kokkos::full_extent_t, int, Kokkos::full_extent_t>
     // layout_right_padded to layout_right
     , std::tuple<layout_right_padded<dyn>, Kokkos::layout_right, Kokkos::dextents<size_t,2>, args_t<10,20>, Kokkos::dextents<size_t,0>, int, int>
@@ -237,6 +243,12 @@ using submdspan_test_types =
     , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,2>, args_t<10,20>, Kokkos::dextents<size_t,2>, Kokkos::full_extent_t, Kokkos::extent_slice<int,int,int>>
     , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,3>, args_t<10,20,30>, Kokkos::dextents<size_t,3>, Kokkos::full_extent_t, Kokkos::extent_slice<int,int,int>, Kokkos::full_extent_t>
     , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,3>, args_t<10,20,30>, Kokkos::dextents<size_t,2>, Kokkos::extent_slice<int,int,int>, int, Kokkos::full_extent_t>
+    , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,1>, args_t<10>, Kokkos::dextents<size_t,1>, Kokkos::range_slice<int,int,int>>
+    , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,2>, args_t<10,20>, Kokkos::dextents<size_t,1>, int, Kokkos::range_slice<int,int,int>>
+    , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,2>, args_t<10,20>, Kokkos::dextents<size_t,2>, Kokkos::range_slice<int,int,int>, Kokkos::full_extent_t>
+    , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,2>, args_t<10,20>, Kokkos::dextents<size_t,2>, Kokkos::full_extent_t, Kokkos::range_slice<int,int,int>>
+    , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,3>, args_t<10,20,30>, Kokkos::dextents<size_t,3>, Kokkos::full_extent_t, Kokkos::range_slice<int,int,int>, Kokkos::full_extent_t>
+    , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,3>, args_t<10,20,30>, Kokkos::dextents<size_t,2>, Kokkos::range_slice<int,int,int>, int, Kokkos::full_extent_t>
     , std::tuple<layout_right_padded<dyn>, Kokkos::layout_stride, Kokkos::dextents<size_t,4>, args_t<10,20,30,40>, Kokkos::dextents<size_t,3>, Kokkos::full_extent_t, int, Kokkos::full_extent_t, Kokkos::full_extent_t>
     // Testing of customization point design
     , std::tuple<Foo::layout_foo, Foo::layout_foo, Kokkos::dextents<size_t,1>, args_t<10>,          Kokkos::dextents<size_t,1>, Kokkos::full_extent_t>
@@ -247,6 +259,8 @@ using submdspan_test_types =
     , std::tuple<Foo::layout_foo, Foo::layout_foo, Kokkos::dextents<size_t,2>, args_t<10,20>,       Kokkos::dextents<size_t,1>, int, Kokkos::full_extent_t>
     , std::tuple<Foo::layout_foo, Kokkos::layout_stride, Kokkos::dextents<size_t,1>,          args_t<10>,          Kokkos::dextents<size_t,1>, Kokkos::extent_slice<int,int,int>>
     , std::tuple<Foo::layout_foo, Kokkos::layout_stride, Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,1>, Kokkos::extent_slice<int,int,int>, int>
+    , std::tuple<Foo::layout_foo, Kokkos::layout_stride, Kokkos::dextents<size_t,1>,          args_t<10>,          Kokkos::dextents<size_t,1>, Kokkos::range_slice<int,int,int>>
+    , std::tuple<Foo::layout_foo, Kokkos::layout_stride, Kokkos::dextents<size_t,2>,          args_t<10,20>,       Kokkos::dextents<size_t,1>, Kokkos::range_slice<int,int,int>, int>
     >;
 
 template<class T> struct TestSubMDSpan;
