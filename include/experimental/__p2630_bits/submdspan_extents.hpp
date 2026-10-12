@@ -65,13 +65,6 @@ first_of(const extent_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.offset;
 }
 
-template <class FirstType, class LastType, class StrideType>
-MDSPAN_INLINE_FUNCTION
-constexpr FirstType
-first_of(const range_slice<FirstType, LastType, StrideType> &r) {
-  return r.first;
-}
-
 // last_of(slice): getting end of slice specifier range
 // We need however not just the slice but also the extents
 // of the original view and which rank from the extents.
@@ -140,15 +133,6 @@ last_of(std::integral_constant<size_t, k>, const Extents &,
   return r.extent;
 }
 
-template <size_t k, class Extents, class FirstType, class LastType,
-          class StrideType>
-MDSPAN_INLINE_FUNCTION
-constexpr auto
-last_of(std::integral_constant<size_t, k>, const Extents &,
-        const range_slice<FirstType, LastType, StrideType> &r) {
-  return r.last - r.first;
-}
-
 // get stride of slices
 template <class T>
 MDSPAN_INLINE_FUNCTION
@@ -160,13 +144,6 @@ template <class OffsetType, class ExtentType, class StrideType>
 MDSPAN_INLINE_FUNCTION
 constexpr auto
 stride_of(const extent_slice<OffsetType, ExtentType, StrideType> &r) {
-  return r.stride;
-}
-
-template <class FirstType, class LastType, class StrideType>
-MDSPAN_INLINE_FUNCTION
-constexpr auto
-stride_of(const range_slice<FirstType, LastType, StrideType> &r) {
   return r.stride;
 }
 
