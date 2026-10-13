@@ -318,9 +318,9 @@ constexpr bool check_submdspan_slice_mandates(
 template<class IndexType, class SpanType, class StrideType>
 struct calculate_extents
 {
-  static constexpr auto value(SpanType span, StrideType stride)
+  static constexpr IndexType value(SpanType span, StrideType stride)
   {
-    return span != 0 ? 1 + divide<IndexType>(span - 1, stride) : 0;
+    return static_cast<IndexType>(span != 0 ? 1 + divide<IndexType>(span - 1, stride) : 0);
   }
 };
 
@@ -329,7 +329,7 @@ struct calculate_extents<IndexType, constant_wrapper<Span>, constant_wrapper<Str
 {
   static constexpr auto value(constant_wrapper<Span>, constant_wrapper<Stride>)
   {
-    return cw<Span != 0 ? 1 + divide<IndexType>(Span - 1, Stride) : 0>;
+    return cw<static_cast<IndexType>(Span != 0 ? 1 + divide<IndexType>(Span - 1, Stride) : 0)>;
   }
 };
 
