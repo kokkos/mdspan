@@ -280,7 +280,7 @@ TEST(CanonicalizeSlices, Rank1_extent_slice_dynamic) {
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple;
 
-  // strided_slice with all dynamic values
+  // extent_slice with all dynamic values
   const auto slice0 = MDSPAN_IMPL_STANDARD_NAMESPACE::extent_slice<int, int, int>{
     /* .offset = */ 1,
     /* .extent = */ 4,
@@ -300,7 +300,7 @@ TEST(CanonicalizeSlices, Rank1_range_slice_dynamic) {
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple;
 
-  // strided_slice with all dynamic values
+  // range_slice with all dynamic values
   const auto slice0 = MDSPAN_IMPL_STANDARD_NAMESPACE::range_slice<int, int, int>{
     /* .first = */ 1,
     /* .last = */ 11,
