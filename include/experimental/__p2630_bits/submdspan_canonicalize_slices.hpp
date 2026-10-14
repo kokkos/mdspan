@@ -216,8 +216,8 @@ constexpr bool check_static_bounds()
     }
 
     if constexpr (is_integral_constant_like_v<last_type>) {
-      if constexpr ((!is_integral_constant_like_v<first_type> || (de_ice(first_type()) <= de_ice(last_type{})))
-                      && de_ice(last_type{}) < 0) {
+      if constexpr ((is_integral_constant_like_v<first_type> && (de_ice(first_type()) > de_ice(last_type{})))
+                      || de_ice(last_type{}) < 0) {
         return false;
       }
       else if constexpr (
@@ -357,7 +357,8 @@ struct calculate_stride<IndexType, constant_wrapper<Stride>>
 
 // Some compilers do not do ctad properly with canonical_range_slice
 template<class OffsetType, class ExtentType, class StrideType>
-constexpr auto make_extent_slice(OffsetType offset, ExtentType extent, StrideType stride)
+constexpr extent_slice<OffsetType, ExtentType, StrideType>
+make_extent_slice(OffsetType offset, ExtentType extent, StrideType stride)
 {
   return extent_slice<OffsetType, ExtentType, StrideType>{offset, extent, stride};
 }
@@ -426,12 +427,14 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     static_assert(std::is_convertible_v<S_k0, IndexType>);
     static_assert(std::is_convertible_v<S_k1, IndexType>);
 
-    auto c_first = canonical_index<IndexType>(s_k0);
-    auto c_last = canonical_index<IndexType>(s_k1);
-    return canonical_range_slice<IndexType>(
-      c_first,
-      subtract_ice<IndexType>(c_first, c_last)
-    );
+    auto offset = canonical_index<IndexType>(s_k0);
+    auto extent = subtract_ice<IndexType>(s_k0, s_k1);
+    auto stride = cw<IndexType(1)>;
+    return extent_slice<decltype(offset), decltype(extent), decltype(stride)>{
+      /* .offset = */ offset,
+      /* .extent = */ extent,
+      /* .stride = */ stride
+    };
   }
 }
 
