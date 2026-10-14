@@ -51,4 +51,15 @@ struct extent_slice {
   static_assert(detail::mdspan_is_index_like_v<StrideType>);
 };
 
+template<class FirstType, class LastType, class StrideType = detail::constant_wrapper<size_t(1)>>
+struct range_slice {
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS FirstType first{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS LastType last{};
+  MDSPAN_IMPL_NO_UNIQUE_ADDRESS StrideType stride{};
+
+  static_assert(detail::mdspan_is_index_like_v<FirstType>);
+  static_assert(detail::mdspan_is_index_like_v<LastType>);
+  static_assert(detail::mdspan_is_index_like_v<StrideType>);
+};
+
 } // MDSPAN_IMPL_STANDARD_NAMESPACE

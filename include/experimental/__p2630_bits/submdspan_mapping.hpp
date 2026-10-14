@@ -103,6 +103,15 @@ constexpr bool is_range_like_slice_v<
     IndexType
   > = (constant_wrapper<Stride>::value == IndexType(1));
 
+template<class FirstType, class LastType, auto Stride, class IndexType>
+constexpr bool is_range_like_slice_v<
+    range_slice<
+      FirstType,
+      LastType,
+      constant_wrapper<Stride>>,
+    IndexType
+  > = (constant_wrapper<Stride>::value == IndexType(1));
+
 template<class SliceSpecifier, class IndexType>
 struct is_index_slice {
   constexpr static bool value = std::is_convertible_v<SliceSpecifier, IndexType>;
