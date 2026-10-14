@@ -266,11 +266,11 @@ struct extents_constructor<0, Extents, NewStaticExtents...> {
 
 } // namespace detail
 
-// submdspan_extents creates new extents given src extents and submdspan slice
+// subextents creates new extents given src extents and submdspan slice
 // specifiers
 template <class IndexType, size_t... Extents, class... SliceSpecifiers>
 MDSPAN_INLINE_FUNCTION
-constexpr auto submdspan_extents(const extents<IndexType, Extents...> &src_exts,
+constexpr auto subextents(const extents<IndexType, Extents...> &src_exts,
                                  SliceSpecifiers... slices) {
 
   using ext_t = extents<IndexType, Extents...>;

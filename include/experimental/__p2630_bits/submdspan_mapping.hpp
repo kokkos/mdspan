@@ -206,7 +206,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
 
   // compute sub extents
   using src_ext_t = Extents;
-  auto dst_ext = submdspan_extents(extents(), slices...);
+  auto dst_ext = subextents(extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
 
   // figure out sub layout type
@@ -272,7 +272,7 @@ layout_left_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
 
   // compute sub extents
   using src_ext_t = Extents;
-  auto dst_ext = submdspan_extents(extents(), slices...);
+  auto dst_ext = subextents(extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
 
   if constexpr (Extents::rank() == 0) { // rank-0 case
@@ -440,7 +440,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
 
   // compute sub extents
   using src_ext_t = Extents;
-  auto dst_ext = submdspan_extents(extents(), slices...);
+  auto dst_ext = subextents(extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
 
   // figure out sub layout type
@@ -508,7 +508,7 @@ layout_right_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
 
   // compute sub extents
   using src_ext_t = Extents;
-  auto dst_ext = submdspan_extents(extents(), slices...);
+  auto dst_ext = subextents(extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
 
   if constexpr (Extents::rank() == 0) { // rank-0 case
@@ -585,7 +585,7 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
   // Implements mandate check
   detail::check_submdspan_slice_mandates<Extents>(std::make_index_sequence<Extents::rank()>(), slices...);
 
-  auto dst_ext = submdspan_extents(extents(), slices...);
+  auto dst_ext = subextents(extents(), slices...);
   using dst_ext_t = decltype(dst_ext);
   auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
                                       std::index_sequence<>(), slices...);
