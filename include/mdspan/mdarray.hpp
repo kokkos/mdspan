@@ -13,6 +13,6 @@
 #endif
 
 #include "mdspan.hpp"
-#include "../experimental/__p1684_bits/mdarray.hpp"
+#include "impl/mdarray.hpp"
 
 #endif // MDARRAY_HPP_

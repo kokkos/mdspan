@@ -4,8 +4,8 @@
 #pragma once
 
 #include <cassert>
-#include "../__p0009_bits/dynamic_extent.hpp"
-#include "../__p0009_bits/utility.hpp"
+#include "dynamic_extent.hpp"
+#include "utility.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../__p0009_bits/utility.hpp"
+#include "utility.hpp"
 #include <type_traits>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
