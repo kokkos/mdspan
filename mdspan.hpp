@@ -42,17 +42,17 @@
   #define MDSPAN_IMPL_PROPOSED_NAMESPACE Experimental
 #endif
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/default_accessor.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/default_accessor.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/macros.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/macros.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/config.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/config.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -357,7 +357,7 @@ static_assert(MDSPAN_IMPL_CPLUSPLUS >= MDSPAN_CXX_STD_14, "mdspan requires C++14
 #if ! defined(MDSPAN_IMPL_ENABLE_P3663)
 #  define MDSPAN_IMPL_ENABLE_P3663 1
 #endif
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/config.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/config.hpp
 
 #include <cstdio>
 #include <cstdlib>
@@ -1058,7 +1058,7 @@ struct fold_bools;
 #else
 #  define MDSPAN_IMPL_IF_CONSTEXPR_17
 #endif
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/macros.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/macros.hpp
 
 #include <cstddef> // size_t
 
@@ -1097,8 +1097,8 @@ struct default_accessor {
 };
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/default_accessor.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/full_extent_t.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/default_accessor.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/full_extent_t.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -1111,18 +1111,18 @@ struct full_extent_t { explicit full_extent_t() = default; };
 MDSPAN_IMPL_INLINE_VARIABLE constexpr auto full_extent = full_extent_t{ };
 
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/full_extent_t.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/mdspan.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/full_extent_t.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/mdspan.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_right.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_right.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/trait_backports.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/trait_backports.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -1241,12 +1241,12 @@ using enable_if_t = typename enable_if<_B, T>::type;
 //==============================================================================
 
 #endif //MDSPAN_INCLUDE_EXPERIMENTAL_BITS_TRAIT_BACKPORTS_HPP_
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/trait_backports.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/extents.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/trait_backports.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/extents.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/dynamic_extent.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/dynamic_extent.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -1268,8 +1268,8 @@ MDSPAN_IMPL_INLINE_VARIABLE constexpr auto dynamic_extent = std::numeric_limits<
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
 //==============================================================================================================
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/dynamic_extent.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/utility.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/dynamic_extent.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/utility.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -1588,7 +1588,7 @@ constexpr struct mdspan_non_standard_tag {
 } mdspan_non_standard;
 
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/utility.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/utility.hpp
 
 #ifdef __cpp_lib_span
 #include <span>
@@ -2271,20 +2271,20 @@ check_all_indices(const extents<ExtentsIndexType, Exts...>& exts,
 
 } // namespace detail
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/extents.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_stride.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/extents.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_stride.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/compressed_pair.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/compressed_pair.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
 
 #if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/no_unique_address.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/no_unique_address.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -2367,7 +2367,7 @@ struct no_unique_address_emulation<
 
 } // end namespace detail
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/no_unique_address.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/no_unique_address.hpp
 #endif
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
@@ -2541,10 +2541,10 @@ struct impl_compressed_pair<
 
 } // end namespace detail
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/compressed_pair.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/compressed_pair.hpp
 
 #if MDSPAN_HAS_CXX_17
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2642_bits/layout_padded_fwd.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_padded_fwd.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -2665,7 +2665,7 @@ constexpr void check_padded_layout_converting_constructor_preconditions(MDSPAN_I
 
 }
 }
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2642_bits/layout_padded_fwd.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_padded_fwd.hpp
 #endif
 
 #if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
@@ -3331,7 +3331,7 @@ constexpr void validate_strides(with_rank<N>, Layout, const Extents& ext, const 
 
 } // namespace detail
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_stride.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_stride.hpp
 #if MDSPAN_HAS_CXX_17
 #endif
 
@@ -3572,7 +3572,7 @@ private:
 };
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_right.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_right.hpp
 
 #include <stdexcept>
 #include <string>
@@ -4063,8 +4063,8 @@ MDSPAN_DEDUCTION_GUIDE mdspan(const typename AccessorType::data_handle_type, con
 #endif
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/mdspan.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/mdspan.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_left.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -4313,9 +4313,9 @@ private:
 
 
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p0009_bits/layout_left.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_left.hpp
 #if MDSPAN_HAS_CXX_17
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2642_bits/layout_padded.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_padded.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -5382,20 +5382,20 @@ public:
      }
 };
 }
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2642_bits/layout_padded.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/layout_padded.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/submdspan.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_extents.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/submdspan_extents.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
 #include <complex>
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/constant_wrapper.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/constant_wrapper.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -5538,14 +5538,14 @@ constexpr auto multiply(const constant_wrapper<v0, T0> &,
 
 } // namespace detail
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/constant_wrapper.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/strided_slice.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/constant_wrapper.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/strided_slice.hpp
 
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/integral_constant_like.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/integral_constant_like.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -5688,7 +5688,7 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
 
 #endif // __cpp_lib_concepts
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/integral_constant_like.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/integral_constant_like.hpp
 
 #include <type_traits>
 
@@ -5745,8 +5745,8 @@ struct range_slice {
 };
 
 } // MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/strided_slice.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_canonicalize_slices.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/strided_slice.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/submdspan_canonicalize_slices.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -6246,7 +6246,7 @@ constexpr auto canonical_slices(
 #endif // MDSPAN_HAS_CXX_17
 
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_canonicalize_slices.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/submdspan_canonicalize_slices.hpp
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
@@ -6510,8 +6510,8 @@ constexpr auto subextents(const extents<IndexType, Extents...> &src_exts,
       src_exts, detail::canonical_slice<IndexType>(slices)...);
 }
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_extents.hpp
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_mapping.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/submdspan_extents.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/submdspan_mapping.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -7154,7 +7154,7 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
 #elif defined __NVCOMPILER
 #pragma diagnostic pop
 #endif
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan_mapping.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/submdspan_mapping.hpp
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 template <class ElementType, class Extents, class LayoutPolicy,
@@ -7178,9 +7178,9 @@ submdspan(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
       sub_accessor_t(src.accessor()));
 }
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2630_bits/submdspan.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/submdspan.hpp
 #endif
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2389_bits/dims.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/dims.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -7192,7 +7192,7 @@ using dims =
   :: MDSPAN_IMPL_STANDARD_NAMESPACE :: dextents<IndexType, Rank>;
 
 } // namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p2389_bits/dims.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/dims.hpp
 
 #endif // MDSPAN_HPP_
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/mdspan.hpp
@@ -7224,7 +7224,7 @@ namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
   #define MDSPAN_IMPL_PROPOSED_NAMESPACE Experimental
 #endif
 
-//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p1684_bits/mdarray.hpp
+//BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/mdarray.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
@@ -7670,7 +7670,7 @@ private:
 
 } // end namespace MDSPAN_IMPL_PROPOSED_NAMESPACE
 } // end namespace MDSPAN_IMPL_STANDARD_NAMESPACE
-//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/experimental/__p1684_bits/mdarray.hpp
+//END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/mdarray.hpp
 
 #endif // MDARRAY_HPP_
 //END_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/mdarray.hpp
