@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../__p0009_bits/config.hpp"
+#include "config.hpp"
 #include "constant_wrapper.hpp"
 #include "integral_constant_like.hpp"
 

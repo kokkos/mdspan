@@ -5,13 +5,13 @@
 
 #include <cassert>
 #include "layout_padded_fwd.hpp"
-#include "../__p0009_bits/dynamic_extent.hpp"
-#include "../__p0009_bits/extents.hpp"
-#include "../__p0009_bits/mdspan.hpp"
-#include "../__p0009_bits/layout_left.hpp"
-#include "../__p0009_bits/layout_right.hpp"
-#include "../__p0009_bits/layout_stride.hpp"
-#include "../__p0009_bits/utility.hpp"
+#include "dynamic_extent.hpp"
+#include "extents.hpp"
+#include "mdspan.hpp"
+#include "layout_left.hpp"
+#include "layout_right.hpp"
+#include "layout_stride.hpp"
+#include "utility.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {

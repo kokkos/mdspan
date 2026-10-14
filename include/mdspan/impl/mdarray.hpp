@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../../mdspan/mdspan.hpp"
+#include "mdspan.hpp"
 #include <cassert>
 #include <vector>
 

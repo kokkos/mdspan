@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <gtest/gtest.h>
 
-#include "../include/experimental/__p2630_bits/constant_wrapper.hpp"
+#include "mdspan/impl/constant_wrapper.hpp"
 
 namespace { // (anonymous)
 

@@ -6,7 +6,7 @@
 #include <array>
 #include <type_traits>
 #include <utility> // index_sequence
-#include "../__p0009_bits/utility.hpp"
+#include "utility.hpp"
 
 // Suppress spurious warning with NVCC about no return statement.
 // This is a known issue in NVCC and NVC++

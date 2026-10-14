@@ -10,7 +10,7 @@
 #include "utility.hpp"
 
 #if MDSPAN_HAS_CXX_17
-#include "../__p2642_bits/layout_padded_fwd.hpp"
+#include "layout_padded_fwd.hpp"
 #endif
 
 #if !defined(MDSPAN_IMPL_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
