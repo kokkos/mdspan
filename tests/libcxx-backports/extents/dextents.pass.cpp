@@ -27,8 +27,10 @@ void test_alias_template_dextents() {
   ASSERT_SAME_TYPE(std::dextents<IndexType, 0>, std::extents<IndexType>);
   ASSERT_SAME_TYPE(std::dextents<IndexType, 1>, std::extents<IndexType, D>);
   ASSERT_SAME_TYPE(std::dextents<IndexType, 2>, std::extents<IndexType, D, D>);
-  ASSERT_SAME_TYPE(std::dextents<IndexType, 3>, std::extents<IndexType, D, D, D>);
-  ASSERT_SAME_TYPE(std::dextents<IndexType, 9>, std::extents<IndexType, D, D, D, D, D, D, D, D, D>);
+  ASSERT_SAME_TYPE(std::dextents<IndexType, 3>,
+                   std::extents<IndexType, D, D, D>);
+  ASSERT_SAME_TYPE(std::dextents<IndexType, 9>,
+                   std::extents<IndexType, D, D, D, D, D, D, D, D, D>);
 }
 
 int main(int, char**) {

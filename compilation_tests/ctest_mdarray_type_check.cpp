@@ -10,23 +10,24 @@
 #include <concepts>
 #endif
 
-namespace KokkosEx = MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
+namespace KokkosEx =
+    MDSPAN_IMPL_STANDARD_NAMESPACE::MDSPAN_IMPL_PROPOSED_NAMESPACE;
 
 using E1 = Kokkos::extents<int32_t, Kokkos::dynamic_extent, 3>;
 using M1 = KokkosEx::mdarray<float, E1, Kokkos::layout_left>;
 
 #if defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20
-template<class T>
+template <class T>
 constexpr bool is_copyable = std::copyable<T>;
 #else
-template<class T>
+template <class T>
 constexpr bool is_copyable =
-  std::is_assignable<T,T>::value &&
-  std::is_move_assignable<T>::value &&
-  std::is_copy_constructible<T>::value &&
-  std::is_move_constructible<T>::value;
+    std::is_assignable<T, T>::value && std::is_move_assignable<T>::value &&
+    std::is_copy_constructible<T>::value &&
+    std::is_move_constructible<T>::value;
 #endif
 
+// clang-format off
 MDSPAN_STATIC_TEST(
   std::is_same<typename M1::element_type, float>::value &&
   std::is_same<typename M1::index_type, int32_t>::value &&
@@ -101,3 +102,4 @@ MDSPAN_STATIC_TEST(
   is_copyable<M3> &&
   std::is_default_constructible<M3>::value
 );
+// clang-format on

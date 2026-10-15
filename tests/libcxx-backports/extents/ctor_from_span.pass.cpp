@@ -12,11 +12,13 @@
 // Test construction from span:
 //
 // template<class OtherIndexType, size_t N>
-//     constexpr explicit(N != rank_dynamic()) extents(span<OtherIndexType, N> exts) noexcept;
+//     constexpr explicit(N != rank_dynamic()) extents(span<OtherIndexType, N>
+//     exts) noexcept;
 //
 // Constraints:
 //   * is_convertible_v<const OtherIndexType&, index_type> is true,
-//   * is_nothrow_constructible_v<index_type, const OtherIndexType&> is true, and
+//   * is_nothrow_constructible_v<index_type, const OtherIndexType&> is true,
+//   and
 //   * N == rank_dynamic() || N == rank() is true.
 //
 // Preconditions:
@@ -24,7 +26,8 @@
 //     Er is a static extent, and
 //   * either
 //     - N is zero, or
-//     - exts[r] is nonnegative and is representable as a value of type index_type
+//     - exts[r] is nonnegative and is representable as a value of type
+//     index_type
 //       for every rank index r.
 //
 
@@ -40,7 +43,8 @@
 
 struct SpanCtorTest {
   template <class E, class T, size_t N, class Extents, size_t... Indices>
-  static constexpr void test_construction(std::array<T, N> all_ext, Extents ext, std::index_sequence<Indices...>) {
+  static constexpr void test_construction(std::array<T, N> all_ext, Extents ext,
+                                          std::index_sequence<Indices...>) {
     ASSERT_NOEXCEPT(E(ext));
     if constexpr (N == E::rank_dynamic()) {
       test_implicit_construction_call<E>(std::span(ext), all_ext);
@@ -64,6 +68,7 @@ int main(int, char**) {
   constexpr size_t D = std::dynamic_extent;
   using E            = std::extents<int, 1, D, 3, D>;
 
+  // clang-format off
   // check can't construct from too few arguments
   static_assert(!std::is_constructible_v<E, std::span<int, 1>>, "extents constructible from illegal arguments");
   // check can't construct from rank_dynamic < #args < rank
@@ -96,5 +101,6 @@ int main(int, char**) {
   static_assert(!std::is_convertible_v<const IntTypeNC&, int>);
   static_assert(std::is_nothrow_constructible_v<int, IntTypeNC>);
   static_assert(!std::is_constructible_v<std::dextents<int, 2>, std::span<IntTypeNC, 2>>);
+  // clang-format on
   return 0;
 }

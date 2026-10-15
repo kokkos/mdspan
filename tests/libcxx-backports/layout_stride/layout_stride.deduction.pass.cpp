@@ -26,6 +26,7 @@
 constexpr bool test() {
   constexpr size_t D = std::dynamic_extent;
 
+  // clang-format off
   ASSERT_SAME_TYPE(decltype(std::layout_stride::mapping(std::extents<int>(), std::array<unsigned, 0>())),
                    std::layout_stride::template mapping<std::extents<int>>);
   ASSERT_SAME_TYPE(decltype(std::layout_stride::mapping(std::extents<int, 4>(), std::array<char, 1>{1})),
@@ -45,6 +46,7 @@ constexpr bool test() {
   ASSERT_SAME_TYPE(
       decltype(std::layout_stride::mapping(std::extents<unsigned, D, 3>(), std::declval<std::span<int64_t, 2>>())),
       std::layout_stride::template mapping<std::extents<unsigned, D, 3>>);
+  // clang-format on
   return true;
 }
 

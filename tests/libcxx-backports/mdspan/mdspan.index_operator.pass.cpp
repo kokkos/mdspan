@@ -25,8 +25,8 @@
 
 // GCC warns about comma operator changing its meaning inside [] in C++23
 #if defined(__GNUC__) && !defined(__clang_major__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wcomma-subscript"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcomma-subscript"
 #endif
 
 #include <mdspan/mdspan.hpp>
@@ -38,7 +38,8 @@
 #include "../ConvertibleToIntegral.h"
 #include "../CustomTestLayouts.h"
 
-// This test uses the bracket operator, but its not something we have at configure time
+// This test uses the bracket operator, but its not something we have at
+// configure time
 #if MDSPAN_USE_BRACKET_OPERATOR
 
 // Clang 16 does not support argument packs as input to operator []
@@ -60,7 +61,8 @@ constexpr auto& access(MDS mds, int64_t i0, int64_t i1, int64_t i2) {
   return mds[i0, i1, i2];
 }
 template <class MDS>
-constexpr auto& access(MDS mds, int64_t i0, int64_t i1, int64_t i2, int64_t i3) {
+constexpr auto& access(MDS mds, int64_t i0, int64_t i1, int64_t i2,
+                       int64_t i3) {
   return mds[i0, i1, i2, i3];
 }
 #endif
@@ -84,17 +86,20 @@ constexpr bool check_operator_constraints(MDS, Indices...) {
 
 template <class MDS, class... Args>
 constexpr void iterate(MDS mds, Args... args) {
-  constexpr int r = static_cast<int>(MDS::extents_type::rank()) - 1 - static_cast<int>(sizeof...(Args));
+  constexpr int r = static_cast<int>(MDS::extents_type::rank()) - 1 -
+                    static_cast<int>(sizeof...(Args));
   if constexpr (-1 == r) {
 #if defined(__clang_major__) && __clang_major__ < 17
     int* ptr1 = &access(mds, args...);
 #else
     int* ptr1 = &mds[args...];
 #endif
-    int* ptr2 = &(mds.accessor().access(mds.data_handle(), mds.mapping()(args...)));
+    int* ptr2 =
+        &(mds.accessor().access(mds.data_handle(), mds.mapping()(args...)));
     assert(ptr1 == ptr2);
 
-    std::array<typename MDS::index_type, MDS::rank()> args_arr{static_cast<typename MDS::index_type>(args)...};
+    std::array<typename MDS::index_type, MDS::rank()> args_arr{
+        static_cast<typename MDS::index_type>(args)...};
     int* ptr3 = &mds[args_arr];
     assert(ptr3 == ptr2);
     int* ptr4 = &mds[std::span(args_arr)];
@@ -109,7 +114,8 @@ constexpr void iterate(MDS mds, Args... args) {
 template <class Mapping>
 constexpr void test_iteration(Mapping m) {
   std::array<int, 1024> data;
-  using MDS = std::mdspan<int, typename Mapping::extents_type, typename Mapping::layout_type>;
+  using MDS = std::mdspan<int, typename Mapping::extents_type,
+                          typename Mapping::layout_type>;
   MDS mds(data.data(), m);
 
   iterate(mds);
@@ -123,100 +129,142 @@ constexpr void test_layout() {
   test_iteration(construct_mapping(Layout(), std::extents<unsigned, D>(7)));
   test_iteration(construct_mapping(Layout(), std::extents<unsigned, 7>()));
   test_iteration(construct_mapping(Layout(), std::extents<unsigned, 7, 8>()));
-  test_iteration(construct_mapping(Layout(), std::extents<char, D, D, D, D>(1, 1, 1, 1)));
+  test_iteration(
+      construct_mapping(Layout(), std::extents<char, D, D, D, D>(1, 1, 1, 1)));
 
-// TODO enable for GCC 13, when the CI pipeline is switched, doesn't work with GCC 12
+// TODO enable for GCC 13, when the CI pipeline is switched, doesn't work with
+// GCC 12
 #if defined(__clang_major__) && __clang_major__ >= 17
   int data[1];
   // Check operator constraint for number of arguments
-  static_assert(check_operator_constraints(std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), 0));
-  static_assert(
-      !check_operator_constraints(std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), 0, 0));
+  static_assert(check_operator_constraints(
+      std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))),
+      0));
+  static_assert(!check_operator_constraints(
+      std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))),
+      0, 0));
 
   // Check operator constraint for convertibility of arguments to index_type
-  static_assert(
-      check_operator_constraints(std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), IntType(0)));
-  static_assert(!check_operator_constraints(
-      std::mdspan(data, construct_mapping(Layout(), std::extents<unsigned, D>(1))), IntType(0)));
-
-  // Check operator constraint for no-throw-constructibility of index_type from arguments
-  static_assert(!check_operator_constraints(
-      std::mdspan(data, construct_mapping(Layout(), std::extents<unsigned char, D>(1))), IntType(0)));
-
-  // Check that mixed integrals work: note the second one tests that mdspan casts: layout_wrapping_integral does not accept IntType
   static_assert(check_operator_constraints(
-      std::mdspan(data, construct_mapping(Layout(), std::extents<unsigned char, D, D>(1, 1))), int(0), size_t(0)));
+      std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))),
+      IntType(0)));
+  static_assert(!check_operator_constraints(
+      std::mdspan(data,
+                  construct_mapping(Layout(), std::extents<unsigned, D>(1))),
+      IntType(0)));
+
+  // Check operator constraint for no-throw-constructibility of index_type from
+  // arguments
+  static_assert(!check_operator_constraints(
+      std::mdspan(
+          data, construct_mapping(Layout(), std::extents<unsigned char, D>(1))),
+      IntType(0)));
+
+  // Check that mixed integrals work: note the second one tests that mdspan
+  // casts: layout_wrapping_integral does not accept IntType
   static_assert(check_operator_constraints(
-      std::mdspan(data, construct_mapping(Layout(), std::extents<int, D, D>(1, 1))), unsigned(0), IntType(0)));
+      std::mdspan(data, construct_mapping(
+                            Layout(), std::extents<unsigned char, D, D>(1, 1))),
+      int(0), size_t(0)));
+  static_assert(check_operator_constraints(
+      std::mdspan(data,
+                  construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
+      unsigned(0), IntType(0)));
 
   constexpr bool t = true;
   constexpr bool o = false;
   static_assert(!check_operator_constraints(
-      std::mdspan(data, construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
-      unsigned(0),
-      IntConfig<o, o, t, t>(0)));
+      std::mdspan(data,
+                  construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
+      unsigned(0), IntConfig<o, o, t, t>(0)));
   static_assert(check_operator_constraints(
-      std::mdspan(data, construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
-      unsigned(0),
-      IntConfig<o, t, t, t>(0)));
+      std::mdspan(data,
+                  construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
+      unsigned(0), IntConfig<o, t, t, t>(0)));
   static_assert(check_operator_constraints(
-      std::mdspan(data, construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
-      unsigned(0),
-      IntConfig<o, t, o, t>(0)));
+      std::mdspan(data,
+                  construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
+      unsigned(0), IntConfig<o, t, o, t>(0)));
   static_assert(!check_operator_constraints(
-      std::mdspan(data, construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
-      unsigned(0),
-      IntConfig<t, o, o, t>(0)));
+      std::mdspan(data,
+                  construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
+      unsigned(0), IntConfig<t, o, o, t>(0)));
   static_assert(check_operator_constraints(
-      std::mdspan(data, construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
-      unsigned(0),
-      IntConfig<t, o, t, o>(0)));
+      std::mdspan(data,
+                  construct_mapping(Layout(), std::extents<int, D, D>(1, 1))),
+      unsigned(0), IntConfig<t, o, t, o>(0)));
 
   // layout_wrapped wouldn't quite work here the way we wrote the check
-  // IntConfig has configurable conversion properties: convert from const&, convert from non-const, no-throw-ctor from const&, no-throw-ctor from non-const
+  // IntConfig has configurable conversion properties: convert from const&,
+  // convert from non-const, no-throw-ctor from const&, no-throw-ctor from
+  // non-const
   if constexpr (std::is_same_v<Layout, std::layout_left>) {
     static_assert(!check_operator_constraints(
-        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), std::array{IntConfig<o, o, t, t>(0)}));
+        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))),
+        std::array{IntConfig<o, o, t, t>(0)}));
     static_assert(!check_operator_constraints(
-        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), std::array{IntConfig<o, t, t, t>(0)}));
+        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))),
+        std::array{IntConfig<o, t, t, t>(0)}));
     static_assert(!check_operator_constraints(
-        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), std::array{IntConfig<t, o, o, t>(0)}));
+        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))),
+        std::array{IntConfig<t, o, o, t>(0)}));
     static_assert(!check_operator_constraints(
-        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), std::array{IntConfig<t, t, o, t>(0)}));
+        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))),
+        std::array{IntConfig<t, t, o, t>(0)}));
     static_assert(check_operator_constraints(
-        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), std::array{IntConfig<t, o, t, o>(0)}));
+        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))),
+        std::array{IntConfig<t, o, t, o>(0)}));
     static_assert(check_operator_constraints(
-        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), std::array{IntConfig<t, t, t, t>(0)}));
+        std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))),
+        std::array{IntConfig<t, t, t, t>(0)}));
 
     {
       std::array idx{IntConfig<o, o, t, t>(0)};
       std::span s(idx);
-      assert(!check_operator_constraints(std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), s));
+      assert(!check_operator_constraints(
+          std::mdspan(data,
+                      construct_mapping(Layout(), std::extents<int, D>(1))),
+          s));
     }
     {
       std::array idx{IntConfig<o, o, t, t>(0)};
       std::span s(idx);
-      assert(!check_operator_constraints(std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), s));
+      assert(!check_operator_constraints(
+          std::mdspan(data,
+                      construct_mapping(Layout(), std::extents<int, D>(1))),
+          s));
     }
     {
       std::array idx{IntConfig<o, o, t, t>(0)};
       std::span s(idx);
-      assert(!check_operator_constraints(std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), s));
+      assert(!check_operator_constraints(
+          std::mdspan(data,
+                      construct_mapping(Layout(), std::extents<int, D>(1))),
+          s));
     }
     {
       std::array idx{IntConfig<o, o, t, t>(0)};
       std::span s(idx);
-      assert(!check_operator_constraints(std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), s));
+      assert(!check_operator_constraints(
+          std::mdspan(data,
+                      construct_mapping(Layout(), std::extents<int, D>(1))),
+          s));
     }
     {
       std::array idx{IntConfig<o, o, t, t>(0)};
       std::span s(idx);
-      assert(!check_operator_constraints(std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), s));
+      assert(!check_operator_constraints(
+          std::mdspan(data,
+                      construct_mapping(Layout(), std::extents<int, D>(1))),
+          s));
     }
     {
       std::array idx{IntConfig<o, o, t, t>(0)};
       std::span s(idx);
-      assert(!check_operator_constraints(std::mdspan(data, construct_mapping(Layout(), std::extents<int, D>(1))), s));
+      assert(!check_operator_constraints(
+          std::mdspan(data,
+                      construct_mapping(Layout(), std::extents<int, D>(1))),
+          s));
     }
   }
 #endif
@@ -225,12 +273,15 @@ constexpr void test_layout() {
 template <class Layout>
 constexpr void test_layout_large() {
   constexpr size_t D = std::dynamic_extent;
-  test_iteration(construct_mapping(Layout(), std::extents<int64_t, D, 4, D, D>(3, 5, 6)));
-  test_iteration(construct_mapping(Layout(), std::extents<int64_t, D, 4, 1, D>(3, 6)));
+  test_iteration(
+      construct_mapping(Layout(), std::extents<int64_t, D, 4, D, D>(3, 5, 6)));
+  test_iteration(
+      construct_mapping(Layout(), std::extents<int64_t, D, 4, 1, D>(3, 6)));
 }
 
 // mdspan::operator[] casts to index_type before calling mapping
-// mapping requirements only require the index operator to mixed integer types not anything convertible to index_type
+// mapping requirements only require the index operator to mixed integer types
+// not anything convertible to index_type
 constexpr void test_index_cast_happens() {}
 
 constexpr bool test() {
@@ -258,8 +309,8 @@ int main(int, char**) {
   return 0;
 }
 
-#endif // MDSPAN_USE_BRACKET_OPERATOR
+#endif  // MDSPAN_USE_BRACKET_OPERATOR
 
 #if defined(__GNUC__) && !defined(__clang_major__)
-#  pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif

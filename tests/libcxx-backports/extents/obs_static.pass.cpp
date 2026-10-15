@@ -32,8 +32,10 @@
 
 #include "../llvm_test_macros.h"
 
-template <class E, size_t rank, size_t rank_dynamic, size_t... StaticExts, size_t... Indices>
-void test_static_observers(std::index_sequence<StaticExts...>, std::index_sequence<Indices...>) {
+template <class E, size_t rank, size_t rank_dynamic, size_t... StaticExts,
+          size_t... Indices>
+void test_static_observers(std::index_sequence<StaticExts...>,
+                           std::index_sequence<Indices...>) {
   ASSERT_NOEXCEPT(E::rank());
   static_assert(E::rank() == rank);
   ASSERT_NOEXCEPT(E::rank_dynamic());
@@ -50,7 +52,8 @@ void test_static_observers(std::index_sequence<StaticExts...>, std::index_sequen
 template <class E, size_t rank, size_t rank_dynamic, size_t... StaticExts>
 void test_static_observers() {
   test_static_observers<E, rank, rank_dynamic>(
-      std::index_sequence<StaticExts...>(), std::make_index_sequence<sizeof...(StaticExts)>());
+      std::index_sequence<StaticExts...>(),
+      std::make_index_sequence<sizeof...(StaticExts)>());
 }
 
 template <class T>
@@ -58,6 +61,7 @@ void test() {
   constexpr size_t D = std::dynamic_extent;
   constexpr size_t S = 5;
 
+  // clang-format off
   test_static_observers<std::extents<T>, 0, 0>();
 
   test_static_observers<std::extents<T, S>, 1, 0, S>();
@@ -76,6 +80,7 @@ void test() {
   test_static_observers<std::extents<T, D, S, D>, 3, 2, D, S, D>();
   test_static_observers<std::extents<T, D, D, S>, 3, 2, D, D, S>();
   test_static_observers<std::extents<T, D, D, D>, 3, 3, D, D, D>();
+  // clang-format on
 }
 
 int main(int, char**) {

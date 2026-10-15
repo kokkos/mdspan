@@ -11,9 +11,8 @@
 #include <memory>
 #include <random>
 
-
-
-#if !(defined(__cpp_lib_make_unique) && __cpp_lib_make_unique >= 201304) && !MDSPAN_HAS_CXX_14
+#if !(defined(__cpp_lib_make_unique) && __cpp_lib_make_unique >= 201304) && \
+    !MDSPAN_HAS_CXX_14
 // Not actually conforming, but it works for the purposes of this file
 namespace std {
 template <class T>
@@ -26,16 +25,14 @@ struct __unique_ptr_new_impl {
 
 template <class T>
 struct __unique_ptr_new_impl<T[]> {
-  static T* __impl(size_t size) {
-    return new T[size];
-  }
+  static T* __impl(size_t size) { return new T[size]; }
 };
 
 template <class T, class... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {
   return std::unique_ptr<T>(__unique_ptr_new_impl<T>::__impl((Args&&)args...));
 }
-} // end namespace std
+}  // end namespace std
 #endif
 
 namespace mdspan_benchmark {
@@ -43,31 +40,30 @@ namespace mdspan_benchmark {
 namespace _impl {
 
 template <class, class T>
-T&& _repeated_with(T&& v) noexcept { return std::forward<T>(v); }
+T&& _repeated_with(T&& v) noexcept {
+  return std::forward<T>(v);
+}
 
 template <class T, class SizeT, class... Rest, class RNG, class Dist>
-void _do_fill_random(
-  Kokkos::mdspan<T, Kokkos::extents<SizeT>, Rest...> s,
-  RNG& gen,
-  Dist& dist
-)
-{
+void _do_fill_random(Kokkos::mdspan<T, Kokkos::extents<SizeT>, Rest...> s,
+                     RNG& gen, Dist& dist) {
   s() = dist(gen);
 }
 
-template <class T, class SizeT, size_t E, size_t... Es, class... Rest, class RNG, class Dist>
+template <class T, class SizeT, size_t E, size_t... Es, class... Rest,
+          class RNG, class Dist>
 void _do_fill_random(
-  Kokkos::mdspan<T, Kokkos::extents<SizeT, E, Es...>, Rest...> s,
-  RNG& gen,
-  Dist& dist
-)
-{
-  for(SizeT i = 0; i < s.extent(0); ++i) {
-    _do_fill_random(Kokkos::submdspan(s, i, _repeated_with<decltype(Es)>(Kokkos::full_extent)...), gen, dist);
+    Kokkos::mdspan<T, Kokkos::extents<SizeT, E, Es...>, Rest...> s, RNG& gen,
+    Dist& dist) {
+  for (SizeT i = 0; i < s.extent(0); ++i) {
+    _do_fill_random(
+        Kokkos::submdspan(s, i,
+                          _repeated_with<decltype(Es)>(Kokkos::full_extent)...),
+        gen, dist);
   }
 }
 
-} // end namespace _impl
+}  // end namespace _impl
 
 template <class T, class E, class... Rest>
 void fill_random(Kokkos::mdspan<T, E, Rest...> s, long long seed = 1234) {
@@ -76,8 +72,9 @@ void fill_random(Kokkos::mdspan<T, E, Rest...> s, long long seed = 1234) {
   _impl::_do_fill_random(s, gen, val_dist);
 }
 
-} // namespace mdspan_benchmark
+}  // namespace mdspan_benchmark
 
+// clang-format off
 //==============================================================================
 // <editor-fold desc="A helpful template for instantiating all 3D combinations"> {{{1
 
@@ -161,5 +158,6 @@ BENCHMARK_CAPTURE( \
 
 // </editor-fold> end A helpful template for instantiating all 3D combinations }}}1
 //==============================================================================
+// clang-format on
 
-#endif // MDSPAN_BENCHMARKS_FILL_HPP
+#endif  // MDSPAN_BENCHMARKS_FILL_HPP

@@ -10,6 +10,7 @@
 
 #define MDSPAN_ENABLE_EXPENSIVE_COMPILATION_TESTS 0
 
+// clang-format off
 #define MDSPAN_STATIC_TEST(...) \
   static_assert(__VA_ARGS__, "MDSpan compile time test failed at "  __FILE__ ":" MDSPAN_PP_STRINGIFY(__LINE__))
 
@@ -35,6 +36,7 @@
     char a[] = { 0 }; char b[] = { 0 }; char c[] = { 0 }; \
     return b[(a[0] + c[0] + -!(checker(__val, _exp)))];
 #endif
+// clang-format on
 
 // More sugar around the compiler output to print some values of things
 struct _____constexpr_assertion_failed_ {
@@ -46,25 +48,34 @@ struct _____constexpr_assertion_failed_ {
     const char* __str;
     template <class U>
     constexpr char but_actual_value_was_(U __val) const {
-      // Put this macro here so that failures are easy to find in compiler output
+      // Put this macro here so that failures are easy to find in compiler
+      // output
       __________CONSTEXPR_ASSERTION_FAILED__________
     }
   };
   struct _check_eq {
     template <class T, class U>
-    constexpr bool operator()(T val, U exp) const { return val == exp; }
+    constexpr bool operator()(T val, U exp) const {
+      return val == exp;
+    }
   };
   struct _check_not_eq {
     template <class T, class U>
-    constexpr bool operator()(T val, U exp) const { return val != exp; }
+    constexpr bool operator()(T val, U exp) const {
+      return val != exp;
+    }
   };
   struct _check_less {
     template <class T, class U>
-    constexpr bool operator()(T val, U exp) const { return val != exp; }
+    constexpr bool operator()(T val, U exp) const {
+      return val != exp;
+    }
   };
   struct _check_greater {
     template <class T, class U>
-    constexpr bool operator()(T val, U exp) const { return val != exp; }
+    constexpr bool operator()(T val, U exp) const {
+      return val != exp;
+    }
   };
 
   template <class T>
@@ -77,7 +88,8 @@ struct _____constexpr_assertion_failed_ {
   }
   template <class T>
   constexpr auto _rhs_expected_to_not_be_(T _exp) const {
-    return _expected_impl<T, _check_not_eq>{_exp, _check_not_eq{}, _expr_string};
+    return _expected_impl<T, _check_not_eq>{_exp, _check_not_eq{},
+                                            _expr_string};
   }
   template <class T>
   constexpr auto _expected_to_be_less_than_(T _exp) const {
@@ -85,30 +97,41 @@ struct _____constexpr_assertion_failed_ {
   }
   template <class T>
   constexpr auto _expected_to_be_greater_than_(T _exp) const {
-    return _expected_impl<T, _check_greater>{_exp, _check_greater{}, _expr_string};
+    return _expected_impl<T, _check_greater>{_exp, _check_greater{},
+                                             _expr_string};
   }
 };
 
 // Macros for the assertions themselves
-#define constexpr_assert(...) \
-  _____constexpr_assertion_failed_{#__VA_ARGS__}._expected_to_be_(true).but_actual_value_was_(__VA_ARGS__);
+#define constexpr_assert(...)                    \
+  _____constexpr_assertion_failed_{#__VA_ARGS__} \
+      ._expected_to_be_(true)                    \
+      .but_actual_value_was_(__VA_ARGS__);
 
-#define constexpr_assert_equal(expr, ...) \
-  _____constexpr_assertion_failed_{#__VA_ARGS__ "==" #expr}._rhs_expected_to_be_(expr).but_actual_value_was_((__VA_ARGS__));
+#define constexpr_assert_equal(expr, ...)                   \
+  _____constexpr_assertion_failed_{#__VA_ARGS__ "==" #expr} \
+      ._rhs_expected_to_be_(expr)                           \
+      .but_actual_value_was_((__VA_ARGS__));
 
-#define constexpr_assert_not_equal(expr, ...) \
-  _____constexpr_assertion_failed_{#__VA_ARGS__ "!=" #expr}._rhs_expected_to_not_be_(expr).but_actual_value_was_((__VA_ARGS__));
+#define constexpr_assert_not_equal(expr, ...)               \
+  _____constexpr_assertion_failed_{#__VA_ARGS__ "!=" #expr} \
+      ._rhs_expected_to_not_be_(expr)                       \
+      .but_actual_value_was_((__VA_ARGS__));
 
-#define constexpr_assert_less_than(expr, ...) \
-  _____constexpr_assertion_failed_{#__VA_ARGS__}._expected_to_be_less_than_(expr).but_actual_value_was_((__VA_ARGS__));
+#define constexpr_assert_less_than(expr, ...)    \
+  _____constexpr_assertion_failed_{#__VA_ARGS__} \
+      ._expected_to_be_less_than_(expr)          \
+      .but_actual_value_was_((__VA_ARGS__));
 
 #define constexpr_assert_greater_than(expr, ...) \
-  _____constexpr_assertion_failed_{#__VA_ARGS__}._expected_to_be_greater_than_(expr).but_actual_value_was_((__VA_ARGS__));
+  _____constexpr_assertion_failed_{#__VA_ARGS__} \
+      ._expected_to_be_greater_than_(expr)       \
+      .but_actual_value_was_((__VA_ARGS__));
 
-#endif // MDSPAN_IMPL_USE_CONSTEXPR_14
+#endif  // MDSPAN_IMPL_USE_CONSTEXPR_14
 
 // </editor-fold> end assert-like macros that don't break constexpr }}}1
 //==============================================================================
 
 // All tests need a main so that they'll link
-int main() { }
+int main() {}

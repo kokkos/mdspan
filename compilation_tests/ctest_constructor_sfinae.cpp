@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-
+// clang-format off
 //==============================================================================
 // <editor-fold des4c="Test allowed pointer + extents ctors"> {{{1
 
@@ -165,6 +165,7 @@ MDSPAN_STATIC_TEST(
         int*, Kokkos::dextents<size_t,2>
    >::value
 );
+// clang-format on
 
 // </editor-fold> end Test forbidden pointer + extents ctors }}}1
 //==============================================================================

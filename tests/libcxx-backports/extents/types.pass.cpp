@@ -18,7 +18,8 @@
 //  using rank_type = size_t;
 //
 //  static constexpr rank_type rank() noexcept { return sizeof...(Extents); }
-//  static constexpr rank_type rank_dynamic() noexcept { return dynamic-index(rank()); }
+//  static constexpr rank_type rank_dynamic() noexcept { return
+//  dynamic-index(rank()); }
 //  ...
 //  }
 
@@ -36,7 +37,8 @@ void testExtents() {
   ASSERT_SAME_TYPE(typename E::rank_type, size_t);
 
   static_assert(sizeof...(Extents) == E::rank());
-  static_assert((static_cast<size_t>(Extents == std::dynamic_extent) + ...) == E::rank_dynamic());
+  static_assert((static_cast<size_t>(Extents == std::dynamic_extent) + ...) ==
+                E::rank_dynamic());
 
   static_assert(std::regular<E>);
   static_assert(std::is_trivially_copyable_v<E>);
@@ -55,6 +57,7 @@ void testExtents() {
 template <class T>
 void test() {
   constexpr size_t D = std::dynamic_extent;
+  // clang-format off
   testExtents<T, D>();
   testExtents<T, 3>();
   testExtents<T, 3, 3>();
@@ -73,6 +76,7 @@ void test() {
   testExtents<T, 9, 8, 7, 6, 5, 4, 3, 2, 1>();
   testExtents<T, 9, D, 7, 6, D, D, 3, D, D>();
   testExtents<T, D, D, D, D, D, D, D, D, D>();
+  // clang-format on
 }
 
 int main(int, char**) {

@@ -5,7 +5,7 @@
 
 #include <mdspan/mdspan.hpp>
 
-
+// clang-format off
 
 MDSPAN_STATIC_TEST(
   std::is_constructible<
@@ -289,3 +289,5 @@ MDSPAN_STATIC_TEST(
 MDSPAN_STATIC_TEST(
   Kokkos::extents<size_t, Kokkos::dynamic_extent, 1>{Kokkos::extents<size_t, 0, 1>{}}.extent(0) == 0
 );
+
+// clang-format on

@@ -15,7 +15,8 @@
 // template<class OtherElementType>
 //   constexpr default_accessor(default_accessor<OtherElementType>) noexcept {}
 //
-// Constraints: is_convertible_v<OtherElementType(*)[], element_type(*)[]> is true.
+// Constraints: is_convertible_v<OtherElementType(*)[], element_type(*)[]> is
+// true.
 
 #include <mdspan/mdspan.hpp>
 #include <cassert>
@@ -27,7 +28,7 @@
 #include "../MinimalElementType.h"
 
 struct Base {};
-struct Derived: public Base {};
+struct Derived : public Base {};
 
 template <class FromT, class ToT>
 constexpr void test_conversion() {
@@ -45,6 +46,7 @@ constexpr bool test() {
   test_conversion<MinimalElementType, const MinimalElementType>();
   test_conversion<const MinimalElementType, const MinimalElementType>();
 
+  // clang-format off
   // char is convertible to int, but accessors are not
   static_assert(!std::is_constructible_v<std::default_accessor<int>, std::default_accessor<char>>);
   // don't allow conversion from const elements to non-const
@@ -57,6 +59,7 @@ constexpr bool test() {
   static_assert(!std::is_constructible_v<std::default_accessor<Derived>, std::default_accessor<Base>>);
   // don't allow conversion from Derived to Base
   static_assert(!std::is_constructible_v<std::default_accessor<Base>, std::default_accessor<Derived>>);
+  // clang-format on
 
   return true;
 }

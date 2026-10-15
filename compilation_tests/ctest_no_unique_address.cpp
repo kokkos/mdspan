@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-
+// clang-format off
 //==============================================================================
 // <editor-fold desc="extents"> {{{1
 
@@ -66,7 +66,7 @@ MDSPAN_STATIC_TEST(
     Kokkos::extents<size_t,42, Kokkos::dynamic_extent, 73>
   >) == 4 * sizeof(size_t)
 );
-
+// clang-format on
 
 // </editor-fold> end layouts }}}1
 //==============================================================================

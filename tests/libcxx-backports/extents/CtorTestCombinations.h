@@ -19,10 +19,11 @@
 
 // Helper file to implement combinatorical testing of extents constructor
 //
-// std::extents can be constructed from just indices, a std::array, or a std::span
-// In each of those cases one can either provide all extents, or just the dynamic ones
-// If constructed from std::span, the span needs to have a static extent
-// Furthermore, the indices/array/span can have integer types other than index_type
+// std::extents can be constructed from just indices, a std::array, or a
+// std::span In each of those cases one can either provide all extents, or just
+// the dynamic ones If constructed from std::span, the span needs to have a
+// static extent Furthermore, the indices/array/span can have integer types
+// other than index_type
 
 template <class E, class AllExtents>
 constexpr void test_runtime_observers(E ext, AllExtents expected) {
@@ -41,7 +42,8 @@ constexpr void test_implicit_construction_call(E e, AllExtents all_ext) {
 template <class E, class Test, class AllExtents>
 constexpr void test_construction(AllExtents all_ext) {
   // test construction from all extents
-  Test::template test_construction<E>(all_ext, all_ext, std::make_index_sequence<E::rank()>());
+  Test::template test_construction<E>(all_ext, all_ext,
+                                      std::make_index_sequence<E::rank()>());
 
   // test construction from just dynamic extents
   // create an array of just the extents corresponding to dynamic values
@@ -54,10 +56,12 @@ constexpr void test_construction(AllExtents all_ext) {
         dynamic_idx++;
       }
     }
-    Test::template test_construction<E>(all_ext, dyn_ext, std::make_index_sequence<E::rank_dynamic()>());
+    Test::template test_construction<E>(
+        all_ext, dyn_ext, std::make_index_sequence<E::rank_dynamic()>());
   } else {
     std::array<typename AllExtents::value_type, E::rank_dynamic()> dyn_ext{};
-    Test::template test_construction<E>(all_ext, dyn_ext, std::make_index_sequence<E::rank_dynamic()>());
+    Test::template test_construction<E>(
+        all_ext, dyn_ext, std::make_index_sequence<E::rank_dynamic()>());
   }
 }
 
@@ -65,6 +69,7 @@ template <class T, class TArg, class Test>
 constexpr void test() {
   constexpr size_t D = std::dynamic_extent;
 
+  // clang-format off
   test_construction<std::extents<T>, Test>(std::array<TArg, 0>{});
 
   test_construction<std::extents<T, 3>, Test>(std::array<TArg, 1>{3});
@@ -87,6 +92,7 @@ constexpr void test() {
   test_construction<std::extents<T, 1, 2, 3, 4, 5, 6, 7, 8, 9>, Test>(std::array<TArg, 9>{1, 2, 3, 4, 5, 6, 7, 8, 9});
   test_construction<std::extents<T, D, 2, 3, D, 5, D, 7, D, 9>, Test>(std::array<TArg, 9>{1, 2, 3, 4, 5, 6, 7, 8, 9});
   test_construction<std::extents<T, D, D, D, D, D, D, D, D, D>, Test>(std::array<TArg, 9>{1, 2, 3, 4, 5, 6, 7, 8, 9});
+  // clang-format on
 }
 
 template <class Test>

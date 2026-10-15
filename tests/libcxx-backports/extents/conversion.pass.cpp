@@ -10,7 +10,8 @@
 // <mdspan/mdspan.hpp>
 
 // template<class OtherIndexType, size_t... OtherExtents>
-//     constexpr explicit(see below) extents(const extents<OtherIndexType, OtherExtents...>&) noexcept;
+//     constexpr explicit(see below) extents(const extents<OtherIndexType,
+//     OtherExtents...>&) noexcept;
 //
 // Constraints:
 //   * sizeof...(OtherExtents) == rank() is true.
@@ -25,8 +26,9 @@
 //        every rank index r of other.
 //
 // Remarks: The expression inside explicit is equivalent to:
-//          (((Extents != dynamic_extent) && (OtherExtents == dynamic_extent)) || ... ) ||
-//          (numeric_limits<index_type>::max() < numeric_limits<OtherIndexType>::max())
+//          (((Extents != dynamic_extent) && (OtherExtents == dynamic_extent))
+//          || ... ) || (numeric_limits<index_type>::max() <
+//          numeric_limits<OtherIndexType>::max())
 
 #include <mdspan/mdspan.hpp>
 #include <type_traits>
@@ -52,13 +54,13 @@ constexpr void test_conversion(From src) {
   }
 }
 
+// clang-format off
 template <class T1, class T2>
 constexpr void test_conversion() {
   constexpr size_t D = std::dynamic_extent;
   constexpr bool idx_convertible =
       static_cast<size_t>(std::numeric_limits<T1>::max()) >= static_cast<size_t>(std::numeric_limits<T2>::max());
 
-  // clang-format off
   test_conversion<idx_convertible && true,  std::extents<T1>>(std::extents<T2>());
   test_conversion<idx_convertible && true,  std::extents<T1, D>>(std::extents<T2, D>(5));
   test_conversion<idx_convertible && false, std::extents<T1, 5>>(std::extents<T2, D>(5));
@@ -72,7 +74,6 @@ constexpr void test_conversion() {
                                             std::extents<T2, D, D, D, D, D>(5, 7, 8, 9, 1));
   test_conversion<idx_convertible && true,  std::extents<T1, D, D, 8, 9, D>>(std::extents<T2, D, 7, 8, 9, 1>(5));
   test_conversion<idx_convertible && true,  std::extents<T1, 5, 7, 8, 9, 1>>(std::extents<T2, 5, 7, 8, 9, 1>());
-  // clang-format on
 }
 
 constexpr void test_no_implicit_conversion() {
@@ -118,6 +119,7 @@ constexpr void test_static_extent_mismatch() {
   static_assert(!std::is_constructible_v<std::extents<int, 5>, std::extents<int, 4>>, "");
   static_assert(!std::is_constructible_v<std::extents<int, 5, D>, std::extents<int, 4, D>>, "");
 }
+// clang-format on
 
 constexpr bool test() {
   test_conversion<int, int>();

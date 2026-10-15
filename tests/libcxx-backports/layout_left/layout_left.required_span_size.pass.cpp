@@ -14,7 +14,6 @@
 //
 // Returns: extents().fwd-prod-of-extents(extents_type::rank()).
 
-
 #include <mdspan/mdspan.hpp>
 #include <cassert>
 #include <cstdint>
@@ -22,7 +21,8 @@
 #include "../llvm_test_macros.h"
 
 template <class E>
-constexpr void test_required_span_size(E e, typename E::index_type expected_size) {
+constexpr void test_required_span_size(E e,
+                                       typename E::index_type expected_size) {
   using M = std::layout_left::mapping<E>;
   const M m(e);
 
@@ -32,6 +32,7 @@ constexpr void test_required_span_size(E e, typename E::index_type expected_size
 
 constexpr bool test() {
   constexpr size_t D = std::dynamic_extent;
+  // clang-format off
   test_required_span_size(std::extents<int>(), 1);
   test_required_span_size(std::extents<unsigned, D>(0), 0);
   test_required_span_size(std::extents<unsigned, D>(1), 1);
@@ -41,6 +42,7 @@ constexpr bool test() {
   test_required_span_size(std::extents<int64_t, D, 8, D, D>(7, 9, 10), 5040);
   test_required_span_size(std::extents<int64_t, 1, 8, D, D>(9, 10), 720);
   test_required_span_size(std::extents<int64_t, 1, 0, D, D>(9, 10), 0);
+  // clang-format on
   return true;
 }
 

@@ -22,8 +22,9 @@
 #include <cassert>
 #include "../llvm_test_macros.h"
 
-// This contains a bunch of accessors and handles which have different properties
-// regarding constructibility and convertibility in order to test mdspan constraints
+// This contains a bunch of accessors and handles which have different
+// properties regarding constructibility and convertibility in order to test
+// mdspan constraints
 
 // non default constructible data handle
 template <class T>
@@ -51,7 +52,8 @@ struct move_counted_handle {
   constexpr move_counted_handle(const move_counted_handle&) = default;
   template <class OtherT>
     requires(std::is_constructible_v<T*, OtherT*>)
-  constexpr move_counted_handle(const move_counted_handle<OtherT>& other) : ptr(other.ptr){}
+  constexpr move_counted_handle(const move_counted_handle<OtherT>& other)
+      : ptr(other.ptr) {}
   constexpr move_counted_handle(move_counted_handle&& other) {
     ptr = other.ptr;
 #if MDSPAN_HAS_CXX_23
@@ -62,7 +64,8 @@ struct move_counted_handle {
   }
   constexpr move_counted_handle(T* ptr_) : ptr(ptr_) {}
 
-  constexpr move_counted_handle& operator=(const move_counted_handle&) = default;
+  constexpr move_counted_handle& operator=(const move_counted_handle&) =
+      default;
 
   constexpr T& operator[](size_t i) const { return ptr[i]; }
 
@@ -84,7 +87,8 @@ struct checked_accessor {
   constexpr checked_accessor(size_t N_) : N(N_) {}
   template <class OtherElementType>
     requires(std::is_convertible_v<OtherElementType (*)[], element_type (*)[]>)
-  explicit constexpr checked_accessor(const checked_accessor<OtherElementType>& other) noexcept {
+  explicit constexpr checked_accessor(
+      const checked_accessor<OtherElementType>& other) noexcept {
     N = other.N;
   }
 
@@ -92,14 +96,17 @@ struct checked_accessor {
     assert(i < N);
     return p[i];
   }
-  constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept {
+  constexpr data_handle_type offset(data_handle_type p,
+                                    size_t i) const noexcept {
     assert(i < N);
     return data_handle_type(p.ptr + i);
   }
 };
 
-static_assert(std::is_constructible_v<checked_accessor<const int>, const checked_accessor<int>&>);
-static_assert(!std::is_convertible_v<const checked_accessor<int>&, checked_accessor<const int>>);
+static_assert(std::is_constructible_v<checked_accessor<const int>,
+                                      const checked_accessor<int>&>);
+static_assert(!std::is_convertible_v<const checked_accessor<int>&,
+                                     checked_accessor<const int>>);
 
 template <>
 struct checked_accessor<double> {
@@ -113,7 +120,8 @@ struct checked_accessor<double> {
 
   template <class OtherElementType>
     requires(std::is_convertible_v<OtherElementType (*)[], element_type (*)[]>)
-  constexpr checked_accessor(checked_accessor<OtherElementType>&& other) noexcept {
+  constexpr checked_accessor(
+      checked_accessor<OtherElementType>&& other) noexcept {
     N = other.N;
   }
 
@@ -121,7 +129,8 @@ struct checked_accessor<double> {
     assert(i < N);
     return p.ptr[i];
   }
-  constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept {
+  constexpr data_handle_type offset(data_handle_type p,
+                                    size_t i) const noexcept {
     assert(i < N);
     return p.ptr + i;
   }
@@ -161,7 +170,8 @@ struct checked_accessor<const unsigned> {
   constexpr checked_accessor(const checked_accessor& acc) : N(acc.N) {}
 
   template <class OtherACC>
-  constexpr explicit(std::is_const_v<OtherACC>) checked_accessor(OtherACC&& acc) : N(acc.N) {}
+  constexpr explicit(std::is_const_v<OtherACC>) checked_accessor(OtherACC&& acc)
+      : N(acc.N) {}
 
   constexpr reference access(data_handle_type p, size_t i) const noexcept {
     assert(i < N);
@@ -191,7 +201,8 @@ struct checked_accessor<const float> {
     assert(i < N);
     return p[i];
   }
-  constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept {
+  constexpr data_handle_type offset(data_handle_type p,
+                                    size_t i) const noexcept {
     assert(i < N);
     return data_handle_type(p.ptr + i);
   }
@@ -213,7 +224,8 @@ struct checked_accessor<const double> {
     assert(i < N);
     return p[i];
   }
-  constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept {
+  constexpr data_handle_type offset(data_handle_type p,
+                                    size_t i) const noexcept {
     assert(i < N);
     return data_handle_type(p.ptr + i);
   }
@@ -249,8 +261,13 @@ struct conv_test_accessor_nc {
     return conv_test_accessor_c<T, b1, b2, b3, b4>{};
   }
 
-  constexpr reference access(data_handle_type p, size_t i) const noexcept { return p[i]; }
-  constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept { return p + i; }
+  constexpr reference access(data_handle_type p, size_t i) const noexcept {
+    return p[i];
+  }
+  constexpr data_handle_type offset(data_handle_type p,
+                                    size_t i) const noexcept {
+    return p + i;
+  }
 };
 
 template <class T, bool ctor_c, bool ctor_mv, bool assign_c, bool assign_mv>
@@ -272,7 +289,8 @@ struct conv_test_accessor_c {
     requires(ctor_mv)
   {}
   template <bool b1, bool b2>
-  constexpr conv_test_accessor_c& operator=(const conv_test_accessor_nc<T, b1, b2>&)
+  constexpr conv_test_accessor_c& operator=(
+      const conv_test_accessor_nc<T, b1, b2>&)
     requires(assign_c)
   {
     return {};
@@ -284,8 +302,13 @@ struct conv_test_accessor_c {
     return {};
   }
 
-  constexpr reference access(data_handle_type p, size_t i) const noexcept { return p[i]; }
-  constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept { return p + i; }
+  constexpr reference access(data_handle_type p, size_t i) const noexcept {
+    return p[i];
+  }
+  constexpr data_handle_type offset(data_handle_type p,
+                                    size_t i) const noexcept {
+    return p + i;
+  }
 };
 
 template <class ElementType>
@@ -300,7 +323,8 @@ struct convertible_accessor_but_not_handle {
   template <class OtherElementType>
     requires(std::is_convertible_v<OtherElementType (*)[], element_type (*)[]>)
   explicit constexpr convertible_accessor_but_not_handle(
-      const convertible_accessor_but_not_handle<OtherElementType>& other) noexcept {
+      const convertible_accessor_but_not_handle<OtherElementType>&
+          other) noexcept {
     N = other.N;
   }
 
@@ -308,10 +332,11 @@ struct convertible_accessor_but_not_handle {
     assert(i < N);
     return p[i];
   }
-  constexpr data_handle_type offset(data_handle_type p, size_t i) const noexcept {
+  constexpr data_handle_type offset(data_handle_type p,
+                                    size_t i) const noexcept {
     assert(i < N);
     return data_handle_type(p.ptr + i);
   }
 };
 
-#endif // TEST_STD_CONTAINERS_VIEWS_MDSPAN_MDSPAN_CUSTOM_TEST_ACCESSORS_H
+#endif  // TEST_STD_CONTAINERS_VIEWS_MDSPAN_MDSPAN_CUSTOM_TEST_ACCESSORS_H
