@@ -2,12 +2,13 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <mdspan/mdspan.hpp>
-#include <vector>
 
 #include <gtest/gtest.h>
 
-#include <utility>
+#include <complex>
 #include <numeric>
+#include <utility>
+#include <vector>
 
 #include "offload_utils.hpp"
 #include "foo_customizations.hpp"
