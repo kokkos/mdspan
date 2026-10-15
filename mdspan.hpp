@@ -5393,8 +5393,6 @@ public:
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
-#include <complex>
-
 //BEGIN_FILE_INCLUDE: /home/runner/work/mdspan/mdspan/include/mdspan/impl/constant_wrapper.hpp
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
@@ -5751,7 +5749,6 @@ struct range_slice {
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 
-#include <complex>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 
