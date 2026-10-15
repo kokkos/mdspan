@@ -53,6 +53,7 @@
 //==============================================================================
 // <editor-fold desc="Preprocessor helpers"> {{{1
 
+// clang-format off
 #define MDSPAN_PP_COUNT(...) \
   MDSPAN_IMPL_PP_INTERNAL_EXPAND_ARGS( \
     MDSPAN_IMPL_PP_INTERNAL_ARGS_AUGMENTER(__VA_ARGS__) \
@@ -95,6 +96,7 @@
 
 #define MDSPAN_IMPL_STANDARD_NAMESPACE_STRING MDSPAN_PP_STRINGIFY(MDSPAN_IMPL_STANDARD_NAMESPACE)
 #define MDSPAN_IMPL_PROPOSED_NAMESPACE_STRING MDSPAN_PP_STRINGIFY(MDSPAN_IMPL_STANDARD_NAMESPACE) "::" MDSPAN_PP_STRINGIFY(MDSPAN_IMPL_PROPOSED_NAMESPACE)
+// clang-format on
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
@@ -176,6 +178,7 @@ MDSPAN_FUNCTION constexpr void precondition(const char* cond, const char* file, 
 //==============================================================================
 // <editor-fold desc="Concept emulation"> {{{1
 
+// clang-format off
 // These compatibility macros don't help with partial ordering, but they should do the trick
 // for what we need to do with concepts in mdspan
 #ifdef MDSPAN_IMPL_USE_CONCEPTS
@@ -346,6 +349,8 @@ struct enable_fold_comma { };
 #  define MDSPAN_IMPL_FOLD_PLUS_RIGHT(PACK, ...) (PACK + ... + (__VA_ARGS__))
 #  define MDSPAN_IMPL_FOLD_COMMA(...) ((__VA_ARGS__), ...)
 #else
+
+// clang-format on
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 

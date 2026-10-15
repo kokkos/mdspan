@@ -10,6 +10,7 @@
 
 #define MDSPAN_ENABLE_EXPENSIVE_COMPILATION_TESTS 0
 
+// clang-format off
 #define MDSPAN_STATIC_TEST(...) \
   static_assert(__VA_ARGS__, "MDSpan compile time test failed at "  __FILE__ ":" MDSPAN_PP_STRINGIFY(__LINE__))
 
@@ -35,6 +36,7 @@
     char a[] = { 0 }; char b[] = { 0 }; char c[] = { 0 }; \
     return b[(a[0] + c[0] + -!(checker(__val, _exp)))];
 #endif
+// clang-format on
 
 // More sugar around the compiler output to print some values of things
 struct _____constexpr_assertion_failed_ {

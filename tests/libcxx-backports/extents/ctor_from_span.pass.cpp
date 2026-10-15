@@ -64,6 +64,7 @@ int main(int, char**) {
   constexpr size_t D = std::dynamic_extent;
   using E            = std::extents<int, 1, D, 3, D>;
 
+  // clang-format off
   // check can't construct from too few arguments
   static_assert(!std::is_constructible_v<E, std::span<int, 1>>, "extents constructible from illegal arguments");
   // check can't construct from rank_dynamic < #args < rank
@@ -96,5 +97,6 @@ int main(int, char**) {
   static_assert(!std::is_convertible_v<const IntTypeNC&, int>);
   static_assert(std::is_nothrow_constructible_v<int, IntTypeNC>);
   static_assert(!std::is_constructible_v<std::dextents<int, 2>, std::span<IntTypeNC, 2>>);
+  // clang-format on
   return 0;
 }

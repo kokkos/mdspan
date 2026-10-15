@@ -53,10 +53,12 @@ void BM_MDSpan_Sum_3D_OpenMP(benchmark::State& state, MDSpan, DynSizes... dyn) {
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations() * repeats);
   state.counters["repeats"] = repeats;
 }
+// clang-format off
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, left_, lmdspan, 20, 20, 20);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, right_, rmdspan, 20, 20, 20);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, left_, lmdspan, 200, 200, 200);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_OpenMP, right_, rmdspan, 200, 200, 200);
+// clang-format on
 
 //================================================================================
 
@@ -88,8 +90,10 @@ void BM_MDSpan_Sum_3D_loop_OpenMP(benchmark::State& state, MDSpan, DynSizes... d
   }
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
+// clang-format off
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_loop_OpenMP, right_, rmdspan, 200, 200, 200);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_loop_OpenMP, left_, lmdspan, 200, 200, 200);
+// clang-format on
 
 //================================================================================
 
@@ -126,12 +130,10 @@ void BM_Raw_Sum_3D_OpenMP(benchmark::State& state, T, SizeX x, SizeY y, SizeZ z)
   state.SetBytesProcessed(x * y * z * sizeof(T) * state.iterations() * repeats);
   state.counters["repeats"] = repeats;
 }
-BENCHMARK_CAPTURE(
-  BM_Raw_Sum_3D_OpenMP, size_20_20_20, int(), 20, 20, 20
-);
-BENCHMARK_CAPTURE(
-  BM_Raw_Sum_3D_OpenMP, size_200_200_200, int(), 200, 200, 200
-);
+// clang-format off
+BENCHMARK_CAPTURE(BM_Raw_Sum_3D_OpenMP, size_20_20_20, int(), 20, 20, 20);
+BENCHMARK_CAPTURE(BM_Raw_Sum_3D_OpenMP, size_200_200_200, int(), 200, 200, 200);
+// clang-format on
 
 
 //================================================================================

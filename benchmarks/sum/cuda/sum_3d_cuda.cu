@@ -160,10 +160,12 @@ void BM_MDSpan_Cuda_Sum_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
   CUDA_SAFE_CALL(cudaFree(s.data_handle()));
 }
+// clang-format off
 MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, right_, rmdspan, 80, 80, 80);
 MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, left_, lmdspan, 80, 80, 80);
 MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, right_, rmdspan, 400, 400, 400);
 MDSPAN_BENCHMARK_ALL_3D_MANUAL(BM_MDSpan_Cuda_Sum_3D, left_, lmdspan, 400, 400, 400);
+// clang-format on
 
 //================================================================================
 
@@ -207,8 +209,10 @@ void BM_Raw_Cuda_Sum_3D_right(benchmark::State& state, T, SizeX x, SizeY y, Size
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
   CUDA_SAFE_CALL(cudaFree(data));
 }
+// clang-format off
 BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_right, size_80_80_80, int(), 80, 80, 80);
 BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_right, size_400_400_400, int(), 400, 400, 400);
+// clang-format on
 
 //================================================================================
 
@@ -252,8 +256,10 @@ void BM_Raw_Cuda_Sum_3D_left(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
   CUDA_SAFE_CALL(cudaDeviceSynchronize());
   CUDA_SAFE_CALL(cudaFree(data));
 }
+// clang-format off
 BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_left, size_80_80_80, int(), 80, 80, 80);
 BENCHMARK_CAPTURE(BM_Raw_Cuda_Sum_3D_left, size_400_400_400, int(), 400, 400, 400);
+// clang-format on
 
 //================================================================================
 

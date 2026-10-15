@@ -78,6 +78,7 @@ void fill_random(Kokkos::mdspan<T, E, Rest...> s, long long seed = 1234) {
 
 } // namespace mdspan_benchmark
 
+// clang-format off
 //==============================================================================
 // <editor-fold desc="A helpful template for instantiating all 3D combinations"> {{{1
 
@@ -161,5 +162,6 @@ BENCHMARK_CAPTURE( \
 
 // </editor-fold> end A helpful template for instantiating all 3D combinations }}}1
 //==============================================================================
+// clang-format on
 
 #endif // MDSPAN_BENCHMARKS_FILL_HPP

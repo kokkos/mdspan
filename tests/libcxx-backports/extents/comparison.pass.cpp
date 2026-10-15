@@ -54,6 +54,7 @@ template <class T1, class T2>
 constexpr void test_comparison_same_rank() {
   constexpr size_t D = std::dynamic_extent;
 
+// clang-format off
   test_comparison(true, std::extents<T1>(), std::extents<T2>());
 
   test_comparison(true, std::extents<T1, D>(5), std::extents<T2, D>(5));
@@ -72,6 +73,7 @@ constexpr void test_comparison_same_rank() {
       false, std::extents<T1, D, D, D, D, D>(5, 6, 7, 8, 9), std::extents<T2, D, D, D, D, D>(5, 6, 3, 8, 9));
   test_comparison(false, std::extents<T1, D, 6, D, 8, D>(5, 7, 9), std::extents<T2, 5, D, D, 3, 9>(6, 7));
   test_comparison(false, std::extents<T1, 5, 6, 7, 8, 9>(5, 6, 7, 8, 9), std::extents<T2, 5, 6, 7, 3, 9>());
+// clang-format on
 }
 
 template <class T1, class T2>

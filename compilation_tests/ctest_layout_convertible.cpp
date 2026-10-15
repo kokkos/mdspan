@@ -63,6 +63,7 @@ using E2 = Kokkos::extents<int64_t, 2,2>;
 using LS1 = Kokkos::layout_stride::mapping<E1>;
 using LS2 = Kokkos::layout_stride::mapping<E2>;
 
+// clang-format off
 MDSPAN_STATIC_TEST(
   !std::is_constructible<LS1, AStridedLayout<false>::mapping<E2>>::value &&
   !std::is_convertible<AStridedLayout<false>::mapping<E2>, LS1>::value
@@ -100,3 +101,4 @@ MDSPAN_STATIC_TEST(std::is_constructible<LS1, Kokkos::layout_right_padded<14>::m
 MDSPAN_STATIC_TEST(std::is_convertible<Kokkos::layout_right_padded<14>::mapping<E1>, LS1>::value);
 MDSPAN_STATIC_TEST(std::is_assignable<LS1, Kokkos::layout_right_padded<14>::mapping<E1>>::value);
 #endif
+// clang-format on

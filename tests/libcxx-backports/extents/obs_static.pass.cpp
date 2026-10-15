@@ -58,6 +58,7 @@ void test() {
   constexpr size_t D = std::dynamic_extent;
   constexpr size_t S = 5;
 
+  // clang-format off
   test_static_observers<std::extents<T>, 0, 0>();
 
   test_static_observers<std::extents<T, S>, 1, 0, S>();
@@ -76,6 +77,7 @@ void test() {
   test_static_observers<std::extents<T, D, S, D>, 3, 2, D, S, D>();
   test_static_observers<std::extents<T, D, D, S>, 3, 2, D, D, S>();
   test_static_observers<std::extents<T, D, D, D>, 3, 3, D, D, D>();
+  // clang-format on
 }
 
 int main(int, char**) {

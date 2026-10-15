@@ -6,6 +6,7 @@
 #include <mdspan/mdspan.hpp>
 
 
+// clang-format off
 using E1 = Kokkos::extents<int32_t, Kokkos::dynamic_extent, 3>;
 using MLR1 = Kokkos::layout_right::mapping<E1>;
 // Note we already separately tested that the extents interface is correct
@@ -73,3 +74,4 @@ MDSPAN_STATIC_TEST(
   (MLS1::is_always_exhaustive()== false) &&
   (MLS1::is_always_strided() == true)
 );
+// clang-format on

@@ -65,6 +65,7 @@ template <class T, class TArg, class Test>
 constexpr void test() {
   constexpr size_t D = std::dynamic_extent;
 
+  // clang-format off
   test_construction<std::extents<T>, Test>(std::array<TArg, 0>{});
 
   test_construction<std::extents<T, 3>, Test>(std::array<TArg, 1>{3});
@@ -87,6 +88,7 @@ constexpr void test() {
   test_construction<std::extents<T, 1, 2, 3, 4, 5, 6, 7, 8, 9>, Test>(std::array<TArg, 9>{1, 2, 3, 4, 5, 6, 7, 8, 9});
   test_construction<std::extents<T, D, 2, 3, D, 5, D, 7, D, 9>, Test>(std::array<TArg, 9>{1, 2, 3, 4, 5, 6, 7, 8, 9});
   test_construction<std::extents<T, D, D, D, D, D, D, D, D, D>, Test>(std::array<TArg, 9>{1, 2, 3, 4, 5, 6, 7, 8, 9});
+  // clang-format on
 }
 
 template <class Test>

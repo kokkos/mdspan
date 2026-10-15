@@ -210,14 +210,14 @@ int main(int, char**) {
   // t t t o X
   // t t t t X
 
+// clang-format off
   // checked_accessor has various weird data handles and some weird conversion properties
   // conv_test_accessor_c/nc is an accessor pair which has configurable conversion properties, but plain ptr as data handle
   // accessor constructible
   test<t, t, t, t, t, t, t, t, std::default_accessor<float>>(std::default_accessor<float>());
   test<t, t, t, t, t, t, t, t, std::default_accessor<const float>>(std::default_accessor<float>());
   test<t, t, t, t, t, t, t, t, std::default_accessor<MinimalElementType>>(std::default_accessor<MinimalElementType>());
-  test<t, t, t, t, t, t, t, t, std::default_accessor<const MinimalElementType>>(
-      std::default_accessor<MinimalElementType>());
+  test<t, t, t, t, t, t, t, t, std::default_accessor<const MinimalElementType>>(std::default_accessor<MinimalElementType>());
   test<t, t, t, t, t, t, t, t, checked_accessor<int>>(checked_accessor<int>(1024));
   test<t, o, t, o, t, t, t, t, checked_accessor<const int>>(checked_accessor<int>(1024));
   test<t, t, t, t, o, o, o, o, checked_accessor<const unsigned>>(checked_accessor<unsigned>(1024));
@@ -246,36 +246,26 @@ int main(int, char**) {
   // Ran into trouble with doing it all in one static_assert: exceeding step limit for consteval
   static_assert(test<t, t, t, t, t, t, t, t, std::default_accessor<float>>(std::default_accessor<float>()));
   static_assert(test<t, t, t, t, t, t, t, t, std::default_accessor<const float>>(std::default_accessor<float>()));
-  static_assert(test<t, t, t, t, t, t, t, t, std::default_accessor<MinimalElementType>>(
-      std::default_accessor<MinimalElementType>()));
-  static_assert(test<t, t, t, t, t, t, t, t, std::default_accessor<const MinimalElementType>>(
-      std::default_accessor<MinimalElementType>()));
+  static_assert(test<t, t, t, t, t, t, t, t, std::default_accessor<MinimalElementType>>(std::default_accessor<MinimalElementType>()));
+  static_assert(test<t, t, t, t, t, t, t, t, std::default_accessor<const MinimalElementType>>(std::default_accessor<MinimalElementType>()));
   static_assert(test<t, t, t, t, t, t, t, t, checked_accessor<int>>(checked_accessor<int>(1024)));
   static_assert(test<t, o, t, o, t, t, t, t, checked_accessor<const int>>(checked_accessor<int>(1024)));
   static_assert(test<t, t, t, t, o, o, o, o, checked_accessor<const unsigned>>(checked_accessor<unsigned>(1024)));
   static_assert(test<t, t, t, t, t, t, t, t, checked_accessor<float>>(checked_accessor<float>(1024)));
   static_assert(test<t, t, t, t, t, t, t, t, checked_accessor<double>>(checked_accessor<double>(1024)));
-  static_assert(
-      test<t, t, t, t, t, t, t, t, checked_accessor<MinimalElementType>>(checked_accessor<MinimalElementType>(1024)));
-  static_assert(test<t, o, t, o, t, t, t, t, checked_accessor<const MinimalElementType>>(
-      checked_accessor<MinimalElementType>(1024)));
-  static_assert(
-      test<t, o, t, o, t, t, t, t, conv_test_accessor_c<int, t, t, t, t>>(conv_test_accessor_nc<int, t, t>()));
-  static_assert(
-      test<t, o, t, t, t, t, t, t, conv_test_accessor_c<int, t, t, o, o>>(conv_test_accessor_nc<int, t, o>()));
-  static_assert(
-      test<t, t, t, o, t, t, t, t, conv_test_accessor_c<int, o, t, t, t>>(conv_test_accessor_nc<int, t, t>()));
-  static_assert(
-      test<t, t, t, t, t, t, t, t, conv_test_accessor_c<int, o, o, o, o>>(conv_test_accessor_nc<int, t, o>()));
+  static_assert(test<t, t, t, t, t, t, t, t, checked_accessor<MinimalElementType>>(checked_accessor<MinimalElementType>(1024)));
+  static_assert(test<t, o, t, o, t, t, t, t, checked_accessor<const MinimalElementType>>(checked_accessor<MinimalElementType>(1024)));
+  static_assert(test<t, o, t, o, t, t, t, t, conv_test_accessor_c<int, t, t, t, t>>(conv_test_accessor_nc<int, t, t>()));
+  static_assert(test<t, o, t, t, t, t, t, t, conv_test_accessor_c<int, t, t, o, o>>(conv_test_accessor_nc<int, t, o>()));
+  static_assert(test<t, t, t, o, t, t, t, t, conv_test_accessor_c<int, o, t, t, t>>(conv_test_accessor_nc<int, t, t>()));
+  static_assert(test<t, t, t, t, t, t, t, t, conv_test_accessor_c<int, o, o, o, o>>(conv_test_accessor_nc<int, t, o>()));
   static_assert(test<o, o, o, o, o, o, o, o, std::default_accessor<float>>(std::default_accessor<int>()));
   static_assert(test<o, o, o, o, o, o, o, o, checked_accessor<const double>>(checked_accessor<double>(1024)));
   static_assert(test<o, o, t, t, t, t, t, t, checked_accessor<const float>>(checked_accessor<float>(1024)));
-  static_assert(
-      test<o, o, o, o, t, t, t, t, conv_test_accessor_c<int, o, o, t, t>>(conv_test_accessor_nc<int, o, o>()));
-  static_assert(
-      test<o, o, t, o, t, t, t, t, conv_test_accessor_c<int, o, t, o, o>>(conv_test_accessor_nc<int, o, t>()));
-  static_assert(
-      test<o, o, t, t, t, t, t, t, conv_test_accessor_c<int, o, o, t, t>>(conv_test_accessor_nc<int, o, t>()));
+  static_assert(test<o, o, o, o, t, t, t, t, conv_test_accessor_c<int, o, o, t, t>>(conv_test_accessor_nc<int, o, o>()));
+  static_assert(test<o, o, t, o, t, t, t, t, conv_test_accessor_c<int, o, t, o, o>>(conv_test_accessor_nc<int, o, t>()));
+  static_assert(test<o, o, t, t, t, t, t, t, conv_test_accessor_c<int, o, o, t, t>>(conv_test_accessor_nc<int, o, t>()));
+// clang-format on
 
   return 0;
 }

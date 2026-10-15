@@ -42,10 +42,12 @@ void BM_MDSpan_Sum_3D_left(benchmark::State& state, MDSpan, DynSizes... dyn) {
   }
   state.SetBytesProcessed(s.size() * sizeof(value_type) * state.iterations());
 }
+// clang-format off
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, left_, lmdspan, 20, 20, 20);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, right_, rmdspan, 20, 20, 20);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, left_, lmdspan, 200, 200, 200);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Sum_3D_left, right_, rmdspan, 200, 200, 200);
+// clang-format on
 
 //================================================================================
 

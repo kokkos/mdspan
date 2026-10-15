@@ -52,8 +52,10 @@ void BM_MDSpan_TinyMatrixSum_right(benchmark::State& state, MDSpan, DynSizes... 
   size_t num_elements = (s.extent(0) * s.extent(1) * s.extent(2));
   state.SetBytesProcessed( num_elements * 3 * sizeof(value_type) * state.iterations() );
 }
+// clang-format off
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_TinyMatrixSum_right, right_, lmdspan, 1000000, 3, 3);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_TinyMatrixSum_right, left_, lmdspan, 1000000, 3, 3);
+// clang-format on
 
 //================================================================================
 

@@ -55,6 +55,7 @@ void testExtents() {
 template <class T>
 void test() {
   constexpr size_t D = std::dynamic_extent;
+  // clang-format off
   testExtents<T, D>();
   testExtents<T, 3>();
   testExtents<T, 3, 3>();
@@ -73,6 +74,7 @@ void test() {
   testExtents<T, 9, 8, 7, 6, 5, 4, 3, 2, 1>();
   testExtents<T, 9, D, 7, 6, D, D, 3, D, D>();
   testExtents<T, D, D, D, D, D, D, D, D, D>();
+  // clang-format on
 }
 
 int main(int, char**) {

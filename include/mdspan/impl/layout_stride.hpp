@@ -172,15 +172,19 @@ struct layout_stride {
       MDSPAN_INLINE_FUNCTION
       static constexpr bool _eq_impl(mapping const& self, mapping<OtherExtents> const& other) noexcept {
         using common_t = std::common_type_t<index_type, typename OtherExtents::index_type>;
+// clang-format off
         return    MDSPAN_IMPL_FOLD_AND((static_cast<common_t>(self.stride(Idxs)) == static_cast<common_t>(other.stride(Idxs))) /* && ... */)
                && MDSPAN_IMPL_FOLD_AND((static_cast<common_t>(self.extents().extent(Idxs)) == static_cast<common_t>(other.extents().extent(Idxs))) /* || ... */);
+// clang-format on
       }
       template <class OtherExtents>
       MDSPAN_INLINE_FUNCTION
       static constexpr bool _not_eq_impl(mapping const& self, mapping<OtherExtents> const& other) noexcept {
         using common_t = std::common_type_t<index_type, typename OtherExtents::index_type>;
+// clang-format off
         return    MDSPAN_IMPL_FOLD_OR((static_cast<common_t>(self.stride(Idxs)) != static_cast<common_t>(other.stride(Idxs))) /* || ... */)
                || MDSPAN_IMPL_FOLD_OR((static_cast<common_t>(self.extents().extent(Idxs)) != static_cast<common_t>(other.extents().extent(Idxs))) /* || ... */);
+// clang-format on
       }
 
       template <class... Integral>
@@ -410,6 +414,7 @@ struct layout_stride {
     }
 #endif // __cpp_lib_span
 
+// clang-format off
 #if !(defined(MDSPAN_IMPL_USE_CONCEPTS) && MDSPAN_HAS_CXX_20)
     MDSPAN_TEMPLATE_REQUIRES(
       class StridedLayoutMapping,
@@ -458,6 +463,7 @@ struct layout_stride {
        * - OFFSET(other) == 0
        */
     }
+// clang-format on
 
     //--------------------------------------------------------------------------------
 

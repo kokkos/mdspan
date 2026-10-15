@@ -32,6 +32,7 @@ constexpr void test_required_span_size(E e, typename E::index_type expected_size
 
 constexpr bool test() {
   constexpr size_t D = std::dynamic_extent;
+  // clang-format off
   test_required_span_size(std::extents<int>(), 1);
   test_required_span_size(std::extents<unsigned, D>(0), 0);
   test_required_span_size(std::extents<unsigned, D>(1), 1);
@@ -41,6 +42,7 @@ constexpr bool test() {
   test_required_span_size(std::extents<int64_t, D, 8, D, D>(7, 9, 10), 5040);
   test_required_span_size(std::extents<int64_t, 1, 8, D, D>(9, 10), 720);
   test_required_span_size(std::extents<int64_t, 1, 0, D, D>(9, 10), 0);
+  // clang-format on
   return true;
 }
 

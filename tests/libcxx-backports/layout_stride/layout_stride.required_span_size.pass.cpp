@@ -36,16 +36,17 @@ constexpr void test_required_span_size(E e, std::array<int, E::rank()> strides, 
 
 constexpr bool test() {
   constexpr size_t D = std::dynamic_extent;
+  // clang-format off
   test_required_span_size(std::extents<int>(), std::array<int, 0>{}, 1);
   test_required_span_size(std::extents<unsigned, D>(0), std::array<int, 1>{5}, 0);
   test_required_span_size(std::extents<unsigned, D>(1), std::array<int, 1>{5}, 1);
   test_required_span_size(std::extents<unsigned, D>(7), std::array<int, 1>{5}, 31);
   test_required_span_size(std::extents<unsigned, 7>(), std::array<int, 1>{5}, 31);
   test_required_span_size(std::extents<unsigned, 7, 8>(), std::array<int, 2>{20, 2}, 135);
-  test_required_span_size(
-      std::extents<int64_t, D, 8, D, D>(7, 9, 10), std::array<int, 4>{1, 7, 7 * 8, 7 * 8 * 9}, 5040);
+  test_required_span_size(std::extents<int64_t, D, 8, D, D>(7, 9, 10), std::array<int, 4>{1, 7, 7 * 8, 7 * 8 * 9}, 5040);
   test_required_span_size(std::extents<int64_t, 1, 8, D, D>(9, 10), std::array<int, 4>{1, 7, 7 * 8, 7 * 8 * 9}, 5034);
   test_required_span_size(std::extents<int64_t, 1, 0, D, D>(9, 10), std::array<int, 4>{1, 7, 7 * 8, 7 * 8 * 9}, 0);
+  // clang-format on
   return true;
 }
 

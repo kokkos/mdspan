@@ -94,8 +94,10 @@ void BM_MDSpan_OpenMP_noloop_TinyMatrixSum(benchmark::State& state, MDSpan, DynS
   state.SetBytesProcessed( num_elements * 3 * sizeof(value_type) * state.iterations() * global_repeat);
   state.counters["repeats"] = global_repeat;
 }
+// clang-format off
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_noloop_TinyMatrixSum, right_, rmdspan, 1000000, 3, 3);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_OpenMP_noloop_TinyMatrixSum, left_, lmdspan, 1000000, 3, 3);
+// clang-format on
 
 //================================================================================
 
@@ -148,8 +150,10 @@ void BM_MDSpan_OpenMP_TinyMatrixSum(benchmark::State& state, MDSpan, DynSizes...
   state.SetBytesProcessed( num_elements * 3 * sizeof(value_type) * state.iterations() * global_repeat);
   state.counters["repeats"] = global_repeat;
 }
+// clang-format off
 MDSPAN_BENCHMARK_ALL_3D_REAL_TIME(BM_MDSpan_OpenMP_TinyMatrixSum, right_, rmdspan, 1000000, 3, 3);
 MDSPAN_BENCHMARK_ALL_3D_REAL_TIME(BM_MDSpan_OpenMP_TinyMatrixSum, left_, lmdspan, 1000000, 3, 3);
+// clang-format on
 
 //================================================================================
 

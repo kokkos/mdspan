@@ -106,8 +106,10 @@ void BM_MDSpan_OpenMP_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... 
   state.counters["repeats"] = global_repeat;
 }
 
+// clang-format off
 BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec, left, lmdspan<double,Kokkos::dynamic_extent,Kokkos::dynamic_extent>(), 100000, 5000);
 BENCHMARK_CAPTURE(BM_MDSpan_OpenMP_MatVec, right, rmdspan<double,Kokkos::dynamic_extent,Kokkos::dynamic_extent>(), 100000, 5000);
+// clang-format on
 
 
 template <class MDSpanMatrix, class... DynSizes>

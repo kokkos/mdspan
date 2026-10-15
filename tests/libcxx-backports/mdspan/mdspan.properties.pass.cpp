@@ -177,12 +177,14 @@ constexpr void test_mdspan_types(const H& handle, const M& map, const A& acc) {
 template <class H, class L, class A>
 constexpr void mixin_extents(const H& handle, const L& layout, const A& acc) {
   constexpr size_t D = std::dynamic_extent;
+  // clang-format off
   test_mdspan_types(handle, construct_mapping(layout, std::extents<int>()), acc);
   test_mdspan_types(handle, construct_mapping(layout, std::extents<char, D>(7)), acc);
   test_mdspan_types(handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc);
   test_mdspan_types(handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)), acc);
   test_mdspan_types(handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)), acc);
   test_mdspan_types(handle, construct_mapping(layout, std::extents<int64_t, D, 7, D, 4, D, D>(1, 2, 3, 2)), acc);
+  // clang-format on
 }
 
 template <class H, class A>

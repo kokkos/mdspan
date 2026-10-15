@@ -167,14 +167,10 @@ int main(int, char**) {
   mixin_accessor<const MinimalElementType>();
 
   // sanity checks for triviality
+  // clang-format off
   check_triviality<std::mdspan<int, std::extents<int>>, false, true, true, true, true, true>();
   check_triviality<std::mdspan<int, std::dextents<int, 1>>, false, true, true, true, true, true>();
-  check_triviality<std::mdspan<int, std::dextents<int, 1>, std::layout_right, checked_accessor<int>>,
-                   false,
-                   true,
-                   false,
-                   true,
-                   true,
-                   true>();
+  check_triviality<std::mdspan<int, std::dextents<int, 1>, std::layout_right, checked_accessor<int>>, false, true, false, true, true, true>();
+  // clang-format on
   return 0;
 }

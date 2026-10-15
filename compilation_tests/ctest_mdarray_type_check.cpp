@@ -27,6 +27,7 @@ constexpr bool is_copyable =
   std::is_move_constructible<T>::value;
 #endif
 
+// clang-format off
 MDSPAN_STATIC_TEST(
   std::is_same<typename M1::element_type, float>::value &&
   std::is_same<typename M1::index_type, int32_t>::value &&
@@ -101,3 +102,4 @@ MDSPAN_STATIC_TEST(
   is_copyable<M3> &&
   std::is_default_constructible<M3>::value
 );
+// clang-format on

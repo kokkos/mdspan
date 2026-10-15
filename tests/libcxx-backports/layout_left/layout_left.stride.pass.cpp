@@ -37,10 +37,12 @@ constexpr void test_stride(std::array<typename E::index_type, E::rank()> strides
 
 constexpr bool test() {
   constexpr size_t D = std::dynamic_extent;
+  // clang-format off
   test_stride<std::extents<unsigned, D>>(std::array<unsigned, 1>{1}, 7);
   test_stride<std::extents<unsigned, 7>>(std::array<unsigned, 1>{1});
   test_stride<std::extents<unsigned, 7, 8>>(std::array<unsigned, 2>{1, 7});
   test_stride<std::extents<int64_t, D, 8, D, D>>(std::array<int64_t, 4>{1, 7, 56, 504}, 7, 9, 10);
+  // clang-format on
   return true;
 }
 

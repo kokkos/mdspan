@@ -8,6 +8,7 @@
 
 using E1 = Kokkos::extents<int32_t, Kokkos::dynamic_extent, 3>;
 
+// clang-format off
 MDSPAN_STATIC_TEST(
   std::is_same<typename E1::index_type, int32_t>::value &&
   std::is_same<typename E1::size_type, uint32_t>::value &&
@@ -65,3 +66,4 @@ MDSPAN_STATIC_TEST(
   (E3::static_extent(1) == 3) &&
   (E3::static_extent(2) == Kokkos::dynamic_extent)
 );
+// clang-format on

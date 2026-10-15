@@ -65,10 +65,13 @@ void BM_MDSpan_Stencil_3D(benchmark::State& state, MDSpan, DynSizes... dyn) {
   size_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations());
 }
+
+// clang-format off
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Stencil_3D, right_, rmdspan, 80, 80, 80);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Stencil_3D, left_, lmdspan, 80, 80, 80);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Stencil_3D, right_, rmdspan, 400, 400, 400);
 MDSPAN_BENCHMARK_ALL_3D(BM_MDSpan_Stencil_3D, left_, lmdspan, 400, 400, 400);
+// clang-format on
 
 //================================================================================
 
@@ -118,8 +121,10 @@ void BM_Raw_Stencil_3D_right(benchmark::State& state, T, SizeX x, SizeY y, SizeZ
   size_t stencil_num = (2*d+1) * (2*d+1) * (2*d+1);
   state.SetBytesProcessed( num_inner_elements * stencil_num * sizeof(value_type) * state.iterations());
 }
+// clang-format off
 BENCHMARK_CAPTURE(BM_Raw_Stencil_3D_right, size_80_80_80, int(), size_t(80), size_t(80), size_t(80));
 BENCHMARK_CAPTURE(BM_Raw_Stencil_3D_right, size_400_400_400, int(), size_t(400), size_t(400), size_t(400));
+// clang-format on
 
 //================================================================================
 

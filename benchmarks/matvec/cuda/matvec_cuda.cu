@@ -136,8 +136,10 @@ void BM_MDSpan_CUDA_MatVec(benchmark::State& state, MDSpanMatrix, DynSizes... dy
   CUDA_SAFE_CALL(cudaFree(y.data_handle()));
 }
 
+// clang-format off
 BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec, left, lmdspan<double,Kokkos::dynamic_extent,Kokkos::dynamic_extent>(), 100000, 5000);
 BENCHMARK_CAPTURE(BM_MDSpan_CUDA_MatVec, right, rmdspan<double,Kokkos::dynamic_extent,Kokkos::dynamic_extent>(), 100000, 5000);
+// clang-format on
 
 
 template <class MDSpanMatrix, class... DynSizes>
