@@ -9,15 +9,21 @@
 
 // <mdspan/mdspan.hpp>
 
-// template<class ElementType, class Extents, class LayoutPolicy = layout_right, class AccessorPolicy = default_accessor>
-// class mdspan;
+// template<class ElementType, class Extents, class LayoutPolicy = layout_right,
+// class AccessorPolicy = default_accessor> class mdspan;
 //
 // Mandates:
-//  - LayoutPolicy shall meet the layout mapping policy requirements ([mdspan.layout.policy.reqmts])
+//  - LayoutPolicy shall meet the layout mapping policy requirements
+//  ([mdspan.layout.policy.reqmts])
 
 #include <mdspan/mdspan.hpp>
 
 void not_layout_policy() {
-  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: LayoutPolicy template parameter is invalid. A common mistake is to pass a layout mapping instead of a layout policy}}
-  [[maybe_unused]] std::mdspan<int, std::extents<int>, std::layout_left::template mapping<std::extents<int>>> m;
+  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: LayoutPolicy
+  // template parameter is invalid. A common mistake is to pass a layout mapping
+  // instead of a layout policy}}
+  [[maybe_unused]] std::mdspan<
+      int, std::extents<int>,
+      std::layout_left::template mapping<std::extents<int>>>
+      m;
 }

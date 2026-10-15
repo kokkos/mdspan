@@ -14,9 +14,11 @@
 //
 // Returns:
 //   - true if rank_ is 0.
-//   - Otherwise, true if there is a permutation P of the integers in the range [0, rank_) such that
-//     stride(p0) equals 1, and stride(pi) equals stride(pi_1) * extents().extent(pi_1) for i in the
-//     range [1, rank_), where pi is the ith element of P.
+//   - Otherwise, true if there is a permutation P of the integers in the range
+//   [0, rank_) such that
+//     stride(p0) equals 1, and stride(pi) equals stride(pi_1) *
+//     extents().extent(pi_1) for i in the range [1, rank_), where pi is the ith
+//     element of P.
 //   - Otherwise, false.
 
 #include <mdspan/mdspan.hpp>
@@ -27,8 +29,9 @@
 #include "../llvm_test_macros.h"
 
 template <class E>
-constexpr void
-test_layout_mapping_stride(E ext, std::array<typename E::index_type, E::rank()> strides, bool exhaustive) {
+constexpr void test_layout_mapping_stride(
+    E ext, std::array<typename E::index_type, E::rank()> strides,
+    bool exhaustive) {
   using M = std::layout_stride::template mapping<E>;
   M m(ext, strides);
   assert(m.is_exhaustive() == exhaustive);

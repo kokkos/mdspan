@@ -12,11 +12,13 @@
 // Test construction from span:
 //
 // template<class OtherIndexType, size_t N>
-//     constexpr explicit(N != rank_dynamic()) extents(span<OtherIndexType, N> exts) noexcept;
+//     constexpr explicit(N != rank_dynamic()) extents(span<OtherIndexType, N>
+//     exts) noexcept;
 //
 // Constraints:
 //   * is_convertible_v<const OtherIndexType&, index_type> is true,
-//   * is_nothrow_constructible_v<index_type, const OtherIndexType&> is true, and
+//   * is_nothrow_constructible_v<index_type, const OtherIndexType&> is true,
+//   and
 //   * N == rank_dynamic() || N == rank() is true.
 //
 // Preconditions:
@@ -24,7 +26,8 @@
 //     Er is a static extent, and
 //   * either
 //     - N is zero, or
-//     - exts[r] is nonnegative and is representable as a value of type index_type
+//     - exts[r] is nonnegative and is representable as a value of type
+//     index_type
 //       for every rank index r.
 //
 
@@ -40,7 +43,8 @@
 
 struct SpanCtorTest {
   template <class E, class T, size_t N, class Extents, size_t... Indices>
-  static constexpr void test_construction(std::array<T, N> all_ext, Extents ext, std::index_sequence<Indices...>) {
+  static constexpr void test_construction(std::array<T, N> all_ext, Extents ext,
+                                          std::index_sequence<Indices...>) {
     ASSERT_NOEXCEPT(E(ext));
     if constexpr (N == E::rank_dynamic()) {
       test_implicit_construction_call<E>(std::span(ext), all_ext);

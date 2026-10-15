@@ -9,31 +9,37 @@
 
 // <mdspan/mdspan.hpp>
 
-// template<class ElementType, class Extents, class LayoutPolicy = layout_right, class AccessorPolicy = default_accessor>
-// class mdspan;
+// template<class ElementType, class Extents, class LayoutPolicy = layout_right,
+// class AccessorPolicy = default_accessor> class mdspan;
 //
 // Mandates:
-//   - ElementType is a complete object type that is neither an abstract class type nor an array type.
+//   - ElementType is a complete object type that is neither an abstract class
+//   type nor an array type.
 //   - is_same_v<ElementType, typename AccessorPolicy::element_type> is true.
 
 #include <mdspan/mdspan.hpp>
 
 class AbstractClass {
-public:
+ public:
   virtual void method() = 0;
 };
 
 void not_abstract_class() {
-  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: ElementType template parameter may not be an abstract class}}
+  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: ElementType
+  // template parameter may not be an abstract class}}
   [[maybe_unused]] std::mdspan<AbstractClass, std::extents<int>> m;
 }
 
 void not_array_type() {
-  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: ElementType template parameter may not be an array type}}
+  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: ElementType
+  // template parameter may not be an array type}}
   [[maybe_unused]] std::mdspan<int[5], std::extents<int>> m;
 }
 
 void element_type_mismatch() {
-  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: ElementType template parameter must match AccessorPolicy::element_type}}
-  [[maybe_unused]] std::mdspan<int, std::extents<int>, std::layout_right, std::default_accessor<const int>> m;
+  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: ElementType
+  // template parameter must match AccessorPolicy::element_type}}
+  [[maybe_unused]] std::mdspan<int, std::extents<int>, std::layout_right,
+                               std::default_accessor<const int>>
+      m;
 }

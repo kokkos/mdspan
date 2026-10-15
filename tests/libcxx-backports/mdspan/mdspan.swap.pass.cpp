@@ -41,15 +41,16 @@ constexpr void test_swap(MDS a, MDS b) {
     assert(a.data_handle() == org_b.data_handle());
     assert(b.data_handle() == org_a.data_handle());
   }
-  // This check uses a side effect of layout_wrapping_integral::swap to make sure
-  // mdspan calls the underlying components' swap via ADL
-  #if MDSPAN_HAS_CXX23
+// This check uses a side effect of layout_wrapping_integral::swap to make sure
+// mdspan calls the underlying components' swap via ADL
+#if MDSPAN_HAS_CXX23
   if !consteval {
-    if constexpr (std::is_same_v<typename MDS::layout_type, layout_wrapping_integral<4>>) {
+    if constexpr (std::is_same_v<typename MDS::layout_type,
+                                 layout_wrapping_integral<4>>) {
       assert(MDS::mapping_type::swap_counter() > 0);
     }
   }
-  #endif
+#endif
 }
 
 constexpr bool test() {
@@ -62,7 +63,8 @@ constexpr bool test() {
     test_swap(a, b);
   }
   {
-    layout_wrapping_integral<4>::template mapping<extents_t> map_a(extents_t(12), not_extents_constructible_tag()),
+    layout_wrapping_integral<4>::template mapping<extents_t> map_a(
+        extents_t(12), not_extents_constructible_tag()),
         map_b(extents_t(5), not_extents_constructible_tag());
     std::mdspan a(data_a, map_a);
     std::mdspan b(data_b, map_b);

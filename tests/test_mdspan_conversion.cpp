@@ -6,7 +6,6 @@
 
 #include <gtest/gtest.h>
 
-
 TEST(TestMdspanConversionConst, test_mdspan_conversion_const) {
   std::array<double, 6> a{};
   Kokkos::mdspan<double, Kokkos::extents<uint32_t, 2, 3>> s(a.data());

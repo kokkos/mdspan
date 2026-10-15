@@ -5,7 +5,6 @@
 
 #include <mdspan/mdspan.hpp>
 
-
 // clang-format off
 
 MDSPAN_STATIC_TEST(

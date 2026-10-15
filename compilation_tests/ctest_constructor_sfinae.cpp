@@ -7,7 +7,6 @@
 
 #include <type_traits>
 
-
 // clang-format off
 //==============================================================================
 // <editor-fold des4c="Test allowed pointer + extents ctors"> {{{1

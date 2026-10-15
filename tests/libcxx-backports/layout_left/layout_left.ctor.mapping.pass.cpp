@@ -16,7 +16,8 @@
 
 // Constraints: is_constructible_v<extents_type, OtherExtents> is true.
 //
-// Preconditions: other.required_span_size() is representable as a value of type index_type
+// Preconditions: other.required_span_size() is representable as a value of type
+// index_type
 
 #include <mdspan/mdspan.hpp>
 #include <type_traits>
@@ -51,7 +52,8 @@ template <class T1, class T2>
 constexpr void test_conversion() {
   constexpr size_t D = std::dynamic_extent;
   constexpr bool idx_convertible =
-      static_cast<size_t>(std::numeric_limits<T1>::max()) >= static_cast<size_t>(std::numeric_limits<T2>::max());
+      static_cast<size_t>(std::numeric_limits<T1>::max()) >=
+      static_cast<size_t>(std::numeric_limits<T2>::max());
 
   // clang-format off
   test_conversion<idx_convertible && true,  std::extents<T1>>(std::extents<T2>());
@@ -71,7 +73,8 @@ constexpr void test_conversion() {
 }
 
 template <class IdxT, size_t... Extents>
-using mapping_t = typename std::layout_left::template mapping<std::extents<IdxT, Extents...>>;
+using mapping_t =
+    typename std::layout_left::template mapping<std::extents<IdxT, Extents...>>;
 
 constexpr void test_no_implicit_conversion() {
   constexpr size_t D = std::dynamic_extent;
@@ -85,20 +88,28 @@ constexpr void test_no_implicit_conversion() {
   static_assert(!std::is_convertible_v<mapping_t<int, D>, mapping_t<int, 5>>);
 
   // Sanity check that one static to dynamic conversion works
-  static_assert(std::is_constructible_v<mapping_t<int, D, 7>, mapping_t<int, 5, 7>>);
-  static_assert(std::is_convertible_v<mapping_t<int, 5, 7>, mapping_t<int, D, 7>>);
+  static_assert(
+      std::is_constructible_v<mapping_t<int, D, 7>, mapping_t<int, 5, 7>>);
+  static_assert(
+      std::is_convertible_v<mapping_t<int, 5, 7>, mapping_t<int, D, 7>>);
 
   // Check that dynamic to static conversion only works explicitly
-  static_assert(std::is_constructible_v<mapping_t<int, 5, 7>, mapping_t<int, D, 7>>);
-  static_assert(!std::is_convertible_v<mapping_t<int, D, 7>, mapping_t<int, 5, 7>>);
+  static_assert(
+      std::is_constructible_v<mapping_t<int, 5, 7>, mapping_t<int, D, 7>>);
+  static_assert(
+      !std::is_convertible_v<mapping_t<int, D, 7>, mapping_t<int, 5, 7>>);
 
   // Sanity check that smaller index_type to larger index_type conversion works
-  static_assert(std::is_constructible_v<mapping_t<size_t, 5>, mapping_t<int, 5>>);
+  static_assert(
+      std::is_constructible_v<mapping_t<size_t, 5>, mapping_t<int, 5>>);
   static_assert(std::is_convertible_v<mapping_t<int, 5>, mapping_t<size_t, 5>>);
 
-  // Check that larger index_type to smaller index_type conversion works explicitly only
-  static_assert(std::is_constructible_v<mapping_t<int, 5>, mapping_t<size_t, 5>>);
-  static_assert(!std::is_convertible_v<mapping_t<size_t, 5>, mapping_t<int, 5>>);
+  // Check that larger index_type to smaller index_type conversion works
+  // explicitly only
+  static_assert(
+      std::is_constructible_v<mapping_t<int, 5>, mapping_t<size_t, 5>>);
+  static_assert(
+      !std::is_convertible_v<mapping_t<size_t, 5>, mapping_t<int, 5>>);
 }
 
 constexpr void test_rank_mismatch() {
@@ -106,16 +117,20 @@ constexpr void test_rank_mismatch() {
 
   static_assert(!std::is_constructible_v<mapping_t<int, D>, mapping_t<int>>);
   static_assert(!std::is_constructible_v<mapping_t<int>, mapping_t<int, D, D>>);
-  static_assert(!std::is_constructible_v<mapping_t<int, D>, mapping_t<int, D, D>>);
-  static_assert(!std::is_constructible_v<mapping_t<int, D, D, D>, mapping_t<int, D, D>>);
+  static_assert(
+      !std::is_constructible_v<mapping_t<int, D>, mapping_t<int, D, D>>);
+  static_assert(
+      !std::is_constructible_v<mapping_t<int, D, D, D>, mapping_t<int, D, D>>);
 }
 
 constexpr void test_static_extent_mismatch() {
   constexpr size_t D = std::dynamic_extent;
 
-  static_assert(!std::is_constructible_v<mapping_t<int, D, 5>, mapping_t<int, D, 4>>);
+  static_assert(
+      !std::is_constructible_v<mapping_t<int, D, 5>, mapping_t<int, D, 4>>);
   static_assert(!std::is_constructible_v<mapping_t<int, 5>, mapping_t<int, 4>>);
-  static_assert(!std::is_constructible_v<mapping_t<int, 5, D>, mapping_t<int, 4, D>>);
+  static_assert(
+      !std::is_constructible_v<mapping_t<int, 5, D>, mapping_t<int, 4, D>>);
 }
 
 constexpr bool test() {

@@ -10,7 +10,8 @@
 // <mdspan/mdspan.hpp>
 
 // template<class OtherIndexType, size_t... OtherExtents>
-//     constexpr explicit(see below) extents(const extents<OtherIndexType, OtherExtents...>&) noexcept;
+//     constexpr explicit(see below) extents(const extents<OtherIndexType,
+//     OtherExtents...>&) noexcept;
 //
 // Constraints:
 //   * sizeof...(OtherExtents) == rank() is true.
@@ -25,8 +26,9 @@
 //        every rank index r of other.
 //
 // Remarks: The expression inside explicit is equivalent to:
-//          (((Extents != dynamic_extent) && (OtherExtents == dynamic_extent)) || ... ) ||
-//          (numeric_limits<index_type>::max() < numeric_limits<OtherIndexType>::max())
+//          (((Extents != dynamic_extent) && (OtherExtents == dynamic_extent))
+//          || ... ) || (numeric_limits<index_type>::max() <
+//          numeric_limits<OtherIndexType>::max())
 
 #include <mdspan/mdspan.hpp>
 #include <type_traits>
@@ -52,7 +54,7 @@ constexpr void test_conversion(From src) {
   }
 }
 
-  // clang-format off
+// clang-format off
 template <class T1, class T2>
 constexpr void test_conversion() {
   constexpr size_t D = std::dynamic_extent;
@@ -117,7 +119,7 @@ constexpr void test_static_extent_mismatch() {
   static_assert(!std::is_constructible_v<std::extents<int, 5>, std::extents<int, 4>>, "");
   static_assert(!std::is_constructible_v<std::extents<int, 5, D>, std::extents<int, 4, D>>, "");
 }
-  // clang-format on
+// clang-format on
 
 constexpr bool test() {
   test_conversion<int, int>();

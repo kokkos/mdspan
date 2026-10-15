@@ -9,8 +9,8 @@
 
 // <mdspan/mdspan.hpp>
 
-// template<class ElementType, class Extents, class LayoutPolicy = layout_right, class AccessorPolicy = default_accessor>
-// class mdspan;
+// template<class ElementType, class Extents, class LayoutPolicy = layout_right,
+// class AccessorPolicy = default_accessor> class mdspan;
 //
 // Mandates:
 //  - Extents is a specialization of extents
@@ -18,6 +18,7 @@
 #include <mdspan/mdspan.hpp>
 
 void not_extents() {
-  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: Extents template parameter must be a specialization of extents.}}
+  // expected-error-re@*:* {{static assertion failed {{.*}}mdspan: Extents
+  // template parameter must be a specialization of extents.}}
   [[maybe_unused]] std::mdspan<int, int> m;
 }

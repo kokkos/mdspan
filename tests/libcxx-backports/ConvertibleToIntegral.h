@@ -12,7 +12,7 @@
 struct IntType {
   int val;
   constexpr IntType() = default;
-  constexpr IntType(int v) noexcept : val(v){}
+  constexpr IntType(int v) noexcept : val(v) {}
 
   constexpr bool operator==(const IntType& rhs) const { return val == rhs.val; }
   constexpr operator int() const noexcept { return val; }
@@ -24,7 +24,7 @@ struct IntType {
 struct IntTypeNC {
   int val;
   constexpr IntTypeNC() = default;
-  constexpr IntTypeNC(int v) noexcept : val(v){}
+  constexpr IntTypeNC(int v) noexcept : val(v) {}
 
   constexpr bool operator==(const IntType& rhs) const { return val == rhs.val; }
   constexpr operator int() noexcept { return val; }
@@ -33,12 +33,20 @@ struct IntTypeNC {
 };
 
 // weird configurability of convertibility to int
-template<bool conv_c, bool conv_nc, bool ctor_nt_c, bool ctor_nt_nc>
+template <bool conv_c, bool conv_nc, bool ctor_nt_c, bool ctor_nt_nc>
 struct IntConfig {
   int val;
-  constexpr explicit IntConfig(int val_):val(val_){}
-  constexpr operator int() noexcept(ctor_nt_nc) requires(conv_nc) { return val; }
-  constexpr operator int() const noexcept(ctor_nt_c) requires(conv_c) { return val; }
+  constexpr explicit IntConfig(int val_) : val(val_) {}
+  constexpr operator int() noexcept(ctor_nt_nc)
+    requires(conv_nc)
+  {
+    return val;
+  }
+  constexpr operator int() const noexcept(ctor_nt_c)
+    requires(conv_c)
+  {
+    return val;
+  }
 };
 
-#endif // TEST_STD_CONTAINERS_VIEWS_MDSPAN_CONVERTIBLE_TO_INTEGRAL_H
+#endif  // TEST_STD_CONTAINERS_VIEWS_MDSPAN_CONVERTIBLE_TO_INTEGRAL_H

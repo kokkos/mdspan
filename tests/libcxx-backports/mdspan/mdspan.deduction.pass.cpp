@@ -12,16 +12,18 @@
 //  template<class CArray>
 //    requires(is_array_v<CArray> && rank_v<CArray> == 1)
 //    mdspan(CArray&)
-//      -> mdspan<remove_all_extents_t<CArray>, extents<size_t, extent_v<CArray, 0>>>;
+//      -> mdspan<remove_all_extents_t<CArray>, extents<size_t, extent_v<CArray,
+//      0>>>;
 //
 //  template<class Pointer>
 //    requires(is_pointer_v<remove_reference_t<Pointer>>)
 //    mdspan(Pointer&&)
-//      -> mdspan<remove_pointer_t<remove_reference_t<Pointer>>, extents<size_t>>;
+//      -> mdspan<remove_pointer_t<remove_reference_t<Pointer>>,
+//      extents<size_t>>;
 //
 //  template<class ElementType, class... Integrals>
-//    requires((is_convertible_v<Integrals, size_t> && ...) && sizeof...(Integrals) > 0)
-//    explicit mdspan(ElementType*, Integrals...)
+//    requires((is_convertible_v<Integrals, size_t> && ...) &&
+//    sizeof...(Integrals) > 0) explicit mdspan(ElementType*, Integrals...)
 //      -> mdspan<ElementType, dextents<size_t, sizeof...(Integrals)>>;
 //
 //  template<class ElementType, class OtherIndexType, size_t N>
@@ -44,7 +46,8 @@
 //  template<class MappingType, class AccessorType>
 //    mdspan(const typename AccessorType::data_handle_type&, const MappingType&,
 //           const AccessorType&)
-//      -> mdspan<typename AccessorType::element_type, typename MappingType::extents_type,
+//      -> mdspan<typename AccessorType::element_type, typename
+//      MappingType::extents_type,
 //                typename MappingType::layout_type, AccessorType>;
 
 #include <mdspan/mdspan.hpp>
@@ -60,12 +63,15 @@
 
 template <class H, class M, class A>
 constexpr void test_mdspan_types(const H& handle, const M& map, const A& acc) {
-  using MDS = std::mdspan<typename A::element_type, typename M::extents_type, typename M::layout_type, A>;
+  using MDS = std::mdspan<typename A::element_type, typename M::extents_type,
+                          typename M::layout_type, A>;
 
-  // deduction from data_handle_type (including non-pointer), mapping and accessor
+  // deduction from data_handle_type (including non-pointer), mapping and
+  // accessor
   ASSERT_SAME_TYPE(decltype(std::mdspan(handle, map, acc)), MDS);
 
-  if constexpr (std::is_same_v<A, std::default_accessor<typename A::element_type>>) {
+  if constexpr (std::is_same_v<
+                    A, std::default_accessor<typename A::element_type>>) {
     // deduction from pointer and mapping
     // non-pointer data-handle-types have other accessor
     ASSERT_SAME_TYPE(decltype(std::mdspan(handle, map)), MDS);
@@ -79,12 +85,23 @@ constexpr void test_mdspan_types(const H& handle, const M& map, const A& acc) {
 template <class H, class L, class A>
 constexpr void mixin_extents(const H& handle, const L& layout, const A& acc) {
   constexpr size_t D = std::dynamic_extent;
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<int>()), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<char, D>(7)), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)), acc);
-  test_mdspan_types(handle, construct_mapping(layout, std::extents<int64_t, D, 7, D, 4, D, D>(1, 2, 3, 2)), acc);
+  test_mdspan_types(handle, construct_mapping(layout, std::extents<int>()),
+                    acc);
+  test_mdspan_types(handle, construct_mapping(layout, std::extents<char, D>(7)),
+                    acc);
+  test_mdspan_types(
+      handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc);
+  test_mdspan_types(
+      handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)),
+      acc);
+  test_mdspan_types(
+      handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)),
+      acc);
+  test_mdspan_types(
+      handle,
+      construct_mapping(layout,
+                        std::extents<int64_t, D, 7, D, 4, D, D>(1, 2, 3, 2)),
+      acc);
 }
 
 struct SizeTIntType {
@@ -98,15 +115,19 @@ template <class H, class A>
 constexpr bool test_no_layout_deduction_guides(const H& handle, const A&) {
   using T = typename A::element_type;
   // deduction from pointer alone
-  ASSERT_SAME_TYPE(decltype(std::mdspan(handle)), std::mdspan<T, std::extents<size_t>>);
+  ASSERT_SAME_TYPE(decltype(std::mdspan(handle)),
+                   std::mdspan<T, std::extents<size_t>>);
   // deduction from pointer and integral like
-  ASSERT_SAME_TYPE(decltype(std::mdspan(handle, 5, SizeTIntType(6))), std::mdspan<T, std::dextents<size_t, 2>>);
+  ASSERT_SAME_TYPE(decltype(std::mdspan(handle, 5, SizeTIntType(6))),
+                   std::mdspan<T, std::dextents<size_t, 2>>);
 
   std::array<char, 3> exts;
   // deduction from pointer and array
-  ASSERT_SAME_TYPE(decltype(std::mdspan(handle, exts)), std::mdspan<T, std::dextents<size_t, 3>>);
+  ASSERT_SAME_TYPE(decltype(std::mdspan(handle, exts)),
+                   std::mdspan<T, std::dextents<size_t, 3>>);
   // deduction from pointer and span
-  ASSERT_SAME_TYPE(decltype(std::mdspan(handle, std::span(exts))), std::mdspan<T, std::dextents<size_t, 3>>);
+  ASSERT_SAME_TYPE(decltype(std::mdspan(handle, std::span(exts))),
+                   std::mdspan<T, std::dextents<size_t, 3>>);
   return true;
 }
 
@@ -122,7 +143,8 @@ constexpr void mixin_layout(const H& handle, const A& acc) {
   mixin_extents(handle, layout_wrapping_integral<4>(), acc);
 
   // checking that there is no deduction happen for non-pointer handle type
-  assert((test_no_layout_deduction_guides(handle, acc) == std::is_same_v<H, typename A::element_type*>));
+  assert((test_no_layout_deduction_guides(handle, acc) ==
+          std::is_same_v<H, typename A::element_type*>));
 }
 
 template <class T>
@@ -134,8 +156,10 @@ constexpr void mixin_accessor() {
   // Make sure they actually got the properties we want to test
   // checked_accessor is noexcept copy constructible except for const double
   checked_accessor<T> acc(1024);
-  static_assert(noexcept(checked_accessor<T>(acc)) != std::is_same_v<T, const double>);
-  mixin_layout(typename checked_accessor<T>::data_handle_type(elements.get_ptr()), acc);
+  static_assert(noexcept(checked_accessor<T>(acc)) !=
+                std::is_same_v<T, const double>);
+  mixin_layout(
+      typename checked_accessor<T>::data_handle_type(elements.get_ptr()), acc);
 }
 
 constexpr bool test() {
@@ -148,7 +172,8 @@ constexpr bool test() {
 
   // deduction from array alone
   float a[12];
-  ASSERT_SAME_TYPE(decltype(std::mdspan(a)), std::mdspan<float, std::extents<size_t, 12>>);
+  ASSERT_SAME_TYPE(decltype(std::mdspan(a)),
+                   std::mdspan<float, std::extents<size_t, 12>>);
 
   return true;
 }

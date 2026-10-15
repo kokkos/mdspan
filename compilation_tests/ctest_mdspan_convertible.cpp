@@ -7,7 +7,6 @@
 
 #include <type_traits>
 
-
 // clang-format off
 //==============================================================================
 // <editor-fold desc="mdspan"> {{{1
@@ -29,4 +28,3 @@ MDSPAN_STATIC_TEST(
 // </editor-fold> end mdspan }}}1
 //==============================================================================
 // clang-format on
-

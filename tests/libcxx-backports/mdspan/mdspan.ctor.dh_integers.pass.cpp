@@ -21,12 +21,15 @@
 //   - is_constructible_v<mapping_type, extents_type> is true, and
 //   - is_default_constructible_v<accessor_type> is true.
 //
-// Preconditions: [0, map_.required_span_size()) is an accessible range of p and acc_
-//                for the values of map_ and acc_ after the invocation of this constructor.
+// Preconditions: [0, map_.required_span_size()) is an accessible range of p and
+// acc_
+//                for the values of map_ and acc_ after the invocation of this
+//                constructor.
 //
 // Effects:
 //   - Direct-non-list-initializes ptr_ with std::move(p),
-//   - direct-non-list-initializes map_ with extents_type(static_cast<index_type>(std::move(exts))...), and
+//   - direct-non-list-initializes map_ with
+//   extents_type(static_cast<index_type>(std::move(exts))...), and
 //   - value-initializes acc_.
 
 #include <array>
@@ -42,11 +45,14 @@
 #include "CustomTestAccessors.h"
 
 template <class MDS, class... Args>
-concept check_mdspan_ctor_implicit = requires(MDS m, Args... args) { m = {args...}; };
+concept check_mdspan_ctor_implicit =
+    requires(MDS m, Args... args) { m = {args...}; };
 
 template <bool mec, bool ac, class H, class M, class A, class... Idxs>
-constexpr void test_mdspan_types(const H& handle, const M& map, const A&, Idxs... idxs) {
-  using MDS = std::mdspan<typename A::element_type, typename M::extents_type, typename M::layout_type, A>;
+constexpr void test_mdspan_types(const H& handle, const M& map, const A&,
+                                 Idxs... idxs) {
+  using MDS = std::mdspan<typename A::element_type, typename M::extents_type,
+                          typename M::layout_type, A>;
 
   static_assert(mec == std::is_constructible_v<M, typename M::extents_type>);
   static_assert(ac == std::is_default_constructible_v<A>);
@@ -60,26 +66,27 @@ constexpr void test_mdspan_types(const H& handle, const M& map, const A&, Idxs..
     MDS m(handle, idxs...);
 #if MDSPAN_HAS_CXX_23
     if !consteval {
-      if constexpr (std::is_same_v<H, move_counted_handle<typename MDS::element_type>>) {
+      if constexpr (std::is_same_v<
+                        H, move_counted_handle<typename MDS::element_type>>) {
         assert((H::move_counter() == 1));
       }
     }
 #endif
 
     // sanity check that concept works
-    static_assert(check_mdspan_ctor_implicit<MDS, H, std::array<typename MDS::index_type, MDS::rank_dynamic()>>);
+    static_assert(
+        check_mdspan_ctor_implicit<
+            MDS, H, std::array<typename MDS::index_type, MDS::rank_dynamic()>>);
     // check that the constructor from integral is explicit
     static_assert(!check_mdspan_ctor_implicit<MDS, H, Idxs...>);
 
     assert(m.extents() == map.extents());
     if constexpr (std::equality_comparable<H>)
       assert(m.data_handle() == handle);
-    if constexpr (std::equality_comparable<M>)
-      assert(m.mapping() == map);
-    if constexpr (std::equality_comparable<A>)
-      assert(m.accessor() == A());
+    if constexpr (std::equality_comparable<M>) assert(m.mapping() == map);
+    if constexpr (std::equality_comparable<A>) assert(m.accessor() == A());
   } else {
-    static_assert(!std::is_constructible_v<MDS, const H&, Idxs... >);
+    static_assert(!std::is_constructible_v<MDS, const H&, Idxs...>);
   }
 }
 
@@ -87,20 +94,38 @@ template <bool mec, bool ac, class H, class L, class A>
 constexpr void mixin_extents(const H& handle, const L& layout, const A& acc) {
   constexpr size_t D = std::dynamic_extent;
   // construct from just dynamic extents
-  test_mdspan_types<mec, ac>(handle, construct_mapping(layout, std::extents<int>()), acc);
-  test_mdspan_types<mec, ac>(handle, construct_mapping(layout, std::extents<char, D>(7)), acc, 7);
-  test_mdspan_types<mec, ac>(handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc);
-  test_mdspan_types<mec, ac>(handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)), acc, 2, 3);
-  test_mdspan_types<mec, ac>(handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)), acc, 0, 3);
   test_mdspan_types<mec, ac>(
-      handle, construct_mapping(layout, std::extents<int64_t, D, 7, D, 4, D, D>(1, 2, 3, 2)), acc, 1, 2, 3, 2);
+      handle, construct_mapping(layout, std::extents<int>()), acc);
+  test_mdspan_types<mec, ac>(
+      handle, construct_mapping(layout, std::extents<char, D>(7)), acc, 7);
+  test_mdspan_types<mec, ac>(
+      handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc);
+  test_mdspan_types<mec, ac>(
+      handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)),
+      acc, 2, 3);
+  test_mdspan_types<mec, ac>(
+      handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)), acc,
+      0, 3);
+  test_mdspan_types<mec, ac>(
+      handle,
+      construct_mapping(layout,
+                        std::extents<int64_t, D, 7, D, 4, D, D>(1, 2, 3, 2)),
+      acc, 1, 2, 3, 2);
 
   // construct from all extents
-  test_mdspan_types<mec, ac>(handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc, 7);
-  test_mdspan_types<mec, ac>(handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)), acc, 2, 4, 3);
-  test_mdspan_types<mec, ac>(handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)), acc, 0, 7, 3);
   test_mdspan_types<mec, ac>(
-      handle, construct_mapping(layout, std::extents<int64_t, D, 7, D, 4, D, D>(1, 2, 3, 2)), acc, 1, 7, 2, 4, 3, 2);
+      handle, construct_mapping(layout, std::extents<unsigned, 7>()), acc, 7);
+  test_mdspan_types<mec, ac>(
+      handle, construct_mapping(layout, std::extents<size_t, D, 4, D>(2, 3)),
+      acc, 2, 4, 3);
+  test_mdspan_types<mec, ac>(
+      handle, construct_mapping(layout, std::extents<char, D, 7, D>(0, 3)), acc,
+      0, 7, 3);
+  test_mdspan_types<mec, ac>(
+      handle,
+      construct_mapping(layout,
+                        std::extents<int64_t, D, 7, D, 4, D, D>(1, 2, 3, 2)),
+      acc, 1, 7, 2, 4, 3, 2);
 }
 
 template <bool ac, class H, class A>
@@ -109,17 +134,26 @@ constexpr void mixin_layout(const H& handle, const A& acc) {
   mixin_extents<true, ac>(handle, std::layout_right(), acc);
 
   // Use weird layout, make sure it has the properties we want to test
-  // Sanity check that this layouts mapping is constructible from extents (via its move constructor)
-  static_assert(std::is_constructible_v<typename layout_wrapping_integral<8>::template mapping<std::extents<int>>,
-                                        std::extents<int>>);
-  static_assert(!std::is_constructible_v<typename layout_wrapping_integral<8>::template mapping<std::extents<int>>,
-                                         const std::extents<int>&>);
+  // Sanity check that this layouts mapping is constructible from extents (via
+  // its move constructor)
+  static_assert(
+      std::is_constructible_v<typename layout_wrapping_integral<
+                                  8>::template mapping<std::extents<int>>,
+                              std::extents<int>>);
+  static_assert(
+      !std::is_constructible_v<typename layout_wrapping_integral<
+                                   8>::template mapping<std::extents<int>>,
+                               const std::extents<int>&>);
   mixin_extents<true, ac>(handle, layout_wrapping_integral<8>(), acc);
   // Sanity check that this layouts mapping is not constructible from extents
-  static_assert(!std::is_constructible_v<typename layout_wrapping_integral<4>::template mapping<std::extents<int>>,
-                                         std::extents<int>>);
-  static_assert(!std::is_constructible_v<typename layout_wrapping_integral<4>::template mapping<std::extents<int>>,
-                                         const std::extents<int>&>);
+  static_assert(
+      !std::is_constructible_v<typename layout_wrapping_integral<
+                                   4>::template mapping<std::extents<int>>,
+                               std::extents<int>>);
+  static_assert(
+      !std::is_constructible_v<typename layout_wrapping_integral<
+                                   4>::template mapping<std::extents<int>>,
+                               const std::extents<int>&>);
   mixin_extents<false, ac>(handle, layout_wrapping_integral<4>(), acc);
 }
 
@@ -130,10 +164,13 @@ constexpr void mixin_accessor() {
 
   // Using weird accessor/data_handle
   // Make sure they actually got the properties we want to test
-  // checked_accessor is not default constructible except for const double, where it is not noexcept
-  static_assert(std::is_default_constructible_v<checked_accessor<T>> == std::is_same_v<T, const double>);
+  // checked_accessor is not default constructible except for const double,
+  // where it is not noexcept
+  static_assert(std::is_default_constructible_v<checked_accessor<T>> ==
+                std::is_same_v<T, const double>);
   mixin_layout<std::is_same_v<T, const double>>(
-      typename checked_accessor<T>::data_handle_type(elements.get_ptr()), checked_accessor<T>(1024));
+      typename checked_accessor<T>::data_handle_type(elements.get_ptr()),
+      checked_accessor<T>(1024));
 }
 
 constexpr bool test() {
@@ -154,7 +191,8 @@ constexpr bool test() {
   static_assert(!std::is_constructible_v<mds_t, float*, int>);
   static_assert(!std::is_constructible_v<mds_t, float*, int, int, int, int>);
   // not convertible to int
-  static_assert(!std::is_constructible_v<mds_t, float*, int, int, std::dextents<int, 1>>);
+  static_assert(
+      !std::is_constructible_v<mds_t, float*, int, int, std::dextents<int, 1>>);
 
   // test non-constructibility from wrong handle_type
   static_assert(!std::is_constructible_v<mds_t, const float*, int, int>);

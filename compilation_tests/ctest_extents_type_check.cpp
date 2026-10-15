@@ -5,7 +5,6 @@
 
 #include <mdspan/mdspan.hpp>
 
-
 using E1 = Kokkos::extents<int32_t, Kokkos::dynamic_extent, 3>;
 
 // clang-format off

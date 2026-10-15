@@ -7,11 +7,7 @@
 
 #include <type_traits>
 
-
-enum emptyness {
-  non_empty = false,
-  empty     = true
-};
+enum emptyness { non_empty = false, empty = true };
 
 enum standard_layoutness {
   non_standard_layout = false,
@@ -23,15 +19,14 @@ enum trivially_copyableness {
   trivially_copyable     = true
 };
 
-template <class T, size_t Size,
-          emptyness Empty = non_empty,
-          standard_layoutness StandardLayout = standard_layout,
+template <class T, size_t Size, emptyness Empty = non_empty,
+          standard_layoutness StandardLayout       = standard_layout,
           trivially_copyableness TriviallyCopyable = trivially_copyable>
 void test() {
   MDSPAN_STATIC_TEST(sizeof(T) == Size);
   MDSPAN_STATIC_TEST(std::is_empty<T>::value == Empty);
-#if (!defined(__INTEL_COMPILER) || (__INTEL_COMPILER>=1900)) && \
-    (!defined(__clang__) || (defined(__GNUC__) && (__GNUC__> 10)))
+#if (!defined(__INTEL_COMPILER) || (__INTEL_COMPILER >= 1900)) && \
+    (!defined(__clang__) || (defined(__GNUC__) && (__GNUC__ > 10)))
   MDSPAN_STATIC_TEST(std::is_standard_layout<T>::value == StandardLayout);
 #endif
   MDSPAN_STATIC_TEST(std::is_trivially_copyable<T>::value == TriviallyCopyable);

@@ -27,7 +27,8 @@ template <class T>
 constexpr void test_construction() {
   ASSERT_NOEXCEPT(std::default_accessor<T>{});
   [[maybe_unused]] std::default_accessor<T> acc;
-  static_assert(std::is_trivially_default_constructible_v<std::default_accessor<T>>);
+  static_assert(
+      std::is_trivially_default_constructible_v<std::default_accessor<T>>);
 }
 
 constexpr bool test() {

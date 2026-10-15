@@ -5,7 +5,6 @@
 
 #include <mdspan/mdspan.hpp>
 
-
 // clang-format off
 using E1 = Kokkos::extents<int32_t, Kokkos::dynamic_extent, 3>;
 using MLR1 = Kokkos::layout_right::mapping<E1>;

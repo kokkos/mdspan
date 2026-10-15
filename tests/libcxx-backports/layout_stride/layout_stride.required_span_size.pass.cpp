@@ -13,7 +13,8 @@
 // Let REQUIRED-SPAN-SIZE(e, strides) be:
 //    - 1, if e.rank() == 0 is true,
 //    - otherwise 0, if the size of the multidimensional index space e is 0,
-//    - otherwise 1 plus the sum of products of (e.extent(r) - 1) and strides[r] for all r in the range [0, e.rank()).
+//    - otherwise 1 plus the sum of products of (e.extent(r) - 1) and strides[r]
+//    for all r in the range [0, e.rank()).
 
 // constexpr index_type required_span_size() const noexcept;
 //
@@ -26,7 +27,8 @@
 #include "../llvm_test_macros.h"
 
 template <class E>
-constexpr void test_required_span_size(E e, std::array<int, E::rank()> strides, typename E::index_type expected_size) {
+constexpr void test_required_span_size(E e, std::array<int, E::rank()> strides,
+                                       typename E::index_type expected_size) {
   using M = std::layout_stride::mapping<E>;
   const M m(e, strides);
 

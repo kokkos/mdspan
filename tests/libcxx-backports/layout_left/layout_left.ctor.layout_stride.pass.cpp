@@ -17,9 +17,11 @@
 // Constraints: is_constructible_v<extents_type, OtherExtents> is true.
 //
 // Preconditions:
-//   - If extents_type::rank() > 0 is true, then for all r in the range [0, extents_type::rank()),
+//   - If extents_type::rank() > 0 is true, then for all r in the range [0,
+//   extents_type::rank()),
 //     other.stride(r) equals other.extents().fwd-prod-of-extents(r), and
-//   - other.required_span_size() is representable as a value of type index_type ([basic.fundamental]).
+//   - other.required_span_size() is representable as a value of type index_type
+//   ([basic.fundamental]).
 //
 // Effects: Direct-non-list-initializes extents_ with other.extents().
 
@@ -80,25 +82,34 @@ constexpr void test_conversion() {
 }
 
 template <class IdxT, size_t... Extents>
-using ll_mapping_t = typename std::layout_left::template mapping<std::extents<IdxT, Extents...>>;
+using ll_mapping_t =
+    typename std::layout_left::template mapping<std::extents<IdxT, Extents...>>;
 template <class IdxT, size_t... Extents>
-using ls_mapping_t = typename std::layout_stride::template mapping<std::extents<IdxT, Extents...>>;
+using ls_mapping_t = typename std::layout_stride::template mapping<
+    std::extents<IdxT, Extents...>>;
 
 constexpr void test_rank_mismatch() {
   constexpr size_t D = std::dynamic_extent;
 
-  static_assert(!std::is_constructible_v<ll_mapping_t<int, D>, ls_mapping_t<int>>);
-  static_assert(!std::is_constructible_v<ll_mapping_t<int>, ls_mapping_t<int, D, D>>);
-  static_assert(!std::is_constructible_v<ll_mapping_t<int, D>, ls_mapping_t<int, D, D>>);
-  static_assert(!std::is_constructible_v<ll_mapping_t<int, D, D, D>, ls_mapping_t<int, D, D>>);
+  static_assert(
+      !std::is_constructible_v<ll_mapping_t<int, D>, ls_mapping_t<int>>);
+  static_assert(
+      !std::is_constructible_v<ll_mapping_t<int>, ls_mapping_t<int, D, D>>);
+  static_assert(
+      !std::is_constructible_v<ll_mapping_t<int, D>, ls_mapping_t<int, D, D>>);
+  static_assert(!std::is_constructible_v<ll_mapping_t<int, D, D, D>,
+                                         ls_mapping_t<int, D, D>>);
 }
 
 constexpr void test_static_extent_mismatch() {
   constexpr size_t D = std::dynamic_extent;
 
-  static_assert(!std::is_constructible_v<ll_mapping_t<int, D, 5>, ls_mapping_t<int, D, 4>>);
-  static_assert(!std::is_constructible_v<ll_mapping_t<int, 5>, ls_mapping_t<int, 4>>);
-  static_assert(!std::is_constructible_v<ll_mapping_t<int, 5, D>, ls_mapping_t<int, 4, D>>);
+  static_assert(!std::is_constructible_v<ll_mapping_t<int, D, 5>,
+                                         ls_mapping_t<int, D, 4>>);
+  static_assert(
+      !std::is_constructible_v<ll_mapping_t<int, 5>, ls_mapping_t<int, 4>>);
+  static_assert(!std::is_constructible_v<ll_mapping_t<int, 5, D>,
+                                         ls_mapping_t<int, 4, D>>);
 }
 
 constexpr bool test() {
