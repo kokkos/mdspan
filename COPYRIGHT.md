@@ -82,9 +82,9 @@ Listing only contributors with 5 or more commits
 
 - Mark Hoemmen; NVIDIA; mhoemmen@nvidia.com
 - Bryce Adelstein Lelbach; NVIDIA; brycelelbach@gmail.com
+- Yu You; NVIDIA; youyu3@gmail.com
 
 ### Individual Contributors (OTHER)
 
 - Nevin Liber; OTHER; nliber@anl.gov
-- youyu3; OTHER; youyu3@gmail.com
 
