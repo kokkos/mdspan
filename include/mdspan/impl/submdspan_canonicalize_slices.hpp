@@ -5,7 +5,6 @@
 
 #include "constant_wrapper.hpp"
 #include "strided_slice.hpp"
-#include <complex>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 

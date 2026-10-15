@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <complex>
-
 #include "constant_wrapper.hpp"
 #include "strided_slice.hpp"
 #include "submdspan_canonicalize_slices.hpp"
