@@ -13,6 +13,25 @@ Note: There is a tag mdspan-0.4.0 which reflects the status of P0009 before
 * renaming `pointer`, `data`, `is_contiguous` and `is_always_contiguous`; and before
 * renaming `size_type` to `index_type` and introducing a new `size_type = make_unsigned_t<index_type>` alias.
 
+Building code with `mdspan`
+---------------------------
+
+mdspan is discoverable by CMake:
+
+```
+find_package( mdspan REQUIRED )
+target_link_libraries( myproject PUBLIC std::mdspan )
+```
+
+Your code can then have
+```
+#include "mdspan/mdspan.hpp"
+namespace md = Kokkos;
+...
+md::mdspan
+```
+
+
 Using `mdspan`
 --------------
 
