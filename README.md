@@ -1,7 +1,7 @@
 Reference `mdspan` implementation
 ==========================================
 
-This is the Kokkos Project's implementation of the ISO C++ `mdspan` feature with extensions for High Performance Computing (HPC) use-cases.
+This is the Kokkos Project's implementation of the ISO C++ `mdspan` feature with extensions for High Performance Computing (HPC) use cases.
 The implementation underpins the primary data structures of the Kokkos Project and is used in production environments.
 
 **Kokkos MDSpan is part of the [Kokkos C++ Performance Portability Programming Ecosystem](https://kokkos.org).**
@@ -31,14 +31,14 @@ Caveats
 -------
 
 This implementation is fully conforming with the version of `mdspan` voted into the C++26 draft standard.
-When not at least in C++23 mode the implementation deviates from the proposal as follows:
+When not at least in C++23 mode the implementation deviates from the C++26 draft standard as follows:
 
 ### C++20
 - implements `operator()` not `operator[]`
-  - note you can control which operator is available with defining `MDSPAN_USE_BRACKET_OPERATOR=[0,1]` and `MDSPAN_USE_PAREN_OPERATOR=[0,1]` irrespective of whether multi dimensional subscript support is detected.
+  - you can control which operator is available by defining `MDSPAN_USE_BRACKET_OPERATOR=[0,1]` and `MDSPAN_USE_PAREN_OPERATOR=[0,1]` irrespective of whether language support for multidimensional `operator[]` is detected.
 
 ### C++17
-- mdspan has a default constructor even in cases where it shouldn't (i.e. all static extents, and default constructible mapping/accessor)
+- mdspan has a default constructor even in cases where it shouldn't (i.e., all static extents, and default constructible mapping/accessor)
 - the conditional explicit markup is missing, making certain constructors implicit
   - most notably you can implicitly convert from dynamic extent to static extent, which you can't in C++20 mode
 - there is a constraint on `layout_left::mapping::stride()`, `layout_right::mapping::stride()` and `layout_stride::mapping::stride()` that `extents_type::rank() > 0` is `true`, which is not implemented in C++17 or C++14.
@@ -70,7 +70,7 @@ mdspan specific options:
 - `MDSPAN_ENABLE_CUDA`: Enable Cuda tests/benchmarks/examples if tests/benchmarks/examples are enabled. Default: Off
 - `MDSPAN_ENABLE_SYCL`: Enable SYCL tests/benchmarks/examples if tests/benchmarks/examples are enabled. Default: Off
 - `MDSPAN_ENABLE_HIP`: Enable HIP tests/benchmarks/examples if tests/benchmarks/examples are enabled. Default: Off
-- `MDSPAN_ENABLE_OPENMP`: Enable OpenMP benchmarks if benchmarks are enabled. Default: On
+- `MDSPAN_ENABLE_OPENMP`: Enable OpenMP benchmarks if benchmarks are enabled. Default: On if and only if OpenMP is detected
 - `MDSPAN_CXX_STANDARD`: Set the C++ standard for compiling tests/benchmarks/examples. Default: Auto-Detect
 - `MDSPAN_USE_SYSTEM_GTEST`: Use system-installed GoogleTest library for tests. Default: Off
 - `MDSPAN_USE_SYSTEM_BENCHMARK`: Use system-installed Google Benchmark library for benchmarks. Default: On
