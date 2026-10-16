@@ -21,11 +21,16 @@ static_assert(
     Kokkos::detail::is_layout_right_padded_mapping<Kokkos::layout_right_padded<
         4>::mapping<Kokkos::extents<size_t, 7, 4>>>::value);
 
+// std::is_trivial is deprecated in C++26
+template <class T>
+constexpr bool is_trivial_v = std::is_trivially_default_constructible_v<T> &&
+                              std::is_trivially_copyable_v<T>;
+
 // layout_right_padded must be trivial
-static_assert(std::is_trivial_v<Kokkos::layout_right_padded<0>>);
-static_assert(std::is_trivial_v<Kokkos::layout_right_padded<4>>);
+static_assert(is_trivial_v<Kokkos::layout_right_padded<0>>);
+static_assert(is_trivial_v<Kokkos::layout_right_padded<4>>);
 static_assert(
-    std::is_trivial_v<Kokkos::layout_right_padded<Kokkos::dynamic_extent>>);
+    is_trivial_v<Kokkos::layout_right_padded<Kokkos::dynamic_extent>>);
 
 // actual padding stride
 // If extents_type::rank() equals zero or one, then padding_stride.
