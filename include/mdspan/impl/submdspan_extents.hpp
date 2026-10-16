@@ -145,6 +145,13 @@ struct StaticExtentFromRange {
   constexpr static size_t value = dynamic_extent;
 };
 
+#if MDSPAN_HAS_CXX_20
+// This also covers constant_wrapper
+template <integral_constant_like BeginType, integral_constant_like EndType>
+struct StaticExtentFromRange<BeginType, EndType> {
+  constexpr static size_t value = EndType::value - BeginType::value;
+};
+#else
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
                              std::integral_constant<Integral1, val1>> {
@@ -156,6 +163,7 @@ struct StaticExtentFromRange<integral_constant<Integral0, val0>,
                              integral_constant<Integral1, val1>> {
   constexpr static size_t value = val1 - val0;
 };
+#endif
 
 // compute new static extent from strided_slice, preserving static
 // knowledge
@@ -164,20 +172,25 @@ struct StaticExtentFromStridedRange {
   constexpr static size_t value = dynamic_extent;
 };
 
-template <class ExtentType, ExtentType Extent, class StrideType,
-          StrideType Stride>
-struct StaticExtentFromStridedRange<
-    std::integral_constant<ExtentType, Extent>,
-    std::integral_constant<StrideType, Stride>> {
+#if MDSPAN_HAS_CXX_20
+// This also covers constant_wrapper
+template <integral_constant_like ExtentType, class StrideType>
+struct StaticExtentFromStridedRange<ExtentType, StrideType> {
+  constexpr static size_t value = ExtentType::value;
+};
+#else
+template <class ExtentType, ExtentType Extent, class StrideType>
+struct StaticExtentFromStridedRange<std::integral_constant<ExtentType, Extent>,
+                                    StrideType> {
   constexpr static size_t value = Extent;
 };
 
-template <class ExtentType, ExtentType Extent, class StrideType,
-          StrideType Stride>
+template <class ExtentType, ExtentType Extent, class StrideType>
 struct StaticExtentFromStridedRange<integral_constant<ExtentType, Extent>,
-                                    integral_constant<StrideType, Stride>> {
+                                    StrideType> {
   constexpr static size_t value = Extent;
 };
+#endif
 
 // creates new extents through recursive calls to next_extent member function
 // next_extent has different overloads for different types of stride specifiers

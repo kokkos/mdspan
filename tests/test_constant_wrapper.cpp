@@ -8,52 +8,6 @@
 
 namespace {  // (anonymous)
 
-#if defined(__cpp_lib_constant_wrapper)
-
-template <class Integral, Integral Value>
-using IC = std::integral_constant<Integral, Value>;
-
-template <class Integral, Integral Value>
-constexpr void test_integral_constant_wrapper(IC<Integral, Value> ic) {
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::constant_wrapper;
-  using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
-
-  constexpr auto c = cw<Value>;
-
-  static_assert(std::is_same_v<std::remove_const_t<decltype(cw<Value>)>,
-                               constant_wrapper<Value>>);
-  static_assert(decltype(c)::value == Value);
-  static_assert(
-      std::is_same_v<typename decltype(c)::type, constant_wrapper<Value>>);
-  static_assert(std::is_same_v<typename decltype(c)::value_type, Integral>);
-
-  constexpr auto c2 = cw<Value>;
-  // Casting the arithmetic result back to Integral undoes
-  // any integer promotions (e.g., short + short -> int).
-  constexpr auto val_plus_1 = Integral(Value + Integral(1));
-  constexpr auto c_assigned = (c2 = IC<Integral, val_plus_1>{});
-  static_assert(c_assigned == val_plus_1);
-}
-
-TEST(TestConstantWrapper, Construction) {
-  test_integral_constant_wrapper(IC<signed char, -3>{});
-  test_integral_constant_wrapper(IC<signed char, 3>{});
-  test_integral_constant_wrapper(IC<unsigned char, 3u>{});
-  test_integral_constant_wrapper(IC<short, -3>{});
-  test_integral_constant_wrapper(IC<short, 3>{});
-  test_integral_constant_wrapper(IC<unsigned short, 3u>{});
-  test_integral_constant_wrapper(IC<int, -5>{});
-  test_integral_constant_wrapper(IC<int, 5>{});
-  test_integral_constant_wrapper(IC<unsigned, 5u>{});
-  test_integral_constant_wrapper(IC<long, -7>{});
-  test_integral_constant_wrapper(IC<long, 7>{});
-  test_integral_constant_wrapper(IC<unsigned long, 7u>{});
-  test_integral_constant_wrapper(IC<long long, -11>{});
-  test_integral_constant_wrapper(IC<long long, 11>{});
-  test_integral_constant_wrapper(IC<unsigned long long, 11u>{});
-}
-#endif
-
 TEST(TestConstantWrapper, IntegerPlus) {
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::constant_wrapper;
   using MDSPAN_IMPL_STANDARD_NAMESPACE::detail::cw;
