@@ -173,6 +173,9 @@ MDSPAN_INLINE_FUNCTION constexpr bool check_extents_representability(
   // get rid of NVCC warning "pointless comparison of unsigned integer with
   // zero"
   if constexpr (Extents::rank() > 0) {
+    for (size_t i = 0; i < Extents::rank(); ++i) {
+      if (exts.extent(i) == 0) return true;
+    }
     auto prod = index_type(1);
     for (size_t i = 0; i < Extents::rank(); ++i) {
       if (!check_mul_result_is_nonnegative_and_representable(
@@ -229,6 +232,9 @@ check_extents_and_left_padding_representability(
   // get rid of NVCC warning "pointless comparison of unsigned integer with
   // zero" And also a rank 1 layout cannot overflow
   if constexpr (Extents::rank() > 1) {
+    for (size_t i = 1; i < Extents::rank(); ++i) {
+      if (exts.extent(i) == 0) return true;
+    }
     auto prod = static_cast<CheckType>(dynamic_padding_value);
     for (size_t i = 1; i < Extents::rank(); ++i) {
       if (!check_mul_result_is_nonnegative_and_representable(
@@ -282,6 +288,9 @@ check_extents_and_right_padding_representability(
   // get rid of NVCC warning "pointless comparison of unsigned integer with
   // zero" And also a rank 1 layout cannot overflow
   if constexpr (Extents::rank() > 1) {
+    for (size_t i = 0; i < Extents::rank() - 1; ++i) {
+      if (exts.extent(i) == 0) return true;
+    }
     auto prod = static_cast<CheckType>(dynamic_padding_value);
     for (size_t i = 0; i < Extents::rank() - 1; ++i) {
       if (!check_mul_result_is_nonnegative_and_representable(
@@ -586,6 +595,9 @@ class layout_left_padded<PaddingValue>::mapping {
     } else if constexpr (extents_type::rank() == 1) {
       return exts.extent(0);
     } else {
+      for (rank_type r = 0; r < extents_type::rank(); ++r) {
+        if (exts.extent(r) == 0) return 0;
+      }
       index_type value = padded_stride.value(0);
       for (rank_type r = 1; r < extents_type::rank(); ++r) {
         value *= exts.extent(r);
@@ -995,6 +1007,9 @@ class layout_right_padded<PaddingValue>::mapping {
     } else if constexpr (extents_type::rank() == 1) {
       return exts.extent(0);
     } else {
+      for (rank_type r = 0; r < extents_type::rank(); ++r) {
+        if (exts.extent(r) == 0) return 0;
+      }
       index_type value = padded_stride.value(0);
       for (rank_type r = 0; r < extent_to_pad_idx; ++r) {
         value *= exts.extent(r);
