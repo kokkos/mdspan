@@ -157,6 +157,8 @@ class layout_left::mapping {
 
   MDSPAN_INLINE_FUNCTION
   constexpr index_type required_span_size() const noexcept {
+    for (rank_type r = 0; r < extents_type::rank(); r++)
+      if (m_extents.extent(r) == 0) return 0;
     index_type value = 1;
     for (rank_type r = 0; r < extents_type::rank(); r++)
       value *= m_extents.extent(r);
