@@ -157,6 +157,14 @@ class layout_left::mapping {
 
   MDSPAN_INLINE_FUNCTION
   constexpr index_type required_span_size() const noexcept {
+    // A zero extent wraps an unsigned product to zero, but a signed product
+    // (including index types promoted to int) can overflow before reaching it
+    using product_type = decltype(index_type() * index_type());
+    if MDSPAN_IMPL_IF_CONSTEXPR_17 (MDSPAN_IMPL_TRAIT(std::is_signed,
+                                                      product_type)) {
+      for (rank_type r = 0; r < extents_type::rank(); r++)
+        if (m_extents.extent(r) == 0) return 0;
+    }
     index_type value = 1;
     for (rank_type r = 0; r < extents_type::rank(); r++)
       value *= m_extents.extent(r);
