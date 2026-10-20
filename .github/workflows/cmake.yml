@@ -13,13 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler_driver: [g++-9, g++-10, clang++, icpx]
+        compiler_driver: [g++-9, g++, clang++, icpx]
         stdcxx: [14, 17, 20, 23]
         include:
         - compiler_driver: g++-9
           compiler_path: /usr/bin/g++-9
           cxx_flags_extra: "-Wextra-semi"
-        - compiler_driver: g++-10
+        - compiler_driver: g++
           compiler_path:  g++
           cxx_flags_extra: "-Wextra-semi"
         - compiler_driver: clang++
@@ -43,7 +43,7 @@ jobs:
         exclude:
         - compiler_driver: g++-9
           stdcxx: 23
-        - compiler_driver: g++-10
+        - compiler_driver: g++
           stdcxx: 23
 
     name: ${{ matrix.compiler_driver }} C++${{ matrix.stdcxx }}
