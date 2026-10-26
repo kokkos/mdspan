@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 project(mdspan
-  VERSION 0.6.0
+  VERSION 5.3.0
   LANGUAGES CXX
 )
 
