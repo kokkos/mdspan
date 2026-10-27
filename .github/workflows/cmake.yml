@@ -8,23 +8,25 @@ env:
 jobs:
   build-mdspan:
     runs-on: ubuntu-22.04
+    container:
+      image: ${{ matrix.compiler_driver == 'g++-16' && 'gcc:16.2.0' || 'ubuntu:22.04' }}
     strategy:
       fail-fast: false
       matrix:
-        compiler_driver: [g++-9, g++-10, clang++, icpx]
+        compiler_driver: [g++-9, g++, clang++, icpx]
         stdcxx: [14, 17, 20, 23]
         include:
         - compiler_driver: g++-9
-          compiler_prefix: /usr/bin
+          compiler_path: /usr/bin/g++-9
           cxx_flags_extra: "-Wextra-semi"
-        - compiler_driver: g++-10
-          compiler_prefix: /usr/bin
+        - compiler_driver: g++
+          compiler_path:  g++
           cxx_flags_extra: "-Wextra-semi"
         - compiler_driver: clang++
-          compiler_prefix: /usr/bin
+          compiler_path: clang++
           cxx_flags_extra: "-stdlib=libc++ -Wextra-semi -Wno-c++17-attribute-extensions -Wno-gnu-zero-variadic-macro-arguments"
         - compiler_driver: icpx
-          compiler_prefix: /opt/intel/oneapi/compiler/latest/linux/bin
+          compiler_path: /opt/intel/oneapi/compiler/latest/linux/bin/icpx
           # To get new URL, look here:
           # https://www.intel.com/content/www/us/en/developer/articles/tool/oneapi-standalone-components.html#inpage-nav-6-undefined
           compiler_url: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/ebf5d9aa-17a7-46a4-b5df-ace004227c0e/l_dpcpp-cpp-compiler_p_2023.2.1.8_offline.sh
@@ -34,14 +36,22 @@ jobs:
           enable_benchmark: OFF
         - stdcxx: 23
           enable_benchmark: OFF
+        - compiler_driver: g++-16
+          compiler_path: /usr/local/bin/g++
+          stdcxx: 26
+          enable_benchmark: OFF
         exclude:
         - compiler_driver: g++-9
           stdcxx: 23
-        - compiler_driver: g++-10
+        - compiler_driver: g++
           stdcxx: 23
+
     name: ${{ matrix.compiler_driver }} C++${{ matrix.stdcxx }}
     steps:
 
+    - name: Install common dependencies
+      run: |
+        apt-get update && apt-get install -y cmake curl git ruby g++ clang libc++-dev libc++abi-dev
     - name: Cache icpx install
       if: ${{ matrix.compiler_driver == 'icpx' }}
       id: cache-icpx
@@ -53,14 +63,17 @@ jobs:
       if: ${{ matrix.compiler_driver == 'icpx' && steps.cache-icpx.outputs.cache-hit != 'true' }}
       run: |
         curl  --url ${{ matrix.compiler_url }} --output download.sh
-        sudo sh -x download.sh -s -a -s --action install --eula accept
+        sh -x download.sh -s -a -s --action install --eula accept
     - name: Install g++-9
       if: ${{ matrix.compiler_driver == 'g++-9' }}
-      run: sudo apt-get install g++-9
+      run: apt-get update && apt-get install -y g++-9
+    - name: Install g++-16
+      if: ${{ matrix.compiler_driver == 'g++-16' }}
+      run: apt-get update && apt-get install -y g++-16
     - name: Install gtest manually
       run: |
-        sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
-        sudo apt install libbenchmark1 libbenchmark-dev
+        apt-get install -y libgtest-dev && cd /usr/src/gtest && cmake CMakeLists.txt && make && cp lib/*.a /usr/lib && ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+        apt install -y libbenchmark-dev
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/mdspan-build
@@ -72,29 +85,25 @@ jobs:
 
     - name: Configure CMake
       shell: bash
-      working-directory: ${{github.workspace}}/mdspan-build
-      run: CXX=${{ matrix.compiler_prefix}}/${{ matrix.compiler_driver }} cmake $GITHUB_WORKSPACE/mdspan-src -DMDSPAN_CXX_STANDARD=${{ matrix.stdcxx }} -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DMDSPAN_ENABLE_BENCHMARKS=${{matrix.enable_benchmark}} -DMDSPAN_ENABLE_COMP_BENCH=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic ${{matrix.cxx_flags_extra}}"
+      run: CXX=${{matrix.compiler_path}} cmake $GITHUB_WORKSPACE/mdspan-src -B ${{github.workspace}}/mdspan-build -DCMAKE_CXX_STANDARD=${{ matrix.stdcxx }} -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON -DMDSPAN_ENABLE_BENCHMARKS=${{matrix.enable_benchmark}} -DMDSPAN_ENABLE_COMP_BENCH=ON -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -pedantic ${{matrix.cxx_flags_extra}}"
 
     - name: Build
       shell: bash
-      working-directory: ${{github.workspace}}/mdspan-build
-      run: make -j
+      run: cmake --build ${{github.workspace}}/mdspan-build --parallel
 
     - name: Test
-      working-directory: ${{github.workspace}}/mdspan-build
       shell: bash
-      run: ctest --output-on-failure
+      run: ctest --test-dir ${{github.workspace}}/mdspan-build --output-on-failure
 
     - name: Install
       shell: bash
-      working-directory: ${{github.workspace}}/mdspan-build
-      run: make install
+      run: cmake --install ${{github.workspace}}/mdspan-build
 
     - name: Test Target Export
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-src
       run: |
-        cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=${{github.workspace}}/mdspan-build
+        CXX=${{matrix.compiler_path}} cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=${{github.workspace}}/mdspan-build
         cmake --build /tmp/build-mdspan-examples
         rm -rf /tmp/build-mdspan-examples
 
@@ -102,6 +111,6 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}/mdspan-src
       run: |
-        cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=${{github.workspace}}/mdspan-install
+        CXX=${{matrix.compiler_path}} cmake -S ./examples -B /tmp/build-mdspan-examples -Dmdspan_ROOT=$GITHUB_WORKSPACE/mdspan-install
         cmake --build /tmp/build-mdspan-examples
         rm -rf /tmp/build-mdspan-examples
