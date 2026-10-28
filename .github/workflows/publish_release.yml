@@ -1,0 +1,13 @@
+on:
+  push:
+    tags: '[0-9]+.[0-9]+.[0-9]+'
+
+permissions: read-all
+
+jobs:
+  release:
+    permissions:
+      actions: read
+      contents: write
+      id-token: write
+    uses: kokkos/kokkos/.github/workflows/publish-release.yml@d41d0478525e566713f07e41e939a45c5fb07eb0
