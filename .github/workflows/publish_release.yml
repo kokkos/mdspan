@@ -10,4 +10,4 @@ jobs:
       actions: read
       contents: write
       id-token: write
-    uses: kokkos/kokkos/.github/workflows/publish-release.yml@d41d0478525e566713f07e41e939a45c5fb07eb0
+    uses: kokkos/kokkos/.github/workflows/publish-release.yml@db38bdcdd0a339b20ade3eeb4698abd0ee7255be
