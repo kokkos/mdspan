@@ -1,5 +1,4 @@
-Reference `mdspan` implementation
-==========================================
+# Reference `mdspan` implementation
 
 This is the Kokkos Project's implementation of the ISO C++ `mdspan` feature with extensions for High Performance Computing (HPC) use cases.
 The implementation underpins the primary data structures of the Kokkos Project and is used in production environments.
@@ -9,26 +8,61 @@ The implementation underpins the primary data structures of the Kokkos Project a
 Kokkos is a [Linux Foundation](https://linuxfoundation.org) project and a *Core* stage member of the LF's
 [High Performance Software Foundation](https://hpsf.io).
 
-Features in Addition To C++ Standard
-------------------------------------
+As of the 5.3 release, the `mdspan`  reference implementation releases are in lockstep with the Kokkos releases.
+
+## Supported C++ Standard Features
+
+### C++23 Library features
+
+| Feature      | Supported since version |
+| ------------------------------------------------- | ------------- |
+| `mdspan` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
+| `extents`, `dextents` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
+| `layout_left`, `layout_right`, `layout_stride` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
+| `default_accessor` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
+
+
+### C++26 Library features
+
+| Feature      | Supported since version |
+| ------------------------------------------------- | ------------- |
+| `submdspan` ([P2630R4](https://wg21.link/P2630R4)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
+| `dims` ([P2389R2](https://wg21.link/P2389R2)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
+| `layout_left_padded`, `layout_right_padded` ([P2642R6](https://wg21.link/P2642R6)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
+| `mdspan::at()` ([P3383R3](https://wg21.link/P3383R3)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
+| `aligned_accessor` ([P2630R4](https://wg21.link/P2630R4)) | ❌ ([PR](https://github.com/kokkos/mdspan/pull/446)) |
+
+
+### C++29 Library features
+
+| Feature      | Supported since version |
+| ------------------------------------------------- | ------------- |
+| `mdspan` `copy` and `fill` ([P2630R4](https://wg21.link/P2630R4)) | ❌ ([PR](https://github.com/kokkos/mdspan/pull/325)) |
+
+
+### Features proposed for the next C++ Standard Library
+
+
+| Feature      | Supported since version |
+| ------------------------------------------------- | ------------- |
+| `mdarray` ([P1684](https://wg21.link/p1684)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
+
+## Features in Addition To C++ Standard
 
 * Backport to C++14/17/20/23
   * Not all features are supported in C++14
 * Macros to enable, e.g., `__device__` marking of all functions for CUDA compatibility
 * Non-standard extensions for device code compatibility
 
-Obtaining Kokkos MDSpan
------------------------
+## Obtaining Kokkos MDSpan
 
 The latest release of Kokkos's mdspan can be obtained from the [GitHub releases page](https://github.com/kokkos/mdspan/releases/latest).
 
-Support
--------
+## Support
 
 For questions find us on Slack: https://kokkos.org/community/chat/#slack or open a GitHub issue.
 
-Caveats
--------
+## Caveats
 
 This implementation is fully conforming with the version of `mdspan` voted into the C++26 draft standard.
 When not at least in C++23 mode the implementation deviates from the C++26 draft standard as follows:
@@ -50,8 +84,7 @@ When not at least in C++23 mode the implementation deviates from the C++26 draft
 - benchmarks are not available (they need submdspan)
 
 
-Building and Installation
--------------------------
+## Building and Installation
 
 This project is a CMake project.
 
@@ -79,13 +112,11 @@ Note: if you only install mdspan, the CUDA/SYCL/HIP/OPENMP options have no real 
 MDSpan is installed in a *headers only* fashion, and discovers use of CUDA, HIP, SYCL and OpenMP from compiler macros.
 Thus a single install of MDSpan can be used for all such downstream use cases.
 
-Contributing
-------------
+## Contributing
 
 Please see [this page](https://kokkos.org/kokkos-core-wiki/contributing.html) for details on how to contribute.
 
-License
--------
+## License
 
 [![License](https://img.shields.io/badge/License-Apache--2.0_WITH_LLVM--exception-blue)](https://spdx.org/licenses/LLVM-exception.html)
 
