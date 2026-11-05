@@ -10,43 +10,6 @@ Kokkos is a [Linux Foundation](https://linuxfoundation.org) project and a *Core*
 
 As of the 5.3 release, the `mdspan`  reference implementation releases are in lockstep with the Kokkos releases.
 
-## Supported C++ Standard Features
-
-### C++23 Library features
-
-| Feature      | Supported since version |
-| ------------------------------------------------- | ------------- |
-| `mdspan` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
-| `extents`, `dextents` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
-| `layout_left`, `layout_right`, `layout_stride` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
-| `default_accessor` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
-
-
-### C++26 Library features
-
-| Feature      | Supported since version |
-| ------------------------------------------------- | ------------- |
-| `submdspan` ([P2630R4](https://wg21.link/P2630R4)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
-| `dims` ([P2389R2](https://wg21.link/P2389R2)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
-| `layout_left_padded`, `layout_right_padded` ([P2642R6](https://wg21.link/P2642R6)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
-| `mdspan::at()` ([P3383R3](https://wg21.link/P3383R3)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
-| `aligned_accessor` ([P2630R4](https://wg21.link/P2630R4)) | ❌ ([PR](https://github.com/kokkos/mdspan/pull/446)) |
-
-
-### C++29 Library features
-
-| Feature      | Supported since version |
-| ------------------------------------------------- | ------------- |
-| `mdspan` `copy` and `fill` ([P2630R4](https://wg21.link/P2630R4)) | ❌ ([PR](https://github.com/kokkos/mdspan/pull/325)) |
-
-
-### Features proposed for the next C++ Standard Library
-
-
-| Feature      | Supported since version |
-| ------------------------------------------------- | ------------- |
-| `mdarray` ([P1684](https://wg21.link/p1684)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
-
 ## Features in Addition To C++ Standard
 
 * Backport to C++14/17/20/23
