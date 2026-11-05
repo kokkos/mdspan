@@ -16,7 +16,7 @@ As of the 5.3 release, the `mdspan`  reference implementation releases are in lo
 
 | Feature      | Supported since version |
 | ------------------------------------------------- | ------------- |
-| `mdspan` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
+| `mdspan` ([P0009R18](https://wg21.link/P0009R18), [P2599R2](https://wg21.link/P2599R2), [P2604R0](https://wg21.link/P2604R0), [P2613R1](https://wg21.link/P2613R1), and [P2763R1](https://wg21.link/P2763R1)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
 | `extents`, `dextents` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
 | `layout_left`, `layout_right`, `layout_stride` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
 | `default_accessor` ([P0009R18](https://wg21.link/P0009R18)) | ✅ ([0.6](https://github.com/kokkos/mdspan/releases/tag/mdspan-0.6.0))|
@@ -26,7 +26,7 @@ As of the 5.3 release, the `mdspan`  reference implementation releases are in lo
 
 | Feature      | Supported since version |
 | ------------------------------------------------- | ------------- |
-| `submdspan` ([P2630R4](https://wg21.link/P2630R4)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
+| `submdspan` ([P2630R4](https://wg21.link/P2630R4), [P3663R3](https://wg21.link/P3663R3), and [P3982R2](https://wg21.link/P3982R2)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
 | `dims` ([P2389R2](https://wg21.link/P2389R2)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
 | `layout_left_padded`, `layout_right_padded` ([P2642R6](https://wg21.link/P2642R6)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
 | `mdspan::at()` ([P3383R3](https://wg21.link/P3383R3)) | ✅ ([5.3](https://github.com/kokkos/mdspan/releases/tag/mdspan-5.3.0))|
