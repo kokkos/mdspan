@@ -1,5 +1,4 @@
-Reference `mdspan` implementation
-==========================================
+# Reference `mdspan` implementation
 
 This is the Kokkos Project's implementation of the ISO C++ `mdspan` feature with extensions for High Performance Computing (HPC) use cases.
 The implementation underpins the primary data structures of the Kokkos Project and is used in production environments.
@@ -9,26 +8,24 @@ The implementation underpins the primary data structures of the Kokkos Project a
 Kokkos is a [Linux Foundation](https://linuxfoundation.org) project and a *Core* stage member of the LF's
 [High Performance Software Foundation](https://hpsf.io).
 
-Features in Addition To C++ Standard
-------------------------------------
+As of the 5.3 release, the `mdspan`  reference implementation releases are in lockstep with the Kokkos releases.
+
+## Features in Addition To C++ Standard
 
 * Backport to C++14/17/20/23
   * Not all features are supported in C++14
 * Macros to enable, e.g., `__device__` marking of all functions for CUDA compatibility
 * Non-standard extensions for device code compatibility
 
-Obtaining Kokkos MDSpan
------------------------
+## Obtaining Kokkos MDSpan
 
 The latest release of Kokkos's mdspan can be obtained from the [GitHub releases page](https://github.com/kokkos/mdspan/releases/latest).
 
-Support
--------
+## Support
 
 For questions find us on Slack: https://kokkos.org/community/chat/#slack or open a GitHub issue.
 
-Caveats
--------
+## Caveats
 
 This implementation is fully conforming with the version of `mdspan` voted into the C++26 draft standard.
 When not at least in C++23 mode the implementation deviates from the C++26 draft standard as follows:
@@ -50,8 +47,7 @@ When not at least in C++23 mode the implementation deviates from the C++26 draft
 - benchmarks are not available (they need submdspan)
 
 
-Building and Installation
--------------------------
+## Building and Installation
 
 This project is a CMake project.
 
@@ -79,13 +75,11 @@ Note: if you only install mdspan, the CUDA/SYCL/HIP/OPENMP options have no real 
 MDSpan is installed in a *headers only* fashion, and discovers use of CUDA, HIP, SYCL and OpenMP from compiler macros.
 Thus a single install of MDSpan can be used for all such downstream use cases.
 
-Contributing
-------------
+## Contributing
 
 Please see [this page](https://kokkos.org/kokkos-core-wiki/contributing.html) for details on how to contribute.
 
-License
--------
+## License
 
 [![License](https://img.shields.io/badge/License-Apache--2.0_WITH_LLVM--exception-blue)](https://spdx.org/licenses/LLVM-exception.html)
 
