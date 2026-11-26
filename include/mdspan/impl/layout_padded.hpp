@@ -1053,7 +1053,7 @@ class layout_right_padded<PaddingValue>::mapping {
     if (r == extents_type::rank() - 1) return index_type(1);
 
     index_type value = padded_stride.value(0);
-    for (rank_type k = extents_type::rank() - 2; k > r; k--)
+    for (rank_type k = r + 1; k < extents_type::rank() - 1; ++k)
       value *= exts.extent(k);
 
     return value;
